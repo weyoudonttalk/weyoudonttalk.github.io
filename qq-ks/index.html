@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>QQ聊天 × 快手刷视频</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'PingFang SC','Helvetica Neue',system-ui,sans-serif;background:#f5f6f7;color:#333;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* Top Tabs */
+.tabs{display:flex;background:#12b7f5;padding:8px 12px;gap:4px;align-items:center;z-index:100;box-shadow:0 2px 8px rgba(18,183,245,0.3)}
+.tab-btn{flex:1;padding:10px 12px;border-radius:8px;border:none;background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.tab-btn.active{background:#fff;color:#12b7f5;box-shadow:0 2px 6px rgba(0,0,0,0.1)}
+.tab-btn .icon{font-size:16px}
+
+.panels{flex:1;overflow:hidden;position:relative}
+
+/* ======== QQ PANEL ======== */
+.qq-panel{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;background:#fff}
+.qq-panel[hidden]{display:none}
+
+/* QQ Header */
+.qq-header{display:flex;align-items:center;padding:12px 14px;background:#12b7f5;color:#fff;gap:10px}
+.qq-header .back{font-size:18px;cursor:pointer}
+.qq-header .avatar{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;font-size:18px}
+.qq-header .title{font-size:15px;font-weight:700;flex:1}
+.qq-header .title small{display:block;font-size:10px;font-weight:400;opacity:.7}
+.qq-header .actions{display:flex;gap:12px;font-size:18px}
+.qq-header .actions span{cursor:pointer}
+
+/* QQ Msgs */
+.qq-msgs{flex:1;overflow-y:auto;padding:12px;background:#f0f0f2;display:flex;flex-direction:column;gap:8px}
+.qq-msg{max-width:75%;padding:10px 14px;border-radius:16px;font-size:13px;line-height:1.5;word-break:break-word;position:relative;animation:msgIn .2s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px)}}
+.qq-msg.left{align-self:flex-start;background:#fff;color:#333;border-bottom-left-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,0.05)}
+.qq-msg.right{align-self:flex-end;background:#12b7f5;color:#fff;border-bottom-right-radius:4px}
+.qq-msg .sender{font-size:10px;opacity:.7;margin-bottom:2px}
+.qq-msg .time{font-size:9px;opacity:.5;margin-top:4px;text-align:right}
+.qq-msg.system{align-self:center;background:transparent;color:#999;font-size:11px;text-align:center;padding:4px 12px;max-width:100%}
+
+/* QQ Input */
+.qq-input-area{display:flex;gap:8px;padding:10px 12px;background:#fafafa;border-top:1px solid #e5e5e5;align-items:center}
+.qq-input-area .tools-btn{width:32px;height:32px;border-radius:50%;border:none;background:#f0f0f2;font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.qq-input-area input{flex:1;padding:10px 14px;border-radius:20px;border:1px solid #e0e0e0;background:#fff;font-size:13px;outline:none}
+.qq-input-area input:focus{border-color:#12b7f5}
+.qq-input-area input::placeholder{color:#bbb}
+.qq-input-area .send-btn{width:36px;height:36px;border-radius:50%;border:none;background:#12b7f5;color:#fff;font-size:16px;cursor:pointer;flex-shrink:0}
+.qq-input-area .send-btn:active{transform:scale(0.9)}
+
+/* QQ Login */
+.qq-login-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center;z-index:10}
+.qq-login-box{text-align:center;padding:30px;width:80%;max-width:320px}
+.qq-login-box .login-icon{font-size:64px;margin-bottom:16px}
+.qq-login-box h3{font-size:18px;margin-bottom:6px;color:#333}
+.qq-login-box p{font-size:12px;color:#999;margin-bottom:20px}
+.qq-login-box input{width:100%;padding:12px;border-radius:12px;border:1px solid #e0e0e0;font-size:14px;outline:none;margin-bottom:10px;text-align:center}
+.qq-login-box input:focus{border-color:#12b7f5}
+.qq-login-box button{width:100%;padding:12px;border-radius:12px;border:none;background:#12b7f5;color:#fff;font-size:15px;font-weight:700;cursor:pointer}
+.qq-login-box button:active{background:#0fa0dd}
+
+/* ======== KS PANEL ======== */
+.ks-panel{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;background:#000}
+.ks-panel[hidden]{display:none}
+
+.ks-header{display:flex;align-items:center;padding:12px 14px;background:linear-gradient(180deg,#ff5e00,#ff3d00);color:#fff;gap:10px;flex-shrink:0}
+.ks-header .ks-logo{font-size:20px;font-weight:900;flex:1}
+.ks-header .ks-logo span{font-size:11px;font-weight:400;margin-left:6px;opacity:.8}
+.ks-header .ks-actions{display:flex;gap:10px;font-size:16px}
+.ks-header .ks-actions span{cursor:pointer;padding:4px 8px;border-radius:6px;background:rgba(255,255,255,0.15);font-size:11px}
+
+.ks-tabs{display:flex;background:#111;border-bottom:1px solid #222;flex-shrink:0;overflow-x:auto}
+.ks-tab{padding:10px 16px;font-size:12px;color:#888;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;font-weight:600}
+.ks-tab.active{color:#ff5e00;border-bottom-color:#ff5e00}
+
+.ks-iframe-wrap{flex:1;overflow:hidden;position:relative;background:#000}
+.ks-iframe-wrap iframe{width:100%;height:100%;border:none;position:absolute;top:0;left:0}
+
+/* 快手备用：直接链接 */
+.ks-fallback{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center}
+.ks-fallback .icon{font-size:64px;margin-bottom:16px}
+.ks-fallback h3{color:#fff;font-size:16px;margin-bottom:8px}
+.ks-fallback p{color:#888;font-size:12px;margin-bottom:20px;line-height:1.6}
+.ks-fallback a{display:inline-block;padding:12px 30px;border-radius:20px;background:linear-gradient(135deg,#ff5e00,#ff3d00);color:#fff;font-size:14px;font-weight:700;text-decoration:none}
+
+/* Toast */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:8px 20px;border-radius:20px;font-size:12px;z-index:9999;opacity:0;transition:.3s;pointer-events:none}
+.toast.show{opacity:1}
+
+/* 返回提示 */
+.back-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:#999;display:none}
+.back-hint.show{display:block}
+</style>
+</head>
+<body>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchPanel('qq')"><span class="icon">💬</span>QQ聊天</button>
+  <button class="tab-btn" onclick="switchPanel('ks')"><span class="icon">🎬</span>刷快手</button>
+</div>
+
+<div class="panels">
+  <!-- ===== QQ 面板 ===== -->
+  <div class="qq-panel" id="qqPanel">
+    <div class="qq-header">
+      <span class="avatar">🐧</span>
+      <div class="title">群聊大厅<small>在线 · 点击QQ聊天</small></div>
+      <div class="actions" id="qqHeaderActions">
+        <span onclick="showQQLogin()">🔑</span>
+      </div>
+    </div>
+
+    <div class="qq-login-overlay" id="qqLoginOverlay">
+      <div class="qq-login-box">
+        <div class="login-icon">🐧</div>
+        <h3>QQ群聊大厅</h3>
+        <p>输入昵称进入聊天室</p>
+        <input type="text" id="qqNick" placeholder="你的昵称..." maxlength="20">
+        <input type="password" id="qqPw" placeholder="管理员密码（普通用户留空）" maxlength="20">
+        <button onclick="qqLogin()">🚀 进入群聊</button>
+        <p style="margin-top:12px;font-size:10px;color:#bbb">登录后连接群聊服务器</p>
+      </div>
+    </div>
+
+    <div class="qq-msgs" id="qqMsgs">
+      <div class="qq-msg system">👋 欢迎！点右上角🔑登录后畅聊</div>
+    </div>
+
+    <div class="qq-input-area">
+      <button class="tools-btn" onclick="document.getElementById('qqFileInput').click()">🖼️</button>
+      <input type="file" id="qqFileInput" accept="image/*" style="display:none" onchange="handleQQFile(this)">
+      <input type="text" id="qqInput" placeholder="输入消息... @小Q召唤AI" onkeydown="if(event.key==='Enter')sendQQMsg()">
+      <button class="send-btn" onclick="sendQQMsg()">➤</button>
+    </div>
+  </div>
+
+  <!-- ===== 快手面板 ===== -->
+  <div class="ks-panel" id="ksPanel" hidden>
+    <div class="ks-header">
+      <span class="ks-logo">🎬 快手<span>Kuaishou</span></span>
+      <div class="ks-actions">
+        <span onclick="openKS()">📱 打开APP</span>
+        <span onclick="reloadKS()">🔄</span>
+      </div>
+    </div>
+    <div class="ks-tabs">
+      <span class="ks-tab active" onclick="switchKSTab(this,'hot')">🔥 热门</span>
+      <span class="ks-tab" onclick="switchKSTab(this,'live')">📺 直播</span>
+      <span class="ks-tab" onclick="switchKSTab(this,'funny')">😂 搞笑</span>
+      <span class="ks-tab" onclick="switchKSTab(this,'music')">🎵 音乐</span>
+      <span class="ks-tab" onclick="switchKSTab(this,'game')">🎮 游戏</span>
+    </div>
+    <div class="ks-iframe-wrap" id="ksIframeWrap">
+      <div class="ks-fallback" id="ksFallback">
+        <div class="icon">🎬</div>
+        <h3>快手短视频</h3>
+        <p>由于快手限制，此处在网页端可能无法直接播放<br>点击下方按钮去快手APP刷视频</p>
+        <a href="https://www.kuaishou.com" target="_blank">📱 打开快手刷视频</a>
+        <p style="color:#555;margin-top:12px;font-size:10px">也可尝试点击顶部「📱 打开APP」</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ====== CONFIG ======
+const ADMIN_PASSWORD='870529';
+const CHAT_API='https://jsonblob.com/api/jsonBlob/019fa387-ce7a-7764-81c0-fbf7b93e931b';
+
+// ====== Tab切换 ======
+let currentPanel='qq';
+function switchPanel(p){
+  currentPanel=p;
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});
+  event.target.classList.add('active');
+  document.getElementById('qqPanel').hidden=(p!=='qq');
+  document.getElementById('ksPanel').hidden=(p!=='ks');
+  if(p==='qq'){startChatPolling()}
+  if(p==='ks'){tryLoadKS()}
+}
+
+// ====== QQ聊天 ======
+let qqUser=null,qqIsAdmin=false,chatLastMsgId=0,chatPollTimer=null;
+
+function showQQLogin(){
+  document.getElementById('qqLoginOverlay').style.display='flex';
+}
+
+function qqLogin(){
+  var nick=document.getElementById('qqNick').value.trim();
+  var pw=document.getElementById('qqPw').value.trim();
+  if(!nick){showToast('请输入昵称！');return}
+  qqUser=nick;qqIsAdmin=(pw===ADMIN_PASSWORD);
+  document.getElementById('qqLoginOverlay').style.display='none';
+  document.getElementById('qqHeaderActions').innerHTML=qqIsAdmin?'<span style="font-size:10px;background:rgba(255,215,0,0.3);padding:2px 6px;border-radius:4px">👑管理</span><span onclick="qqLogout()">🔓</span>':'<span onclick="qqLogout()">🔓</span>';
+  document.getElementById('qqInput').placeholder=qqUser+' · 输入消息...';
+  showToast(qqIsAdmin?'👑 管理员 '+qqUser+' 上线！':'✅ '+qqUser+' 进入群聊');
+  startChatPolling();
+}
+
+function qqLogout(){
+  qqUser=null;qqIsAdmin=false;
+  document.getElementById('qqHeaderActions').innerHTML='<span onclick="showQQLogin()">🔑</span>';
+  document.getElementById('qqInput').placeholder='请先登录...';
+  showToast('已退出');
+}
+
+async function fetchMessages(){
+  try{var r=await fetch(CHAT_API+'?t='+Date.now());if(!r.ok)return;var d=await r.json();var msgs=d.messages||[];if(!msgs.length)return;var newMsgs=msgs.filter(function(m){return m.id>chatLastMsgId});if(!newMsgs.length)return;chatLastMsgId=newMsgs[newMsgs.length-1].id;renderQQMsgs(newMsgs)}catch(e){}
+}
+
+function renderQQMsgs(msgs){
+  var area=document.getElementById('qqMsgs');
+  msgs.forEach(function(m){
+    var isMy=(qqUser&&m.nick===qqUser);
+    var isBot=(m.type==='bot'||m.nick==='小Q'||m.botId);
+    var isAdminMsg=m.isAdmin===true;
+    var cls='';
+    if(m.type==='system'||m.textOverride)cls='system';
+    else if(isMy)cls='right';
+    else cls='left';
+    
+    var text=m.textOverride||m.text||'';
+    var nick=m.nick||'匿名';
+    var prefix='';
+    if(isBot){prefix='🤖 '}else if(isAdminMsg){prefix='👑 '}
+    
+    var senderHtml=cls==='system'?'':'<div class="sender">'+prefix+nick+'</div>';
+    var timeHtml=cls==='system'?'':'<div class="time">'+(m.time||'')+'</div>';
+    var content='';
+    if(m.img)content+='<img src="'+m.img+'" style="max-width:100%;max-height:200px;border-radius:8px;margin-top:4px">';
+    if(text)content+='<div>'+esc(text)+'</div>';
+    
+    area.innerHTML+='<div class="qq-msg '+cls+'">'+senderHtml+content+timeHtml+'</div>';
+  });
+  area.scrollTop=area.scrollHeight;
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+async function saveQQMsg(msg){
+  msg.id=Date.now();msg.time=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+  chatLastMsgId=msg.id;renderQQMsgs([msg]);
+  try{var r=await fetch(CHAT_API);var d=await r.json();var msgs=d.messages||[];msgs.push(msg);if(msgs.length>200)msgs=msgs.slice(-100);
+  await fetch(CHAT_API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:msgs,room:'wydt'})})}catch(e){}
+}
+
+async function sendQQMsg(){
+  if(!qqUser){showToast('请先登录！');return}
+  var t=document.getElementById('qqInput').value.trim();if(!t)return;document.getElementById('qqInput').value='';
+  await saveQQMsg({nick:qqUser,text:t,type:'chat',isAdmin:qqIsAdmin});
+  
+  if(t.includes('@小Q')||t.includes('@小q')){
+    callAIforQQ(t.replace(/@小[qQ]/g,'').trim()||'你好');
+  }
+}
+
+function handleQQFile(input){
+  if(!qqUser){showToast('请先登录！');input.value='';return}
+  var f=input.files[0];if(!f)return;if(f.size>5*1024*1024){showToast('图片<5MB');input.value='';return}
+  var rdr=new FileReader();rdr.onload=function(e){saveQQMsg({nick:qqUser,text:'',img:e.target.result,type:'chat',isAdmin:qqIsAdmin})};
+  rdr.readAsDataURL(f);input.value='';
+}
+
+function startChatPolling(){if(chatPollTimer)return;fetchMessages();chatPollTimer=setInterval(fetchMessages,2000)}
+
+// ====== AI for QQ ======
+const AI_URL='https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions';
+let lastAICall=0;
+async function callAIforQQ(question){
+  var area=document.getElementById('qqMsgs');
+  var typingId='typing_'+Date.now();
+  area.innerHTML+='<div class="qq-msg left" id="'+typingId+'"><div class="sender">🤖 小Q</div><div>思考中...</div></div>';
+  area.scrollTop=area.scrollHeight;
+  
+  if(Date.now()-lastAICall<30000){
+    document.getElementById(typingId)&&(document.getElementById(typingId).querySelector('div:last-child').textContent='⏳ 30秒后再试');
+    return;
+  }
+  
+  try{
+    lastAICall=Date.now();
+    var resp=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'Meta-Llama-3_3-70B-Instruct',messages:[{role:'system',content:'你叫小Q，活泼可爱简短，回复2-4句不超过100字。'},{role:'user',content:question}],max_tokens:200,temperature:0.8})});
+    document.getElementById(typingId)&&document.getElementById(typingId).remove();
+    if(!resp.ok){saveQQMsg({nick:'小Q',text:'AI繁忙，稍后再试~',type:'bot'});return}
+    var data=await resp.json();
+    var reply=data.choices&&data.choices[0]?data.choices[0].message.content.trim():'嗯...有点难';
+    saveQQMsg({nick:'小Q',text:reply,type:'bot'});
+  }catch(e){
+    document.getElementById(typingId)&&document.getElementById(typingId).remove();
+    saveQQMsg({nick:'小Q',text:'网络波动~',type:'bot'});
+  }
+}
+
+// ====== 快手 ======
+function tryLoadKS(){
+  var wrap=document.getElementById('ksIframeWrap');
+  var fallback=document.getElementById('ksFallback');
+  // 尝试加载快手
+  var iframe=document.createElement('iframe');
+  iframe.src='https://www.kuaishou.com';
+  iframe.style.cssText='width:100%;height:100%;border:none;position:absolute;top:0;left:0;';
+  iframe.onload=function(){fallback.style.display='none'};
+  iframe.onerror=function(){fallback.style.display='flex'};
+  wrap.innerHTML='';
+  wrap.appendChild(iframe);
+  wrap.appendChild(fallback);
+  
+  // 5秒后检查
+  setTimeout(function(){
+    try{
+      var doc=iframe.contentDocument||iframe.contentWindow.document;
+      if(!doc||!doc.body||doc.body.innerHTML.length<500){
+        fallback.style.display='flex';
+      }
+    }catch(e){fallback.style.display='flex'}
+  },4000);
+}
+
+function switchKSTab(el,t){
+  document.querySelectorAll('.ks-tab').forEach(function(e){e.classList.remove('active')});
+  el.classList.add('active');
+  var urls={hot:'https://www.kuaishou.com',live:'https://live.kuaishou.com',funny:'https://www.kuaishou.com/search/video?searchKey=搞笑',music:'https://www.kuaishou.com/search/video?searchKey=音乐',game:'https://www.kuaishou.com/search/video?searchKey=游戏'};
+  var wrap=document.getElementById('ksIframeWrap');
+  wrap.innerHTML='<iframe src="'+urls[t]+'" style="width:100%;height:100%;border:none;position:absolute;top:0;left:0"></iframe>'+document.getElementById('ksFallback').outerHTML;
+  showToast('🎬 加载中...若打不开请点「📱打开APP」');
+}
+
+function openKS(){window.open('https://www.kuaishou.com','_blank');showToast('📱 正在打开快手...')}
+function reloadKS(){tryLoadKS();showToast('🔄 刷新中...')}
+
+// ====== Toast ======
+var tt;
+function showToast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show')},2000)}
+
+// ====== Init ======
+window.addEventListener('load',function(){
+  // 默认加载QQ聊天面板
+  startChatPolling();
+});
+</script>
+</body>
+</html>
