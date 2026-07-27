@@ -283,7 +283,7 @@ const FORUM_POSTS=[
   var s=localStorage.getItem('miui_chat_v22');
   if(s){try{var u=JSON.parse(s);user=u;isAdmin=u.isAdmin;updateUI();startPolling();startAutoMod()}catch(e){}}
   renderEmojiTabs();
-  switchEmojiTab(Object.keys(EMOJI_CATEGORIES)[0]);
+  switchEmojiTab(Object.keys(EMOJI_CATEGORIES)[0],null);
   renderForum();
 })();
 
@@ -484,9 +484,9 @@ function renderEmojiTabs(){
   });
   tabs.innerHTML=html;
 }
-function switchEmojiTab(cat){
+function switchEmojiTab(cat,tabEl){
   document.querySelectorAll('.emoji-tab').forEach(function(b){b.classList.remove('active')});
-  event.target.classList.add('active');
+  if(tabEl){tabEl.classList.add('active');}
   var grid=document.getElementById('emojiGrid');
   var chars=EMOJI_CATEGORIES[cat]||'';
   if(cat==='😊颜文字'){
