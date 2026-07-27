@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>MIUI轻应用工作室</title>
+<title>QQ轻应用工作室</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue',system-ui,-apple-system,sans-serif;background:#000;color:#fff}
@@ -12,7 +12,7 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
 #bg{position:fixed;top:0;left:0;z-index:0}
 
 /* ===== OVERLAY ===== */
-.overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,rgba(255,105,0,0.03) 0%,transparent 70%)}
+.overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,rgba(18,183,245,0.03) 0%,transparent 70%)}
 
 /* ===== PAGES ===== */
 .page{position:fixed;top:0;left:0;right:0;bottom:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;transition:opacity .6s,transform .6s}
@@ -22,7 +22,7 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
 /* ===== PAGE 1: HERO ===== */
 .hero-logo{font-size:80px;animation:float 3s ease infinite;margin-bottom:16px}
 @keyframes float{0%,100%{transform:translateY(0) rotateY(0deg)}25%{transform:translateY(-12px) rotateY(5deg)}75%{transform:translateY(6px) rotateY(-5deg)}}
-.hero h1{font-size:26px;font-weight:900;background:linear-gradient(135deg,#ff6900,#ffd700,#ff4400);background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:glow 4s ease infinite;margin-bottom:6px}
+.hero h1{font-size:26px;font-weight:900;background:linear-gradient(135deg,#12b7f5,#00d4ff,#0099ff);background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:glow 4s ease infinite;margin-bottom:6px}
 @keyframes glow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
 .hero .subtitle{font-size:14px;color:#889;letter-spacing:4px;margin-bottom:20px;animation:fadeUp .8s .3s both}
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}}
@@ -33,19 +33,19 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
 /* Dots nav */
 .dots{position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:20;display:flex;flex-direction:column;gap:10px}
 .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.2);cursor:pointer;transition:.3s;pointer-events:auto}
-.dot.active{background:#ff6900;box-shadow:0 0 10px rgba(255,105,0,0.5);transform:scale(1.3)}
+.dot.active{background:#12b7f5;box-shadow:0 0 10px rgba(18,183,245,0.5);transform:scale(1.3)}
 
 /* ===== PAGE 2: INTRO ===== */
 .intro-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:340px;margin-top:20px}
-.intro-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,105,0,0.12);border-radius:14px;padding:16px 12px;text-align:center;animation:fadeUp .6s both;backdrop-filter:blur(4px)}
+.intro-card{background:rgba(255,255,255,0.03);border:1px solid rgba(18,183,245,0.12);border-radius:14px;padding:16px 12px;text-align:center;animation:fadeUp .6s both;backdrop-filter:blur(4px)}
 .intro-card:nth-child(1){animation-delay:.1s}
 .intro-card:nth-child(2){animation-delay:.2s}
 .intro-card:nth-child(3){animation-delay:.3s}
 .intro-card:nth-child(4){animation-delay:.4s}
 .intro-card .ic-icon{font-size:28px;margin-bottom:6px}
-.intro-card .ic-title{font-size:13px;font-weight:700;color:#ff6900;margin-bottom:3px}
+.intro-card .ic-title{font-size:13px;font-weight:700;color:#12b7f5;margin-bottom:3px}
 .intro-card .ic-desc{font-size:10px;color:#667;line-height:1.4}
-.section-title{font-size:18px;font-weight:900;color:#ff6900;margin-bottom:8px}
+.section-title{font-size:18px;font-weight:900;color:#12b7f5;margin-bottom:8px}
 .section-sub{font-size:11px;color:#667;margin-bottom:16px}
 
 /* ===== PAGE 3: MEMBERS ===== */
@@ -57,16 +57,16 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
 .member-card:nth-child(3){animation-delay:.3s}
 .member-card:nth-child(4){animation-delay:.4s}
 .member-card:nth-child(5){animation-delay:.5s}
-.member-avatar{width:56px;height:56px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:26px;background:rgba(255,105,0,0.08);border:2px solid rgba(255,105,0,0.2);transition:.3s}
-.member-avatar:hover{border-color:#ff6900;box-shadow:0 0 16px rgba(255,105,0,0.3);transform:scale(1.05)}
+.member-avatar{width:56px;height:56px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:26px;background:rgba(18,183,245,0.08);border:2px solid rgba(18,183,245,0.2);transition:.3s}
+.member-avatar:hover{border-color:#12b7f5;box-shadow:0 0 16px rgba(18,183,245,0.3);transform:scale(1.05)}
 .member-name{font-size:11px;font-weight:700;color:#ddd}
 .member-role{font-size:9px;color:#667}
-.founder-highlight .member-avatar{background:rgba(255,215,0,0.1);border-color:rgba(255,215,0,0.4);font-size:30px}
+.founder-highlight .member-avatar{background:rgba(0,212,255,0.1);border-color:rgba(0,212,255,0.4);font-size:30px}
 
 /* ===== PAGE 4: PROJECTS ===== */
 .project-list{width:100%;max-width:340px;display:flex;flex-direction:column;gap:10px}
-.project-item{display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,105,0,0.1);animation:fadeUp .6s both;backdrop-filter:blur(4px);cursor:pointer;transition:.3s}
-.project-item:active{background:rgba(255,105,0,0.06);border-color:rgba(255,105,0,0.25)}
+.project-item{display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(18,183,245,0.1);animation:fadeUp .6s both;backdrop-filter:blur(4px);cursor:pointer;transition:.3s}
+.project-item:active{background:rgba(18,183,245,0.06);border-color:rgba(18,183,245,0.25)}
 .project-item:nth-child(1){animation-delay:.1s}
 .project-item:nth-child(2){animation-delay:.2s}
 .project-item:nth-child(3){animation-delay:.3s}
@@ -75,26 +75,26 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
 .project-item .pi-info{flex:1;text-align:left}
 .project-item .pi-name{font-size:13px;font-weight:700;color:#fff}
 .project-item .pi-desc{font-size:10px;color:#667;margin-top:2px}
-.project-item .pi-badge{font-size:9px;padding:3px 8px;border-radius:8px;background:rgba(255,105,0,0.1);color:#ff6900;font-weight:600}
+.project-item .pi-badge{font-size:9px;padding:3px 8px;border-radius:8px;background:rgba(18,183,245,0.1);color:#12b7f5;font-weight:600}
 
 /* ===== PAGE 5: CONTACT / CTA ===== */
-.cta-box{background:linear-gradient(135deg,rgba(255,105,0,0.1),rgba(255,68,0,0.05));border:1px solid rgba(255,105,0,0.2);border-radius:18px;padding:24px 20px;width:100%;max-width:340px;animation:fadeUp .6s .2s both}
-.cta-box h3{font-size:18px;font-weight:900;color:#ff6900;margin-bottom:10px}
+.cta-box{background:linear-gradient(135deg,rgba(18,183,245,0.1),rgba(0,153,255,0.05));border:1px solid rgba(18,183,245,0.2);border-radius:18px;padding:24px 20px;width:100%;max-width:340px;animation:fadeUp .6s .2s both}
+.cta-box h3{font-size:18px;font-weight:900;color:#12b7f5;margin-bottom:10px}
 .cta-box p{font-size:11px;color:#889;line-height:1.8;margin-bottom:16px}
-.cta-box .cta-btn{display:block;width:100%;padding:12px;border-radius:14px;border:none;background:linear-gradient(135deg,#ff6900,#ff4400);color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;transition:.3s;box-shadow:0 4px 20px rgba(255,105,0,0.3)}
+.cta-box .cta-btn{display:block;width:100%;padding:12px;border-radius:14px;border:none;background:linear-gradient(135deg,#12b7f5,#0099ff);color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;transition:.3s;box-shadow:0 4px 20px rgba(18,183,245,0.3)}
 .cta-box .cta-btn:active{transform:scale(0.96)}
 
 .contact-row{display:flex;gap:10px;margin-top:16px;width:100%;max-width:340px}
-.contact-chip{flex:1;padding:12px 8px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,105,0,0.1);text-align:center;font-size:10px;color:#889;animation:fadeUp .6s .4s both}
+.contact-chip{flex:1;padding:12px 8px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(18,183,245,0.1);text-align:center;font-size:10px;color:#889;animation:fadeUp .6s .4s both}
 .contact-chip .cc-icon{font-size:22px;margin-bottom:4px;display:block}
-.contact-chip .cc-val{color:#ff6900;font-weight:700;font-size:11px}
+.contact-chip .cc-val{color:#12b7f5;font-weight:700;font-size:11px}
 
 /* Particles viz */
 .particle{position:fixed;border-radius:50%;pointer-events:none;z-index:0;animation:drift linear infinite}
 @keyframes drift{from{transform:translateY(0) rotate(0deg)}to{transform:translateY(-100vh) rotate(360deg)}}
 
 /* Toast */
-.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:8px 20px;border-radius:20px;font-size:12px;z-index:999;opacity:0;transition:.3s;pointer-events:none;background:rgba(255,105,0,0.9);color:#fff;font-weight:600}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:8px 20px;border-radius:20px;font-size:12px;z-index:999;opacity:0;transition:.3s;pointer-events:none;background:rgba(18,183,245,0.9);color:#fff;font-weight:600}
 .toast.show{opacity:1}
 </style>
 </head>
@@ -114,27 +114,27 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
 
 <!-- PAGE 1: HERO -->
 <div class="page active hero" id="page0">
-  <div class="hero-logo">⚙️</div>
-  <h1>MIUI轻应用工作室</h1>
-  <div class="subtitle">MIUI LITE STUDIO</div>
-  <div class="slogan">专注MIUI生态开发<br>打造极致轻应用体验<br>让每一台小米手机更好用</div>
+  <div class="hero-logo">🐧</div>
+  <h1>QQ轻应用工作室</h1>
+  <div class="subtitle">QQ LITE APP STUDIO</div>
+  <div class="slogan">专注QQ轻应用生态开发<br>打造极致轻应用体验<br>让每个人都能轻松玩转QQ</div>
   <div class="scroll-hint" onclick="nextPage()">▼ 向下滑动探索</div>
 </div>
 
 <!-- PAGE 2: ABOUT -->
 <div class="page" id="page1" hidden>
   <div class="section-title">🚀 关于我们</div>
-  <div class="section-sub">一群热爱MIUI的年轻人</div>
+  <div class="section-sub">一群热爱QQ轻应用开发的年轻人</div>
   <div class="intro-grid">
     <div class="intro-card">
       <div class="ic-icon">🎯</div>
       <div class="ic-title">使命</div>
-      <div class="ic-desc">为MIUI用户提供极致体验</div>
+      <div class="ic-desc">为QQ用户提供极致的轻应用体验</div>
     </div>
     <div class="intro-card">
       <div class="ic-icon">💡</div>
       <div class="ic-title">愿景</div>
-      <div class="ic-desc">成为最受信赖的MIUI开发团队</div>
+      <div class="ic-desc">成为最优秀的QQ轻应用研发团队</div>
     </div>
     <div class="intro-card">
       <div class="ic-icon">⚡</div>
@@ -181,7 +181,7 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
     </div>
     <div class="member-card">
       <div class="member-avatar">🔧</div>
-      <div class="member-name">搞机组</div>
+      <div class="member-name">开发组</div>
       <div class="member-role">5人</div>
     </div>
     <div class="member-card">
@@ -200,21 +200,21 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
 <!-- PAGE 4: PROJECTS -->
 <div class="page" id="page3" hidden>
   <div class="section-title">🛠️ 我们的作品</div>
-  <div class="section-sub">每一行代码都为MIUI用户而写</div>
+  <div class="section-sub">每一行代码都为QQ轻应用而写</div>
   <div class="project-list">
     <div class="project-item" onclick="toast('💬 打开聊天室')">
       <span class="pi-icon">💬</span>
-      <div class="pi-info"><div class="pi-name">MIUI聊天室</div><div class="pi-desc">25人实时群聊 · AI小Q管理</div></div>
+      <div class="pi-info"><div class="pi-name">QQ聊天室</div><div class="pi-desc">25人实时群聊 · AI小Q管理</div></div>
       <span class="pi-badge">🔥热门</span>
     </div>
     <div class="project-item" onclick="toast('🏠 打开群聊大厅')">
       <span class="pi-icon">🏠</span>
-      <div class="pi-info"><div class="pi-name">群聊大厅 v6.0</div><div class="pi-desc">Q-MIUI Studio · 多群整合</div></div>
+      <div class="pi-info"><div class="pi-name">群聊大厅 v6.0</div><div class="pi-desc">QQ轻应用 Studio · 多群整合</div></div>
       <span class="pi-badge">⭐推荐</span>
     </div>
-    <div class="project-item" onclick="toast('⚙️ 打开MIUI技术站')">
-      <span class="pi-icon">⚙️</span>
-      <div class="pi-info"><div class="pi-name">MIUI技术交流站</div><div class="pi-desc">教程·刷机·数码·测评</div></div>
+    <div class="project-item" onclick="toast('⚙️ 打开QQ轻应用技术站')">
+      <span class="pi-icon">🐧</span>
+      <div class="pi-info"><div class="pi-name">QQ轻应用技术站</div><div class="pi-desc">教程·开发·设计·创意</div></div>
       <span class="pi-badge">📱技术</span>
     </div>
     <div class="project-item" onclick="toast('🎬 打开QQ×快手')">
@@ -229,11 +229,11 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
 <div class="page" id="page4" hidden>
   <div class="cta-box">
     <h3>🚀 加入我们</h3>
-    <p>MIUI轻应用工作室持续招募中！<br>如果你热爱MIUI、热爱开发、热爱搞机<br>欢迎加入我们的大家庭！</p>
-    <a class="cta-btn" href="https://weyoudonttalk.github.io/miui-chat/" target="_blank">💬 进入 MIUI聊天室</a>
+    <p>QQ轻应用工作室持续招募中！<br>如果你热爱QQ、热爱开发、热爱轻应用<br>欢迎加入我们的大家庭！</p>
+    <a class="cta-btn" href="https://weyoudonttalk.github.io/miui-chat/" target="_blank">💬 进入 QQ聊天室</a>
   </div>
   <div class="contact-row">
-    <div class="contact-chip"><span class="cc-icon">🐧</span><span class="cc-val">QQ群</span>MIUI技术交流群</div>
+    <div class="contact-chip"><span class="cc-icon">🐧</span><span class="cc-val">QQ群</span>QQ轻应用交流群</div>
     <div class="contact-chip"><span class="cc-icon">🌐</span><span class="cc-val">官网</span>weyoudonttalk.github.io</div>
     <div class="contact-chip"><span class="cc-icon">📧</span><span class="cc-val">邮箱</span>miui@qq.com</div>
   </div>
@@ -348,18 +348,7 @@ document.addEventListener('keydown',function(e){
   if(e.key==='ArrowUp'||e.key==='ArrowLeft')goPage(currentPage-1);
 });
 
-// Auto scroll members on page 2
-var membersEl=document.getElementById('membersScroll');
-var autoScroll=null;
-
-setInterval(function(){
-  if(currentPage===2&&membersEl){
-    membersEl.scrollBy({left:1,behavior:'auto'});
-    if(membersEl.scrollLeft>=membersEl.scrollWidth-membersEl.clientWidth-5){
-      membersEl.scrollTo({left:0,behavior:'smooth'});
-    }
-  }
-},40);
+// Members scroll - manual only, smooth touch scroll
 
 // ====== TOAST ======
 var tt;
