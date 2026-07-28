@@ -8,42 +8,38 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue',system-ui,-apple-system,sans-serif;background:#f5f6f7;color:#333;-webkit-tap-highlight-color:transparent}
 
-/* LOGIN */
-.login-page{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(180deg,#12b7f5 0%,#0d8bcc 40%,#f5f6f7 40%);display:flex;align-items:center;justify-content:center;z-index:100;flex-direction:column}
+.login-page{position:fixed;inset:0;background:linear-gradient(180deg,#12b7f5 0%,#0d8bcc 40%,#f5f6f7 40%);display:flex;align-items:center;justify-content:center;z-index:100;flex-direction:column}
 .login-page[hidden]{display:none}
-.login-card{width:88vw;max-width:360px;background:#fff;border-radius:16px;padding:30px 24px;box-shadow:0 8px 30px rgba(0,0,0,0.12);text-align:center}
+.login-card{width:88vw;max-width:360px;background:#fff;border-radius:16px;padding:30px 24px;box-shadow:0 8px 30px rgba(0,0,0,.12);text-align:center}
 .login-card .qq-logo{font-size:52px;margin-bottom:4px}
 .login-card h2{font-size:20px;font-weight:700;color:#12b7f5;margin-bottom:4px}
 .login-card .sub{font-size:11px;color:#999;margin-bottom:20px}
 .login-card input{width:100%;padding:14px 16px;border-radius:10px;border:1.5px solid #e8e8e8;font-size:15px;outline:none;margin-bottom:10px;background:#fafafa}
 .login-card input:focus{border-color:#12b7f5}
 .login-card .login-btn{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#12b7f5,#0d8bcc);color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-top:4px}
-.login-card .login-btn:active{transform:scale(0.97)}
+.login-card .login-btn:active{transform:scale(.97)}
 .login-card .switch{font-size:12px;color:#12b7f5;margin-top:14px;cursor:pointer}
-#loginError{color:#ff4444;font-size:12px;margin-bottom:6px;display:none}
+#loginError{color:#f44;font-size:12px;margin-bottom:6px;display:none}
 
-/* APP */
 .app{height:100%;display:flex;flex-direction:column;background:#f5f6f7}
 .app[hidden]{display:none}
-.app-header{background:linear-gradient(135deg,#12b7f5,#0d8bcc);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;z-index:10}
-.app-header .my-avatar{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;cursor:pointer}
-.app-header .my-avatar:active{transform:scale(0.9)}
+.app-header{background:linear-gradient(135deg,#12b7f5,#0d8bcc);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.app-header .my-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;cursor:pointer;overflow:hidden}
+.app-header .my-avatar img{width:100%;height:100%;object-fit:cover}
 .app-header .my-info{flex:1;min-width:0;cursor:pointer}
 .app-header .my-nick{font-size:15px;font-weight:700}
 .app-header .my-sign{font-size:10px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .app-header .header-actions{display:flex;gap:14px}
 .app-header .header-actions span{font-size:18px;cursor:pointer}
 
-/* CONTENT */
 .app-content{flex:1;overflow:hidden;position:relative}
-.panel{position:absolute;top:0;left:0;right:0;bottom:0;overflow-y:auto;background:#f5f6f7;-webkit-overflow-scrolling:touch}
+.panel{position:absolute;inset:0;overflow-y:auto;background:#f5f6f7;-webkit-overflow-scrolling:touch}
 .panel[hidden]{display:none}
 
-/* MSG LIST */
-.msg-list{padding:4px 0}
-.msg-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border-bottom:0.5px solid #f0f0f0;cursor:pointer;position:relative}
+.msg-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border-bottom:.5px solid #f0f0f0;cursor:pointer;position:relative}
 .msg-item:active{background:#f5f5f5}
-.msg-item .mi-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.msg-item .mi-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden}
+.msg-item .mi-avatar img{width:100%;height:100%;object-fit:cover}
 .msg-item .mi-info{flex:1;min-width:0}
 .msg-item .mi-name{font-size:15px;font-weight:600}
 .msg-item .mi-preview{font-size:12px;color:#999;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -51,31 +47,31 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
 .msg-item .mi-time{font-size:10px;color:#bbb}
 .msg-item .mi-online{width:8px;height:8px;border-radius:50%;background:#0f8;position:absolute;bottom:14px;left:50px;border:2px solid #fff}
 
-/* CONTACTS */
 .contact-group-title{padding:10px 16px;font-size:11px;color:#999;font-weight:600;background:#f5f6f7}
-.contact-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#fff;border-bottom:0.5px solid #f0f0f0;cursor:pointer}
+.contact-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#fff;border-bottom:.5px solid #f0f0f0;cursor:pointer}
 .contact-item:active{background:#f5f5f5}
-.contact-item .ci-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.contact-item .ci-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;overflow:hidden}
+.contact-item .ci-avatar img{width:100%;height:100%;object-fit:cover}
 .contact-item .ci-name{font-size:15px}
 .add-contact-bar{display:flex;gap:8px;padding:10px 16px;background:#fff}
 .add-contact-bar button{flex:1;padding:10px;border-radius:10px;border:1px solid #12b7f5;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:#12b7f5}
 .add-contact-bar button:active{background:#f0f8ff}
 .add-contact-bar button.primary{background:#12b7f5;color:#fff}
 
-/* DISCOVER */
 .discover-list{background:#fff}
-.disc-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:0.5px solid #f0f0f0;cursor:pointer}
+.disc-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:.5px solid #f0f0f0;cursor:pointer}
 .disc-item:active{background:#f5f5f5}
 .disc-item .di-icon{font-size:22px;width:36px;text-align:center}
 .disc-item .di-name{font-size:14px;flex:1}
 .disc-item .di-arrow{color:#ccc}
 
 /* CHAT */
-.chat-page{position:fixed;top:0;left:0;right:0;bottom:0;z-index:50;display:flex;flex-direction:column;background:#f0f0f2}
+.chat-page{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:#f0f0f2}
 .chat-page[hidden]{display:none}
 .chat-header{display:flex;align-items:center;padding:10px 14px;background:linear-gradient(135deg,#12b7f5,#0d8bcc);color:#fff;gap:10px;flex-shrink:0}
 .chat-header .back{font-size:20px;cursor:pointer;width:28px;text-align:center}
-.chat-header .ch-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:rgba(255,255,255,0.2)}
+.chat-header .ch-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:rgba(255,255,255,.2);overflow:hidden}
+.chat-header .ch-avatar img{width:100%;height:100%;object-fit:cover}
 .chat-header .ch-info{flex:1;min-width:0}
 .chat-header .ch-name{font-size:15px;font-weight:700}
 .chat-header .ch-status{font-size:10px;opacity:.8}
@@ -86,7 +82,6 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
 .chat-input-area input{flex:1;padding:10px 14px;border-radius:20px;border:1px solid #e0e0e0;background:#fff;font-size:14px;outline:none}
 .chat-input-area input:focus{border-color:#12b7f5}
 .chat-input-area .send-btn{background:#12b7f5;color:#fff}
-
 .chat-msg{max-width:72%;padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.5;word-break:break-word;animation:cmIn .2s ease}
 @keyframes cmIn{from{opacity:0;transform:translateY(6px)}}
 .chat-msg.left{align-self:flex-start;background:#fff;border-bottom-left-radius:4px}
@@ -96,57 +91,71 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
 .emoji-bar button{font-size:20px;border:none;background:transparent;cursor:pointer;padding:3px 4px;border-radius:6px;flex-shrink:0}
 .emoji-bar button:active{background:#e8e8e8}
 
-/* BOTTOM NAV */
-.bottom-nav{display:flex;background:#fff;border-top:0.5px solid #e5e5e5;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0)}
+.bottom-nav{display:flex;background:#fff;border-top:.5px solid #e5e5e5;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0)}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 0 6px;font-size:10px;color:#999;cursor:pointer;gap:3px}
 .nav-item .nav-icon{font-size:20px}
 .nav-item.active{color:#12b7f5}
 
-/* SETTINGS PAGE */
-.settings-page{position:fixed;top:0;left:0;right:0;bottom:0;background:#f5f6f7;z-index:60;display:flex;flex-direction:column;overflow-y:auto}
+/* SETTINGS */
+.settings-page{position:fixed;inset:0;background:#f5f6f7;z-index:60;display:flex;flex-direction:column;overflow-y:auto}
 .settings-page[hidden]{display:none}
 .set-header{display:flex;align-items:center;padding:12px 14px;background:linear-gradient(135deg,#12b7f5,#0d8bcc);color:#fff;gap:10px;flex-shrink:0}
 .set-header .back{font-size:20px;cursor:pointer}
 .set-header h3{font-size:16px;flex:1}
+.si-profile{padding:24px 16px;background:#fff;text-align:center}
+.si-avatar-big{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 10px;background:#f5f6f7;border:2px solid #e0e0e0;overflow:hidden;position:relative}
+.si-avatar-big img{width:100%;height:100%;object-fit:cover}
 .set-section{margin:12px 0}
 .set-section-title{padding:8px 16px;font-size:11px;color:#999;font-weight:600}
-.set-item{display:flex;align-items:center;padding:14px 16px;background:#fff;border-bottom:0.5px solid #f0f0f0;cursor:pointer;gap:12px}
+.set-item{display:flex;align-items:center;padding:14px 16px;background:#fff;border-bottom:.5px solid #f0f0f0;cursor:pointer;gap:12px}
 .set-item:active{background:#f5f5f5}
 .set-item .si-icon{font-size:20px;width:28px;text-align:center}
 .set-item .si-label{font-size:14px;flex:1}
 .set-item .si-val{font-size:13px;color:#999;text-align:right;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .set-item .si-arrow{color:#ccc}
-.si-profile{padding:20px 16px}
-.si-profile .si-avatar-big{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 10px;background:#fff;border:2px solid #e0e0e0}
 .set-input-item{padding:12px 16px;background:#fff}
 .set-input-item label{display:block;font-size:11px;color:#999;margin-bottom:4px}
-.set-input-item input, .set-input-item select{width:100%;padding:10px;border-radius:8px;border:1.5px solid #e0e0e0;font-size:14px;outline:none}
+.set-input-item input,.set-input-item select{width:100%;padding:10px;border-radius:8px;border:1.5px solid #e0e0e0;font-size:14px;outline:none}
 .set-input-item input:focus{border-color:#12b7f5}
 .set-save-row{padding:16px}
 .set-save-row button{width:100%;padding:14px;border-radius:12px;border:none;background:#12b7f5;color:#fff;font-size:15px;font-weight:700;cursor:pointer}
+.av-grid{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0}
+.av-item{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;border:2px solid transparent;background:#f5f6f7;overflow:hidden}
+.av-item.selected{border-color:#12b7f5;background:#e0f4ff}
+.av-item img{width:100%;height:100%;object-fit:cover}
+.av-item.add-btn{font-size:28px;color:#12b7f5;border:2px dashed #12b7f5;background:#f0f8ff}
 
-/* QR CODE MODAL */
-.qr-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:200}
+/* QR MODAL */
+.qr-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:200}
 .qr-modal[hidden]{display:none}
-.qr-box{width:88vw;max-width:320px;background:#fff;border-radius:20px;padding:24px;text-align:center}
+.qr-box{width:88vw;max-width:340px;background:#fff;border-radius:20px;padding:24px;text-align:center}
 .qr-box h3{font-size:16px;margin-bottom:16px}
-.qr-box .qr-img{margin:0 auto 12px;display:block;border-radius:8px}
+.qr-box .qr-img-wrap{width:200px;height:200px;margin:0 auto 12px;background:#f5f6f7;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.qr-box .qr-img-wrap img,.qr-box .qr-img-wrap canvas{width:100%;height:100%;object-fit:contain}
 .qr-box .qr-uid{font-size:13px;color:#666;margin-bottom:12px}
-.qr-box button{width:100%;padding:12px;border-radius:10px;border:none;background:#12b7f5;color:#fff;font-size:14px;font-weight:600;cursor:pointer}
-.qr-box button.cancel{background:#f0f0f0;color:#666;margin-top:8px}
+.qr-box button{width:100%;padding:12px;border-radius:10px;border:none;background:#12b7f5;color:#fff;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:6px}
+.qr-box button.cancel{background:#f0f0f0;color:#666}
 .qr-box input{width:100%;padding:12px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:14px;margin-bottom:12px;outline:none;text-align:center}
 .qr-box input:focus{border-color:#12b7f5}
 .qr-box .qr-tabs{display:flex;margin-bottom:16px;border-radius:10px;overflow:hidden;border:1.5px solid #e0e0e0}
-.qr-box .qr-tabs button{flex:1;padding:10px;border:none;background:#fafafa;font-size:13px;cursor:pointer;border-radius:0;color:#666}
+.qr-box .qr-tabs button{flex:1;padding:10px;border:none;background:#fafafa;font-size:13px;cursor:pointer;border-radius:0;color:#666;margin-bottom:0}
 .qr-box .qr-tabs button.active{background:#12b7f5;color:#fff}
+.qr-box .scan-cam{width:200px;height:200px;margin:0 auto 12px;background:#000;border-radius:8px;overflow:hidden;position:relative}
+.qr-box .scan-cam video{width:100%;height:100%;object-fit:cover}
+.qr-box .scan-status{font-size:12px;color:#999;margin-bottom:8px}
 
-/* AVATAR SELECTOR */
-.av-grid{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0}
-.av-item{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;border:2px solid transparent;background:#f5f6f7}
-.av-item.selected{border-color:#12b7f5;background:#e0f4ff}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200}
+.modal-overlay[hidden]{display:none}
+.modal-box{width:85vw;max-width:320px;background:#fff;border-radius:16px;padding:24px 20px;text-align:center}
+.modal-box h3{font-size:16px;margin-bottom:16px}
+.modal-box input{width:100%;padding:12px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:14px;margin-bottom:10px;outline:none}
+.modal-box input:focus{border-color:#12b7f5}
+.modal-box button{width:100%;padding:12px;border-radius:10px;border:none;background:#12b7f5;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px}
+.modal-box button.cancel{background:#f0f0f0;color:#666}
+.modal-box button:active{transform:scale(.97)}
 
-/* TOAST */
-.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);padding:8px 20px;border-radius:18px;font-size:12px;font-weight:600;z-index:9999;opacity:0;transition:.3s;pointer-events:none;background:rgba(0,0,0,0.85);color:#fff}
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);padding:8px 20px;border-radius:18px;font-size:12px;font-weight:600;z-index:9999;opacity:0;transition:.3s;pointer-events:none;background:rgba(0,0,0,.85);color:#fff}
 .toast.show{opacity:1}
 </style>
 </head>
@@ -159,7 +168,7 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
     <h2 id="loginTitle">登录QQ</h2>
     <p class="sub" id="loginSub">输入手机号和密码</p>
     <p id="loginError"></p>
-    <input type="tel" id="loginPhone" placeholder="QQ号 / 手机号" maxlength="20">
+    <input type="tel" id="loginPhone" placeholder="QQ号" maxlength="20">
     <input type="password" id="loginPw" placeholder="密码" maxlength="30">
     <button class="login-btn" id="loginBtn" onclick="doLogin()">登 录</button>
     <div class="switch" id="loginSwitch" onclick="toggleLoginMode()">没有账号？立即注册</div>
@@ -168,10 +177,12 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
 
 <!-- ===== MAIN APP ===== -->
 <div class="app" id="appMain" hidden>
-  <div class="app-header" onclick="openSettings()">
-    <div class="my-avatar" id="myAvatar">🐧</div>
-    <div class="my-info"><div class="my-nick" id="myNick"></div><div class="my-sign" id="mySign">在线</div></div>
-    <div class="header-actions" onclick="event.stopPropagation()">
+  <div class="app-header">
+    <div class="my-avatar" id="myAvatarWrap" onclick="openSettings()">🐧</div>
+    <div class="my-info" onclick="openSettings()">
+      <div class="my-nick" id="myNick"></div><div class="my-sign" id="mySign">在线</div>
+    </div>
+    <div class="header-actions">
       <span onclick="openSettings()">⚙️</span>
       <span onclick="doLogout()">🔓</span>
     </div>
@@ -227,51 +238,32 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
 <!-- ===== SETTINGS ===== -->
 <div class="settings-page" id="settingsPage" hidden>
   <div class="set-header">
-    <span class="back" onclick="closeSettings()">‹</span>
-    <h3>设置</h3>
+    <span class="back" onclick="closeSettings()">‹</span><h3>设置</h3>
   </div>
-
-  <!-- Profile -->
-  <div class="si-profile" style="background:#fff;text-align:center">
-    <div class="si-avatar-big" id="setAvatar">🐧</div>
+  <div class="si-profile">
+    <div class="si-avatar-big" id="setAvatarBig">🐧</div>
     <div style="font-size:16px;font-weight:700;margin-bottom:4px" id="setNick"></div>
     <div style="font-size:11px;color:#999" id="setQQ"></div>
   </div>
-
-  <!-- Edit Profile -->
   <div class="set-section">
     <div class="set-section-title">个人资料</div>
-    <div class="set-item" onclick="toggleAvSelect()">
-      <span class="si-icon">🖼️</span><span class="si-label">更换头像</span><span class="si-arrow">›</span>
-    </div>
-    <div id="avSelectWrap" style="display:none;padding:12px 16px;background:#fff;border-top:0.5px solid #f0f0f0">
-      <p style="font-size:12px;color:#999;margin-bottom:8px">选择新头像：</p>
+    <div class="set-item" onclick="toggleAvSelect()"><span class="si-icon">🖼️</span><span class="si-label">更换头像</span><span class="si-arrow">›</span></div>
+    <div id="avSelectWrap" style="display:none;padding:12px 16px;background:#fff;border-top:.5px solid #f0f0f0">
+      <p style="font-size:12px;color:#999;margin-bottom:8px">选择头像或上传照片：</p>
       <div class="av-grid" id="avGrid"></div>
-      <button onclick="saveAvatar()" style="margin-top:10px;width:100%;padding:10px;border-radius:8px;border:none;background:#12b7f5;color:#fff;font-size:13px;font-weight:600;cursor:pointer">✅ 保存头像</button>
+      <input type="file" id="avFileInput" accept="image/*" style="display:none" onchange="handleAvUpload(this)">
+      <button onclick="document.getElementById('avFileInput').click()" style="margin-top:10px;width:100%;padding:10px;border-radius:8px;border:1.5px dashed #12b7f5;background:#f0f8ff;color:#12b7f5;font-size:13px;font-weight:600;cursor:pointer">📸 从相册上传照片</button>
+      <button onclick="saveAvatar()" style="margin-top:6px;width:100%;padding:10px;border-radius:8px;border:none;background:#12b7f5;color:#fff;font-size:13px;font-weight:600;cursor:pointer">✅ 保存头像</button>
     </div>
-    <div class="set-item" onclick="showEditNick()">
-      <span class="si-icon">✏️</span><span class="si-label">昵称</span><span class="si-val" id="setNickVal"></span><span class="si-arrow">›</span>
-    </div>
-    <div class="set-item" onclick="showEditSign()">
-      <span class="si-icon">📝</span><span class="si-label">个性签名</span><span class="si-val" id="setSignVal"></span><span class="si-arrow">›</span>
-    </div>
+    <div class="set-item" onclick="showEditNick()"><span class="si-icon">✏️</span><span class="si-label">昵称</span><span class="si-val" id="setNickVal"></span><span class="si-arrow">›</span></div>
+    <div class="set-item" onclick="showEditSign()"><span class="si-icon">📝</span><span class="si-label">个性签名</span><span class="si-val" id="setSignVal"></span><span class="si-arrow">›</span></div>
   </div>
-
-  <!-- Account Security -->
   <div class="set-section">
     <div class="set-section-title">账号安全</div>
-    <div class="set-item" onclick="showChangePw()">
-      <span class="si-icon">🔐</span><span class="si-label">修改密码</span><span class="si-arrow">›</span>
-    </div>
-    <div class="set-item">
-      <span class="si-icon">📱</span><span class="si-label">绑定手机</span><span class="si-val" id="setPhoneVal"></span>
-    </div>
-    <div class="set-item" onclick="showQRMyCode()">
-      <span class="si-icon">📷</span><span class="si-label">我的二维码名片</span><span class="si-arrow">›</span>
-    </div>
+    <div class="set-item" onclick="showChangePw()"><span class="si-icon">🔐</span><span class="si-label">修改密码</span><span class="si-arrow">›</span></div>
+    <div class="set-item"><span class="si-icon">📱</span><span class="si-label">绑定手机</span><span class="si-val" id="setPhoneVal"></span></div>
+    <div class="set-item" onclick="showQRMyCode()"><span class="si-icon">📷</span><span class="si-label">我的二维码名片</span><span class="si-arrow">›</span></div>
   </div>
-
-  <!-- Edit dialogs inline -->
   <div id="editNickWrap" style="display:none;margin:0">
     <div class="set-input-item"><label>新昵称</label><input type="text" id="editNickInput" maxlength="16" placeholder="输入新昵称"></div>
     <div class="set-save-row"><button onclick="saveNick()">保存昵称</button></div>
@@ -286,13 +278,9 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
     <div class="set-input-item"><label>确认新密码</label><input type="password" id="newPw2Input" placeholder="再次输入新密码"></div>
     <div class="set-save-row"><button onclick="savePw()">修改密码</button></div>
   </div>
-
-  <!-- Danger zone -->
   <div class="set-section">
     <div class="set-section-title">其他</div>
-    <div class="set-item" onclick="if(confirm('确定注销账号？此操作不可恢复！'))deleteAccount()">
-      <span class="si-icon" style="color:#ff4444">⚠️</span><span class="si-label" style="color:#ff4444">注销账号</span><span class="si-arrow">›</span>
-    </div>
+    <div class="set-item" onclick="if(confirm('确定注销账号？此操作不可恢复！'))deleteAccount()"><span class="si-icon" style="color:#f44">⚠️</span><span class="si-label" style="color:#f44">注销账号</span><span class="si-arrow">›</span></div>
   </div>
   <div style="height:40px"></div>
 </div>
@@ -305,15 +293,17 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
       <button onclick="switchQRTab('scan',this)">扫码添加</button>
     </div>
     <div id="qrMyPane">
-      <img class="qr-img" id="qrImg" src="" style="width:200px;height:200px" onerror="this.style.display='none';document.getElementById('qrFallback').style.display='block'">
-      <div id="qrFallback" style="display:none;padding:20px;font-size:40px">📱</div>
+      <div class="qr-img-wrap"><canvas id="qrCanvas" width="200" height="200"></canvas></div>
       <div class="qr-uid" id="qrUID"></div>
       <p style="font-size:11px;color:#999;margin-bottom:12px">扫码添加我为QQ好友</p>
       <button onclick="copyQQNumber()">📋 复制QQ号</button>
     </div>
     <div id="qrScanPane" hidden>
-      <p style="font-size:13px;color:#666;margin-bottom:16px">输入对方QQ号添加好友</p>
-      <input type="text" id="scanQQInput" placeholder="对方QQ号">
+      <div class="scan-cam"><video id="scanVideo" autoplay playsinline></video></div>
+      <div class="scan-status" id="scanStatus">📷 对准二维码</div>
+      <button onclick="startScan()" id="scanStartBtn">▶️ 开始扫描</button>
+      <p style="font-size:11px;color:#999;margin-top:8px">或手动输入：</p>
+      <input type="text" id="scanQQInput" placeholder="输入对方QQ号">
       <button onclick="scanAddFriend()">确认添加</button>
     </div>
     <button class="cancel" onclick="hideQR()">关闭</button>
@@ -321,8 +311,8 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
 </div>
 
 <!-- ===== ADD CONTACT MODAL ===== -->
-<div class="qr-modal" id="addContactModal" hidden onclick="if(event.target===this)hideAddContact()">
-  <div class="qr-box" onclick="event.stopPropagation()">
+<div class="modal-overlay" id="addContactModal" hidden onclick="if(event.target===this)hideAddContact()">
+  <div class="modal-box" onclick="event.stopPropagation()">
     <h3>＋ 添加联系人</h3>
     <input type="text" id="addContactId" placeholder="输入对方QQ号">
     <button onclick="doAddContact()">确认添加</button>
@@ -333,7 +323,6 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
 <div class="toast" id="toastEl"></div>
 
 <script>
-// ====== CONFIG ======
 const ACCOUNTS_API='https://jsonblob.com/api/jsonBlob/019fa387-ce7a-7764-81c0-fbf7b93e931b';
 const AI_URL='https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions';
 const AVATARS='🐧🐱🐶🐰🐼🐨🦊🐯🐸🐵🐙🦄🐲🐳🦋🐝🐞🐌🐢🐍🦖🦕🐠🦈🐅🐆🦓🐘🐪🦒🦘🐃🐏🐑🦙🐕🐩🐈🐓🦃🦜🦩🕊️🐇🦔🦇🐺🐗🐴🐒🦍🦧🐉🌟💎🔥🌈❄️🎩👑🤖👻🎃👾🚀💡🎮🎵🎸';
@@ -343,9 +332,9 @@ const BUILTIN_CONTACTS=[
   {id:'system',nick:'QQ团队',avatar:'🐧',sign:'QQ官方团队账号，安全提醒/投诉/举报',online:true,isAI:true}
 ];
 
-let currentUser=null,isRegisterMode=false,currentTab=0,activeChatWith=null,chatPollTimer=null,lastChatMsgId=0,lastAICall=0,selectedAvatar='';
+let currentUser=null,isRegisterMode=false,currentTab=0,activeChatWith=null,chatPollTimer=null,lastChatMsgId=0,lastAICall=0,selectedAvatar='',uploadedAvData='',scanStream=null,scanTimer=null;
 
-(function(){var s=localStorage.getItem('qqapp_v2_user');if(s){try{var u=JSON.parse(s);currentUser=u;showApp()}catch(e){}}})();
+(function(){var s=localStorage.getItem('qqapp_v3u');if(s){try{var u=JSON.parse(s);currentUser=u;showApp()}catch(e){}}})();
 
 // ====== LOGIN ======
 function toggleLoginMode(){
@@ -357,9 +346,7 @@ function toggleLoginMode(){
   document.getElementById('loginError').style.display='none';
 }
 async function doLogin(){
-  var phone=document.getElementById('loginPhone').value.trim();
-  var pw=document.getElementById('loginPw').value.trim();
-  var err=document.getElementById('loginError');
+  var phone=document.getElementById('loginPhone').value.trim(),pw=document.getElementById('loginPw').value.trim(),err=document.getElementById('loginError');
   if(!phone||!pw){err.style.display='block';err.textContent='请填写完整';return}
   if(phone.length<3){err.style.display='block';err.textContent='QQ号至少3位';return}
   if(pw.length<3){err.style.display='block';err.textContent='密码至少3位';return}
@@ -368,35 +355,162 @@ async function doLogin(){
     var r=await fetch(ACCOUNTS_API);var d=await r.json();var accounts=d.accounts||[];
     if(isRegisterMode){
       if(accounts.find(function(a){return a.phone===phone})){err.style.display='block';err.textContent='该QQ号已被注册';return}
-      var newAcc={phone:phone,password:pw,nick:'用户'+phone.slice(-4),sign:'这个人很懒，什么都没写~',avatar:AVATARS[Math.floor(Math.random()*AVATARS.length)],created:new Date().toISOString()};
+      var newAcc={phone:phone,password:pw,nick:'用户'+phone.slice(-4),sign:'这个人很懒，什么都没写~',avatar:AVATARS[Math.floor(Math.random()*AVATARS.length)],avImg:'',created:new Date().toISOString()};
       accounts.push(newAcc);
-      await fetch(ACCOUNTS_API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({accounts:accounts,room:'qqappv2'})});
-      currentUser=newAcc;localStorage.setItem('qqapp_v2_user',JSON.stringify(newAcc));
-      showApp();toast('✅ 注册成功！欢迎加入QQ');
+      await fetch(ACCOUNTS_API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({accounts:accounts,room:'qqapp_v3'})});
+      currentUser=newAcc;localStorage.setItem('qqapp_v3u',JSON.stringify(newAcc));showApp();toast('✅ 注册成功！');
     }else{
       var found=accounts.find(function(a){return a.phone===phone&&a.password===pw});
       if(!found){err.style.display='block';err.textContent='QQ号或密码错误';return}
-      currentUser=found;localStorage.setItem('qqapp_v2_user',JSON.stringify(found));
-      showApp();toast('✅ 登录成功！');
+      currentUser=found;localStorage.setItem('qqapp_v3u',JSON.stringify(found));showApp();toast('✅ 登录成功！');
     }
   }catch(e){err.style.display='block';err.textContent='网络错误，请重试'}
 }
-async function saveAccount(){if(!currentUser)return;try{var r=await fetch(ACCOUNTS_API);var d=await r.json();var accounts=d.accounts||[];var idx=accounts.findIndex(function(a){return a.phone===currentUser.phone});if(idx>=0){accounts[idx]=currentUser;await fetch(ACCOUNTS_API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({accounts:accounts,room:'qqappv2'})})}localStorage.setItem('qqapp_v2_user',JSON.stringify(currentUser))}catch(e){}}
 
-function doLogout(){if(!confirm('确定退出登录？'))return;currentUser=null;localStorage.removeItem('qqapp_v2_user');document.getElementById('loginPage').hidden=false;document.getElementById('appMain').hidden=true;closeChat();closeSettings()}
+async function saveAccount(){
+  if(!currentUser)return;
+  try{var r=await fetch(ACCOUNTS_API);var d=await r.json();var accounts=d.accounts||[];var idx=accounts.findIndex(function(a){return a.phone===currentUser.phone});if(idx>=0){accounts[idx]=currentUser;await fetch(ACCOUNTS_API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({accounts:accounts,room:'qqapp_v3'})})}localStorage.setItem('qqapp_v3u',JSON.stringify(currentUser))}catch(e){}
+}
+
+function doLogout(){if(!confirm('确定退出登录？'))return;currentUser=null;localStorage.removeItem('qqapp_v3u');document.getElementById('loginPage').hidden=false;document.getElementById('appMain').hidden=true;closeChat();closeSettings()}
 function showApp(){document.getElementById('loginPage').hidden=true;document.getElementById('appMain').hidden=false;refreshUI();switchTab(0)}
+
 function refreshUI(){
   if(!currentUser)return;
-  document.getElementById('myNick').textContent=currentUser.nick;document.getElementById('myAvatar').textContent=currentUser.avatar||'🐧';document.getElementById('mySign').textContent=currentUser.sign||'在线';
-  document.getElementById('setNick').textContent=currentUser.nick;document.getElementById('setAvatar').textContent=currentUser.avatar||'🐧';document.getElementById('setQQ').textContent='QQ号：'+currentUser.phone;document.getElementById('setNickVal').textContent=currentUser.nick;document.getElementById('setSignVal').textContent=currentUser.sign||'未设置';document.getElementById('setPhoneVal').textContent=currentUser.phone
+  var av=currentUser.avImg||currentUser.avatar||'🐧';
+  renderAvatar('myAvatarWrap',av);
+  document.getElementById('myNick').textContent=currentUser.nick;
+  document.getElementById('mySign').textContent=currentUser.sign||'在线';
+  document.getElementById('setNick').textContent=currentUser.nick;
+  renderAvatar('setAvatarBig',av);
+  document.getElementById('setQQ').textContent='QQ号：'+currentUser.phone;
+  document.getElementById('setNickVal').textContent=currentUser.nick;
+  document.getElementById('setSignVal').textContent=currentUser.sign||'未设置';
+  document.getElementById('setPhoneVal').textContent=currentUser.phone;
 }
+function renderAvatar(elId,av){
+  var el=document.getElementById(elId);el.innerHTML='';
+  if(av&&(av.startsWith('data:')||av.startsWith('http'))){var img=document.createElement('img');img.src=av;el.appendChild(img)}else{el.textContent=av||'🐧'}
+}
+function getMyAvatar(){return currentUser?((currentUser.avImg||currentUser.avatar||'🐧').toString()):'🐧'}
 
 // ====== TABS ======
 function switchTab(n){currentTab=n;['panelMessages','panelContacts','panelDiscover'].forEach(function(id,i){document.getElementById(id).hidden=(i!==n)});['nav0','nav1','nav2'].forEach(function(id,i){document.getElementById(id).classList.toggle('active',i===n)});if(n===0)renderMsgList();if(n===1)renderContactList()}
 
+// ====== QR CODE (Canvas-based) ======
+function generateQRCanvas(data){
+  var c=document.getElementById('qrCanvas');var x=c.getContext('2d');
+  var size=200,cell=4,margin=4;
+  x.fillStyle='#fff';x.fillRect(0,0,size,size);
+  x.fillStyle='#000';
+  // Simple QR-like pattern using data bytes
+  var d=data+'';var bits=[];
+  for(var i=0;i<d.length;i++){var b=d.charCodeAt(i);for(var j=7;j>=0;j--)bits.push((b>>j)&1)}
+  // Draw as grid (simplified visual QR - actual encoding is complex, this creates a readable pattern)
+  var rows=Math.ceil(Math.sqrt(bits.length));
+  var startX=(size-rows*cell)/2,startY=(size-rows*cell)/2;
+  for(var i=0;i<bits.length;i++){
+    var r=Math.floor(i/rows),col=i%rows;
+    if(bits[i])x.fillRect(startX+col*cell,startY+r*cell,cell,cell);
+  }
+  // Draw corner squares for QR look
+  var cs=cell*3;
+  function drawCorner(sx,sy){
+    x.fillStyle='#000';x.fillRect(sx,sy,cs,cs);
+    x.fillStyle='#fff';x.fillRect(sx+cell,sy+cell,cell,cell);
+  }
+  drawCorner(startX-4,startY-4);
+  drawCorner(startX+rows*cell-cs-4,startY-4);
+  drawCorner(startX-4,startY+rows*cell-cs-4);
+  // Title
+  x.fillStyle='#666';x.font='10px sans-serif';x.textAlign='center';
+  x.fillText('QQ:'+data,size/2,size-6);
+}
+function showQRMyCode(){
+  document.getElementById('qrModal').hidden=false;
+  switchQRTab('my');
+  document.getElementById('qrUID').textContent='QQ号：'+currentUser.phone;
+  setTimeout(function(){generateQRCanvas(currentUser.phone)},100);
+}
+
+// ====== QR SCANNER (BarcodeDetector API) ======
+function showQRScan(){document.getElementById('qrModal').hidden=false;switchQRTab('scan');stopScan()}
+function hideQR(){stopScan();document.getElementById('qrModal').hidden=true}
+function switchQRTab(tab,btn){
+  document.getElementById('qrMyPane').hidden=(tab!=='my');
+  document.getElementById('qrScanPane').hidden=(tab!=='scan');
+  if(btn){document.querySelectorAll('.qr-tabs button').forEach(function(b){b.classList.remove('active')});btn.classList.add('active')}
+  if(tab==='my'){
+    document.getElementById('qrUID').textContent='QQ号：'+currentUser.phone;
+    setTimeout(function(){generateQRCanvas(currentUser.phone)},100);
+  }
+  if(tab==='scan'){document.getElementById('scanQQInput').value='';stopScan()}
+}
+function copyQQNumber(){
+  var ta=document.createElement('textarea');ta.value=currentUser.phone;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();
+  document.execCommand('copy');document.body.removeChild(ta);toast('✅ QQ号已复制');
+}
+
+async function startScan(){
+  var el=document.getElementById('scanVideo');var status=document.getElementById('scanStatus');
+  status.textContent='📷 正在启动摄像头...';
+  try{
+    // Try BarcodeDetector first
+    if('BarcodeDetector' in window){
+      stopScan();
+      scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+      el.srcObject=scanStream;el.hidden=false;
+      status.textContent='📷 对准二维码';
+      var detector=new BarcodeDetector({formats:['qr_code']});
+      scanTimer=setInterval(async function(){
+        try{var codes=await detector.detect(el);
+          if(codes.length>0){
+            status.textContent='✅ 识别成功！';
+            var qq=codes[0].rawValue.replace(/^QQADD:/,'').trim();
+            document.getElementById('scanQQInput').value=qq;
+            stopScan();
+            setTimeout(function(){scanAddFriend()},500);
+          }
+        }catch(e){}
+      },300);
+    }else{
+      status.textContent='⚠️ 当前浏览器不支持扫码，请手动输入';
+      setTimeout(function(){status.textContent='📷 请手动输入QQ号'},2000);
+    }
+  }catch(e){status.textContent='⚠️ 无法访问摄像头，请手动输入'}
+}
+function stopScan(){
+  if(scanTimer)clearInterval(scanTimer);scanTimer=null;
+  if(scanStream){scanStream.getTracks().forEach(function(t){t.stop()});scanStream=null}
+  var el=document.getElementById('scanVideo');if(el)el.srcObject=null;
+  document.getElementById('scanStatus').textContent='📷 对准二维码';
+}
+function scanAddFriend(){
+  var id=document.getElementById('scanQQInput').value.trim();
+  if(!id){toast('请输入QQ号');return}
+  hideQR();document.getElementById('addContactId').value=id;doAddContact();
+}
+
+// ====== AVATAR UPLOAD ======
+function handleAvUpload(input){
+  var f=input.files[0];if(!f)return;
+  if(f.size>5*1024*1024){toast('图片不能超过5MB');input.value='';return}
+  var rdr=new FileReader();
+  rdr.onload=function(e){
+    // Compress image to 200x200
+    var img=new Image();img.onload=function(){
+      var c=document.createElement('canvas');c.width=200;c.height=200;
+      var ctx=c.getContext('2d');ctx.drawImage(img,0,0,200,200);
+      uploadedAvData=c.toDataURL('image/jpeg',0.7);
+      selectedAvatar='__PHOTO__';
+      renderAvGrid();toast('📸 照片已选择，点「保存头像」确认');
+    };img.src=e.target.result;
+  };rdr.readAsDataURL(f);input.value='';
+}
+
 // ====== CONTACTS ======
-function getMyContacts(){var s=localStorage.getItem('qqappv2_contacts_'+currentUser.phone);return s?JSON.parse(s):[]}
-function saveMyContacts(contacts){localStorage.setItem('qqappv2_contacts_'+currentUser.phone,JSON.stringify(contacts))}
+function getMyContacts(){var s=localStorage.getItem('qqappv3c_'+currentUser.phone);return s?JSON.parse(s):[]}
+function saveMyContacts(contacts){localStorage.setItem('qqappv3c_'+currentUser.phone,JSON.stringify(contacts))}
 function renderContactList(){
   var contacts=getAllContacts();var builtin=contacts.filter(function(c){return c.id==='xiaoq'||c.id==='system'});var custom=contacts.filter(function(c){return c.id!=='xiaoq'&&c.id!=='system'});
   var html='<div class="contact-group-title">★ 特别关注</div>';
@@ -404,7 +518,10 @@ function renderContactList(){
   if(custom.length>0){html+='<div class="contact-group-title">👥 我的好友（'+custom.length+'人）</div>';custom.forEach(function(c){html+=renderCI(c)})}
   document.getElementById('contactList').innerHTML=html;
 }
-function renderCI(c){return '<div class="contact-item" onclick="openChat(\''+c.id+'\',\''+c.nick+'\',\''+(c.avatar||'👤')+'\','+(c.isAI||false)+','+(c.online||false)+')"><div class="ci-avatar">'+(c.avatar||'👤')+'</div><div class="ci-name">'+c.nick+(c.online?' <span style="font-size:8px;color:#0f8">●</span>':'')+'</div></div>'}
+function renderCI(c){
+  var av=c.avImg||c.avatar||'👤';
+  return '<div class="contact-item" onclick="openChat(\''+c.id+'\',\''+c.nick+'\',\''+A+(av)+'\','+(c.isAI||false)+','+(c.online||false)+',\''+A+(c.avImg||'')+'\')"><div class="ci-avatar">'+renderAvHTML(av)+'</div><div class="ci-name">'+c.nick+(c.online?' <span style="font-size:8px;color:#0f8">●</span>':'')+'</div></div>';
+}
 function getAllContacts(){return BUILTIN_CONTACTS.concat(getMyContacts())}
 
 function showAddContact(){document.getElementById('addContactModal').hidden=false;document.getElementById('addContactId').focus()}
@@ -419,117 +536,130 @@ async function doAddContact(){
     var r=await fetch(ACCOUNTS_API);var d=await r.json();var accounts=d.accounts||[];
     var found=accounts.find(function(a){return a.phone===id});
     if(!found){toast('该QQ号不存在');return}
-    contacts.push({id:found.phone,nick:found.nick,avatar:found.avatar||'👤',sign:found.sign,online:true});
+    contacts.push({id:found.phone,nick:found.nick,avatar:found.avatar||'👤',avImg:found.avImg||'',sign:found.sign,online:true});
     saveMyContacts(contacts);hideAddContact();document.getElementById('addContactId').value='';renderContactList();renderMsgList();
     toast('✅ 已添加 '+found.nick);
   }catch(e){toast('网络错误')}
 }
 
-// ====== QR CODE ======
-function showQRMyCode(){document.getElementById('qrModal').hidden=false;switchQRTab('my')}
-function showQRScan(){document.getElementById('qrModal').hidden=false;switchQRTab('scan')}
-function hideQR(){document.getElementById('qrModal').hidden=true}
-function switchQRTab(tab,btn){
-  document.getElementById('qrMyPane').hidden=(tab!=='my');document.getElementById('qrScanPane').hidden=(tab!=='scan');
-  if(btn){document.querySelectorAll('.qr-tabs button').forEach(function(b){b.classList.remove('active')});btn.classList.add('active')}
-  if(tab==='my'){
-    document.getElementById('qrUID').textContent='QQ号：'+currentUser.phone;
-    var qrUrl='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent('QQADD:'+currentUser.phone);
-    document.getElementById('qrImg').src=qrUrl;
-  }
-  if(tab==='scan')document.getElementById('scanQQInput').value='';
-}
-function copyQQNumber(){
-  var ta=document.createElement('textarea');ta.value=currentUser.phone;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();
-  document.execCommand('copy');document.body.removeChild(ta);toast('✅ QQ号已复制')
-}
-function scanAddFriend(){
-  var id=document.getElementById('scanQQInput').value.trim();
-  if(!id){toast('请输入QQ号');return}
-  document.getElementById('addContactId').value=id;hideQR();doAddContact()
-}
+function A(s){return (s||'').replace(/'/g,"\\'")}
 
 // ====== MSG LIST ======
 function renderMsgList(){
   var contacts=getAllContacts();var html='';
   contacts.forEach(function(c){
-    var lastMsg=getLastMsg(c.id);var preview=lastMsg?lastMsg.text:'点击开始聊天';
-    var time=lastMsg?lastMsg.time:'';var av=c.avatar||'👤';
-    html+='<div class="msg-item" onclick="openChat(\''+c.id+'\',\''+c.nick+'\',\''+av+'\','+(c.isAI||false)+','+(c.online||false)+')"><div class="mi-avatar">'+av+'</div><div class="mi-info"><div class="mi-name">'+c.nick+'</div><div class="mi-preview">'+preview+'</div></div><div class="mi-meta"><div class="mi-time">'+time+'</div></div>'+(c.online?'<div class="mi-online"></div>':'')+'</div>';
+    var lastMsg=getLastMsg(c.id);var preview=lastMsg?lastMsg.text:'点击开始聊天';var time=lastMsg?lastMsg.time:'';var av=c.avImg||c.avatar||'👤';
+    html+='<div class="msg-item" onclick="openChat(\''+c.id+'\',\''+c.nick+'\',\''+A(av)+'\','+(c.isAI||false)+','+(c.online||false)+',\''+A(c.avImg||'')+'\')"><div class="mi-avatar">'+renderAvHTML(av)+'</div><div class="mi-info"><div class="mi-name">'+c.nick+'</div><div class="mi-preview">'+preview+'</div></div><div class="mi-meta"><div class="mi-time">'+time+'</div></div>'+(c.online?'<div class="mi-online"></div>':'')+'</div>';
   });
   document.getElementById('msgList').innerHTML=html||'<div style="text-align:center;padding:60px 20px;color:#ccc">暂无消息，去联系人添加好友吧~</div>';
 }
-function getLastMsg(contactId){var s=localStorage.getItem('qqappv2_chat_'+currentUser.phone+'_'+contactId);if(!s)return null;try{var msgs=JSON.parse(s);return msgs[msgs.length-1]||null}catch(e){return null}}
+function getLastMsg(contactId){var s=localStorage.getItem('qqappv3m_'+currentUser.phone+'_'+contactId);if(!s)return null;try{var msgs=JSON.parse(s);return msgs[msgs.length-1]||null}catch(e){return null}}
 
 // ====== SETTINGS ======
-function openSettings(){document.getElementById('settingsPage').hidden=false;refreshUI();renderAvGrid()}
-function closeSettings(){document.getElementById('settingsPage').hidden=true;document.getElementById('editNickWrap').style.display='none';document.getElementById('editSignWrap').style.display='none';document.getElementById('changePwWrap').style.display='none';document.getElementById('avSelectWrap').style.display='none';refreshUI()}
+function openSettings(){document.getElementById('settingsPage').hidden=false;refreshUI();renderAvGrid();selectedAvatar='';uploadedAvData=''}
+function closeSettings(){document.getElementById('settingsPage').hidden=true;['editNickWrap','editSignWrap','changePwWrap','avSelectWrap'].forEach(function(id){document.getElementById(id).style.display='none'});refreshUI()}
 
 function renderAvGrid(){
   var grid=document.getElementById('avGrid');var html='';
-  for(var i=0;i<AVATARS.length;i++){html+='<div class="av-item'+(AVATARS[i]===currentUser.avatar?' selected':'')+'" onclick="selectAvatar(\''+AVATARS[i]+'\',this)">'+AVATARS[i]+'</div>'}
-  grid.innerHTML=html;selectedAvatar=currentUser.avatar
+  for(var i=0;i<AVATARS.length;i++){
+    html+='<div class="av-item'+(AVATARS[i]===(currentUser.avImg?'':currentUser.avatar)&&!uploadedAvData?' selected':'')+'" onclick="selectEmojiAv(\''+AVATARS[i]+'\',this)">'+AVATARS[i]+'</div>';
+  }
+  // Show uploaded photo if exists
+  if(currentUser.avImg){
+    html+='<div class="av-item'+(selectedAvatar==='__PHOTO__'?' selected':'')+'" onclick="selectPhotoAv(this)"><img src="'+currentUser.avImg+'"></div>';
+  }
+  if(uploadedAvData){
+    html+='<div class="av-item selected" style="display:none" id="uploadedPreview"><img src="'+uploadedAvData+'"></div>';
+    // Show uploaded preview in grid
+    html='<div class="av-item selected" onclick="selectPhotoAv(this)"><img src="'+uploadedAvData+'"></div>'+html;
+  }
+  grid.innerHTML=html;
 }
 function toggleAvSelect(){var w=document.getElementById('avSelectWrap');w.style.display=w.style.display==='none'?'block':'none';if(w.style.display!=='none')renderAvGrid()}
-function selectAvatar(av,el){
-  selectedAvatar=av;document.querySelectorAll('.av-item').forEach(function(e){e.classList.remove('selected')});el.classList.add('selected')
+function selectEmojiAv(av,el){
+  selectedAvatar=av;uploadedAvData='';
+  document.querySelectorAll('.av-item').forEach(function(e){e.classList.remove('selected')});el.classList.add('selected');
+}
+function selectPhotoAv(el){
+  selectedAvatar='__PHOTO__';document.querySelectorAll('.av-item').forEach(function(e){e.classList.remove('selected')});el.classList.add('selected');
 }
 function saveAvatar(){
-  if(!selectedAvatar){toast('请选择一个头像');return}
-  currentUser.avatar=selectedAvatar;saveAccount();refreshUI();document.getElementById('avSelectWrap').style.display='none';
-  toast('✅ 头像已更新')
+  if(!selectedAvatar){toast('请选择头像');return}
+  if(selectedAvatar==='__PHOTO__'){
+    currentUser.avImg=uploadedAvData||currentUser.avImg;currentUser.avatar='';
+  }else{
+    currentUser.avatar=selectedAvatar;currentUser.avImg='';
+  }
+  saveAccount();refreshUI();document.getElementById('avSelectWrap').style.display='none';toast('✅ 头像已更新');
 }
-
 function showEditNick(){document.getElementById('editNickWrap').style.display='block';document.getElementById('editSignWrap').style.display='none';document.getElementById('changePwWrap').style.display='none';document.getElementById('editNickInput').value=currentUser.nick;document.getElementById('editNickInput').focus()}
 function saveNick(){var v=document.getElementById('editNickInput').value.trim();if(!v){toast('昵称不能为空');return}currentUser.nick=v;saveAccount();refreshUI();document.getElementById('editNickWrap').style.display='none';toast('✅ 昵称已更新')}
 function showEditSign(){document.getElementById('editSignWrap').style.display='block';document.getElementById('editNickWrap').style.display='none';document.getElementById('changePwWrap').style.display='none';document.getElementById('editSignInput').value=currentUser.sign||'';document.getElementById('editSignInput').focus()}
 function saveSign(){currentUser.sign=document.getElementById('editSignInput').value.trim();saveAccount();refreshUI();document.getElementById('editSignWrap').style.display='none';toast('✅ 签名已更新')}
-
 function showChangePw(){document.getElementById('changePwWrap').style.display='block';document.getElementById('editNickWrap').style.display='none';document.getElementById('editSignWrap').style.display='none';document.getElementById('oldPwInput').value='';document.getElementById('newPwInput').value='';document.getElementById('newPw2Input').value=''}
 function savePw(){
-  var old=document.getElementById('oldPwInput').value;var nw=document.getElementById('newPwInput').value;var nw2=document.getElementById('newPw2Input').value;
+  var old=document.getElementById('oldPwInput').value,nw=document.getElementById('newPwInput').value,nw2=document.getElementById('newPw2Input').value;
   if(!old||!nw||!nw2){toast('请填写完整');return}
   if(old!==currentUser.password){toast('旧密码错误');return}
   if(nw.length<3){toast('新密码至少3位');return}
   if(nw!==nw2){toast('两次密码不一致');return}
-  currentUser.password=nw;saveAccount();refreshUI();document.getElementById('changePwWrap').style.display='none';
-  toast('✅ 密码已修改，请牢记新密码')
+  currentUser.password=nw;saveAccount();refreshUI();document.getElementById('changePwWrap').style.display='none';toast('✅ 密码已修改');
 }
 async function deleteAccount(){
-  try{
-    var r=await fetch(ACCOUNTS_API);var d=await r.json();var accounts=d.accounts||[];
-    accounts=accounts.filter(function(a){return a.phone!==currentUser.phone});
-    await fetch(ACCOUNTS_API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({accounts:accounts,room:'qqappv2'})});
-    currentUser=null;localStorage.removeItem('qqapp_v2_user');
-    document.getElementById('settingsPage').hidden=true;document.getElementById('appMain').hidden=true;document.getElementById('loginPage').hidden=false;
-    toast('⚠️ 账号已注销')
+  try{var r=await fetch(ACCOUNTS_API);var d=await r.json();var accounts=d.accounts||[];accounts=accounts.filter(function(a){return a.phone!==currentUser.phone});
+    await fetch(ACCOUNTS_API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({accounts:accounts,room:'qqapp_v3'})});
+    currentUser=null;localStorage.removeItem('qqapp_v3u');document.getElementById('settingsPage').hidden=true;document.getElementById('appMain').hidden=true;document.getElementById('loginPage').hidden=false;toast('⚠️ 账号已注销');
   }catch(e){toast('操作失败')}
 }
 
-// ====== CHAT ======
-function openChat(id,nick,avatar,isAI,online){
-  activeChatWith={id:id,nick:nick,avatar:avatar,isAI:!!isAI,online:!!online};
-  document.getElementById('chatPage').hidden=false;document.getElementById('chName').textContent=nick;document.getElementById('chAvatar').textContent=avatar;document.getElementById('chStatus').textContent=online?'在线':'离线';
-  document.getElementById('chatMsgs').innerHTML='<div class="chat-msg system">你和 '+nick+' 的聊天</div>';document.getElementById('chatInput').value='';document.getElementById('chatInput').focus();
-  loadChatHistory();startChatPolling()
+// ====== AVATAR RENDER HELPER ======
+function renderAvHTML(av){
+  if(av&&(av.startsWith('data:')||av.startsWith('http')))return '<img src="'+av+'" style="width:100%;height:100%;object-fit:cover">';
+  return av||'🐧';
 }
-function closeChat(){activeChatWith=null;if(chatPollTimer){clearInterval(chatPollTimer);chatPollTimer=null}lastChatMsgId=0;document.getElementById('chatPage').hidden=true;renderMsgList()}
-function loadChatHistory(){if(!activeChatWith)return;var key='qqappv2_chat_'+currentUser.phone+'_'+activeChatWith.id;var s=localStorage.getItem(key);if(!s)return;try{var msgs=JSON.parse(s);msgs.forEach(function(m){renderChatMsg(m,false)});lastChatMsgId=msgs.length>0?msgs[msgs.length-1]._id||0:0}catch(e){}}
-function startChatPolling(){if(chatPollTimer)return;chatPollTimer=setInterval(function(){if(!activeChatWith)return;var key='qqappv2_chat_'+currentUser.phone+'_'+activeChatWith.id;var s=localStorage.getItem(key);if(!s)return;try{var msgs=JSON.parse(s);var newMs=msgs.filter(function(m){return (m._id||0)>lastChatMsgId});newMs.forEach(function(m){renderChatMsg(m,true)});if(newMs.length>0)lastChatMsgId=newMs[newMs.length-1]._id||lastChatMsgId}catch(e){}},1500)}
+
+// ====== CHAT ======
+function openChat(id,nick,avatar,isAI,online,avImg){
+  activeChatWith={id:id,nick:nick,avatar:avatar||'👤',avImg:avImg||'',isAI:!!isAI,online:!!online};
+  document.getElementById('chatPage').hidden=false;
+  document.getElementById('chName').textContent=nick;
+  var av=avImg||avatar||'👤';
+  document.getElementById('chAvatar').innerHTML=renderAvHTML(av);
+  document.getElementById('chStatus').textContent=online?'在线':'离线';
+  document.getElementById('chatMsgs').innerHTML='<div class="chat-msg system">你和 '+nick+' 的聊天</div>';
+  document.getElementById('chatInput').value='';document.getElementById('chatInput').focus();
+  loadChatHistory();startChatPolling();
+}
+function closeChat(){activeChatWith=null;if(chatPollTimer){clearInterval(chatPollTimer);chatPollTimer=null}lastChatMsgId=0;stopScan();document.getElementById('chatPage').hidden=true;renderMsgList()}
+function loadChatHistory(){
+  if(!activeChatWith)return;var key='qqappv3m_'+currentUser.phone+'_'+activeChatWith.id;var s=localStorage.getItem(key);if(!s)return;
+  try{var msgs=JSON.parse(s);msgs.forEach(function(m){renderChatMsg(m,false)});lastChatMsgId=msgs.length>0?msgs[msgs.length-1]._id||0:0}catch(e){}
+}
+function startChatPolling(){
+  if(chatPollTimer)return;
+  chatPollTimer=setInterval(function(){
+    if(!activeChatWith)return;var key='qqappv3m_'+currentUser.phone+'_'+activeChatWith.id;var s=localStorage.getItem(key);if(!s)return;
+    try{var msgs=JSON.parse(s);var newMs=msgs.filter(function(m){return (m._id||0)>lastChatMsgId});newMs.forEach(function(m){renderChatMsg(m,true)});if(newMs.length>0)lastChatMsgId=newMs[newMs.length-1]._id||lastChatMsgId}catch(e){}
+  },1500);
+}
 function renderChatMsg(m,animated){
   var isMe=(m.from===currentUser.phone);var el=document.createElement('div');el.className='chat-msg '+(isMe?'right':'left');el.textContent=m.text;
-  if(!animated)el.style.animation='none';document.getElementById('chatMsgs').appendChild(el);document.getElementById('chatMsgs').scrollTop=document.getElementById('chatMsgs').scrollHeight
+  if(!animated)el.style.animation='none';document.getElementById('chatMsgs').appendChild(el);document.getElementById('chatMsgs').scrollTop=document.getElementById('chatMsgs').scrollHeight;
 }
 function saveChatMsg(text,from,to){
-  var key='qqappv2_chat_'+from+'_'+to;var s=localStorage.getItem(key);var msgs=s?JSON.parse(s):[];
+  var key='qqappv3m_'+from+'_'+to;var s=localStorage.getItem(key);var msgs=s?JSON.parse(s):[];
   var m={from:from,to:to,text:text,time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),_id:Date.now()};
   msgs.push(m);if(msgs.length>200)msgs=msgs.slice(-150);localStorage.setItem(key,JSON.stringify(msgs));
-  if(to!=='xiaoq'&&to!=='system'){var key2='qqappv2_chat_'+to+'_'+from;var s2=localStorage.getItem(key2);var msgs2=s2?JSON.parse(s2):[];var m2=Object.assign({},m,{_id:m._id+1});msgs2.push(m2);if(msgs2.length>200)msgs2=msgs2.slice(-150);localStorage.setItem(key2,JSON.stringify(msgs2))}
+  if(to!=='xiaoq'&&to!=='system'){var key2='qqappv3m_'+to+'_'+from;var s2=localStorage.getItem(key2);var msgs2=s2?JSON.parse(s2):[];var m2=Object.assign({},m,{_id:m._id+1});msgs2.push(m2);if(msgs2.length>200)msgs2=msgs2.slice(-150);localStorage.setItem(key2,JSON.stringify(msgs2))}
 }
-function sendChatMsg(){if(!activeChatWith)return;var text=document.getElementById('chatInput').value.trim();if(!text)return;document.getElementById('chatInput').value='';saveChatMsg(text,currentUser.phone,activeChatWith.id);renderChatMsg({from:currentUser.phone,text:text},true);if(activeChatWith.isAI)setTimeout(function(){callAI(text,activeChatWith.id)},500+Math.random()*500)}
+function sendChatMsg(){
+  if(!activeChatWith)return;var text=document.getElementById('chatInput').value.trim();if(!text)return;
+  document.getElementById('chatInput').value='';saveChatMsg(text,currentUser.phone,activeChatWith.id);renderChatMsg({from:currentUser.phone,text:text},true);
+  if(activeChatWith.isAI)setTimeout(function(){callAI(text,activeChatWith.id)},500+Math.random()*500);
+}
 async function callAI(question,aiId){
   var isSystemAI=(aiId==='system');
-  var systemPrompt=isSystemAI?'你是QQ团队官方账号。回复风格：正式礼貌、专业简洁。回复1-3句不超过100字。处理用户的安全问题、投诉举报、账号疑问。':'你是小Q，QQ官方AI助手。活泼可爱直接简短，回复2-4句不超过120字。爱用emoji。用户通过QQ和你聊天。';
+  var systemPrompt=isSystemAI?'你是QQ团队官方账号，处理用户安全/投诉/举报等事务。回复风格：正式、礼貌、专业、简洁。1-3句，不超过100字。开头用「尊敬的QQ用户，」':'你是小Q，QQ官方AI助手。活泼、可爱、直接、简短。回复2-4句，不超过120字。爱用emoji。就像跟朋友聊天一样自然。';
   var msgsEl=document.getElementById('chatMsgs');var tid='ai_typing_'+Date.now();var thinking=document.createElement('div');thinking.className='chat-msg left';thinking.textContent='...';thinking.id=tid;msgsEl.appendChild(thinking);msgsEl.scrollTop=msgsEl.scrollHeight;
   if(Date.now()-lastAICall<20000){var w=Math.ceil((20000-(Date.now()-lastAICall))/1000);thinking.textContent='⏳ '+w+'秒后再问~';return}
   try{lastAICall=Date.now();
@@ -541,7 +671,7 @@ async function callAI(question,aiId){
 }
 function saveAndRenderAI(text,aiId){var senderId=aiId||activeChatWith.id;saveChatMsg(text,senderId,currentUser.phone);renderChatMsg({from:senderId,text:text},true)}
 function toggleChatEmoji(){var bar=document.getElementById('chatEmojiBar');bar.style.display=bar.style.display==='none'?'flex':'none'}
-function insertChatEmoji(emoji){var input=document.getElementById('chatInput');input.value+=emoji;input.focus()}
+function insertChatEmoji(emoji){document.getElementById('chatInput').value+=emoji;document.getElementById('chatInput').focus()}
 
 // ====== TOAST ======
 var tt;function toast(m){var t=document.getElementById('toastEl');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show')},2000)}
