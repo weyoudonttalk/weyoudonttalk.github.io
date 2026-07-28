@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>🎮 游戏中心</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;color:#fff;padding:20px}
+h1{text-align:center;font-size:28px;margin-bottom:8px}
+.sub{text-align:center;font-size:12px;opacity:.7;margin-bottom:24px}
+.games{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;max-width:500px;margin:0 auto}
+.game{background:rgba(255,255,255,.12);border-radius:16px;padding:24px 12px;text-align:center;cursor:pointer;transition:.3s;text-decoration:none;color:#fff;backdrop-filter:blur(10px)}
+.game:active{transform:scale(.95);background:rgba(255,255,255,.2)}
+.game .icon{font-size:44px;margin-bottom:8px;display:block}
+.game .name{font-size:14px;font-weight:700}
+.game .desc{font-size:10px;opacity:.7;margin-top:4px}
+
+#gameFrame{display:none;position:fixed;inset:0;z-index:999;background:#000;flex-direction:column}
+#gameFrame.show{display:flex}
+#gameFrame .bar{display:flex;align-items:center;padding:12px 16px;background:rgba(255,255,255,.1);gap:12px}
+#gameFrame .bar .back{font-size:18px;cursor:pointer;color:#fff}
+#gameFrame .bar .title{font-size:15px;font-weight:700;flex:1}
+#gameFrame iframe{flex:1;border:none;width:100%}
+</style>
+</head>
+<body>
+<h1>🎮 游戏中心</h1>
+<p class="sub">MIUI工作室出品 · 点开即玩</p>
+<div class="games">
+  <div class="game" onclick="openGame('snake')"><span class="icon">🐍</span><div class="name">贪吃蛇</div><div class="desc">经典街机</div></div>
+  <div class="game" onclick="openGame('2048')"><span class="icon">🔢</span><div class="name">2048</div><div class="desc">数字合并</div></div>
+  <div class="game" onclick="openGame('tetris')"><span class="icon">🧱</span><div class="name">俄罗斯方块</div><div class="desc">消除挑战</div></div>
+  <div class="game" onclick="openGame('flappy')"><span class="icon">🐦</span><div class="name">像素鸟</div><div class="desc">点击飞行</div></div>
+  <div class="game" onclick="openGame('memory')"><span class="icon">🧠</span><div class="name">记忆翻牌</div><div class="desc">脑力训练</div></div>
+  <div class="game" onclick="openGame('guess')"><span class="icon">🎯</span><div class="name">猜数字</div><div class="desc">1-100</div></div>
+</div>
+<div id="gameFrame"><div class="bar"><span class="back" onclick="closeGame()">←</span><span class="title" id="gfTitle"></span></div><div id="gfContent" style="flex:1;display:flex;align-items:center;justify-content:center"></div></div>
+
+<script>
+function openGame(name){
+  const titles={snake:'🐍 贪吃蛇',2048:'🔢 2048',tetris:'🧱 俄罗斯方块',flappy:'🐦 像素鸟',memory:'🧠 记忆翻牌',guess:'🎯 猜数字'};
+  document.getElementById('gfTitle').textContent=titles[name]||name;
+  document.getElementById('gameFrame').classList.add('show');
+  const c=document.getElementById('gfContent');
+  if(name==='snake')renderSnake(c);
+  else if(name==='2048')render2048(c);
+  else if(name==='tetris')renderTetris(c);
+  else if(name==='flappy')renderFlappy(c);
+  else if(name==='memory')renderMemory(c);
+  else if(name==='guess')renderGuess(c);
+}
+function closeGame(){document.getElementById('gameFrame').classList.remove('show');document.getElementById('gfContent').innerHTML=''}
+
+function renderSnake(c){
+  c.innerHTML='<canvas id="sc" width="300" height="300" style="background:#111;border-radius:8px"></canvas><p style="margin-top:10px;font-size:14px">方向键 ↑↓←→ 控制</p>';
+  const ca=document.getElementById('sc'),x=ca.getContext('2d');
+  let s=[{x:10,y:10}],d={x:0,y:0},f={x:5,y:5},score=0,iv,gameOver=false;
+  function step(){
+    if(gameOver)return;
+    const h={x:s[0].x+d.x,y:s[0].y+d.y};
+    if(h.x<0||h.x>=20||h.y<0||h.y>=20||s.some(p=>p.x===h.x&&p.y===h.y)){gameOver=true;clearInterval(iv);x.fillStyle='#fff';x.font='20px sans-serif';x.fillText('Game Over',50,150);x.fillText('Score:'+score,80,180);return}
+    s.unshift(h);
+    if(h.x===f.x&&h.y===f.y){score+=10;f={x:Math.floor(Math.random()*20),y:Math.floor(Math.random()*20)}}else{s.pop()}
+    x.fillStyle='#111';x.fillRect(0,0,300,300);
+    x.fillStyle='red';x.fillRect(f.x*15,f.y*15,15,15);
+    x.fillStyle='#0f0';s.forEach(p=>x.fillRect(p.x*15,p.y*15,15,15));
+    x.fillStyle='#fff';x.font='14px sans-serif';x.fillText('Score:'+score,5,15);
+  }
+  iv=setInterval(step,150);
+  document.addEventListener('keydown',function(e){if(e.key==='ArrowUp'&&d.y===0){d={x:0,y:-1}}if(e.key==='ArrowDown'&&d.y===0){d={x:0,y:1}}if(e.key==='ArrowLeft'&&d.x===0){d={x:-1,y:0}}if(e.key==='ArrowRight'&&d.x===0){d={x:1,y:0}}});
+}
+
+function render2048(c){
+  c.innerHTML='<div id="g2048" style="background:#bbada0;border-radius:8px;padding:8px;display:grid;grid-template-columns:repeat(4,60px);gap:6px"></div><p style="margin-top:10px;font-size:14px;color:#fff">方向键 ↑↓←→</p>';
+  let grid=Array(4).fill().map(()=>Array(4).fill(0));
+  function spawn(){let e=[];for(let i=0;i<4;i++)for(let j=0;j<4;j++)if(!grid[i][j])e.push([i,j]);if(e.length){let[x,y]=e[Math.floor(Math.random()*e.length)];grid[x][y]=Math.random()<.9?2:4}}
+  spawn();spawn();draw();
+  function draw(){let h='';for(let i=0;i<4;i++)for(let j=0;j<4;j++){let v=grid[i][j];h+='<div style="width:60px;height:60px;background:'+(v?'#eee4da':'#cdc1b4')+';font-size:'+(v>512?'18px':'24px')+';font-weight:700;display:flex;align-items:center;justify-content:center;color:#776e65;border-radius:6px">'+(v||'')+'</div>'}document.getElementById('g2048').innerHTML=h}
+  function move(dir){
+    let moved=false;
+    function slide(row){
+      let r=row.filter(v=>v);
+      for(let i=0;i<r.length-1;i++)if(r[i]===r[i+1]){r[i]*=2;r.splice(i+1,1);r.push(0)}
+      while(r.length<4)r.push(0);return r;
+    }
+    if(dir==='left'||dir==='right'){for(let i=0;i<4;i++){let row=grid[i];if(dir==='right')row=row.reverse();let nr=slide([...row]);if(dir==='right')nr=nr.reverse();if(nr.join()!==grid[i].join())moved=true;grid[i]=nr}}
+    else{for(let j=0;j<4;j++){let col=grid.map(r=>r[j]);if(dir==='down')col=col.reverse();let nc=slide([...col]);if(dir==='down')nc=nc.reverse();for(let i=0;i<4;i++)if(grid[i][j]!==nc[i])moved=true;for(let i=0;i<4;i++)grid[i][j]=nc[i]}}
+    if(moved){spawn();draw()}
+  }
+  document.addEventListener('keydown',function(e){if(e.key.startsWith('Arrow')){move(e.key.replace('Arrow','').toLowerCase());e.preventDefault()}});
+}
+
+function renderTetris(c){
+  c.innerHTML='<canvas id="tc" width="200" height="360" style="background:#111;border-radius:8px"></canvas><p style="margin-top:10px;font-size:14px;color:#fff">← → 移动 · ↑ 旋转 · ↓ 加速</p>';
+  const ca=document.getElementById('tc'),x=ca.getContext('2d');
+  const w=10,h=18,cell=20;
+  let board=Array(h).fill().map(()=>Array(w).fill(0));
+  const shapes=[[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]]];
+  const colors=['#0ff','#ff0','#f0f','#0f0','#f00','#00f','#f80'];
+  let piece=null,px=3,py=0,pi=0,score=0,iv,gameOver=false;
+  function spawnP(){pi=Math.floor(Math.random()*shapes.length);piece=shapes[pi];px=Math.floor((w-piece[0].length)/2);py=0;if(!valid(px,py,piece)){gameOver=true;clearInterval(iv);x.fillStyle='#fff';x.font='18px sans-serif';x.fillText('Game Over',30,180)}}
+  function valid(xx,yy,p){for(let r=0;r<p.length;r++)for(let c=0;c<p[r].length;c++){if(p[r][c]&&(yy+r>=h||xx+c<0||xx+c>=w||(yy+r>=0&&board[yy+r][xx+c])))return false}return true}
+  function place(){for(let r=0;r<piece.length;r++)for(let c=0;c<piece[r].length;c++)if(piece[r][c]&&py+r>=0)board[py+r][px+c]=pi+1;
+    for(let r=h-1;r>=0;r--){if(board[r].every(v=>v)){board.splice(r,1);board.unshift(Array(w).fill(0));score+=100}}
+    spawnP()}
+  function draw(){x.fillStyle='#111';x.fillRect(0,0,200,360);
+    for(let r=0;r<h;r++)for(let c=0;c<w;c++)if(board[r][c]){x.fillStyle=colors[board[r][c]-1];x.fillRect(c*cell,r*cell,cell-1,cell-1)}
+    if(piece&&!gameOver)for(let r=0;r<piece.length;r++)for(let c=0;c<piece[r].length;c++)if(piece[r][c]){x.fillStyle=colors[pi];x.fillRect((px+c)*cell,(py+r)*cell,cell-1,cell-1)}
+    x.fillStyle='#fff';x.font='12px sans-serif';x.fillText('Score:'+score,5,15);
+  }
+  function tick(){if(!gameOver){if(valid(px,py+1,piece))py++;else place();draw()}}
+  spawnP();iv=setInterval(tick,400);draw();
+  document.addEventListener('keydown',function(e){if(gameOver)return;
+    if(e.key==='ArrowLeft'&&valid(px-1,py,piece))px--;
+    if(e.key==='ArrowRight'&&valid(px+1,py,piece))px++;
+    if(e.key==='ArrowDown'){if(valid(px,py+1,piece))py++}
+    if(e.key==='ArrowUp'){let r=piece[0].map((_,i)=>piece.map(row=>row[i]).reverse());if(valid(px,py,r))piece=r}
+    draw();e.preventDefault();
+  });
+}
+
+function renderFlappy(c){
+  c.innerHTML='<canvas id="fc" width="280" height="400" style="background:linear-gradient(180deg,#4dc9f6,#00a)"></canvas><p style="margin-top:10px;font-size:14px;color:#fff">点击屏幕 / 按空格键 飞行</p>';
+  const ca=document.getElementById('fc'),x=ca.getContext('2d');
+  let bird={x:60,y:200,v:0},pipes=[],score=0,frame=0,playing=true;
+  function step(){
+    if(!playing)return;
+    frame++;bird.v+=.5;bird.y+=bird.v;
+    if(frame%80===0){pipes.push({x:280,top:60+Math.random()*200,gap:120,scored:false})}
+    pipes=pipes.filter(p=>p.x>-40);pipes.forEach(p=>{p.x-=2;if(!p.scored&&p.x+20<bird.x&&p.x+20>=bird.x-2){score++;p.scored=true}});
+    if(bird.y<0||bird.y>400||pipes.some(p=>bird.x+15>p.x&&bird.x-5<p.x+30&&(bird.y-10<p.top||bird.y+10>p.top+p.gap))){playing=false}
+    // draw
+    x.clearRect(0,0,280,400);
+    pipes.forEach(p=>{x.fillStyle='#0a0';x.fillRect(p.x,0,30,p.top);x.fillRect(p.x,p.top+p.gap,30,400)});
+    x.fillStyle='#ff0';x.beginPath();x.arc(bird.x,bird.y,12,0,Math.PI*2);x.fill();
+    x.fillStyle='#000';x.fillRect(bird.x+8,bird.y-2,8,3);
+    x.fillStyle='#fff';x.font='24px sans-serif';x.fillText(score,130,40);
+    if(!playing){x.fillStyle='#fff';x.font='20px sans-serif';x.fillText('Game Over',70,200)}
+    requestAnimationFrame(step);
+  }
+  step();
+  ca.addEventListener('click',function(){if(playing)bird.v=-8});
+  document.addEventListener('keydown',function(e){if(e.key===' '){bird.v=-8;e.preventDefault()}});
+}
+
+function renderMemory(c){
+  c.innerHTML='<div id="mg" style="display:grid;grid-template-columns:repeat(4,60px);gap:6px"></div><p style="margin-top:10px;font-size:14px;color:#fff" id="mscore">匹配: 0/8</p>';
+  const emojis='🐶🐱🐭🐹🐰🦊🐻🐼'.repeat(2).split('').sort(()=>Math.random()-.5);
+  let flipped=[],matched=0,lock=false;
+  const g=document.getElementById('mg');
+  emojis.forEach((e,i)=>{
+    const d=document.createElement('div');d.style.cssText='width:60px;height:60px;background:#333;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:32px;cursor:pointer;transition:.3s';
+    d.textContent='❓';d.onclick=()=>{
+      if(lock||flipped.includes(i)||matched.includes(i))return;
+      d.textContent=e;flipped.push(i);
+      if(flipped.length===2){
+        if(emojis[flipped[0]]===emojis[flipped[1]]){matched.push(flipped[0],flipped[1]);flipped=[];document.getElementById('mscore').textContent='匹配: '+matched.length/2+'/8'}
+        else{lock=true;setTimeout(()=>{document.querySelectorAll('#mg div')[flipped[0]].textContent='❓';document.querySelectorAll('#mg div')[flipped[1]].textContent='❓';flipped=[];lock=false},600)}
+      }
+    };g.appendChild(d);
+  });
+}
+
+function renderGuess(c){
+  c.innerHTML='<div style="text-align:center;color:#fff"><h2>猜数字 1-100</h2><input type="number" id="gi" min="1" max="100" style="padding:12px;border-radius:8px;border:none;font-size:18px;width:120px;text-align:center;margin:12px 0"><br><button onclick="guess()" style="padding:12px 30px;border-radius:10px;border:none;background:#ff0;font-size:16px;font-weight:700;cursor:pointer">猜测</button><p id="ghint" style="margin-top:16px;font-size:18px"></p><p id="gcounter" style="color:#aaa;font-size:12px"></p></div>';
+  const secret=Math.floor(Math.random()*100)+1;
+  let count=0;
+  window.guess=function(){
+    const v=parseInt(document.getElementById('gi').value);
+    count++;
+    if(v===secret){document.getElementById('ghint').textContent='🎉 正确! 答案是 '+secret;document.getElementById('gcounter').textContent='用了 '+count+' 次';document.getElementById('gi').disabled=true}
+    else if(v<secret){document.getElementById('ghint').textContent=v+' 太小了 ⬆';document.getElementById('gcounter').textContent='第 '+count+' 次'}
+    else{document.getElementById('ghint').textContent=v+' 太大了 ⬇';document.getElementById('gcounter').textContent='第 '+count+' 次'}
+  };
+}
+</script>
+</body>
+</html>
