@@ -2,63 +2,73 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>我的世界 · MIUI工作室</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>我的世界 · 手机版</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'PingFang SC',system-ui,sans-serif}
-canvas{display:block}
-#blocker{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:100;color:#fff;text-align:center;cursor:pointer}
-#blocker .box{background:rgba(30,30,40,.95);padding:40px 32px;border-radius:20px;border:2px solid rgba(255,255,255,.1);max-width:360px}
-#blocker h2{font-size:24px;margin-bottom:6px}
-#blocker p{font-size:13px;color:#aaa;margin-bottom:20px;line-height:1.8}
-#blocker .keys{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:20px;text-align:left;font-size:12px;color:#999}
-#blocker .keys span{background:rgba(255,255,255,.06);padding:6px 10px;border-radius:6px}
-#blocker .keys b{color:#ff6900}
-#blocker .btn{padding:14px 40px;border-radius:12px;border:none;background:linear-gradient(135deg,#ff6900,#ff4400);color:#fff;font-size:16px;font-weight:700;cursor:pointer}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;font-family:'PingFang SC',system-ui,sans-serif}
+canvas{display:block;position:fixed;top:0;left:0}
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:100;color:#fff;text-align:center}
+#overlay .box{background:rgba(30,30,40,.95);padding:36px 28px;border-radius:20px;border:2px solid rgba(255,255,255,.12);max-width:340px;width:90vw}
+#overlay h2{font-size:22px;margin-bottom:8px}
+#overlay p{font-size:13px;color:#aaa;margin-bottom:20px;line-height:1.6}
+#overlay .btn{padding:16px 50px;border-radius:14px;border:none;background:linear-gradient(135deg,#ff6900,#ff4400);color:#fff;font-size:17px;font-weight:700;cursor:pointer;width:100%;max-width:260px}
+#overlay .btn:active{transform:scale(.96)}
 
-#hud{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);display:flex;gap:4px;z-index:10;pointer-events:none}
-.hud-slot{width:52px;height:52px;border:3px solid rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;background:rgba(0,0,0,.5);transition:.2s}
-.hud-slot.active{border-color:#ff6900;background:rgba(255,105,0,.2);transform:scale(1.1)}
-.hud-slot .num{position:absolute;bottom:2px;right:4px;font-size:9px;color:#fff;font-weight:700}
+#hud{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:10;pointer-events:none}
+.hud-slot{width:48px;height:48px;border:3px solid rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(0,0,0,.5);position:relative;transition:.2s}
+.hud-slot.active{border-color:#ff6900;background:rgba(255,105,0,.25);transform:scale(1.12)}
+.hud-slot .num{position:absolute;bottom:1px;right:5px;font-size:9px;color:#fff;font-weight:700}
 
-#crosshair{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;z-index:10;pointer-events:none}
-#crosshair::before,#crosshair::after{content:'';position:absolute;background:#fff}
-#crosshair::before{width:2px;height:20px;left:9px;top:0}
-#crosshair::after{width:20px;height:2px;left:0;top:9px}
+#joy{position:fixed;bottom:100px;left:30px;width:100px;height:100px;z-index:10;opacity:.4;pointer-events:none}
+#joy .stick{width:100%;height:100%;border-radius:50%;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15)}
+#joy .knob{position:absolute;width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.2);top:50%;left:50%;transform:translate(-50%,-50%);transition:transform .05s linear}
 
-#info{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:10;color:rgba(255,255,255,.6);font-size:11px;pointer-events:none;text-align:center}
+#actionBtns{position:fixed;bottom:110px;right:20px;z-index:10;display:flex;flex-direction:column;gap:12px;pointer-events:none}
+#actionBtns button{width:56px;height:56px;border-radius:50%;border:2px solid rgba(255,255,255,.15);background:rgba(0,0,0,.45);color:#fff;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:auto;-webkit-tap-highlight-color:transparent}
+#actionBtns button:active{background:rgba(255,105,0,.3);border-color:#ff6900}
+
+#jumpBtn{position:fixed;bottom:200px;right:24px;z-index:10;width:64px;height:64px;border-radius:50%;border:2px solid rgba(255,255,255,.2);background:rgba(0,0,0,.4);color:#fff;font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:auto;-webkit-tap-highlight-color:transparent}
+#jumpBtn:active{background:rgba(255,105,0,.35);border-color:#ff6900}
+
+#blockPicker{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:10;display:flex;gap:6px;pointer-events:none}
+#blockPicker button{pointer-events:auto;width:38px;height:38px;border-radius:8px;border:2px solid rgba(255,255,255,.12);background:rgba(0,0,0,.5);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+#blockPicker button.active{border-color:#ff6900;background:rgba(255,105,0,.25);transform:scale(1.15)}
+#blockPicker button:active{transform:scale(.9)}
+
+#info{position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:10;color:rgba(255,255,255,.5);font-size:10px;pointer-events:none}
 </style>
 </head>
 <body>
-<div id="blocker">
+
+<div id="overlay">
   <div class="box">
-    <h2>⛏️ 我的世界 · MIUI版</h2>
-    <p>点击屏幕开始游戏</p>
-    <div class="keys">
-      <span><b>W A S D</b> 移动</span>
-      <span><b>鼠标</b> 视角</span>
-      <span><b>左键</b> 挖方块</span>
-      <span><b>右键</b> 放方块</span>
-      <span><b>1-6</b> 切换方块</span>
-      <span><b>空格</b> 跳跃</span>
-      <span><b>Shift</b> 潜行</span>
-      <span><b>ESC</b> 暂停</span>
-    </div>
+    <h2>⛏️ 我的世界 · 手机版</h2>
+    <p>MIUI工作室出品<br>触屏建造你的世界！</p>
     <button class="btn" id="playBtn">🎮 开始游戏</button>
   </div>
 </div>
 
-<div id="crosshair" style="display:none"></div>
-<div id="info" style="display:none">⛏️ 建造你的世界！</div>
+<div id="blockPicker" style="display:none">
+  <button class="active" onclick="pickBlock(0)">🟫</button>
+  <button onclick="pickBlock(1)">🟩</button>
+  <button onclick="pickBlock(2)">⬜</button>
+  <button onclick="pickBlock(3)">🟨</button>
+  <button onclick="pickBlock(4)">🪵</button>
+  <button onclick="pickBlock(5)">🍂</button>
+</div>
+<div id="info" style="display:none">👆 点方块挖掉 · 长按放方块 · 顶部切换材料</div>
+
+<div id="joy"><div class="stick"></div><div class="knob"></div></div>
+
+<div id="actionBtns" style="display:none">
+  <button id="placeBtn">🧱</button>
+  <button id="destroyBtn">⛏️</button>
+</div>
+<button id="jumpBtn" style="display:none">🦘</button>
 
 <div id="hud" style="display:none">
-  <div class="hud-slot active" id="slot0">🟫<span class="num">1</span></div>
-  <div class="hud-slot" id="slot1">🟩<span class="num">2</span></div>
-  <div class="hud-slot" id="slot2">⬜<span class="num">3</span></div>
-  <div class="hud-slot" id="slot3">🟨<span class="num">4</span></div>
-  <div class="hud-slot" id="slot4">🪵<span class="num">5</span></div>
-  <div class="hud-slot" id="slot5">🍂<span class="num">6</span></div>
+  <div class="hud-slot active">🟫</div><div class="hud-slot">🟩</div><div class="hud-slot">⬜</div><div class="hud-slot">🟨</div><div class="hud-slot">🪵</div><div class="hud-slot">🍂</div>
 </div>
 
 <script type="importmap">
@@ -68,314 +78,175 @@ canvas{display:block}
 <script type="module">
 import * as THREE from 'three';
 
-// ====== SCENE SETUP ======
-const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x87ceeb);
-scene.fog=new THREE.Fog(0x87ceeb,60,180);
-
-const camera=new THREE.PerspectiveCamera(70,window.innerWidth/window.innerHeight,.1,300);
-camera.position.set(0,18,0);
-
-const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth,window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-renderer.shadowMap.enabled=true;
-renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-document.body.appendChild(renderer.domElement);
+// ====== SCENE ======
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x87ceeb);scene.fog=new THREE.Fog(0x87ceeb,60,180);
+const camera=new THREE.PerspectiveCamera(70,2,0.1,300);camera.position.set(0,16,0);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+document.body.insertBefore(renderer.domElement,document.body.firstChild);
+function resize(){const w=window.innerWidth,h=window.innerHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix()}
+resize();window.addEventListener('resize',resize);
 
 // ====== LIGHTING ======
-const ambLight=new THREE.AmbientLight(0x8899bb,.6);
-scene.add(ambLight);
-const sun=new THREE.DirectionalLight(0xfff5e0,1.2);
-sun.position.set(50,80,30);
-sun.castShadow=true;
-sun.shadow.mapSize.set(1024,1024);
-sun.shadow.camera.near=0.5;sun.shadow.camera.far=200;
-sun.shadow.camera.left=-60;sun.shadow.camera.right=60;
-sun.shadow.camera.top=60;sun.shadow.camera.bottom=-60;
-scene.add(sun);
+scene.add(new THREE.AmbientLight(0x8899bb,.65));
+const sun=new THREE.DirectionalLight(0xfff5e0,1.1);sun.position.set(50,80,30);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.near=.5;sun.shadow.camera.far=200;sun.shadow.camera.left=-60;sun.shadow.camera.right=60;sun.shadow.camera.top=60;sun.shadow.camera.bottom=-60;scene.add(sun);
+const groundGeo=new THREE.PlaneGeometry(200,200);const groundMat=new THREE.MeshLambertMaterial({color:0x6b8e23});const ground=new THREE.Mesh(groundGeo,groundMat);ground.rotation.x=-Math.PI/2;ground.position.y=-.01;ground.receiveShadow=true;scene.add(ground);
 
-// Ground plane
-const groundGeo=new THREE.PlaneGeometry(200,200);
-const groundMat=new THREE.MeshLambertMaterial({color:0x6b8e23});
-const ground=new THREE.Mesh(groundGeo,groundMat);
-ground.rotation.x=-Math.PI/2;ground.position.y=-0.01;
-ground.receiveShadow=true;scene.add(ground);
+// ====== BLOCK DATA ======
+const BLOCK_TYPES=[{name:'泥土',color:0x8b6914},{name:'草地',color:0x567d46},{name:'石头',color:0x808080},{name:'沙子',color:0xe8d5a3},{name:'橡木',color:0x8b6b4a},{name:'树叶',color:0x2d5a1e}];
+let selectedBlock=0;
+window.pickBlock=function(n){selectedBlock=n;document.querySelectorAll('#blockPicker button').forEach(function(b,i){b.classList.toggle('active',i===n)});document.querySelectorAll('.hud-slot').forEach(function(s,i){s.classList.toggle('active',i===n)})};
 
-// ====== CONTROLS ======
-const keys={w:false,a:false,s:false,d:false,space:false,shift:false};
-let isLocked=false,selectedBlock=0;
-
-const BLOCK_TYPES=[
-  {name:'泥土',color:0x8b6914,emoji:'🟫'},
-  {name:'草地',color:0x567d46,emoji:'🟩'},
-  {name:'石头',color:0x808080,emoji:'⬜'},
-  {name:'沙子',color:0xe8d5a3,emoji:'🟨'},
-  {name:'橡木',color:0x8b6b4a,emoji:'🪵'},
-  {name:'树叶',color:0x2d5a1e,emoji:'🍂'}
-];
-
-// ====== WORLD DATA ======
-const CHUNK_SIZE=16,WORLD_HEIGHT=32;
-const world=new Map(); // key: "x,z" -> Uint8Array of heights
-
-function getKey(x,z){return x+','+z}
-function getHeight(x,z){
-  // Simple procedural terrain
-  let h=10;
-  h+=Math.sin(x*0.15)*4+Math.cos(z*0.15)*4;
-  h+=Math.sin(x*0.05+z*0.07)*6;
-  h+=Math.cos(x*0.08-z*0.06)*5;
-  h=Math.round(Math.max(3,Math.min(h,24)));
-  return h;
-}
-
-// ====== BLOCK MESHES ======
-const blockMeshes=new Map(); // key: "x,y,z" -> mesh
-const blockGeo=new THREE.BoxGeometry(1,1,1);
+// ====== WORLD ======
+const blockMeshes=new Map();const blockGeo=new THREE.BoxGeometry(1,1,1);
 const blockMats=BLOCK_TYPES.map(t=>new THREE.MeshLambertMaterial({color:t.color}));
 
-function addBlock(x,y,z,type){
-  const key=x+','+y+','+z;
-  if(blockMeshes.has(key))return;
-  // Check if player is inside
-  const px=Math.floor(camera.position.x),py=Math.floor(camera.position.y),pz=Math.floor(camera.position.z);
-  if(x===px&&(y===py||y===py-1)&&z===pz)return;
-  
-  const mat=blockMats[type]||blockMats[0];
-  const mesh=new THREE.Mesh(blockGeo,mat);
-  mesh.position.set(x,y,z);
-  mesh.castShadow=true;mesh.receiveShadow=true;
-  mesh.userData={blockType:type,gridX:x,gridY:y,gridZ:z};
-  scene.add(mesh);
-  blockMeshes.set(key,mesh);
-}
-function removeBlock(x,y,z){
-  const key=x+','+y+','+z;
-  const mesh=blockMeshes.get(key);
-  if(mesh){scene.remove(mesh);blockMeshes.delete(key)}
-}
-function getBlock(x,y,z){
-  return blockMeshes.get(x+','+y+','+z)||null;
-}
+function addBlock(x,y,z,type){const key=x+','+y+','+z;if(blockMeshes.has(key))return;const mat=blockMats[type]||blockMats[0];const mesh=new THREE.Mesh(blockGeo,mat);mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData={type:type,x:x,y:y,z:z};scene.add(mesh);blockMeshes.set(key,mesh)}
+function removeBlock(x,y,z){const key=x+','+y+','+z;const mesh=blockMeshes.get(key);if(mesh){scene.remove(mesh);blockMeshes.delete(key)}}
+function getBlock(x,y,z){return blockMeshes.get(x+','+y+','+z)||null}
 
-// ====== TERRAIN GEN ======
 function generateTerrain(cx,cz){
-  const startX=cx-CHUNK_SIZE/2,startZ=cz-CHUNK_SIZE/2;
-  for(let x=startX;x<startX+CHUNK_SIZE;x++){
-    for(let z=startZ;z<startZ+CHUNK_SIZE;z++){
-      const h=getHeight(x,z);
-      // Stone layer
-      for(let y=1;y<h-3;y++)addBlock(x,y,z,2);
-      // Dirt layer
-      for(let y=Math.max(1,h-3);y<h;y++)addBlock(x,y,z,0);
-      // Grass top
-      addBlock(x,h,z,1);
-      // Sand near water
-      if(h<=5){for(let y=1;y<=h;y++)addBlock(x,y,z,3)}
-      // Tree
-      if(h>7&&Math.random()<.08&&(x%5===0)&&(z%5===0)){
-        for(let ty=h+1;ty<=h+4;ty++)addBlock(x,ty,z,4);
-        for(let dx=-2;dx<=2;dx++){
-          for(let dz=-2;dz<=2;dz++){
-            if(Math.abs(dx)===2&&Math.abs(dz)===2)continue;
-            if(dx===0&&dz===0)continue;
-            for(let dy=h+2;dy<=h+5;dy++){
-              if(Math.random()<.7)addBlock(x+dx,dy,z+dz,5);
-            }
-          }
-        }
+  for(let x=cx-8;x<cx+8;x++){for(let z=cz-8;z<cz+8;z++){
+    let h=10+Math.sin(x*.15)*4+Math.cos(z*.15)*4+Math.sin(x*.05+z*.07)*6+Math.cos(x*.08-z*.06)*5;
+    h=Math.round(Math.max(3,Math.min(h,24)));
+    for(let y=1;y<h-3;y++)addBlock(x,y,z,2);
+    for(let y=Math.max(1,h-3);y<h;y++)addBlock(x,y,z,0);
+    addBlock(x,h,z,1);
+    if(h<=5)for(let y=1;y<=h;y++)addBlock(x,y,z,3);
+    if(h>7&&Math.random()<.08&&(x%5===0)&&(z%5===0)){
+      for(let ty=h+1;ty<=h+4;ty++)addBlock(x,ty,z,4);
+      for(let dx=-2;dx<=2;dx++)for(let dz=-2;dz<=2;dz++){
+        if(Math.abs(dx)===2&&Math.abs(dz)===2||dx===0&&dz===0)continue;
+        for(let dy=h+2;dy<=h+5;dy++)if(Math.random()<.7)addBlock(x+dx,dy,z+dz,5);
       }
     }
-  }
+  }}
 }
 
-// Generate initial terrain
-generateTerrain(0,0);
-generateTerrain(16,0);
-generateTerrain(-16,0);
-generateTerrain(0,16);
-generateTerrain(0,-16);
+// Generate
+const generated=new Set();
+function ensureTerrain(){const cx=Math.round(camera.position.x/16)*16;const cz=Math.round(camera.position.z/16)*16;const k=cx+','+cz;if(!generated.has(k)){generated.add(k);generateTerrain(cx,cz)}}
+ensureTerrain();generateTerrain(16,0);generateTerrain(-16,0);generateTerrain(0,16);generateTerrain(0,-16);
 
 // ====== RAYCASTER ======
-const raycaster=new THREE.Raycaster();
-raycaster.far=8;
+const raycaster=new THREE.Raycaster();raycaster.far=8;
+function getTargetBlock(){const dir=new THREE.Vector3(0,0,-1);dir.applyQuaternion(camera.quaternion);raycaster.set(camera.position,dir);const hits=raycaster.intersectObjects(Array.from(blockMeshes.values()));if(hits.length>0){const m=hits[0].object;const n=hits[0].face.normal.clone();n.x=Math.round(n.x);n.y=Math.round(n.y);n.z=Math.round(n.z);return{hit:m,px:m.position.x+n.x,py:m.position.y+n.y,pz:m.position.z+n.z}}return null}
 
-function getTargetBlock(){
-  const dir=new THREE.Vector3(0,0,-1);
-  dir.applyQuaternion(camera.quaternion);
-  raycaster.set(camera.position,dir);
-  const meshes=Array.from(blockMeshes.values());
-  const hits=raycaster.intersectObjects(meshes);
-  if(hits.length>0){
-    const mesh=hits[0].object;
-    const point=hits[0].point;
-    const normal=hits[0].face.normal.clone();
-    // Round normal to axis
-    normal.x=Math.round(normal.x);normal.y=Math.round(normal.y);normal.z=Math.round(normal.z);
-    const placeX=mesh.position.x+normal.x;
-    const placeY=mesh.position.y+normal.y;
-    const placeZ=mesh.position.z+normal.z;
-    return {hit:mesh,place:{x:placeX,y:placeY,z:placeZ}};
+// ====== MOBILE INPUT ======
+let moveVector={x:0,z:0},jumpPressed=false,looking=false;
+let cameraYaw=0,cameraPitch=-.05; // Slight downward angle
+
+// --- Virtual Joystick ---
+const joyBase=document.getElementById('joy');
+const joyKnob=document.querySelector('#joy .knob');
+let joyActive=false,joyId=null,joyCX=0,joyCY=0;
+
+joyBase.addEventListener('touchstart',function(e){e.preventDefault();const t=e.touches[0];joyId=t.identifier;joyCX=t.clientX;joyCY=t.clientY;joyActive=true},false);
+joyBase.addEventListener('touchmove',function(e){e.preventDefault();for(let i=0;i<e.touches.length;i++){if(e.touches[i].identifier===joyId){const dx=e.touches[i].clientX-joyCX,dy=e.touches[i].clientY-joyCY;const dist=Math.min(40,Math.sqrt(dx*dx+dy*dy));const angle=Math.atan2(dy,dx);const kx=Math.cos(angle)*dist/40,ky=Math.sin(angle)*dist/40;joyKnob.style.transform='translate(calc(-50% + '+kx*40+'px), calc(-50% + '+ky*40+'px))';moveVector.x=kx;moveVector.z=-ky}}},false);
+joyBase.addEventListener('touchend',function(e){e.preventDefault();joyActive=false;moveVector.x=0;moveVector.z=0;joyKnob.style.transform='translate(-50%,-50%)'},false);
+joyBase.addEventListener('touchcancel',function(e){joyActive=false;moveVector.x=0;moveVector.z=0;joyKnob.style.transform='translate(-50%,-50%)'},false);
+
+// --- Look (touch drag on the rest of screen) ---
+let lookId=null,lookStartX=0,lookStartY=0;
+document.addEventListener('touchstart',function(e){
+  for(let i=0;i<e.touches.length;i++){
+    const t=e.touches[i];
+    // Skip if on joystick or action buttons
+    const el=document.elementFromPoint(t.clientX,t.clientY);
+    if(el&&(el.closest('#joy')||el.closest('#actionBtns')||el.closest('#jumpBtn')||el.closest('#blockPicker')||el.closest('#overlay')))continue;
+    lookId=t.identifier;lookStartX=t.clientX;lookStartY=t.clientY;looking=true;break;
   }
-  return null;
-}
+},{passive:false});
+document.addEventListener('touchmove',function(e){
+  if(!looking)return;
+  for(let i=0;i<e.touches.length;i++){
+    if(e.touches[i].identifier===lookId){
+      const dx=e.touches[i].clientX-lookStartX,dy=e.touches[i].clientY-lookStartY;
+      cameraYaw-=dx*.005;cameraPitch-=dy*.005;cameraPitch=Math.max(-1.2,Math.min(.8,cameraPitch));
+      lookStartX=e.touches[i].clientX;lookStartY=e.touches[i].clientY;
+      camera.quaternion.setFromEuler(new THREE.Euler(cameraPitch,cameraYaw,0,'YXZ'));
+      break;
+    }
+  }
+},{passive:false});
+document.addEventListener('touchend',function(e){
+  for(let i=0;i<e.touches.length;i++){if(e.touches[i].identifier===lookId)return}
+  looking=false;
+});
+document.addEventListener('touchcancel',function(){looking=false});
+
+// --- Jump ---
+document.getElementById('jumpBtn').addEventListener('touchstart',function(e){e.preventDefault();jumpPressed=true});
+document.getElementById('jumpBtn').addEventListener('touchend',function(e){jumpPressed=false});
+
+// --- Place Block ---
+document.getElementById('placeBtn').addEventListener('touchstart',function(e){
+  e.preventDefault();const t=getTargetBlock();if(t){const px=Math.floor(camera.position.x);const py=Math.floor(camera.position.y-1);const pz=Math.floor(camera.position.z);if(!(t.px===px&&(t.py===py||t.py===py+1)&&t.pz===pz))addBlock(t.px,t.py,t.pz,selectedBlock)}ensureTerrain()
+});
+
+// --- Destroy Block ---
+document.getElementById('destroyBtn').addEventListener('touchstart',function(e){
+  e.preventDefault();const t=getTargetBlock();if(t){removeBlock(t.hit.position.x,t.hit.position.y,t.hit.position.z)}
+});
 
 // ====== MOVEMENT ======
-const velocity=new THREE.Vector3();
-const direction=new THREE.Vector3();
-let canJump=true,onGround=false;
-
+let velocityY=0,canJump=true,onGround=false;
 function updateMovement(dt){
-  if(!isLocked)return;
-  const speed=keys.shift?3:6;
-  
-  direction.z=Number(keys.w)-Number(keys.s);
-  direction.x=Number(keys.d)-Number(keys.a);
-  direction.normalize();
-  
-  velocity.x=direction.x*speed;
-  velocity.z=direction.z*speed;
-  
-  // Gravity
+  const speed=6;
+  // Horizontal from joystick
+  const mx=moveVector.x, mz=moveVector.z;
+  const forward=new THREE.Vector3(0,0,1).applyQuaternion(camera.quaternion);forward.y=0;forward.normalize();
+  const right=new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion);right.y=0;right.normalize();
+  const dx=(forward.x*mz+right.x*mx)*speed*dt;
+  const dz=(forward.z*mz+right.z*mx)*speed*dt;
+
+  // Gravity & jump
   onGround=camera.position.y<=1.05;
-  if(!onGround){velocity.y-=20*dt}else{velocity.y=0}
-  
-  // Jump
-  if(keys.space&&onGround&&canJump){velocity.y=8;canJump=false;onGround=false}
-  if(!keys.space)canJump=true;
-  
-  // Apply horizontal
-  const forward=new THREE.Vector3(0,0,1).applyQuaternion(camera.quaternion);
-  const right=new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion);
-  forward.y=0;right.y=0;forward.normalize();right.normalize();
-  
-  const mx=forward.x*velocity.z+right.x*velocity.x;
-  const mz=forward.z*velocity.z+right.z*velocity.x;
-  
-  // Collision check
-  const newX=camera.position.x+mx*dt;
-  const newZ=camera.position.z+mz*dt;
-  const newY=camera.position.y+velocity.y*dt;
-  
-  // Simple block collision
-  let blockedX=false,blockedZ=false,blockedY=false;
-  const px=Math.floor(newX),py=Math.floor(newY-.5),pz=Math.floor(newZ);
-  const cy=Math.floor(camera.position.y-1);
-  
-  // Check horizontal
-  if(getBlock(px,Math.floor(camera.position.y),pz)||getBlock(px,Math.floor(camera.position.y-1),pz)){blockedX=true;blockedZ=true}
-  else{
-    if(getBlock(px,Math.floor(camera.position.y),Math.floor(camera.position.z)))blockedX=true;
-    if(getBlock(Math.floor(camera.position.x),Math.floor(camera.position.y),pz))blockedZ=true;
-  }
-  
-  // Check vertical
-  if(newY<1)blockedY=true;
-  if(getBlock(px,py,pz))blockedY=true;
-  
-  if(!blockedY)camera.position.y=newY;
-  else{camera.position.y=Math.max(1,camera.position.y);velocity.y=0}
-  if(!blockedX)camera.position.x=newX;
-  if(!blockedZ)camera.position.z=newZ;
-  
-  // Generate more terrain if needed
-  const cx=Math.round(camera.position.x/CHUNK_SIZE)*CHUNK_SIZE;
-  const cz=Math.round(camera.position.z/CHUNK_SIZE)*CHUNK_SIZE;
-  const ck=getKey(cx,cz);
-  if(!world.has(ck)){world.set(ck,true);generateTerrain(cx,cz)}
+  if(!onGround)velocityY-=20*dt;else velocityY=0;
+  if(jumpPressed&&onGround&&canJump){velocityY=8;canJump=false;onGround=false}
+  if(!jumpPressed)canJump=true;
+  const dy=velocityY*dt;
+
+  const nx=camera.position.x+dx,nz=camera.position.z+dz,ny=camera.position.y+dy;
+  // Simple collision
+  let bx=false,bz=false,by=false;
+  const fx=Math.floor(nx),fz=Math.floor(nz),fy=Math.floor(ny-1);
+  if(getBlock(fx,Math.floor(camera.position.y),Math.floor(camera.position.z)))bx=true;
+  if(getBlock(Math.floor(camera.position.x),Math.floor(camera.position.y),fz))bz=true;
+  if(ny<1)by=true;
+  if(getBlock(Math.floor(camera.position.x),fy,Math.floor(camera.position.z)))by=true;
+
+  if(!by)camera.position.y=ny;else{camera.position.y=Math.max(1,camera.position.y);velocityY=0}
+  if(!bx)camera.position.x=nx;
+  if(!bz)camera.position.z=nz;
+
+  ensureTerrain();
 }
 
-// ====== MOUSE CONTROLS ======
-let mouseDX=0,mouseDY=0;
-let euler=new THREE.Euler(0,0,0,'YXZ');
-euler.set(0,0,0,'YXZ');camera.quaternion.setFromEuler(euler);
-
-document.addEventListener('mousemove',function(e){
-  if(!isLocked)return;
-  mouseDX+=e.movementX*.002;mouseDY+=e.movementY*.002;
-  mouseDY=Math.max(-Math.PI/3,Math.min(Math.PI/3,mouseDY));
-  euler.set(mouseDY,mouseDX,0,'YXZ');
-  camera.quaternion.setFromEuler(euler);
+// ====== GAME START ======
+let gameRunning=false;
+const overlay=document.getElementById('overlay');
+document.getElementById('playBtn').addEventListener('click',function(){
+  gameRunning=true;overlay.style.display='none';
+  document.getElementById('actionBtns').style.display='flex';
+  document.getElementById('jumpBtn').style.display='flex';
+  document.getElementById('hud').style.display='flex';
+  document.getElementById('blockPicker').style.display='flex';
+  document.getElementById('info').style.display='block';
+  document.getElementById('joy').style.pointerEvents='auto';
 });
 
-document.addEventListener('mousedown',function(e){
-  if(!isLocked)return;
-  const target=getTargetBlock();
-  if(!target)return;
-  if(e.button===0){// Left click - destroy
-    removeBlock(target.hit.position.x,target.hit.position.y,target.hit.position.z);
-  }else if(e.button===2){// Right click - place
-    const p=target.place;
-    // Don't place inside player
-    const px=Math.floor(camera.position.x),py=Math.floor(camera.position.y-.5),pz=Math.floor(camera.position.z);
-    if(p.x===px&&p.y===py&&p.z===pz)return;
-    if(p.x===px&&p.y===py+1&&p.z===pz)return;
-    addBlock(p.x,p.y,p.z,selectedBlock);
-  }
-});
-
-document.addEventListener('contextmenu',function(e){e.preventDefault()});
-
-// ====== KEYBOARD ======
-document.addEventListener('keydown',function(e){
-  keys[e.key.toLowerCase()]=true;
-  if(e.key>='1'&&e.key<='6'){selectedBlock=parseInt(e.key)-1;updateHUD()}
-  if(e.key===' '){e.preventDefault()}
-});
-document.addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false});
-
-function updateHUD(){
-  document.querySelectorAll('.hud-slot').forEach(function(s,i){
-    s.classList.toggle('active',i===selectedBlock);
-  });
-}
-
-// ====== LOCK POINTER ======
-const blocker=document.getElementById('blocker');
-const playBtn=document.getElementById('playBtn');
-const crosshair=document.getElementById('crosshair');
-const info=document.getElementById('info');
-const hud=document.getElementById('hud');
-
-playBtn.addEventListener('click',function(){
-  renderer.domElement.requestPointerLock();
-});
-
-document.addEventListener('pointerlockchange',function(){
-  isLocked=document.pointerLockElement===renderer.domElement;
-  blocker.style.display=isLocked?'none':'flex';
-  crosshair.style.display=isLocked?'block':'none';
-  info.style.display=isLocked?'block':'none';
-  hud.style.display=isLocked?'block':'none';
-});
-
-// ====== RENDER LOOP ======
+// ====== LOOP ======
 const clock=new THREE.Clock();
 function animate(){
   requestAnimationFrame(animate);
-  const dt=Math.min(clock.getDelta(),.1);
-  updateMovement(dt);
-  
-  // Day/night cycle
-  const time=performance.now()*.00002;
-  sun.position.x=Math.cos(time)*50;
-  sun.position.z=Math.sin(time)*30;
-  scene.background=new THREE.Color().setHSL(.6,.5,.5+.3*Math.sin(time));
-  
+  if(gameRunning){
+    updateMovement(Math.min(clock.getDelta(),.1));
+  }
   renderer.render(scene,camera);
 }
 animate();
 
-// ====== RESIZE ======
-window.addEventListener('resize',function(){
-  camera.aspect=window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth,window.innerHeight);
-});
-
-console.log('⛏️ 我的世界 · MIUI版 已就绪！');
-console.log('   WASD移动 | 鼠标看 | 左键挖 | 右键放 | 1-6切换方块');
+console.log('⛏️ 我的世界 · 手机版 已就绪！');
 </script>
 </body>
 </html>
