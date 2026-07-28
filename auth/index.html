@@ -3,192 +3,205 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>MIUI统一账号</title>
+<title>MIUI账号中心</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;color:#fff}
-.card{background:rgba(255,255,255,.12);border-radius:24px;padding:32px 24px;max-width:380px;width:100%;backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.15);box-shadow:0 20px 60px rgba(0,0,0,.3)}
-.card h2{font-size:22px;text-align:center;margin-bottom:6px}
-.card .sub{text-align:center;font-size:12px;opacity:.7;margin-bottom:24px}
-.card label{font-size:12px;font-weight:600;opacity:.8;display:block;margin-bottom:4px}
-.card input{width:100%;padding:14px 16px;border-radius:12px;border:none;font-size:15px;outline:none;margin-bottom:12px;background:rgba(255,255,255,.15);color:#fff}
-.card input::placeholder{color:rgba(255,255,255,.4)}
-.card input:focus{background:rgba(255,255,255,.22)}
-.card .btn{width:100%;padding:15px;border-radius:14px;border:none;background:#fff;color:#667eea;font-size:16px;font-weight:700;cursor:pointer;margin-top:4px;transition:.2s}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;color:#fff}
+.card{background:rgba(255,255,255,.08);border-radius:24px;padding:32px 24px;max-width:400px;width:100%;backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.12);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.card h2{font-size:24px;text-align:center;margin-bottom:4px}
+.card .sub{text-align:center;font-size:12px;opacity:.6;margin-bottom:24px}
+.card input{width:100%;padding:14px 16px;border-radius:12px;border:none;font-size:15px;outline:none;margin-bottom:12px;background:rgba(255,255,255,.1);color:#fff}
+.card input::placeholder{color:rgba(255,255,255,.35)}
+.card input:focus{background:rgba(255,255,255,.18)}
+.card .btn{width:100%;padding:15px;border-radius:14px;border:none;font-size:16px;font-weight:700;cursor:pointer;margin-top:4px;color:#fff;background:linear-gradient(135deg,#667eea,#764ba2);transition:.2s}
 .card .btn:active{transform:scale(.96)}
-.card .switch{text-align:center;font-size:13px;margin-top:16px;cursor:pointer;opacity:.8}
+.card .btn.outline{background:transparent;border:1.5px solid rgba(255,255,255,.2)}
+.card .switch{text-align:center;font-size:13px;margin-top:16px;cursor:pointer;opacity:.7}
 .card .switch:hover{opacity:1}
-.verify-box{background:rgba(255,255,255,.08);border-radius:12px;padding:14px;text-align:center;margin-bottom:12px;display:none}
-.verify-box .code{font-size:32px;font-weight:900;letter-spacing:6px;color:#ffd700}
-.verify-box .msg{font-size:11px;opacity:.7;margin-top:4px}
-.error{color:#ff6b6b;font-size:12px;text-align:center;margin-bottom:8px;display:none}
-.success{color:#6bcb77;font-size:12px;text-align:center;margin-bottom:8px;display:none}
+.verify-box{background:rgba(255,255,255,.06);border-radius:14px;padding:18px;text-align:center;margin-bottom:14px}
+.verify-box .code{font-size:34px;font-weight:900;letter-spacing:8px;color:#ffd700;margin:8px 0}
+.verify-box .hint{font-size:11px;opacity:.5;margin-top:4px;line-height:1.6}
+.err{color:#ff6b6b;font-size:12px;text-align:center;margin-bottom:8px;min-height:18px}
+.suc{color:#6bcb77;font-size:12px;text-align:center;margin-bottom:8px;min-height:18px}
+
 .profile{display:none;text-align:center}
-.profile .p-av{font-size:48px;margin-bottom:12px}
-.profile .p-email{font-size:14px;opacity:.8;margin-bottom:4px}
-.profile .p-date{font-size:11px;opacity:.5;margin-bottom:20px}
+.profile .pav{font-size:60px;margin-bottom:12px}
+.profile .pname{font-size:18px;font-weight:700;margin-bottom:4px}
+.profile .pemail{font-size:13px;opacity:.7;margin-bottom:4px}
+.profile .pdate{font-size:11px;opacity:.4;margin-bottom:16px}
+.profile .wslink{display:block;padding:12px;background:rgba(255,255,255,.08);border-radius:12px;color:#ffd700;font-size:14px;text-decoration:none;margin-bottom:8px;word-break:break-all}
+.profile .wslink:active{background:rgba(255,255,255,.15)}
+.profile .btns{display:flex;gap:8px}
+.profile .btns button{flex:1;padding:12px;border-radius:12px;border:none;font-size:13px;font-weight:600;cursor:pointer;background:rgba(255,255,255,.1);color:#fff}
+.profile .btns button:active{background:rgba(255,255,255,.2)}
+.profile .btns button.primary{background:#667eea}
 </style>
 </head>
 <body>
-<div class="card" id="authCard">
-  <h2 id="authTitle">🔐 登录</h2>
-  <p class="sub" id="authSub">使用邮箱登录MIUI统一账号</p>
-  <p class="error" id="err"></p>
-  <p class="success" id="suc"></p>
-
-  <!-- Login/Register -->
-  <div id="loginForm">
-    <label>📧 邮箱</label><input type="email" id="email" placeholder="your@email.com">
-    <label>🔑 密码</label><input type="password" id="password" placeholder="6位以上密码" minlength="6">
-    <button class="btn" id="actionBtn" onclick="handleAuth()">登 录</button>
+<div class="card" id="card">
+  <!-- LOGIN / REGISTER -->
+  <div id="loginSection">
+    <h2 id="title">🔐 登录</h2>
+    <p class="sub" id="subTitle">使用邮箱登录MIUI统一账号</p>
+    <div class="err" id="err"></div>
+    <div class="suc" id="suc"></div>
+    <input type="email" id="emailInput" placeholder="📧 邮箱地址">
+    <input type="password" id="pwInput" placeholder="🔑 密码（6位以上）">
+    <button class="btn" id="actionBtn" onclick="handleAction()">登 录</button>
+    <div class="switch" id="switchBtn" onclick="toggleMode()">没有账号？立即注册 →</div>
   </div>
 
-  <!-- Verify -->
-  <div class="verify-box" id="verifyBox">
-    <p style="font-size:12px;margin-bottom:8px">📩 验证码已发送至：<b id="vEmail">-</b></p>
-    <div class="code" id="vCode">------</div>
-    <p class="msg">请输入上方验证码完成验证</p>
-    <input type="text" id="verifyInput" placeholder="输入验证码" maxlength="6" style="text-align:center;font-size:24px;letter-spacing:8px">
-    <button class="btn" onclick="verifyEmail()" style="font-size:14px">✅ 验证</button>
+  <!-- VERIFY -->
+  <div id="verifySection" style="display:none">
+    <h2>📧 验证邮箱</h2>
+    <p class="sub" id="vSub">验证码已发送至你的邮箱</p>
+    <div class="err" id="verr"></div>
+    <div class="verify-box">
+      <p style="font-size:12px;opacity:.7">📩 收件人：<b id="vEmail"></b></p>
+      <p style="font-size:11px;opacity:.5;margin:8px 0">请查看收件箱中的验证码：</p>
+      <div class="code" id="vCode">------</div>
+      <p class="hint">⚠️ 由于纯静态托管限制，验证码显示在此处<br>真实生产环境会通过 EmailJS 发送到邮箱</p>
+    </div>
+    <input type="text" id="verifyInput" placeholder="输入6位验证码" maxlength="6" style="text-align:center;font-size:20px;letter-spacing:6px">
+    <button class="btn" onclick="doVerify()">✅ 验证并注册</button>
+    <div class="switch" onclick="backToLogin()">← 返回登录</div>
   </div>
 
-  <!-- Profile -->
-  <div class="profile" id="profileView">
-    <div class="p-av">👤</div>
-    <div class="p-email" id="pEmail"></div>
-    <div class="p-date" id="pDate"></div>
-    <button class="btn" onclick="logout()" style="background:rgba(255,255,255,.15);color:#fff">退出登录</button>
+  <!-- PROFILE -->
+  <div class="profile" id="profileSection">
+    <div class="pav" id="pav">🐧</div>
+    <div class="pname" id="pname"></div>
+    <div class="pemail" id="pemail"></div>
+    <div class="pdate" id="pdate"></div>
+    <p style="font-size:12px;opacity:.6;margin-bottom:12px">👇 你的专属工作台</p>
+    <a class="wslink" id="wslink" href="#" target="_blank"></a>
+    <div class="btns">
+      <button onclick="copyWSLink()">📋 复制链接</button>
+      <button class="primary" onclick="openWS()">🚀 进入工作台</button>
+    </div>
+    <div class="btns" style="margin-top:8px">
+      <button onclick="logout()">退出登录</button>
+    </div>
   </div>
-
-  <div class="switch" id="switchBtn" onclick="toggleMode()">没有账号？立即注册</div>
 </div>
 
 <script>
 const API='https://jsonblob.com/api/jsonBlob/019fa387-ce7a-7764-81c0-fbf7b93e931b';
-let mode='login', pendingEmail='', pendingPw='', verifyCode='';
+let mode='login',pending={email:'',pw:'',code:''};
 
-// Check if already logged in
+// Init
 (function(){
-  const u=localStorage.getItem('miui_unified_user');
+  const u=localStorage.getItem('miui_u');
   if(u){try{showProfile(JSON.parse(u))}catch(e){}}
-  // Check redirect
-  const p=new URLSearchParams(location.search);
-  const redir=p.get('redirect');
-  if(redir&&localStorage.getItem('miui_unified_user')){
-    location.href=redir;
-  }
+  const redir=new URLSearchParams(location.search).get('redirect');
+  if(redir&&localStorage.getItem('miui_u'))location.href=redir;
 })();
 
 function toggleMode(){
   mode=mode==='login'?'register':'login';
-  document.getElementById('authTitle').textContent=mode==='login'?'🔐 登录':'📝 注册';
-  document.getElementById('authSub').textContent=mode==='login'?'使用邮箱登录MIUI统一账号':'创建你的MIUI统一账号';
+  document.getElementById('title').textContent=mode==='login'?'🔐 登录':'📝 注册';
+  document.getElementById('subTitle').textContent=mode==='login'?'使用邮箱登录MIUI统一账号':'创建你的MIUI统一账号';
   document.getElementById('actionBtn').textContent=mode==='login'?'登 录':'注 册';
-  document.getElementById('switchBtn').textContent=mode==='login'?'没有账号？立即注册':'已有账号？立即登录';
-  document.getElementById('err').style.display='none';
-  document.getElementById('verifyBox').style.display='none';
-  document.getElementById('loginForm').style.display='block';
+  document.getElementById('switchBtn').textContent=mode==='login'?'没有账号？立即注册 →':'已有账号？立即登录 →';
+  clearMsg();
 }
 
-async function handleAuth(){
-  const email=document.getElementById('email').value.trim();
-  const pw=document.getElementById('password').value.trim();
+async function handleAction(){
+  const email=document.getElementById('emailInput').value.trim();
+  const pw=document.getElementById('pwInput').value.trim();
   if(!email||!pw){showErr('请填写邮箱和密码');return}
-  if(!email.includes('@')){showErr('请输入正确的邮箱地址');return}
+  if(!email.includes('@')){showErr('请输入有效邮箱');return}
   if(pw.length<6){showErr('密码至少6位');return}
 
   try{
-    const r=await fetch(API+'?t='+Date.now());
-    const d=await r.json();
-    const accounts=d.accounts||[];
-
+    const r=await fetch(API+'?t='+Date.now());const d=await r.json();const accounts=d.accounts||[];
     if(mode==='register'){
       if(accounts.find(a=>a.email===email)){showErr('该邮箱已注册');return}
-      // Generate verification code
-      pendingEmail=email;pendingPw=pw;
-      verifyCode=String(Math.floor(100000+Math.random()*900000));
+      pending={email,pw,code:String(Math.floor(100000+Math.random()*900000))};
       document.getElementById('vEmail').textContent=email;
-      document.getElementById('vCode').textContent=verifyCode;
+      document.getElementById('vCode').textContent=pending.code;
       document.getElementById('verifyInput').value='';
-      document.getElementById('loginForm').style.display='none';
-      document.getElementById('verifyBox').style.display='block';
-      document.getElementById('err').style.display='none';
+      document.getElementById('loginSection').style.display='none';
+      document.getElementById('verifySection').style.display='block';
+      document.getElementById('verr').textContent='';
+      document.getElementById('suc').textContent='';
+      document.getElementById('err').textContent='';
     }else{
       const found=accounts.find(a=>a.email===email);
       if(!found){showErr('邮箱未注册');return}
       if(found.password!==pw){showErr('密码错误');return}
-      if(!found.verified){showErr('邮箱未验证，请先注册验证');return}
+      if(!found.verified){showErr('邮箱未验证，请重新注册');return}
       found.lastLogin=new Date().toISOString();
       await updateAccount(found);
       showProfile(found);
     }
-  }catch(e){showErr('网络错误')}
+  }catch(e){showErr('网络错误，请重试')}
 }
 
-async function verifyEmail(){
+async function doVerify(){
   const input=document.getElementById('verifyInput').value.trim();
-  if(input!==verifyCode){showErr('验证码不正确');return}
+  if(input!==pending.code){document.getElementById('verr').textContent='验证码不正确';return}
   try{
-    const r=await fetch(API+'?t='+Date.now());
-    const d=await r.json();
-    const accounts=d.accounts||[];
-    const acc={email:pendingEmail,password:pendingPw,verified:true,created:new Date().toISOString(),lastLogin:new Date().toISOString(),avatar:'👤'};
+    const r=await fetch(API+'?t='+Date.now());const d=await r.json();const accounts=d.accounts||[];
+    const acc={email:pending.email,password:pending.pw,verified:true,avatar:'🐧',nick:pending.email.split('@')[0],sign:'这个人很懒，什么都没写~',created:new Date().toISOString(),lastLogin:new Date().toISOString()};
     accounts.push(acc);
-    await saveAccounts(accounts);
+    await fetch(API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({accounts,room:'miui_auth'})});
     showProfile(acc);
-  }catch(e){showErr('验证失败')}
+  }catch(e){document.getElementById('verr').textContent='注册失败，请重试'}
 }
 
 async function updateAccount(acc){
   try{
-    const r=await fetch(API+'?t='+Date.now());
-    const d=await r.json();
-    const accounts=d.accounts||[];
+    const r=await fetch(API+'?t='+Date.now());const d=await r.json();const accounts=d.accounts||[];
     const idx=accounts.findIndex(a=>a.email===acc.email);
     if(idx>=0)accounts[idx]=acc;
-    await saveAccounts(accounts);
+    await fetch(API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({accounts,room:'miui_auth'})});
   }catch(e){}
 }
 
-async function saveAccounts(accounts){
-  await fetch(API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({accounts,room:'unified'})});
-}
-
 function showProfile(acc){
-  localStorage.setItem('miui_unified_user',JSON.stringify(acc));
-  document.getElementById('loginForm').style.display='none';
-  document.getElementById('verifyBox').style.display='none';
-  document.getElementById('switchBtn').style.display='none';
-  document.getElementById('profileView').style.display='block';
-  document.getElementById('authTitle').textContent='✅ 已登录';
-  document.getElementById('authSub').textContent='MIUI统一账号';
-  document.getElementById('pEmail').textContent=acc.email;
-  document.getElementById('pDate').textContent='注册于 '+new Date(acc.created).toLocaleDateString('zh-CN');
-  document.getElementById('suc').style.display='block';
-  document.getElementById('suc').textContent='登录成功！';
-  setTimeout(()=>{document.getElementById('suc').style.display='none'},2000);
-  
-  // Redirect if needed
-  const p=new URLSearchParams(location.search);
-  const redir=p.get('redirect');
-  if(redir){setTimeout(()=>{location.href=redir},800)}
+  localStorage.setItem('miui_u',JSON.stringify(acc));
+  document.getElementById('loginSection').style.display='none';
+  document.getElementById('verifySection').style.display='none';
+  document.getElementById('profileSection').style.display='block';
+  document.getElementById('pav').textContent=acc.avatar||'🐧';
+  document.getElementById('pname').textContent=acc.nick||acc.email.split('@')[0];
+  document.getElementById('pemail').textContent=acc.email;
+  document.getElementById('pdate').textContent='注册于 '+new Date(acc.created).toLocaleDateString('zh-CN');
+  const wsUrl='https://weyoudonttalk.github.io/workspace/?user='+encodeURIComponent(acc.email);
+  document.getElementById('wslink').href=wsUrl;
+  document.getElementById('wslink').textContent=wsUrl;
+  document.getElementById('suc').textContent='✅ 登录成功！';
+
+  // Redirect
+  const redir=new URLSearchParams(location.search).get('redirect');
+  if(redir)setTimeout(()=>{location.href=redir},600);
 }
 
 function logout(){
-  localStorage.removeItem('miui_unified_user');
-  document.getElementById('loginForm').style.display='block';
-  document.getElementById('verifyBox').style.display='none';
-  document.getElementById('profileView').style.display='none';
-  document.getElementById('switchBtn').style.display='block';
-  document.getElementById('authTitle').textContent='🔐 登录';
-  document.getElementById('authSub').textContent='使用邮箱登录MIUI统一账号';
-  document.getElementById('err').style.display='none';
+  localStorage.removeItem('miui_u');
+  document.getElementById('loginSection').style.display='block';
+  document.getElementById('verifySection').style.display='none';
+  document.getElementById('profileSection').style.display='none';
+  clearMsg();
 }
 
-function showErr(m){
-  document.getElementById('err').textContent=m;
-  document.getElementById('err').style.display='block';
+function backToLogin(){
+  document.getElementById('loginSection').style.display='block';
+  document.getElementById('verifySection').style.display='none';
+  clearMsg();
 }
+
+function copyWSLink(){
+  const url=document.getElementById('wslink').href;
+  const ta=document.createElement('textarea');ta.value=url;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+  showSuc('✅ 链接已复制！')
+}
+function openWS(){location.href=document.getElementById('wslink').href}
+
+function showErr(m){document.getElementById('err').textContent=m}
+function clearMsg(){document.getElementById('err').textContent='';document.getElementById('suc').textContent='';document.getElementById('verr').textContent=''}
+function showSuc(m){document.getElementById('suc').textContent=m;setTimeout(()=>{document.getElementById('suc').textContent=''},2000)}
 </script>
 </body>
 </html>
