@@ -32,4 +32,7 @@ h1{font-size:28px;margin-bottom:6px}
 <a class="link" href="https://weyoudonttalk.github.io/qq-ks/" target="_blank"><span class="li">🎬</span><span class="ln">QQ×快手</span><span class="ld">边聊边刷</span></a>
 <a class="link" href="https://weyoudonttalk.github.io/ai-art/" target="_blank"><span class="li">🎨</span><span class="ln">AI画室</span><span class="ld">文生图</span></a>
 </div>
+
+<div style="position:fixed;top:12px;right:16px;z-index:999;display:flex;gap:8px;align-items:center"><span id="ui2" style="font-size:10px;opacity:.8;display:none;color:#fff">👤 <span id="ue2"></span></span><button id="lb2" style="padding:5px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-size:10px;cursor:pointer" onclick="checkAuth()">🔐 登录</button></div>
+<script>let loggedIn=false;(function(){const u=localStorage.getItem("miui_unified_user");if(u){try{const d=JSON.parse(u);if(d.verified){loggedIn=true;document.getElementById("lb2").style.display="none";document.getElementById("ui2").style.display="inline";document.getElementById("ue2").textContent=d.email}}catch(e){}}})();function checkAuth(){if(!loggedIn)location.href="https://weyoudonttalk.github.io/auth/?redirect="+encodeURIComponent(location.href)}</script>
 </body></html>
