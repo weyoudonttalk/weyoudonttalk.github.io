@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>🧮 科学计算器</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'SF Mono',monospace;background:#1a1a2e;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}
+.calc{width:100%;max-width:360px;background:#16213e;border-radius:20px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.display{background:#0f3460;border-radius:14px;padding:20px 16px;text-align:right;margin-bottom:16px;min-height:80px}
+.display .expr{font-size:14px;color:#889;min-height:20px;word-break:break-all}
+.display .result{font-size:36px;font-weight:700;color:#fff;margin-top:4px;word-break:break-all}
+.btns{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.btns button{padding:16px 8px;border-radius:12px;border:none;font-size:18px;font-weight:600;cursor:pointer;background:#1a1a2e;color:#ddd;transition:.15s}
+.btns button:active{transform:scale(.93);opacity:.8}
+.btns .op{background:#e94560;color:#fff}
+.btns .eq{background:#0f3460;color:#0ff;font-size:22px}
+.btns .fn{background:#16213e;color:#aaa;font-size:13px}
+</style></head>
+<body>
+<div class="calc">
+<div class="display"><div class="expr" id="expr"></div><div class="result" id="res">0</div></div>
+<div class="btns">
+<button class="fn" onclick="clr()">AC</button><button class="fn" onclick="del()">⌫</button><button class="fn" onclick="addTo('(')">(</button><button class="fn" onclick="addTo(')')">)</button>
+<button class="fn" onclick="addTo('Math.sin(')">sin</button><button class="fn" onclick="addTo('Math.cos(')">cos</button><button class="fn" onclick="addTo('Math.sqrt(')">√</button><button class="op" onclick="addTo('/')">÷</button>
+<button onclick="addTo('7')">7</button><button onclick="addTo('8')">8</button><button onclick="addTo('9')">9</button><button class="op" onclick="addTo('*')">×</button>
+<button onclick="addTo('4')">4</button><button onclick="addTo('5')">5</button><button onclick="addTo('6')">6</button><button class="op" onclick="addTo('-')">−</button>
+<button onclick="addTo('1')">1</button><button onclick="addTo('2')">2</button><button onclick="addTo('3')">3</button><button class="op" onclick="addTo('+')">+</button>
+<button onclick="addTo('0')">0</button><button onclick="addTo('.')">.</button><button onclick="addTo('Math.PI')">π</button><button class="eq" onclick="calc()">=</button>
+</div></div>
+<script>
+let e='';
+function addTo(s){e+=s;document.getElementById('expr').textContent=e;try{document.getElementById('res').textContent=eval(e.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-'))}catch(x){}}
+function clr(){e='';document.getElementById('expr').textContent='';document.getElementById('res').textContent='0'}
+function del(){e=e.slice(0,-1);document.getElementById('expr').textContent=e;document.getElementById('res').textContent=e||'0'}
+function calc(){try{const v=eval(e.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-'));document.getElementById('res').textContent=v;e=String(v);document.getElementById('expr').textContent=e}catch(x){document.getElementById('res').textContent='Error'}}
+</script>
+</body></html>
