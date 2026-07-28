@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>🎵 QQ音乐</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:linear-gradient(180deg,#0a0a1a,#1a1030);min-height:100vh;color:#fff;padding:20px}
+h1{text-align:center;font-size:26px;margin-bottom:20px}
+.player{max-width:400px;margin:0 auto;background:rgba(255,255,255,.06);border-radius:20px;padding:24px;text-align:center;backdrop-filter:blur(10px)}
+.player .cover{width:180px;height:180px;border-radius:50%;margin:0 auto 20px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:60px;animation:spin 8s linear infinite paused}
+.player.playing .cover{animation-play-state:running}
+@keyframes spin{to{transform:rotate(360deg)}}
+.player .title{font-size:18px;font-weight:700;margin-bottom:4px}
+.player .artist{font-size:13px;color:#aaa;margin-bottom:20px}
+.player .controls{display:flex;justify-content:center;align-items:center;gap:24px}
+.player .controls button{width:48px;height:48px;border-radius:50%;border:none;background:rgba(255,255,255,.1);color:#fff;font-size:20px;cursor:pointer}
+.player .controls button:active{background:rgba(255,255,255,.2);transform:scale(.9)}
+.player .controls .play{width:64px;height:64px;font-size:28px;background:#667eea}
+.player .progress{width:100%;height:4px;border-radius:2px;background:rgba(255,255,255,.1);margin-top:20px;cursor:pointer}
+.player .progress .fill{height:100%;border-radius:2px;background:#667eea;width:0%;transition:width .3s}
+.player .time{display:flex;justify-content:space-between;font-size:10px;color:#666;margin-top:6px}
+.search{max-width:400px;margin:20px auto 0;display:flex;gap:8px}
+.search input{flex:1;padding:12px 16px;border-radius:24px;border:none;background:rgba(255,255,255,.1);color:#fff;font-size:14px;outline:none}
+.search input::placeholder{color:#666}
+.search button{padding:12px 20px;border-radius:24px;border:none;background:#667eea;color:#fff;font-weight:600;cursor:pointer}
+.results{max-width:400px;margin:16px auto;max-height:240px;overflow-y:auto}
+.result{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,.04);border-radius:10px;margin-bottom:6px;cursor:pointer;transition:.2s}
+.result:active{background:rgba(255,255,255,.1)}
+.result .rnum{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.result .rinfo{flex:1;min-width:0}
+.result .rtitle{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.result .rartist{font-size:10px;color:#888}
+</style>
+</head>
+<body>
+<h1>🎵 QQ音乐</h1>
+<div class="player" id="player">
+  <div class="cover">🎵</div>
+  <div class="title" id="ptitle">搜索歌曲开始播放</div>
+  <div class="artist" id="partist">-</div>
+  <div class="controls">
+    <button onclick="prev()">⏮</button>
+    <button class="play" onclick="toggle()" id="pbtn">▶️</button>
+    <button onclick="next()">⏭</button>
+  </div>
+  <div class="progress" onclick="seek(event)"><div class="fill" id="pfill"></div></div>
+  <div class="time"><span id="pcur">0:00</span><span id="pdur">0:00</span></div>
+</div>
+<div class="search"><input type="text" id="sinput" placeholder="搜索歌曲..." onkeydown="if(event.key==='Enter')search()"><button onclick="search()">🔍</button></div>
+<div class="results" id="results"></div>
+
+<script>
+let audio=null,playlist=[],idx=-1,playing=false;
+async function search(){
+  const q=document.getElementById('sinput').value.trim();
+  if(!q)return;
+  try{
+    // Use iTunes API
+    const r=await fetch('https://itunes.apple.com/search?term='+encodeURIComponent(q)+'&country=cn&limit=10&media=music');
+    const d=await r.json();
+    playlist=d.results.map(t=>({title:t.trackName,artist:t.artistName,url:t.previewUrl}));
+    document.getElementById('results').innerHTML=playlist.map((t,i)=>'<div class="result" onclick="play('+i+')"><div class="rnum">'+(i+1)+'</div><div class="rinfo"><div class="rtitle">'+t.title+'</div><div class="rartist">'+t.artist+'</div></div></div>').join('');
+  }catch(e){}
+}
+function play(i){
+  idx=i;const t=playlist[i];
+  if(audio){audio.pause();audio=null}
+  audio=new Audio(t.url);audio.volume=.8;
+  document.getElementById('ptitle').textContent=t.title;
+  document.getElementById('partist').textContent=t.artist;
+  document.getElementById('pbtn').textContent='⏸️';
+  document.getElementById('player').classList.add('playing');
+  audio.play();playing=true;
+  audio.ontimeupdate=()=>{const p=(audio.currentTime/audio.duration)*100;document.getElementById('pfill').style.width=p+'%';document.getElementById('pcur').textContent=fmt(audio.currentTime);document.getElementById('pdur').textContent=fmt(audio.duration||30)};
+  audio.onended=next;
+}
+function toggle(){if(!audio)return;if(playing){audio.pause();playing=false;document.getElementById('pbtn').textContent='▶️';document.getElementById('player').classList.remove('playing')}else{audio.play();playing=true;document.getElementById('pbtn').textContent='⏸️';document.getElementById('player').classList.add('playing')}}
+function next(){if(idx<playlist.length-1)play(idx+1)}
+function prev(){if(idx>0)play(idx-1)}
+function seek(e){if(!audio||!audio.duration)return;const p=e.offsetX/e.target.offsetWidth;audio.currentTime=p*audio.duration}
+function fmt(s){if(isNaN(s))return'0:00';const m=Math.floor(s/60),sec=Math.floor(s%60);return m+':'+(sec<10?'0':'')+sec}
+</script>
+</body>
+</html>
