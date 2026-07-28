@@ -2,299 +2,309 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>MIUI工作室</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MIUI工作室 — AI轻应用与小游戏开发</title>
 <style>
+:root{--primary:#ff6900;--primary-dark:#e85d00;--bg:#030305;--surface:#0a0a10;--surface2:#111118;--text:#e8e8ed;--text2:#8888a0;--border:rgba(255,255,255,.06);--gradient:linear-gradient(135deg,#ff6900 0%,#ff4400 50%,#ff8c00 100%)}
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue',system-ui,-apple-system,sans-serif;background:#0a0a0f;color:#fff}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
 
-#bg{position:fixed;inset:0;z-index:0}
-.overlay{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 30% 20%,rgba(255,105,0,.04),transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(255,155,0,.03),transparent 50%)}
+/* ====== NAV ====== */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;transition:.3s}
+nav.scrolled{background:rgba(3,3,5,.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:12px 24px}
+nav .logo{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;color:#fff;cursor:pointer;text-decoration:none}
+nav .logo .l-icon{font-size:24px;animation:logoPulse 2s ease infinite}
+@keyframes logoPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+nav .nav-links{display:flex;gap:28px;align-items:center}
+nav .nav-links a{color:var(--text2);font-size:13px;font-weight:500;text-decoration:none;transition:.2s;cursor:pointer}
+nav .nav-links a:hover{color:#fff}
+nav .nav-links a.cta-nav{padding:8px 18px;border-radius:20px;background:var(--gradient);color:#fff;font-weight:600;font-size:12px}
+nav .nav-links a.cta-nav:hover{box-shadow:0 4px 20px rgba(255,105,0,.4);transform:translateY(-1px)}
 
-/* ====== PAGES ====== */
-.page{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;transition:opacity .6s,transform .6s}
-.page[hidden]{opacity:0;transform:translateY(20px);pointer-events:none}
-.page.active{opacity:1;transform:translateY(0)}
+/* ====== HERO ====== */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;padding:120px 24px 80px;text-align:center;overflow:hidden}
+.hero-bg{position:absolute;inset:0}
+.hero-bg .orb{position:absolute;border-radius:50%;filter:blur(100px);opacity:.15}
+.hero-bg .orb-1{width:500px;height:500px;background:#ff6900;top:-10%;right:-10%;animation:orbFloat 8s ease infinite}
+.hero-bg .orb-2{width:400px;height:400px;background:#ff4400;bottom:-10%;left:-10%;animation:orbFloat 10s 2s ease infinite}
+.hero-bg .orb-3{width:300px;height:300px;background:#ffaa00;top:40%;left:50%;animation:orbFloat 12s 1s ease infinite}
+@keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-30px) scale(1.1)}66%{transform:translate(-20px,20px) scale(.9)}}
+.hero-content{position:relative;z-index:1;max-width:700px}
+.hero-content .badge{display:inline-block;padding:6px 16px;border-radius:20px;background:rgba(255,105,0,.1);border:1px solid rgba(255,105,0,.2);font-size:12px;color:#ff6900;font-weight:600;margin-bottom:24px;letter-spacing:1px}
+.hero-content h1{font-size:clamp(36px,6vw,64px);font-weight:900;line-height:1.1;margin-bottom:20px;background:linear-gradient(135deg,#fff 0%,#ffaa66 50%,#ff6900 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-content .hero-sub{font-size:clamp(15px,2vw,18px);color:var(--text2);margin-bottom:36px;line-height:1.8;max-width:500px;margin-left:auto;margin-right:auto}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.hero-btns .btn{padding:14px 32px;border-radius:28px;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;transition:.3s;display:inline-block}
+.hero-btns .btn-primary{background:var(--gradient);color:#fff;box-shadow:0 8px 30px rgba(255,105,0,.3)}
+.hero-btns .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(255,105,0,.5)}
+.hero-btns .btn-outline{border:1.5px solid rgba(255,255,255,.2);color:#fff;background:transparent}
+.hero-btns .btn-outline:hover{border-color:#ff6900;color:#ff6900;background:rgba(255,105,0,.05)}
+.hero-stats{display:flex;gap:40px;justify-content:center;margin-top:60px;flex-wrap:wrap}
+.hero-stats .stat{text-align:center}
+.hero-stats .stat-num{font-size:32px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-stats .stat-label{font-size:12px;color:var(--text2);margin-top:4px;letter-spacing:1px}
 
-/* DOTS */
-.dots{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:20;display:flex;flex-direction:column;gap:10px}
-.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.18);cursor:pointer;transition:.3s}
-.dot.active{background:#ff6900;box-shadow:0 0 12px rgba(255,105,0,.6);transform:scale(1.4)}
+/* ====== SECTIONS ====== */
+.section{padding:100px 24px;position:relative}
+.section-label{text-align:center;font-size:12px;color:#ff6900;letter-spacing:3px;font-weight:700;text-transform:uppercase;margin-bottom:12px}
+.section-title{text-align:center;font-size:clamp(24px,3.5vw,36px);font-weight:900;margin-bottom:12px;color:#fff}
+.section-desc{text-align:center;font-size:14px;color:var(--text2);max-width:500px;margin:0 auto 50px;line-height:1.8}
 
-/* ====== PAGE 1: HERO ====== */
-.hero-logo{font-size:90px;animation:heroFloat 3s ease infinite;margin-bottom:16px;filter:drop-shadow(0 0 30px rgba(255,105,0,.3))}
-@keyframes heroFloat{0%,100%{transform:translateY(0) rotateY(0deg)}25%{transform:translateY(-14px) rotateY(6deg)}75%{transform:translateY(8px) rotateY(-6deg)}}
-.hero h1{font-size:28px;font-weight:900;background:linear-gradient(135deg,#ff6900,#ffaa00,#ff4400);background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:glow 4s ease infinite;margin-bottom:8px}
-@keyframes glow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-.hero .subtitle{font-size:13px;color:#667;letter-spacing:5px;margin-bottom:22px;animation:fadeUp .8s .3s both}
-.hero .desc{font-size:12px;color:#556;line-height:2;max-width:280px;animation:fadeUp .8s .5s both}
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.scroll-hint{position:absolute;bottom:30px;font-size:11px;color:#445;animation:bounce 2s ease infinite;cursor:pointer}
-@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+/* ====== FEATURES GRID ====== */
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px;max-width:1000px;margin:0 auto;background:var(--border)}
+.feature{background:var(--surface);padding:40px 28px;transition:.3s;position:relative;overflow:hidden}
+.feature::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gradient);transform:scaleX(0);transition:.4s}
+.feature:hover::before{transform:scaleX(1)}
+.feature:hover{background:var(--surface2)}
+.feature .f-icon{font-size:36px;margin-bottom:16px}
+.feature .f-title{font-size:16px;font-weight:700;margin-bottom:8px;color:#fff}
+.feature .f-desc{font-size:13px;color:var(--text2);line-height:1.7}
 
-/* ====== PAGE 2: WHAT WE DO ====== */
-.section-title{font-size:18px;font-weight:900;color:#ff6900;margin-bottom:6px}
-.section-sub{font-size:11px;color:#556;margin-bottom:20px}
-.wedo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:340px}
-.wedo-card{background:rgba(255,255,255,.025);border:1px solid rgba(255,105,0,.1);border-radius:14px;padding:18px 12px;text-align:center;animation:fadeUp .6s both;backdrop-filter:blur(4px);transition:.3s}
-.wedo-card:nth-child(1){animation-delay:.1s}
-.wedo-card:nth-child(2){animation-delay:.2s}
-.wedo-card:nth-child(3){animation-delay:.3s}
-.wedo-card:nth-child(4){animation-delay:.4s}
-.wedo-card:hover{border-color:rgba(255,105,0,.3);background:rgba(255,105,0,.04)}
-.wedo-card .wc-icon{font-size:32px;margin-bottom:8px}
-.wedo-card .wc-title{font-size:13px;font-weight:700;color:#ff6900;margin-bottom:4px}
-.wedo-card .wc-desc{font-size:10px;color:#667;line-height:1.5}
+/* ====== PRODUCT SHOWCASE ====== */
+.products{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.product-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;transition:.3s;cursor:pointer;position:relative;overflow:hidden}
+.product-card:hover{transform:translateY(-4px);border-color:rgba(255,105,0,.25);box-shadow:0 16px 40px rgba(0,0,0,.3)}
+.product-card .p-icon{font-size:40px;margin-bottom:14px}
+.product-card .p-name{font-size:17px;font-weight:700;margin-bottom:6px}
+.product-card .p-desc{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:14px}
+.product-card .p-tags{display:flex;gap:6px;flex-wrap:wrap}
+.product-card .p-tag{padding:4px 10px;border-radius:6px;font-size:10px;font-weight:600}
+.tag-orange{background:rgba(255,105,0,.1);color:#ff6900;border:1px solid rgba(255,105,0,.2)}
+.tag-green{background:rgba(0,200,100,.1);color:#00cc66;border:1px solid rgba(0,200,100,.2)}
+.tag-blue{background:rgba(80,120,255,.1);color:#6699ff;border:1px solid rgba(80,120,255,.2)}
+.tag-purple{background:rgba(160,80,255,.1);color:#aa77ff;border:1px solid rgba(160,80,255,.2)}
 
-/* ====== PAGE 3: PRODUCTS ====== */
-.game-list{width:100%;max-width:340px;display:flex;flex-direction:column;gap:10px}
-.game-item{display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid rgba(255,105,0,.1);animation:fadeUp .6s both;backdrop-filter:blur(4px);cursor:pointer;transition:.3s}
-.game-item:nth-child(1){animation-delay:.1s}
-.game-item:nth-child(2){animation-delay:.2s}
-.game-item:nth-child(3){animation-delay:.3s}
-.game-item:nth-child(4){animation-delay:.4s}
-.game-item:nth-child(5){animation-delay:.5s}
-.game-item:active{background:rgba(255,105,0,.06);border-color:rgba(255,105,0,.25)}
-.game-item .gi-icon{font-size:34px;flex-shrink:0;width:48px;text-align:center}
-.game-item .gi-info{flex:1;text-align:left}
-.game-item .gi-name{font-size:13px;font-weight:700;color:#fff}
-.game-item .gi-desc{font-size:10px;color:#667;margin-top:2px}
-.game-item .gi-badge{font-size:9px;padding:3px 8px;border-radius:8px;font-weight:600;flex-shrink:0}
-.gb-hot{background:rgba(255,105,0,.12);color:#ff6900;border:1px solid rgba(255,105,0,.2)}
-.gb-new{background:rgba(0,200,100,.1);color:#00cc66;border:1px solid rgba(0,200,100,.2)}
-.gb-ai{background:rgba(100,100,255,.1);color:#8888ff;border:1px solid rgba(100,100,255,.2)}
+/* ====== TEAM ====== */
+.team-grid{max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:16px}
+.team-member{text-align:center;padding:16px 8px;border-radius:14px;transition:.3s;cursor:default}
+.team-member:hover{background:var(--surface)}
+.team-member .tm-av{width:64px;height:64px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:28px;background:var(--surface2);border:2px solid var(--border);transition:.3s}
+.team-member:hover .tm-av{border-color:rgba(255,105,0,.3);box-shadow:0 0 20px rgba(255,105,0,.15)}
+.team-member.founder .tm-av{border-color:rgba(255,170,0,.4);background:rgba(255,170,0,.08);box-shadow:0 0 20px rgba(255,170,0,.15)}
+.team-member .tm-name{font-size:13px;font-weight:600;color:#ddd}
+.team-member .tm-role{font-size:10px;color:var(--text2);margin-top:2px}
 
-/* ====== PAGE 4: TEAM ====== */
-.team-scroll{display:flex;gap:8px;overflow-x:auto;padding:8px 0;width:100%;max-width:340px}
-.team-scroll::-webkit-scrollbar{display:none}
-.tcard{flex-shrink:0;width:80px;text-align:center;animation:fadeUp .6s both}
-.tcard:nth-child(1){animation-delay:.1s}
-.tcard:nth-child(2){animation-delay:.15s}
-.tcard:nth-child(3){animation-delay:.2s}
-.tcard:nth-child(4){animation-delay:.25s}
-.tcard:nth-child(5){animation-delay:.3s}
-.tcard:nth-child(6){animation-delay:.35s}
-.tcard:nth-child(7){animation-delay:.4s}
-.tcard .tc-av{width:54px;height:54px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:26px;background:rgba(255,105,0,.06);border:2px solid rgba(255,105,0,.15);transition:.3s}
-.tcard .tc-name{font-size:11px;font-weight:700;color:#ddd}
-.tcard .tc-role{font-size:9px;color:#556}
-.tcard.founder .tc-av{background:rgba(255,170,0,.1);border-color:rgba(255,170,0,.35);font-size:28px}
+/* ====== CTA ====== */
+.cta-section{text-align:center;padding:100px 24px;position:relative;overflow:hidden}
+.cta-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(255,105,0,.06),transparent 60%)}
+.cta-section .cta-content{position:relative;z-index:1;max-width:550px;margin:0 auto}
+.cta-section h2{font-size:clamp(24px,4vw,36px);font-weight:900;margin-bottom:14px}
+.cta-section p{color:var(--text2);font-size:14px;line-height:1.8;margin-bottom:28px}
+.cta-section .btn{padding:15px 36px;border-radius:28px;font-size:15px;font-weight:700;cursor:pointer;display:inline-block;text-decoration:none;background:var(--gradient);color:#fff;box-shadow:0 8px 30px rgba(255,105,0,.3);transition:.3s}
+.cta-section .btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(255,105,0,.5)}
 
-/* ====== PAGE 5: JOIN US ====== */
-.cta-box{background:linear-gradient(135deg,rgba(255,105,0,.08),rgba(255,68,0,.04));border:1px solid rgba(255,105,0,.18);border-radius:18px;padding:24px 20px;width:100%;max-width:340px;animation:fadeUp .6s .2s both}
-.cta-box h3{font-size:18px;font-weight:900;color:#ff6900;margin-bottom:10px}
-.cta-box p{font-size:11px;color:#778;line-height:1.8;margin-bottom:16px}
-.cta-box .cta-btn{display:block;width:100%;padding:13px;border-radius:14px;border:none;background:linear-gradient(135deg,#ff6900,#ff4400);color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;box-shadow:0 4px 20px rgba(255,105,0,.3)}
-.cta-box .cta-btn:active{transform:scale(.96)}
-.contact-row{display:flex;gap:8px;margin-top:14px;width:100%;max-width:340px}
-.contact-chip{flex:1;padding:10px 6px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,105,0,.08);text-align:center;font-size:10px;color:#667;animation:fadeUp .6s .4s both}
-.contact-chip .cc-icon{font-size:20px;margin-bottom:4px;display:block}
-.contact-chip .cc-val{color:#ff6900;font-weight:700;font-size:11px}
+/* ====== FOOTER ====== */
+footer{padding:40px 24px;border-top:1px solid var(--border);background:var(--surface)}
+.footer-inner{max-width:1000px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+footer .copyright{font-size:12px;color:var(--text2)}
+footer .socials{display:flex;gap:16px}
+footer .socials a{color:var(--text2);font-size:18px;text-decoration:none;transition:.2s}
+footer .socials a:hover{color:#ff6900}
 
-/* TOAST */
-.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:8px 22px;border-radius:18px;font-size:12px;font-weight:600;z-index:999;opacity:0;transition:.3s;pointer-events:none;background:rgba(255,105,0,.9);color:#fff}
+/* ====== SCROLL ANIM ====== */
+.reveal{opacity:0;transform:translateY(30px);transition:.8s cubic-bezier(.22,.61,.36,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ====== TOAST ====== */
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);padding:10px 24px;border-radius:20px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:.3s;pointer-events:none;background:rgba(255,105,0,.95);color:#fff}
 .toast.show{opacity:1}
+
+/* ====== MOBILE NAV ====== */
+@media(max-width:640px){
+  nav .nav-links a:not(.cta-nav){display:none}
+  nav{padding:12px 16px}
+  .hero-stats{gap:24px}
+  .hero-stats .stat-num{font-size:24px}
+}
 </style>
 </head>
 <body>
 
-<canvas id="bg"></canvas>
-<div class="overlay"></div>
+<!-- ====== NAV ====== -->
+<nav id="navbar">
+  <a href="#" class="logo"><span class="l-icon">🎮</span>MIUI Studio</a>
+  <div class="nav-links">
+    <a href="#features">产品</a>
+    <a href="#works">作品</a>
+    <a href="#team">团队</a>
+    <a href="#cta" class="cta-nav">加入我们</a>
+  </div>
+</nav>
 
-<!-- Dots -->
-<div class="dots">
-  <div class="dot active" onclick="goPage(0)"></div>
-  <div class="dot" onclick="goPage(1)"></div>
-  <div class="dot" onclick="goPage(2)"></div>
-  <div class="dot" onclick="goPage(3)"></div>
-  <div class="dot" onclick="goPage(4)"></div>
-</div>
-
-<!-- PAGE 1 -->
-<div class="page active hero" id="page0">
-  <div class="hero-logo">🎮</div>
-  <h1>MIUI工作室</h1>
-  <div class="subtitle">AI轻应用 · 小游戏 · 创意无限</div>
-  <div class="desc">QQ频道官方认证开发团队<br>专注AI轻应用与小游戏研发<br>用创意点亮每一段代码</div>
-  <div class="scroll-hint" onclick="nextPage()">▼ 探索更多</div>
-</div>
-
-<!-- PAGE 2: WHAT WE DO -->
-<div class="page" id="page1" hidden>
-  <div class="section-title">🛠️ 我们做什么</div>
-  <div class="section-sub">AI轻应用 × 小游戏</div>
-  <div class="wedo-grid">
-    <div class="wedo-card">
-      <div class="wc-icon">🤖</div>
-      <div class="wc-title">AI轻应用</div>
-      <div class="wc-desc">智能对话 · AI管家<br>频道专属AI助手</div>
+<!-- ====== HERO ====== -->
+<section class="hero">
+  <div class="hero-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+  <div class="hero-content">
+    <div class="badge">AI LIGHT APP · MINI GAME</div>
+    <h1>MIUI工作室</h1>
+    <p class="hero-sub">QQ频道官方认证开发团队，专注AI轻应用与小游戏研发。<br>用代码创造快乐，用创意点亮未来。</p>
+    <div class="hero-btns">
+      <a href="#works" class="btn btn-primary">探索作品</a>
+      <a href="#cta" class="btn btn-outline">加入我们 →</a>
     </div>
-    <div class="wedo-card">
-      <div class="wc-icon">🎮</div>
-      <div class="wc-title">小游戏</div>
-      <div class="wc-desc">休闲益智 · 社交对战<br>QQ频道即点即玩</div>
-    </div>
-    <div class="wedo-card">
-      <div class="wc-icon">🎨</div>
-      <div class="wc-title">创意工具</div>
-      <div class="wc-desc">文生图 · 语音合成<br>一站式创作平台</div>
-    </div>
-    <div class="wedo-card">
-      <div class="wc-icon">🚀</div>
-      <div class="wc-title">频道生态</div>
-      <div class="wc-desc">群聊大厅 · 聊天室<br>增强频道互动体验</div>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num">6+</div><div class="stat-label">线上产品</div></div>
+      <div class="stat"><div class="stat-num">25</div><div class="stat-label">团队成员</div></div>
+      <div class="stat"><div class="stat-num">500+</div><div class="stat-label">活跃用户</div></div>
     </div>
   </div>
-</div>
+</section>
 
-<!-- PAGE 3: PRODUCTS -->
-<div class="page" id="page2" hidden>
-  <div class="section-title">🎯 我们的作品</div>
-  <div class="section-sub">每一款都倾注了心血</div>
-  <div class="game-list">
-    <div class="game-item" onclick="toast('💬 MIUI聊天室')">
-      <span class="gi-icon">💬</span>
-      <div class="gi-info"><div class="gi-name">MIUI聊天室</div><div class="gi-desc">25人实时群聊 · AI小Q管理 · 音乐+表情包</div></div>
-      <span class="gi-badge gb-hot">🔥热门</span>
+<!-- ====== FEATURES ====== -->
+<section class="section" id="features">
+  <div class="section-label reveal">WHAT WE BUILD</div>
+  <h2 class="section-title reveal">我们的核心能力</h2>
+  <p class="section-desc reveal">围绕QQ频道生态，打造高质量的AI轻应用与小游戏</p>
+  <div class="features">
+    <div class="feature reveal">
+      <div class="f-icon">🤖</div>
+      <div class="f-title">AI轻应用</div>
+      <div class="f-desc">基于大语言模型的智能对话系统，为QQ频道提供AI助手、客服、问答等能力。支持多轮对话、情感识别、个性化回复。</div>
     </div>
-    <div class="game-item" onclick="toast('🏠 群聊大厅')">
-      <span class="gi-icon">🏠</span>
-      <div class="gi-info"><div class="gi-name">群聊大厅 v6</div><div class="gi-desc">QQ频道多群整合 · 一站式管理</div></div>
-      <span class="gi-badge gb-hot">⭐推荐</span>
+    <div class="feature reveal">
+      <div class="f-icon">🎮</div>
+      <div class="f-title">小游戏开发</div>
+      <div class="f-desc">HTML5轻量级小游戏，即点即玩。支持排行榜、多人对战、社交分享。覆盖休闲、益智、竞技等多种类型。</div>
     </div>
-    <div class="game-item" onclick="toast('🐧 QQ完整版')">
-      <span class="gi-icon">🐧</span>
-      <div class="gi-info"><div class="gi-name">QQ完全版</div><div class="gi-desc">仿QQ界面 · 真实聊天 · 小Q AI · 二维码</div></div>
-      <span class="gi-badge gb-new">🆕新上</span>
+    <div class="feature reveal">
+      <div class="f-icon">🎨</div>
+      <div class="f-title">创意工具</div>
+      <div class="f-desc">文生图、语音合成、二维码生成、表情包制作等一站式创作工具集，降低创作门槛，释放想象力。</div>
     </div>
-    <div class="game-item" onclick="toast('🤖 AI小Q')">
-      <span class="gi-icon">🤖</span>
-      <div class="gi-info"><div class="gi-name">AI小Q</div><div class="gi-desc">QQ频道AI助手 · 智能问答 · 自动巡检</div></div>
-      <span class="gi-badge gb-ai">🤖AI</span>
-    </div>
-    <div class="game-item" onclick="toast('🎬 QQ×快手')">
-      <span class="gi-icon">🎬</span>
-      <div class="gi-info"><div class="gi-name">QQ×快手</div><div class="gi-desc">边聊边刷 · 一站式娱乐平台</div></div>
-      <span class="gi-badge gb-new">🎬视频</span>
+    <div class="feature reveal">
+      <div class="f-icon">⚡</div>
+      <div class="f-title">极速体验</div>
+      <div class="f-desc">纯前端技术栈，零依赖、秒加载。适配移动端与桌面端，保障流畅的用户体验与高可用性。</div>
     </div>
   </div>
-</div>
+</section>
 
-<!-- PAGE 4: TEAM -->
-<div class="page" id="page3" hidden>
-  <div class="section-title">👥 核心团队</div>
-  <div class="section-sub">一群热爱AI与游戏的年轻人</div>
-  <div class="team-scroll">
-    <div class="tcard founder">
-      <div class="tc-av">👑</div><div class="tc-name">创始人</div><div class="tc-role">总负责人</div>
+<!-- ====== WORKS ====== -->
+<section class="section" id="works" style="background:var(--surface)">
+  <div class="section-label reveal">OUR WORKS</div>
+  <h2 class="section-title reveal">精选作品</h2>
+  <p class="section-desc reveal">每一款产品都倾注了团队的心血与创意</p>
+  <div class="products">
+    <div class="product-card reveal" onclick="toast('💬 MIUI聊天室 — 25人实时群聊')">
+      <div class="p-icon">💬</div>
+      <div class="p-name">MIUI聊天室</div>
+      <div class="p-desc">25人在线实时群聊，AI小Q智能管理，内置音乐播放器与海量表情包。群聊从未如此有趣。</div>
+      <div class="p-tags"><span class="p-tag tag-orange">🔥热门</span><span class="p-tag tag-blue">🤖AI驱动</span></div>
     </div>
-    <div class="tcard">
-      <div class="tc-av">🤖</div><div class="tc-name">小Q</div><div class="tc-role">AI管理员</div>
+    <div class="product-card reveal" onclick="toast('🐧 QQ完全版 — 仿QQ社交体验')">
+      <div class="p-icon">🐧</div>
+      <div class="p-name">QQ完全版</div>
+      <div class="p-desc">1:1还原QQ界面，支持注册登录、好友聊天、AI对话、二维码名片、相册头像。真正的社交体验。</div>
+      <div class="p-tags"><span class="p-tag tag-green">🆕新上</span><span class="p-tag tag-purple">📷二维码</span></div>
     </div>
-    <div class="tcard">
-      <div class="tc-av">💡</div><div class="tc-name">灵感创意</div><div class="tc-role">2人</div>
+    <div class="product-card reveal" onclick="toast('🏠 群聊大厅 v6 — 多群整合平台')">
+      <div class="p-icon">🏠</div>
+      <div class="p-name">群聊大厅 v6</div>
+      <div class="p-desc">QQ频道多群一站式管理平台，整合MIUI技术群、科技交流群、娱乐群，统一入口高效管理。</div>
+      <div class="p-tags"><span class="p-tag tag-orange">⭐推荐</span></div>
     </div>
-    <div class="tcard">
-      <div class="tc-av">🔧</div><div class="tc-name">工程组</div><div class="tc-role">2人</div>
+    <div class="product-card reveal" onclick="toast('🤖 AI小Q — 智能对话助手')">
+      <div class="p-icon">🤖</div>
+      <div class="p-name">AI小Q</div>
+      <div class="p-desc">QQ频道专属AI助手，支持@召唤、自动巡检、智能问答。24小时在线，时刻守护你的频道。</div>
+      <div class="p-tags"><span class="p-tag tag-blue">🤖AI</span><span class="p-tag tag-green">24/7</span></div>
     </div>
-    <div class="tcard">
-      <div class="tc-av">📋</div><div class="tc-name">任务派发</div><div class="tc-role">1人</div>
+    <div class="product-card reveal" onclick="toast('🎬 QQ×快手 — 边聊边刷')">
+      <div class="p-icon">🎬</div>
+      <div class="p-name">QQ×快手</div>
+      <div class="p-desc">聊天与短视频二合一平台，支持热门、直播、搞笑、音乐等分类。聊天刷视频两不误。</div>
+      <div class="p-tags"><span class="p-tag tag-green">🎬视频</span></div>
     </div>
-    <div class="tcard">
-      <div class="tc-av">🎨</div><div class="tc-name">美术组</div><div class="tc-role">1人</div>
-    </div>
-    <div class="tcard">
-      <div class="tc-av">🚀</div><div class="tc-name">科技组</div><div class="tc-role">全员</div>
+    <div class="product-card reveal" onclick="toast('🌟 QQ轻应用工作室 — 品牌官网')">
+      <div class="p-icon">🌟</div>
+      <div class="p-name">轻应用工作室</div>
+      <div class="p-desc">工作室品牌官网，展示团队文化与核心产品。高科技粒子动画，全屏滚动交互，大厂质感。</div>
+      <div class="p-tags"><span class="p-tag tag-purple">🌐官网</span></div>
     </div>
   </div>
-</div>
+</section>
 
-<!-- PAGE 5: JOIN -->
-<div class="page" id="page4" hidden>
-  <div class="cta-box">
-    <h3>🚀 加入我们</h3>
-    <p>MIUI工作室持续招募中！<br>如果你热爱AI、热爱游戏开发<br>欢迎加入我们的大家庭</p>
-    <a class="cta-btn" href="https://weyoudonttalk.github.io/miui-chat/" target="_blank">💬 进入 MIUI聊天室</a>
+<!-- ====== TEAM ====== -->
+<section class="section" id="team">
+  <div class="section-label reveal">OUR TEAM</div>
+  <h2 class="section-title reveal">核心团队</h2>
+  <p class="section-desc reveal">一群热爱AI与游戏开发的年轻人，因热爱而相聚</p>
+  <div class="team-grid">
+    <div class="team-member founder reveal">
+      <div class="tm-av">👑</div><div class="tm-name">创始人</div><div class="tm-role">总负责人</div>
+    </div>
+    <div class="team-member reveal">
+      <div class="tm-av">🤖</div><div class="tm-name">小Q</div><div class="tm-role">AI管理员</div>
+    </div>
+    <div class="team-member reveal">
+      <div class="tm-av">💡</div><div class="tm-name">灵感创意</div><div class="tm-role">2人 · 策划</div>
+    </div>
+    <div class="team-member reveal">
+      <div class="tm-av">🔧</div><div class="tm-name">工程组</div><div class="tm-role">2人 · 研发</div>
+    </div>
+    <div class="team-member reveal">
+      <div class="tm-av">📋</div><div class="tm-name">任务派发</div><div class="tm-role">1人 · PM</div>
+    </div>
+    <div class="team-member reveal">
+      <div class="tm-av">🎨</div><div class="tm-name">美术组</div><div class="tm-role">1人 · 设计</div>
+    </div>
+    <div class="team-member reveal">
+      <div class="tm-av">🚀</div><div class="tm-name">科技组</div><div class="tm-role">全员 · 技术</div>
+    </div>
   </div>
-  <div class="contact-row">
-    <div class="contact-chip"><span class="cc-icon">🐧</span><span class="cc-val">QQ频道</span>MIUI工作室</div>
-    <div class="contact-chip"><span class="cc-icon">🌐</span><span class="cc-val">官网</span>永久在线</div>
-    <div class="contact-chip"><span class="cc-icon">📧</span><span class="cc-val">邮箱</span>miui@qq.com</div>
+</section>
+
+<!-- ====== CTA ====== -->
+<section class="cta-section" id="cta">
+  <div class="cta-content reveal">
+    <h2>准备好加入我们了吗？</h2>
+    <p>无论你是开发者、设计师，还是对AI与游戏充满热情的创作者，MIUI工作室都欢迎你的加入。一起创造下一个爆款。</p>
+    <a href="https://weyoudonttalk.github.io/miui-chat/" target="_blank" class="btn">🚀 进入MIUI聊天室</a>
   </div>
-</div>
+</section>
+
+<!-- ====== FOOTER ====== -->
+<footer>
+  <div class="footer-inner">
+    <div class="copyright">© 2026 MIUI Studio · QQ频道官方认证 · 永久在线</div>
+    <div class="socials">
+      <a href="#" title="QQ频道">🐧</a>
+      <a href="#" title="GitHub">💻</a>
+      <a href="#" title="邮箱">📧</a>
+    </div>
+  </div>
+</footer>
 
 <div class="toast" id="toastEl"></div>
 
 <script>
-// ====== PARTICLE CANVAS ======
+// ====== NAV SCROLL ======
+window.addEventListener('scroll',function(){
+  document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>50);
+});
+
+// ====== REVEAL ON SCROLL ======
 (function(){
-  var c=document.getElementById('bg'),x=c.getContext('2d');
-  c.width=window.innerWidth;c.height=window.innerHeight;
-  var ps=[];
-  for(var i=0;i<70;i++){
-    ps.push({
-      x:Math.random()*c.width,y:Math.random()*c.height,
-      vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,
-      r:Math.random()*1.4+.4,
-      hue:15+Math.random()*20,
-      alpha:Math.random()*.35+.08
-    });
-  }
-  function draw(){
-    x.clearRect(0,0,c.width,c.height);
-    // connections
-    for(var i=0;i<ps.length;i++){
-      for(var j=i+1;j<ps.length;j++){
-        var dx=ps[i].x-ps[j].x,dy=ps[i].y-ps[j].y,dist=Math.sqrt(dx*dx+dy*dy);
-        if(dist<130){
-          x.beginPath();x.strokeStyle='hsla('+ps[i].hue+',100%,55%,'+((130-dist)/130*.06)+')';
-          x.lineWidth=.5;x.moveTo(ps[i].x,ps[i].y);x.lineTo(ps[j].x,ps[j].y);x.stroke();
-        }
-      }
-    }
-    ps.forEach(function(p){
-      x.beginPath();x.fillStyle='hsla('+p.hue+',100%,60%,'+p.alpha+')';
-      x.arc(p.x,p.y,p.r,0,Math.PI*2);x.fill();
-      x.beginPath();x.fillStyle='hsla('+p.hue+',100%,60%,'+(p.alpha*.25)+')';
-      x.arc(p.x,p.y,p.r*3,0,Math.PI*2);x.fill();
-      p.x+=p.vx;p.y+=p.vy;
-      if(p.x<0)p.x=c.width;if(p.x>c.width)p.x=0;if(p.y<0)p.y=c.height;if(p.y>c.height)p.y=0;
-    });
-    requestAnimationFrame(draw);
-  }
-  draw();
-  window.addEventListener('resize',function(){c.width=window.innerWidth;c.height=window.innerHeight});
+  var items=document.querySelectorAll('.reveal');
+  var observer=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}})
+  },{threshold:.15});
+  items.forEach(function(el){observer.observe(el)});
+  // Initial reveal for visible ones
+  setTimeout(function(){items.forEach(function(el){if(el.getBoundingClientRect().top<window.innerHeight)el.classList.add('visible')})},100);
 })();
 
-// ====== PAGE NAV ======
-let currentPage=0,totalPages=5,touchStartY=0,isScrolling=false;
-
-function goPage(n){
-  if(n<0||n>=totalPages)return;currentPage=n;
-  document.querySelectorAll('.page').forEach(function(p,i){
-    if(i===n){p.hidden=false;setTimeout(function(){p.classList.add('active')},10)}
-    else{p.classList.remove('active');setTimeout(function(){if(i!==currentPage)p.hidden=true},400)}
-  });
-  document.querySelectorAll('.dot').forEach(function(d,i){d.classList.toggle('active',i===n)});
+// ====== TOAST ======
+var tt;
+function toast(m){
+  var t=document.getElementById('toastEl');t.textContent=m;t.classList.add('show');
+  clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show')},2000);
 }
-function nextPage(){goPage(currentPage+1)}
-
-// Touch
-document.addEventListener('touchstart',function(e){touchStartY=e.touches[0].clientY;isScrolling=false},false);
-document.addEventListener('touchmove',function(e){isScrolling=true},false);
-document.addEventListener('touchend',function(e){
-  if(!isScrolling)return;var dy=e.changedTouches[0].clientY-touchStartY;
-  if(Math.abs(dy)>60){if(dy<0)goPage(currentPage+1);else goPage(currentPage-1);}
-},false);
-
-// Wheel
-document.addEventListener('wheel',function(e){e.preventDefault();if(e.deltaY>20)goPage(currentPage+1);else if(e.deltaY<-20)goPage(currentPage-1)},{passive:false});
-
-// Keyboard
-document.addEventListener('keydown',function(e){if(e.key==='ArrowDown'||e.key==='ArrowRight')goPage(currentPage+1);if(e.key==='ArrowUp'||e.key==='ArrowLeft')goPage(currentPage-1)});
-
-// Toast
-var tt;function toast(m){var t=document.getElementById('toastEl');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show')},2000)}
 </script>
 </body>
 </html>
