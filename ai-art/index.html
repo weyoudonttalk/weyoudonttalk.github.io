@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>🎨 AI画室</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;color:#fff}
+.card{background:rgba(255,255,255,.06);border-radius:24px;padding:28px 24px;max-width:420px;width:100%;text-align:center;border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(10px)}
+h1{font-size:26px;margin-bottom:6px}
+.sub{font-size:11px;opacity:.6;margin-bottom:20px}
+.prompt-wrap{display:flex;gap:8px;margin-bottom:16px}
+.prompt-wrap input{flex:1;padding:14px;border-radius:14px;border:none;background:rgba(255,255,255,.1);color:#fff;font-size:14px;outline:none}
+.prompt-wrap input::placeholder{color:rgba(255,255,255,.3)}
+.prompt-wrap button{padding:14px 20px;border-radius:14px;border:none;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-weight:700;cursor:pointer;font-size:18px}
+.canvas-wrap{width:100%;aspect-ratio:1;background:rgba(255,255,255,.05);border-radius:16px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:16px;position:relative}
+.canvas-wrap img{width:100%;height:100%;object-fit:contain}
+.placeholder{font-size:60px;opacity:.2}
+.loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);border-radius:16px}
+.loading .spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,.2);border-top-color:#667eea;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.tag{padding:6px 14px;border-radius:20px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);font-size:11px;cursor:pointer;transition:.2s}
+.tag:active{background:rgba(102,126,234,.3);border-color:#667eea}
+.download-btn{display:none;width:100%;padding:14px;border-radius:14px;border:none;background:#667eea;color:#fff;font-weight:700;cursor:pointer;margin-top:12px;font-size:14px}
+</style></head>
+<body>
+<div class="card">
+<h1>🎨 AI画室</h1>
+<p class="sub">输入描述，AI为你创作</p>
+<div class="prompt-wrap"><input type="text" id="prompt" placeholder="描述你想画的画面..." maxlength="100" onkeydown="if(event.key==='Enter')generate()"><button onclick="generate()">🎨</button></div>
+<div class="canvas-wrap" id="canvasWrap"><div class="placeholder">🎨</div><div class="loading" id="loadingSpinner" style="display:none"><div class="spinner"></div></div></div>
+<button class="download-btn" id="dlBtn" onclick="downloadImg()">💾 下载图片</button>
+<div class="tags">
+<div class="tag" onclick="setPrompt('一只可爱的橘猫在阳光下睡觉')">🐱 橘猫</div>
+<div class="tag" onclick="setPrompt('赛博朋克城市夜景，霓虹灯')">🏙️ 赛博朋克</div>
+<div class="tag" onclick="setPrompt('樱花树下的动漫少女')">🌸 动漫</div>
+<div class="tag" onclick="setPrompt('星空下的雪山和湖泊')">🏔️ 风景</div>
+<div class="tag" onclick="setPrompt('卡通风格的汉堡和薯条')">🍔 美食</div>
+<div class="tag" onclick="setPrompt('像素风格的城堡和骑士')">🏰 像素</div>
+</div>
+</div>
+<script>
+function setPrompt(p){document.getElementById('prompt').value=p}
+async function generate(){
+  const p=document.getElementById('prompt').value.trim();if(!p)return;
+  const wrap=document.getElementById('canvasWrap');wrap.querySelector('.placeholder').style.display='none';
+  document.getElementById('loadingSpinner').style.display='flex';document.getElementById('dlBtn').style.display='none';
+  try{
+    const r=await fetch('https://image.pollinations.ai/prompt/'+encodeURIComponent(p)+'?width=512&height=512&nologo=true');
+    if(!r.ok)throw new Error();
+    const blob=await r.blob();const url=URL.createObjectURL(blob);
+    wrap.innerHTML='<img src="'+url+'" id="genImg"><div class="loading" style="display:none"><div class="spinner"></div></div>';
+    document.getElementById('dlBtn').style.display='block';document.getElementById('dlBtn').onclick=()=>{const a=document.createElement('a');a.href=url;a.download='miui-ai-art.png';a.click()};
+  }catch(e){wrap.innerHTML='<div class="placeholder">❌</div><p style="font-size:12px;opacity:.5;margin-top:8px">生成失败，请重试</p>';document.getElementById('dlBtn').style.display='none'}
+}
+</script>
+</body></html>
