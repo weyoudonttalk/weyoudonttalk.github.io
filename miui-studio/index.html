@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>MIUI工作室</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue',system-ui,-apple-system,sans-serif;background:#0a0a0f;color:#fff}
+
+#bg{position:fixed;inset:0;z-index:0}
+.overlay{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 30% 20%,rgba(255,105,0,.04),transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(255,155,0,.03),transparent 50%)}
+
+/* ====== PAGES ====== */
+.page{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;transition:opacity .6s,transform .6s}
+.page[hidden]{opacity:0;transform:translateY(20px);pointer-events:none}
+.page.active{opacity:1;transform:translateY(0)}
+
+/* DOTS */
+.dots{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:20;display:flex;flex-direction:column;gap:10px}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.18);cursor:pointer;transition:.3s}
+.dot.active{background:#ff6900;box-shadow:0 0 12px rgba(255,105,0,.6);transform:scale(1.4)}
+
+/* ====== PAGE 1: HERO ====== */
+.hero-logo{font-size:90px;animation:heroFloat 3s ease infinite;margin-bottom:16px;filter:drop-shadow(0 0 30px rgba(255,105,0,.3))}
+@keyframes heroFloat{0%,100%{transform:translateY(0) rotateY(0deg)}25%{transform:translateY(-14px) rotateY(6deg)}75%{transform:translateY(8px) rotateY(-6deg)}}
+.hero h1{font-size:28px;font-weight:900;background:linear-gradient(135deg,#ff6900,#ffaa00,#ff4400);background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:glow 4s ease infinite;margin-bottom:8px}
+@keyframes glow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hero .subtitle{font-size:13px;color:#667;letter-spacing:5px;margin-bottom:22px;animation:fadeUp .8s .3s both}
+.hero .desc{font-size:12px;color:#556;line-height:2;max-width:280px;animation:fadeUp .8s .5s both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.scroll-hint{position:absolute;bottom:30px;font-size:11px;color:#445;animation:bounce 2s ease infinite;cursor:pointer}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+/* ====== PAGE 2: WHAT WE DO ====== */
+.section-title{font-size:18px;font-weight:900;color:#ff6900;margin-bottom:6px}
+.section-sub{font-size:11px;color:#556;margin-bottom:20px}
+.wedo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:340px}
+.wedo-card{background:rgba(255,255,255,.025);border:1px solid rgba(255,105,0,.1);border-radius:14px;padding:18px 12px;text-align:center;animation:fadeUp .6s both;backdrop-filter:blur(4px);transition:.3s}
+.wedo-card:nth-child(1){animation-delay:.1s}
+.wedo-card:nth-child(2){animation-delay:.2s}
+.wedo-card:nth-child(3){animation-delay:.3s}
+.wedo-card:nth-child(4){animation-delay:.4s}
+.wedo-card:hover{border-color:rgba(255,105,0,.3);background:rgba(255,105,0,.04)}
+.wedo-card .wc-icon{font-size:32px;margin-bottom:8px}
+.wedo-card .wc-title{font-size:13px;font-weight:700;color:#ff6900;margin-bottom:4px}
+.wedo-card .wc-desc{font-size:10px;color:#667;line-height:1.5}
+
+/* ====== PAGE 3: PRODUCTS ====== */
+.game-list{width:100%;max-width:340px;display:flex;flex-direction:column;gap:10px}
+.game-item{display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid rgba(255,105,0,.1);animation:fadeUp .6s both;backdrop-filter:blur(4px);cursor:pointer;transition:.3s}
+.game-item:nth-child(1){animation-delay:.1s}
+.game-item:nth-child(2){animation-delay:.2s}
+.game-item:nth-child(3){animation-delay:.3s}
+.game-item:nth-child(4){animation-delay:.4s}
+.game-item:nth-child(5){animation-delay:.5s}
+.game-item:active{background:rgba(255,105,0,.06);border-color:rgba(255,105,0,.25)}
+.game-item .gi-icon{font-size:34px;flex-shrink:0;width:48px;text-align:center}
+.game-item .gi-info{flex:1;text-align:left}
+.game-item .gi-name{font-size:13px;font-weight:700;color:#fff}
+.game-item .gi-desc{font-size:10px;color:#667;margin-top:2px}
+.game-item .gi-badge{font-size:9px;padding:3px 8px;border-radius:8px;font-weight:600;flex-shrink:0}
+.gb-hot{background:rgba(255,105,0,.12);color:#ff6900;border:1px solid rgba(255,105,0,.2)}
+.gb-new{background:rgba(0,200,100,.1);color:#00cc66;border:1px solid rgba(0,200,100,.2)}
+.gb-ai{background:rgba(100,100,255,.1);color:#8888ff;border:1px solid rgba(100,100,255,.2)}
+
+/* ====== PAGE 4: TEAM ====== */
+.team-scroll{display:flex;gap:8px;overflow-x:auto;padding:8px 0;width:100%;max-width:340px}
+.team-scroll::-webkit-scrollbar{display:none}
+.tcard{flex-shrink:0;width:80px;text-align:center;animation:fadeUp .6s both}
+.tcard:nth-child(1){animation-delay:.1s}
+.tcard:nth-child(2){animation-delay:.15s}
+.tcard:nth-child(3){animation-delay:.2s}
+.tcard:nth-child(4){animation-delay:.25s}
+.tcard:nth-child(5){animation-delay:.3s}
+.tcard:nth-child(6){animation-delay:.35s}
+.tcard:nth-child(7){animation-delay:.4s}
+.tcard .tc-av{width:54px;height:54px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:26px;background:rgba(255,105,0,.06);border:2px solid rgba(255,105,0,.15);transition:.3s}
+.tcard .tc-name{font-size:11px;font-weight:700;color:#ddd}
+.tcard .tc-role{font-size:9px;color:#556}
+.tcard.founder .tc-av{background:rgba(255,170,0,.1);border-color:rgba(255,170,0,.35);font-size:28px}
+
+/* ====== PAGE 5: JOIN US ====== */
+.cta-box{background:linear-gradient(135deg,rgba(255,105,0,.08),rgba(255,68,0,.04));border:1px solid rgba(255,105,0,.18);border-radius:18px;padding:24px 20px;width:100%;max-width:340px;animation:fadeUp .6s .2s both}
+.cta-box h3{font-size:18px;font-weight:900;color:#ff6900;margin-bottom:10px}
+.cta-box p{font-size:11px;color:#778;line-height:1.8;margin-bottom:16px}
+.cta-box .cta-btn{display:block;width:100%;padding:13px;border-radius:14px;border:none;background:linear-gradient(135deg,#ff6900,#ff4400);color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;box-shadow:0 4px 20px rgba(255,105,0,.3)}
+.cta-box .cta-btn:active{transform:scale(.96)}
+.contact-row{display:flex;gap:8px;margin-top:14px;width:100%;max-width:340px}
+.contact-chip{flex:1;padding:10px 6px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,105,0,.08);text-align:center;font-size:10px;color:#667;animation:fadeUp .6s .4s both}
+.contact-chip .cc-icon{font-size:20px;margin-bottom:4px;display:block}
+.contact-chip .cc-val{color:#ff6900;font-weight:700;font-size:11px}
+
+/* TOAST */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:8px 22px;border-radius:18px;font-size:12px;font-weight:600;z-index:999;opacity:0;transition:.3s;pointer-events:none;background:rgba(255,105,0,.9);color:#fff}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+<div class="overlay"></div>
+
+<!-- Dots -->
+<div class="dots">
+  <div class="dot active" onclick="goPage(0)"></div>
+  <div class="dot" onclick="goPage(1)"></div>
+  <div class="dot" onclick="goPage(2)"></div>
+  <div class="dot" onclick="goPage(3)"></div>
+  <div class="dot" onclick="goPage(4)"></div>
+</div>
+
+<!-- PAGE 1 -->
+<div class="page active hero" id="page0">
+  <div class="hero-logo">🎮</div>
+  <h1>MIUI工作室</h1>
+  <div class="subtitle">AI轻应用 · 小游戏 · 创意无限</div>
+  <div class="desc">QQ频道官方认证开发团队<br>专注AI轻应用与小游戏研发<br>用创意点亮每一段代码</div>
+  <div class="scroll-hint" onclick="nextPage()">▼ 探索更多</div>
+</div>
+
+<!-- PAGE 2: WHAT WE DO -->
+<div class="page" id="page1" hidden>
+  <div class="section-title">🛠️ 我们做什么</div>
+  <div class="section-sub">AI轻应用 × 小游戏</div>
+  <div class="wedo-grid">
+    <div class="wedo-card">
+      <div class="wc-icon">🤖</div>
+      <div class="wc-title">AI轻应用</div>
+      <div class="wc-desc">智能对话 · AI管家<br>频道专属AI助手</div>
+    </div>
+    <div class="wedo-card">
+      <div class="wc-icon">🎮</div>
+      <div class="wc-title">小游戏</div>
+      <div class="wc-desc">休闲益智 · 社交对战<br>QQ频道即点即玩</div>
+    </div>
+    <div class="wedo-card">
+      <div class="wc-icon">🎨</div>
+      <div class="wc-title">创意工具</div>
+      <div class="wc-desc">文生图 · 语音合成<br>一站式创作平台</div>
+    </div>
+    <div class="wedo-card">
+      <div class="wc-icon">🚀</div>
+      <div class="wc-title">频道生态</div>
+      <div class="wc-desc">群聊大厅 · 聊天室<br>增强频道互动体验</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 3: PRODUCTS -->
+<div class="page" id="page2" hidden>
+  <div class="section-title">🎯 我们的作品</div>
+  <div class="section-sub">每一款都倾注了心血</div>
+  <div class="game-list">
+    <div class="game-item" onclick="toast('💬 MIUI聊天室')">
+      <span class="gi-icon">💬</span>
+      <div class="gi-info"><div class="gi-name">MIUI聊天室</div><div class="gi-desc">25人实时群聊 · AI小Q管理 · 音乐+表情包</div></div>
+      <span class="gi-badge gb-hot">🔥热门</span>
+    </div>
+    <div class="game-item" onclick="toast('🏠 群聊大厅')">
+      <span class="gi-icon">🏠</span>
+      <div class="gi-info"><div class="gi-name">群聊大厅 v6</div><div class="gi-desc">QQ频道多群整合 · 一站式管理</div></div>
+      <span class="gi-badge gb-hot">⭐推荐</span>
+    </div>
+    <div class="game-item" onclick="toast('🐧 QQ完整版')">
+      <span class="gi-icon">🐧</span>
+      <div class="gi-info"><div class="gi-name">QQ完全版</div><div class="gi-desc">仿QQ界面 · 真实聊天 · 小Q AI · 二维码</div></div>
+      <span class="gi-badge gb-new">🆕新上</span>
+    </div>
+    <div class="game-item" onclick="toast('🤖 AI小Q')">
+      <span class="gi-icon">🤖</span>
+      <div class="gi-info"><div class="gi-name">AI小Q</div><div class="gi-desc">QQ频道AI助手 · 智能问答 · 自动巡检</div></div>
+      <span class="gi-badge gb-ai">🤖AI</span>
+    </div>
+    <div class="game-item" onclick="toast('🎬 QQ×快手')">
+      <span class="gi-icon">🎬</span>
+      <div class="gi-info"><div class="gi-name">QQ×快手</div><div class="gi-desc">边聊边刷 · 一站式娱乐平台</div></div>
+      <span class="gi-badge gb-new">🎬视频</span>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 4: TEAM -->
+<div class="page" id="page3" hidden>
+  <div class="section-title">👥 核心团队</div>
+  <div class="section-sub">一群热爱AI与游戏的年轻人</div>
+  <div class="team-scroll">
+    <div class="tcard founder">
+      <div class="tc-av">👑</div><div class="tc-name">创始人</div><div class="tc-role">总负责人</div>
+    </div>
+    <div class="tcard">
+      <div class="tc-av">🤖</div><div class="tc-name">小Q</div><div class="tc-role">AI管理员</div>
+    </div>
+    <div class="tcard">
+      <div class="tc-av">💡</div><div class="tc-name">灵感创意</div><div class="tc-role">2人</div>
+    </div>
+    <div class="tcard">
+      <div class="tc-av">🔧</div><div class="tc-name">工程组</div><div class="tc-role">2人</div>
+    </div>
+    <div class="tcard">
+      <div class="tc-av">📋</div><div class="tc-name">任务派发</div><div class="tc-role">1人</div>
+    </div>
+    <div class="tcard">
+      <div class="tc-av">🎨</div><div class="tc-name">美术组</div><div class="tc-role">1人</div>
+    </div>
+    <div class="tcard">
+      <div class="tc-av">🚀</div><div class="tc-name">科技组</div><div class="tc-role">全员</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 5: JOIN -->
+<div class="page" id="page4" hidden>
+  <div class="cta-box">
+    <h3>🚀 加入我们</h3>
+    <p>MIUI工作室持续招募中！<br>如果你热爱AI、热爱游戏开发<br>欢迎加入我们的大家庭</p>
+    <a class="cta-btn" href="https://weyoudonttalk.github.io/miui-chat/" target="_blank">💬 进入 MIUI聊天室</a>
+  </div>
+  <div class="contact-row">
+    <div class="contact-chip"><span class="cc-icon">🐧</span><span class="cc-val">QQ频道</span>MIUI工作室</div>
+    <div class="contact-chip"><span class="cc-icon">🌐</span><span class="cc-val">官网</span>永久在线</div>
+    <div class="contact-chip"><span class="cc-icon">📧</span><span class="cc-val">邮箱</span>miui@qq.com</div>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+// ====== PARTICLE CANVAS ======
+(function(){
+  var c=document.getElementById('bg'),x=c.getContext('2d');
+  c.width=window.innerWidth;c.height=window.innerHeight;
+  var ps=[];
+  for(var i=0;i<70;i++){
+    ps.push({
+      x:Math.random()*c.width,y:Math.random()*c.height,
+      vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,
+      r:Math.random()*1.4+.4,
+      hue:15+Math.random()*20,
+      alpha:Math.random()*.35+.08
+    });
+  }
+  function draw(){
+    x.clearRect(0,0,c.width,c.height);
+    // connections
+    for(var i=0;i<ps.length;i++){
+      for(var j=i+1;j<ps.length;j++){
+        var dx=ps[i].x-ps[j].x,dy=ps[i].y-ps[j].y,dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<130){
+          x.beginPath();x.strokeStyle='hsla('+ps[i].hue+',100%,55%,'+((130-dist)/130*.06)+')';
+          x.lineWidth=.5;x.moveTo(ps[i].x,ps[i].y);x.lineTo(ps[j].x,ps[j].y);x.stroke();
+        }
+      }
+    }
+    ps.forEach(function(p){
+      x.beginPath();x.fillStyle='hsla('+p.hue+',100%,60%,'+p.alpha+')';
+      x.arc(p.x,p.y,p.r,0,Math.PI*2);x.fill();
+      x.beginPath();x.fillStyle='hsla('+p.hue+',100%,60%,'+(p.alpha*.25)+')';
+      x.arc(p.x,p.y,p.r*3,0,Math.PI*2);x.fill();
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0)p.x=c.width;if(p.x>c.width)p.x=0;if(p.y<0)p.y=c.height;if(p.y>c.height)p.y=0;
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+  window.addEventListener('resize',function(){c.width=window.innerWidth;c.height=window.innerHeight});
+})();
+
+// ====== PAGE NAV ======
+let currentPage=0,totalPages=5,touchStartY=0,isScrolling=false;
+
+function goPage(n){
+  if(n<0||n>=totalPages)return;currentPage=n;
+  document.querySelectorAll('.page').forEach(function(p,i){
+    if(i===n){p.hidden=false;setTimeout(function(){p.classList.add('active')},10)}
+    else{p.classList.remove('active');setTimeout(function(){if(i!==currentPage)p.hidden=true},400)}
+  });
+  document.querySelectorAll('.dot').forEach(function(d,i){d.classList.toggle('active',i===n)});
+}
+function nextPage(){goPage(currentPage+1)}
+
+// Touch
+document.addEventListener('touchstart',function(e){touchStartY=e.touches[0].clientY;isScrolling=false},false);
+document.addEventListener('touchmove',function(e){isScrolling=true},false);
+document.addEventListener('touchend',function(e){
+  if(!isScrolling)return;var dy=e.changedTouches[0].clientY-touchStartY;
+  if(Math.abs(dy)>60){if(dy<0)goPage(currentPage+1);else goPage(currentPage-1);}
+},false);
+
+// Wheel
+document.addEventListener('wheel',function(e){e.preventDefault();if(e.deltaY>20)goPage(currentPage+1);else if(e.deltaY<-20)goPage(currentPage-1)},{passive:false});
+
+// Keyboard
+document.addEventListener('keydown',function(e){if(e.key==='ArrowDown'||e.key==='ArrowRight')goPage(currentPage+1);if(e.key==='ArrowUp'||e.key==='ArrowLeft')goPage(currentPage-1)});
+
+// Toast
+var tt;function toast(m){var t=document.getElementById('toastEl');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show')},2000)}
+</script>
+</body>
+</html>
