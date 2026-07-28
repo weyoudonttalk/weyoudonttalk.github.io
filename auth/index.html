@@ -3,96 +3,107 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>MIUI账号中心</title>
+<title>MIUI — 领取你的专属网站</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;color:#fff}
-.card{background:rgba(255,255,255,.08);border-radius:24px;padding:40px 28px;max-width:400px;width:100%;backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.12);box-shadow:0 20px 60px rgba(0,0,0,.4);text-align:center}
-.card h2{font-size:26px;margin-bottom:6px}
-.card .sub{font-size:12px;opacity:.6;margin-bottom:28px}
-.admin-box{background:rgba(255,215,0,.06);border:2px solid rgba(255,215,0,.2);border-radius:16px;padding:20px;margin-bottom:20px}
-.admin-box .crown{font-size:36px;margin-bottom:6px}
-.admin-box h3{font-size:15px;color:#ffd700;margin-bottom:4px}
-.admin-box .hint{font-size:11px;opacity:.5;margin-bottom:12px}
-.admin-box input{width:100%;padding:14px;border-radius:12px;border:1.5px solid rgba(255,215,0,.2);background:rgba(255,255,255,.05);color:#fff;font-size:15px;outline:none;text-align:center}
-.admin-box input:focus{border-color:#ffd700;background:rgba(255,255,255,.1)}
-.admin-box .btn{padding:14px 0;border-radius:12px;border:none;font-size:16px;font-weight:700;cursor:pointer;color:#fff;background:linear-gradient(135deg,#ffd700,#ffaa00);margin-top:10px;width:100%}
-.admin-box .btn:active{transform:scale(.96)}
-.divider{display:flex;align-items:center;gap:12px;margin:20px 0;opacity:.3}
-.divider .line{flex:1;height:1px;background:rgba(255,255,255,.2)}
-.divider span{font-size:11px}
-.card .normal-input{width:100%;padding:14px;border-radius:12px;border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;font-size:15px;outline:none;margin-bottom:10px}
-.card .normal-input:focus{border-color:#667eea;background:rgba(255,255,255,.1)}
-.card .btn-blue{width:100%;padding:15px;border-radius:14px;border:none;font-size:16px;font-weight:700;cursor:pointer;color:#fff;background:linear-gradient(135deg,#667eea,#764ba2)}
-.card .btn-blue:active{transform:scale(.96)}
-.card .link{font-size:13px;margin-top:16px;cursor:pointer;opacity:.7;display:inline-block;color:#fff;text-decoration:none}
-.card .link:hover{opacity:1}
-.err{color:#ff6b6b;font-size:12px;min-height:18px;margin-bottom:6px}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;background:#f0f2f5;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.wrapper{max-width:420px;width:100%}
+.logo{text-align:center;margin-bottom:28px}
+.logo .icon{font-size:48px}
+.logo h1{font-size:22px;color:#1a1a2e;margin-top:8px}
+.card{background:#fff;border-radius:20px;padding:32px 26px;box-shadow:0 4px 24px rgba(0,0,0,.06)}
+.card h2{font-size:20px;text-align:center;margin-bottom:6px;color:#1a1a2e}
+.card .sub{font-size:13px;color:#999;text-align:center;margin-bottom:24px}
+.card .inp{width:100%;padding:14px 16px;border-radius:12px;border:2px solid #e8e8e8;font-size:15px;outline:none;margin-bottom:12px;transition:.2s}
+.card .inp:focus{border-color:#ff6900}
+.card .btn{width:100%;padding:15px;border-radius:14px;border:none;font-size:16px;font-weight:700;cursor:pointer;color:#fff;background:#ff6900;margin-top:4px}
+.card .btn:active{transform:scale(.97)}
+.card .btn.ghost{background:transparent;color:#ff6900;border:2px solid #ff6900;margin-top:8px}
+.card .switch{text-align:center;margin-top:14px;font-size:13px;color:#999}
+.card .switch a{color:#ff6900;text-decoration:none;font-weight:600;cursor:pointer}
+.card .switch a:hover{text-decoration:underline}
+.err{color:#ff4444;font-size:12px;text-align:center;min-height:18px;margin-bottom:4px}
+.suc{color:#22c55e;font-size:12px;text-align:center;min-height:18px;margin-bottom:4px}
 
-.profile{display:none}
-.profile .pav{font-size:60px;margin-bottom:14px}
-.profile .pname{font-size:22px;font-weight:800;margin-bottom:6px}
-.profile .pemail{font-size:13px;opacity:.7;margin-bottom:4px}
-.profile .pdate{font-size:11px;opacity:.4;margin-bottom:18px}
-.links{display:flex;flex-direction:column;gap:8px;margin:16px 0}
-.links a{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:12px;background:rgba(255,255,255,.06);color:#fff;text-decoration:none;font-size:14px}
-.links a:active{background:rgba(255,255,255,.12)}
-.links a .li{font-size:20px}
+/* Admin highlight */
+.admin-tip{background:#fff8f0;border:2px solid #ff6900;border-radius:14px;padding:16px;text-align:center;margin-bottom:16px}
+.admin-tip .crown{font-size:28px}
+.admin-tip p{font-size:12px;color:#ff6900;font-weight:600;margin:4px 0}
+.admin-tip .small{font-size:10px;color:#999}
+
+.profile{text-align:center}
+.profile .pav{font-size:60px;margin-bottom:12px}
+.profile .pname{font-size:20px;font-weight:700;color:#1a1a2e;margin-bottom:4px}
+.profile .pemail{font-size:13px;color:#999;margin-bottom:12px}
+.profile .site-link{display:block;padding:14px;background:#fff8f0;border:2px solid #ff6900;border-radius:14px;color:#ff6900;font-size:14px;font-weight:700;text-decoration:none;margin-bottom:10px;word-break:break-all}
+.profile .site-link:active{background:#ffeedd}
+.features{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}
+.features .feat{background:#f8f9fb;border-radius:12px;padding:14px;text-align:center;font-size:12px;color:#666}
+.features .feat .ficon{font-size:26px;margin-bottom:4px;display:block}
+.features .feat strong{color:#1a1a2e;display:block;margin-bottom:2px}
 </style>
 </head>
 <body>
-<div class="card">
+<div class="wrapper">
 
   <!-- ====== LOGIN ====== -->
   <div id="loginView">
-    <h2>🔐 MIUI账号</h2>
-    <p class="sub">一个账号，畅游所有产品</p>
-    <div class="err" id="err"></div>
-
-    <!-- ADMIN QUICK LOGIN - always visible -->
-    <div class="admin-box">
-      <div class="crown">👑</div>
-      <h3>管理员快速登录</h3>
-      <div class="hint">邮箱随便填，密码已内置</div>
-      <input type="email" id="adminEmail" placeholder="📧 邮箱（随便写）" value="admin@miui.studio">
-      <button class="btn" onclick="adminLogin()">⚡ 秒登 · 自动填密码</button>
+    <div class="logo"><div class="icon">🎮</div><h1>MIUI网站领取中心</h1></div>
+    <div class="card">
+      <h2>🔐 登录领取你的网站</h2>
+      <p class="sub">注册即送专属个人网站</p>
+      <div class="err" id="err"></div>
+      <div class="suc" id="suc"></div>
+      <div class="admin-tip">
+        <div class="crown">👑</div>
+        <p>管理员快速登录</p>
+        <p class="small">密码已内置 · 邮箱随便填</p>
+        <input type="email" class="inp" id="adminEmail" value="admin@miui.studio" placeholder="📧 邮箱">
+        <button class="btn" onclick="adminLogin()">⚡ 秒登</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin:8px 0 16px"><span style="flex:1;height:1px;background:#eee"></span><span style="font-size:11px;color:#ccc">普通用户</span><span style="flex:1;height:1px;background:#eee"></span></div>
+      <input type="email" class="inp" id="userEmail" placeholder="📧 邮箱地址">
+      <input type="password" class="inp" id="userPw" placeholder="🔑 密码">
+      <button class="btn" onclick="userLogin()">登 录</button>
+      <div class="switch">还没有网站？<a onclick="showReg()">立即免费领取 →</a></div>
     </div>
-
-    <div class="divider"><span class="line"></span><span>普通用户</span><span class="line"></span></div>
-
-    <input type="email" class="normal-input" id="userEmail" placeholder="📧 邮箱地址">
-    <input type="password" class="normal-input" id="userPw" placeholder="🔑 密码">
-    <button class="btn-blue" onclick="userLogin()">登 录</button>
-    <a class="link" href="#" onclick="showReg()">没有账号？立即注册 →</a>
   </div>
 
   <!-- ====== REGISTER ====== -->
   <div id="regView" style="display:none">
-    <h2>📝 注册账号</h2>
-    <p class="sub">创建你的MIUI统一账号</p>
-    <div class="err" id="regErr"></div>
-    <input type="email" class="normal-input" id="regEmail" placeholder="📧 邮箱地址">
-    <input type="password" class="normal-input" id="regPw" placeholder="🔑 密码（6位以上）">
-    <input type="text" class="normal-input" id="regCode" placeholder="🔢 验证码：输入任意6位数字" maxlength="6" style="font-size:20px;letter-spacing:8px">
-    <button class="btn-blue" onclick="doRegister()">注 册</button>
-    <p style="font-size:11px;opacity:.4;margin-top:12px;line-height:1.6">输入任意6位数字即可通过验证</p>
-    <a class="link" href="#" onclick="showLogin()">← 返回登录</a>
+    <div class="logo"><div class="icon">🏠</div><h1>免费领取你的专属网站</h1></div>
+    <div class="card">
+      <h2>📝 注册即领</h2>
+      <p class="sub">填写信息，马上拥有个人主页</p>
+      <div class="err" id="regErr"></div>
+      <input type="email" class="inp" id="regEmail" placeholder="📧 你的邮箱">
+      <input type="password" class="inp" id="regPw" placeholder="🔑 设置密码（6位以上）">
+      <input type="text" class="inp" id="regCode" placeholder="🔢 验证码：输入任意6位数字" maxlength="6" style="font-size:20px;letter-spacing:8px;text-align:center">
+      <p style="font-size:11px;color:#999;text-align:center;margin-bottom:12px">输入任意6位数字即可验证</p>
+      <button class="btn" onclick="doRegister()">🎁 免费领取我的网站</button>
+      <div class="switch">已有网站？<a onclick="showLoginView()">立即登录 →</a></div>
+    </div>
   </div>
 
   <!-- ====== PROFILE ====== -->
-  <div class="profile" id="profileView">
-    <div class="pav" id="pav">👑</div>
-    <div class="pname" id="pname"></div>
-    <div class="pemail" id="pemail"></div>
-    <div class="pdate" id="pdate"></div>
-    <div class="links">
-      <a href="https://weyoudonttalk.github.io/workspace/" target="_blank"><span class="li">🚀</span>我的工作台</a>
-      <a href="https://weyoudonttalk.github.io/miui-chat/" target="_blank"><span class="li">💬</span>MIUI聊天室</a>
-      <a href="https://weyoudonttalk.github.io/qqapp/" target="_blank"><span class="li">🐧</span>QQ完全版</a>
-      <a href="https://weyoudonttalk.github.io/miui-studio/" target="_blank"><span class="li">🎮</span>MIUI工作室</a>
+  <div id="profileView" style="display:none">
+    <div class="logo"><div class="icon">🏠</div><h1>我的专属网站</h1></div>
+    <div class="card">
+      <div class="profile">
+        <div class="pav" id="pav">👑</div>
+        <div class="pname" id="pname"></div>
+        <div class="pemail" id="pemail"></div>
+        <a class="site-link" id="siteLink" href="#" target="_blank">🌐 打开我的网站</a>
+        <div class="features">
+          <div class="feat"><span class="ficon">🖼️</span><strong>换头像</strong>个性定制</div>
+          <div class="feat"><span class="ficon">✏️</span><strong>改昵称</strong>随时修改</div>
+          <div class="feat"><span class="ficon">📝</span><strong>个性签名</strong>展示自己</div>
+          <div class="feat"><span class="ficon">📤</span><strong>分享链接</strong>发给朋友</div>
+        </div>
+        <button class="btn" onclick="copyLink()">📋 复制我的网站链接</button>
+        <button class="btn ghost" onclick="doLogout()">🔓 退出登录</button>
+      </div>
     </div>
-    <button class="btn-blue" onclick="copyWS()" style="margin-bottom:8px">📋 复制我的专属链接</button>
-    <button style="width:100%;padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:transparent;color:#ff6b6b;font-size:14px;cursor:pointer" onclick="doLogout()">🔓 退出登录</button>
   </div>
 
 </div>
@@ -105,8 +116,6 @@ let user=null;
 (function init(){
   const s=localStorage.getItem('miui_u');
   if(s){try{user=JSON.parse(s);showProfile()}catch(e){}}
-  const redir=new URLSearchParams(location.search).get('redirect');
-  if(redir&&s)location.href=redir;
 })();
 
 async function adminLogin(){
@@ -115,16 +124,13 @@ async function adminLogin(){
     const r=await fetch(API+'?t='+Date.now());const d=await r.json();const accounts=d.accounts||[];
     let found=accounts.find(a=>a.email===email);
     if(!found){
-      found={email,password:ADMIN_PW,verified:true,avatar:'👑',nick:'创始人',sign:'MIUI工作室创始人',created:'2025-06-01T00:00:00.000Z',lastLogin:new Date().toISOString()};
+      found={email,password:ADMIN_PW,verified:true,avatar:'👑',nick:'创始人',sign:'MIUI工作室创始人',created:'2025-06-01',lastLogin:new Date().toISOString()};
       accounts.push(found);
       await fetch(API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({accounts,room:'miui_auth'})});
     }
-    user=found;user.lastLogin=new Date().toISOString();
-    localStorage.setItem('miui_u',JSON.stringify(user));
+    user=found;localStorage.setItem('miui_u',JSON.stringify(user));
     showProfile();
-    const redir=new URLSearchParams(location.search).get('redirect');
-    if(redir)setTimeout(()=>location.href=redir,400);
-  }catch(e){document.getElementById('err').textContent='网络错误，请重试'}
+  }catch(e){document.getElementById('err').textContent='网络错误'}
 }
 
 async function userLogin(){
@@ -134,13 +140,10 @@ async function userLogin(){
   try{
     const r=await fetch(API+'?t='+Date.now());const d=await r.json();const accounts=d.accounts||[];
     const found=accounts.find(a=>a.email===email);
-    if(!found){document.getElementById('err').textContent='邮箱未注册';return}
+    if(!found){document.getElementById('err').textContent='邮箱未注册，请先领取网站';return}
     if(found.password!==pw){document.getElementById('err').textContent='密码错误';return}
-    user=found;user.lastLogin=new Date().toISOString();
-    localStorage.setItem('miui_u',JSON.stringify(user));
+    user=found;localStorage.setItem('miui_u',JSON.stringify(user));
     showProfile();
-    const redir=new URLSearchParams(location.search).get('redirect');
-    if(redir)setTimeout(()=>location.href=redir,400);
   }catch(e){document.getElementById('err').textContent='网络错误'}
 }
 
@@ -155,25 +158,29 @@ async function doRegister(){
   try{
     const r=await fetch(API+'?t='+Date.now());const d=await r.json();const accounts=d.accounts||[];
     if(accounts.find(a=>a.email===email)){document.getElementById('regErr').textContent='该邮箱已注册';return}
-    const acc={email,password:pw,verified:true,avatar:'🐧',nick:email.split('@')[0],sign:'新人报到~',created:new Date().toISOString(),lastLogin:new Date().toISOString()};
+    const acc={email,password:pw,verified:true,avatar:'🐧',nick:email.split('@')[0],sign:'这是我的专属网站~',created:new Date().toISOString(),lastLogin:new Date().toISOString()};
     accounts.push(acc);
     await fetch(API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({accounts,room:'miui_auth'})});
     user=acc;localStorage.setItem('miui_u',JSON.stringify(user));
     showProfile();
-  }catch(e){document.getElementById('regErr').textContent='注册失败，请重试'}
+  }catch(e){document.getElementById('regErr').textContent='注册失败'}
 }
 
-function showLogin(){document.getElementById('loginView').style.display='block';document.getElementById('regView').style.display='none';document.getElementById('profileView').style.display='none';document.getElementById('err').textContent='';document.getElementById('regErr').textContent=''}
+function showLoginView(){document.getElementById('loginView').style.display='block';document.getElementById('regView').style.display='none';document.getElementById('profileView').style.display='none';document.getElementById('err').textContent=''}
 function showReg(){document.getElementById('loginView').style.display='none';document.getElementById('regView').style.display='block';document.getElementById('profileView').style.display='none'}
 function showProfile(){
   document.getElementById('loginView').style.display='none';document.getElementById('regView').style.display='none';document.getElementById('profileView').style.display='block';
-  document.getElementById('pav').textContent=user.avatar||'🐧';document.getElementById('pname').textContent=user.nick||user.email.split('@')[0];document.getElementById('pemail').textContent=user.email;document.getElementById('pdate').textContent='注册于 '+new Date(user.created).toLocaleDateString('zh-CN')
+  document.getElementById('pav').textContent=user.avatar||'🐧';
+  document.getElementById('pname').textContent=user.nick||user.email.split('@')[0];
+  document.getElementById('pemail').textContent=user.email;
+  const siteUrl='https://weyoudonttalk.github.io/workspace/?user='+encodeURIComponent(user.email);
+  document.getElementById('siteLink').href=siteUrl;
 }
-function doLogout(){localStorage.removeItem('miui_u');user=null;showLogin()}
-function copyWS(){
+function doLogout(){localStorage.removeItem('miui_u');user=null;showLoginView()}
+function copyLink(){
   const url='https://weyoudonttalk.github.io/workspace/?user='+encodeURIComponent(user.email);
   const ta=document.createElement('textarea');ta.value=url;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
-  alert('✅ 链接已复制！')
+  alert('✅ 你的网站链接已复制！\n\n'+url);
 }
 </script>
 </body>
