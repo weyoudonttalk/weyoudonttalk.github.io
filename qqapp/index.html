@@ -340,7 +340,7 @@ const AVATARS='🐧🐱🐶🐰🐼🐨🦊🐯🐸🐵🐙🦄🐲🐳🦋🐝�
 
 const BUILTIN_CONTACTS=[
   {id:'xiaoq',nick:'小Q',avatar:'🤖',sign:'QQ官方AI助手，快来跟我聊天吧！',online:true,isAI:true},
-  {id:'system',nick:'QQ团队',avatar:'🐧',sign:'系统通知与安全提醒',online:true,isSystem:true}
+  {id:'system',nick:'QQ团队',avatar:'🐧',sign:'QQ官方团队账号，安全提醒/投诉/举报',online:true,isAI:true}
 ];
 
 let currentUser=null,isRegisterMode=false,currentTab=0,activeChatWith=null,chatPollTimer=null,lastChatMsgId=0,lastAICall=0,selectedAvatar='';
@@ -526,18 +526,20 @@ function saveChatMsg(text,from,to){
   msgs.push(m);if(msgs.length>200)msgs=msgs.slice(-150);localStorage.setItem(key,JSON.stringify(msgs));
   if(to!=='xiaoq'&&to!=='system'){var key2='qqappv2_chat_'+to+'_'+from;var s2=localStorage.getItem(key2);var msgs2=s2?JSON.parse(s2):[];var m2=Object.assign({},m,{_id:m._id+1});msgs2.push(m2);if(msgs2.length>200)msgs2=msgs2.slice(-150);localStorage.setItem(key2,JSON.stringify(msgs2))}
 }
-function sendChatMsg(){if(!activeChatWith)return;var text=document.getElementById('chatInput').value.trim();if(!text)return;document.getElementById('chatInput').value='';saveChatMsg(text,currentUser.phone,activeChatWith.id);renderChatMsg({from:currentUser.phone,text:text},true);if(activeChatWith.isAI)setTimeout(function(){callAI(text)},500+Math.random()*500)}
-async function callAI(question){
+function sendChatMsg(){if(!activeChatWith)return;var text=document.getElementById('chatInput').value.trim();if(!text)return;document.getElementById('chatInput').value='';saveChatMsg(text,currentUser.phone,activeChatWith.id);renderChatMsg({from:currentUser.phone,text:text},true);if(activeChatWith.isAI)setTimeout(function(){callAI(text,activeChatWith.id)},500+Math.random()*500)}
+async function callAI(question,aiId){
+  var isSystemAI=(aiId==='system');
+  var systemPrompt=isSystemAI?'你是QQ团队官方账号。回复风格：正式礼貌、专业简洁。回复1-3句不超过100字。处理用户的安全问题、投诉举报、账号疑问。':'你是小Q，QQ官方AI助手。活泼可爱直接简短，回复2-4句不超过120字。爱用emoji。用户通过QQ和你聊天。';
   var msgsEl=document.getElementById('chatMsgs');var tid='ai_typing_'+Date.now();var thinking=document.createElement('div');thinking.className='chat-msg left';thinking.textContent='...';thinking.id=tid;msgsEl.appendChild(thinking);msgsEl.scrollTop=msgsEl.scrollHeight;
   if(Date.now()-lastAICall<20000){var w=Math.ceil((20000-(Date.now()-lastAICall))/1000);thinking.textContent='⏳ '+w+'秒后再问~';return}
   try{lastAICall=Date.now();
-    var resp=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'Meta-Llama-3_3-70B-Instruct',messages:[{role:'system',content:'你是小Q，QQ官方AI助手。活泼可爱直接简短，回复2-4句不超过120字。爱用emoji。用户通过QQ和你聊天。'},{role:'user',content:question}],max_tokens:200,temperature:0.85})});
+    var resp=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'Meta-Llama-3_3-70B-Instruct',messages:[{role:'system',content:systemPrompt},{role:'user',content:question}],max_tokens:200,temperature:0.85})});
     var t=document.getElementById(tid);if(t)t.remove();
-    if(!resp.ok){saveAndRenderAI('AI有点忙 😅 等20秒再找我吧~');return}
-    var data=await resp.json();var reply=data.choices&&data.choices[0]?data.choices[0].message.content.trim():'嗯...有点难 😅';saveAndRenderAI(reply)
-  }catch(e){var t2=document.getElementById(tid);if(t2)t2.remove();saveAndRenderAI('网络不太好 😅 等下再试试~')}
+    if(!resp.ok){saveAndRenderAI('AI有点忙 😅 等20秒再找我吧~',aiId);return}
+    var data=await resp.json();var reply=data.choices&&data.choices[0]?data.choices[0].message.content.trim():'嗯...有点难 😅';saveAndRenderAI(reply,aiId)
+  }catch(e){var t2=document.getElementById(tid);if(t2)t2.remove();saveAndRenderAI('网络不太好 😅 等下再试试~',aiId)}
 }
-function saveAndRenderAI(text){saveChatMsg(text,activeChatWith.id,currentUser.phone);renderChatMsg({from:activeChatWith.id,text:text},true)}
+function saveAndRenderAI(text,aiId){var senderId=aiId||activeChatWith.id;saveChatMsg(text,senderId,currentUser.phone);renderChatMsg({from:senderId,text:text},true)}
 function toggleChatEmoji(){var bar=document.getElementById('chatEmojiBar');bar.style.display=bar.style.display==='none'?'flex':'none'}
 function insertChatEmoji(emoji){var input=document.getElementById('chatInput');input.value+=emoji;input.focus()}
 
