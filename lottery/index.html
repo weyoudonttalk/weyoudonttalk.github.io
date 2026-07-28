@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>🎯 幸运大转盘</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:linear-gradient(135deg,#ff6b6b,#c0392b);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;color:#fff;text-align:center}
+.card{max-width:400px;width:100%}
+h1{font-size:28px;margin-bottom:20px}
+.wheel-wrap{position:relative;width:300px;height:300px;margin:0 auto 24px}
+#wheel{width:100%;height:100%;border-radius:50%;transition:transform 4s cubic-bezier(.17,.67,.12,.99);position:relative;border:8px solid #fff;box-shadow:0 0 30px rgba(0,0,0,.3)}
+.pointer{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:36px;z-index:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))}
+.seg{position:absolute;width:50%;height:50%;top:50%;left:50%;transform-origin:0 0;display:flex;align-items:flex-start;justify-content:flex-end;padding:8px 20px 0 0;font-size:16px;font-weight:700;pointer-events:none}
+.result{font-size:24px;font-weight:900;margin-top:12px;min-height:36px;color:#ffd700}
+.btn{display:block;width:100%;padding:16px;border-radius:16px;border:none;background:#fff;color:#ff6b6b;font-size:18px;font-weight:900;cursor:pointer;margin-top:12px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.btn:active{transform:scale(.96)}
+.input-area{display:flex;gap:8px;margin-bottom:12px}
+.input-area input{flex:1;padding:12px;border-radius:12px;border:none;font-size:14px;outline:none}
+.input-area button{padding:12px 18px;border-radius:12px;border:none;background:#ffd700;font-weight:700;cursor:pointer}
+.items{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:12px}
+.item{padding:6px 12px;border-radius:14px;background:rgba(255,255,255,.15);font-size:12px;cursor:pointer}
+.item:active{background:rgba(255,255,255,.3)}
+</style></head>
+<body>
+<div class="card">
+<h1>🎯 幸运大转盘</h1>
+<div class="wheel-wrap"><div class="pointer">▼</div><div id="wheel"></div></div>
+<div class="result" id="result">点击转盘开始！</div>
+<button class="btn" onclick="spin()" id="spinBtn">🎰 开始抽奖</button>
+<div style="margin-top:16px"><div class="input-area"><input type="text" id="itemInput" placeholder="添加选项..." maxlength="10" onkeydown="if(event.key==='Enter')addItem()"><button onclick="addItem()">+</button></div>
+<div class="items" id="itemList"></div></div>
+</div>
+<script>
+let items=['🍕披萨','🍔汉堡','🎮游戏机','💵100元','🆓免单','🍦冰淇淋','🌟大奖','😅谢谢'];
+let spinning=false;
+function draw(){
+  const w=document.getElementById('wheel');w.innerHTML='';
+  const n=items.length;const colors=['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff922b','#cc5de8','#20c997','#f06595'];
+  items.forEach((it,i)=>{
+    const angle=(360/n)*i;
+    const d=document.createElement('div');d.className='seg';
+    d.style.transform='rotate('+(angle-90)+'deg)';
+    d.style.color=colors[i%colors.length];
+    d.textContent=it;w.appendChild(d);
+  });
+  // draw colored segments using conic gradient
+  const stops=items.map((_,i)=>colors[i%colors.length]+' '+((360/n)*i)+'deg '+((360/n)*(i+1))+'deg').join(',');
+  w.style.background='conic-gradient('+stops+')';
+}
+function addItem(){
+  const v=document.getElementById('itemInput').value.trim();if(!v)return;
+  items.push(v);document.getElementById('itemInput').value='';draw();renderItems();
+}
+function renderItems(){
+  document.getElementById('itemList').innerHTML=items.map((it,i)=>'<span class="item" onclick="removeItem('+i+')">'+it+' ✕</span>').join('');
+}
+function removeItem(i){if(items.length<=2)return;items.splice(i,1);draw();renderItems()}
+function spin(){
+  if(spinning)return;spinning=true;document.getElementById('spinBtn').textContent='🎰 转动中...';
+  const w=document.getElementById('wheel');const spins=5+Math.random()*5;
+  const totalAngle=spins*360+Math.random()*360;
+  w.style.transform='rotate('+totalAngle+'deg)';
+  setTimeout(()=>{
+    const n=items.length;const seg=(360/n);
+    const finalAngle=totalAngle%360;const idx=Math.floor(((360-finalAngle)%360)/seg)%n;
+    document.getElementById('result').textContent='🎉 恭喜获得：'+items[idx]+'！';
+    spinning=false;document.getElementById('spinBtn').textContent='🎰 再来一次';
+  },4200);
+}
+draw();renderItems();
+</script>
+</body></html>
