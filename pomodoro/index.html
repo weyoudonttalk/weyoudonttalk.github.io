@@ -1,14 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>⏰ 番茄专注钟</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>⏰ 番茄专注钟</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:system-ui,sans-serif;background:linear-gradient(135deg,#ee6c6c,#c0392b);min-height:100vh;display:flex;align-items:center;justify-content:center;color:#fff;text-align:center;padding:20px}
 .card{background:rgba(255,255,255,.12);border-radius:24px;padding:40px 32px;backdrop-filter:blur(10px);max-width:360px;width:100%}
-.timer{font-size:72px;font-weight:900;margin:20px 0;font-variant-numeric:tabular-nums;letter-spacing:4px}
+.timer{font-size:72px;font-weight:900;margin:20px 0;letter-spacing:4px}
 .mode{display:flex;gap:8px;justify-content:center;margin-bottom:20px}
 .mode button{padding:8px 18px;border-radius:20px;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:12px;font-weight:600;cursor:pointer}
 .mode button.active{background:#fff;color:#ee6c6c}
@@ -16,38 +13,26 @@ body{font-family:system-ui,sans-serif;background:linear-gradient(135deg,#ee6c6c,
 #startBtn{background:#fff;color:#ee6c6c}
 #resetBtn{background:rgba(255,255,255,.15);color:#fff}
 .stats{display:flex;justify-content:center;gap:32px;margin-top:24px}
-.stat{text-align:center}
-.stat .sn{font-size:28px;font-weight:900}
-.stat .sl{font-size:10px;opacity:.7}
-</style>
-</head>
+.stat{text-align:center}.stat .sn{font-size:28px;font-weight:900}.stat .sl{font-size:10px;opacity:.7}
+.top-login{position:absolute;top:16px;right:16px}
+.top-login button{padding:6px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;font-size:11px;cursor:pointer}
+</style></head>
 <body>
+<div class="top-login" id="topLogin"><button id="loginBtn" onclick="checkAuth()">🔐 登录</button><span id="uInfo" style="display:none;font-size:11px">👤 <span id="uEmail"></span></span></div>
 <div class="card">
-  <h2>⏰ 番茄专注钟</h2>
-  <div class="mode">
-    <button class="active" onclick="setMode(25)">🍅 25分钟</button>
-    <button onclick="setMode(15)">⏳ 15分钟</button>
-    <button onclick="setMode(5)">☕ 5分钟</button>
-  </div>
-  <div class="timer" id="timer">25:00</div>
-  <div class="controls">
-    <button id="resetBtn" onclick="reset()">↺</button>
-    <button id="startBtn" onclick="toggleTimer()">▶️</button>
-  </div>
-  <div class="stats">
-    <div class="stat"><div class="sn" id="pomoCount">0</div><div class="sl">完成番茄</div></div>
-    <div class="stat"><div class="sn" id="totalMin">0</div><div class="sl">专注分钟</div></div>
-  </div>
+<h2>⏰ 番茄专注钟</h2>
+<div class="mode"><button class="active" onclick="setMode(25)">🍅 25分钟</button><button onclick="setMode(15)">⏳ 15分钟</button><button onclick="setMode(5)">☕ 5分钟</button></div>
+<div class="timer" id="timer">25:00</div>
+<div class="controls"><button id="resetBtn" onclick="reset()">↺</button><button id="startBtn" onclick="toggleTimer()">▶️</button></div>
+<div class="stats"><div class="stat"><div class="sn" id="pc">0</div><div class="sl">完成番茄</div></div><div class="stat"><div class="sn" id="tm">0</div><div class="sl">专注分钟</div></div></div>
 </div>
 <script>
-let sec=25*60,total=25*60,running=false,iv=null,pomo=0,totalMins=0;
-function setMode(m){sec=m*60;total=sec;running=false;clearInterval(iv);document.getElementById('startBtn').textContent='▶️';update();document.querySelectorAll('.mode button').forEach((b,i)=>{b.classList.toggle('active',[25,15,5][i]===m)})}
+let sec=25*60,total=25*60,running=false,iv=null,pomo=0,totMin=0,loggedIn=false;
+(function(){const u=localStorage.getItem('miui_unified_user');if(u){try{const d=JSON.parse(u);if(d.verified){loggedIn=true;document.getElementById('loginBtn').style.display='none';document.getElementById('uInfo').style.display='inline';document.getElementById('uEmail').textContent=d.email}}catch(e){}}})();
+function checkAuth(){if(!loggedIn)location.href='https://weyoudonttalk.github.io/auth/?redirect='+encodeURIComponent(location.href)}
+function setMode(m){if(!loggedIn){checkAuth();return}sec=m*60;total=sec;running=false;clearInterval(iv);document.getElementById('startBtn').textContent='▶️';update();document.querySelectorAll('.mode button').forEach((b,i)=>{b.classList.toggle('active',[25,15,5][i]===m)})}
 function update(){const m=Math.floor(sec/60),s=sec%60;document.getElementById('timer').textContent=m+':'+(s<10?'0':'')+s}
-function toggleTimer(){
-  if(running){clearInterval(iv);running=false;document.getElementById('startBtn').textContent='▶️'}else{
-    running=true;document.getElementById('startBtn').textContent='⏸️';
-    iv=setInterval(()=>{sec--;update();if(sec<=0){clearInterval(iv);running=false;document.getElementById('startBtn').textContent='▶️';pomo++;totalMins+=total/60;document.getElementById('pomoCount').textContent=pomo;document.getElementById('totalMin').textContent=totalMins;new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAf39/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f3+Af39/gH9/f4B/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/fw==').play();sec=total;update()}},1000)}}
+function toggleTimer(){if(!loggedIn){checkAuth();return}if(running){clearInterval(iv);running=false;document.getElementById('startBtn').textContent='▶️'}else{running=true;document.getElementById('startBtn').textContent='⏸️';iv=setInterval(()=>{sec--;update();if(sec<=0){clearInterval(iv);running=false;document.getElementById('startBtn').textContent='▶️';pomo++;totMin+=total/60;document.getElementById('pc').textContent=pomo;document.getElementById('tm').textContent=totMin;sec=total;update()}},1000)}}
 function reset(){clearInterval(iv);running=false;sec=total;document.getElementById('startBtn').textContent='▶️';update()}
 </script>
-</body>
-</html>
+</body></html>
