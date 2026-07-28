@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>🌤️ 天气预报</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:linear-gradient(180deg,#4facfe,#00f2fe);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;color:#fff}
+.card{background:rgba(255,255,255,.2);border-radius:24px;padding:32px 24px;text-align:center;backdrop-filter:blur(10px);max-width:380px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.15)}
+.search{display:flex;gap:8px;margin-bottom:24px}
+.search input{flex:1;padding:14px 18px;border-radius:24px;border:none;font-size:15px;outline:none;background:rgba(255,255,255,.25);color:#fff}
+.search input::placeholder{color:rgba(255,255,255,.5)}
+.search button{padding:14px 20px;border-radius:24px;border:none;background:#fff;font-size:16px;cursor:pointer;font-weight:600}
+.weather-icon{font-size:72px;margin-bottom:8px}
+.temp{font-size:56px;font-weight:900;line-height:1.1}
+.city{font-size:20px;font-weight:700;margin-top:4px}
+.desc{font-size:14px;opacity:.8;margin:6px 0 16px}
+.details{display:flex;justify-content:center;gap:24px}
+.detail{text-align:center;background:rgba(255,255,255,.1);border-radius:12px;padding:12px 16px}
+.detail .dv{font-size:18px;font-weight:700}
+.detail .dl{font-size:10px;opacity:.7;margin-top:2px}
+</style></head>
+<body>
+<div class="card">
+<h2>🌤️ 天气预报</h2>
+<div class="search"><input type="text" id="cityInput" placeholder="输入城市名..." onkeydown="if(event.key==='Enter')getWeather()"><button onclick="getWeather()">🔍</button></div>
+<div class="weather-icon" id="wicon">🌍</div>
+<div class="temp" id="temp">--°C</div>
+<div class="city" id="city">搜索城市</div>
+<div class="desc" id="desc">-</div>
+<div class="details">
+<div class="detail"><div class="dv" id="hum">--</div><div class="dl">湿度</div></div>
+<div class="detail"><div class="dv" id="wind">--</div><div class="dl">风速 km/h</div></div>
+<div class="detail"><div class="dv" id="feel">--°C</div><div class="dl">体感</div></div>
+</div></div>
+<script>
+const emojis={Clear:'☀️',Clouds:'☁️',Rain:'🌧️',Snow:'❄️',Thunderstorm:'⛈️',Drizzle:'🌦️',Mist:'🌫️',Haze:'🌫️'};
+async function getWeather(){
+const c=document.getElementById('cityInput').value.trim();if(!c)return;
+try{
+const r=await fetch('https://api.openweathermap.org/data/2.5/weather?q='+encodeURIComponent(c)+'&units=metric&lang=zh_cn&appid=9de0d89d9d9988c7e32c6a91c51b6414');
+const d=await r.json();
+if(d.cod!==200){alert('城市未找到');return}
+document.getElementById('wicon').textContent=emojis[d.weather[0].main]||'🌍';
+document.getElementById('temp').textContent=Math.round(d.main.temp)+'°C';
+document.getElementById('city').textContent=d.name+', '+d.sys.country;
+document.getElementById('desc').textContent=d.weather[0].description;
+document.getElementById('hum').textContent=d.main.humidity+'%';
+document.getElementById('wind').textContent=d.wind.speed;
+document.getElementById('feel').textContent=Math.round(d.main.feels_like)+'°C';
+}catch(e){alert('网络错误')}
+}
+</script>
+</body></html>
