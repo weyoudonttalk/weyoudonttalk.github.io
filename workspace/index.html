@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>我的工作台 · MIUI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;background:linear-gradient(180deg,#0f0c29,#1a1640);min-height:100vh;color:#fff}
+.container{max-width:500px;margin:0 auto;padding:20px}
+
+/* Cover */
+.cover{position:relative;height:140px;background:linear-gradient(135deg,#667eea,#764ba2,#ee6c6c);border-radius:0 0 20px 20px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:40px}
+.cover .avatar-wrap{position:absolute;bottom:-32px;display:flex;flex-direction:column;align-items:center}
+.cover .avatar-wrap .av{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.15);border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:4px}
+.cover .avatar-wrap .av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.user-info{text-align:center;margin-bottom:24px}
+.user-info .uname{font-size:20px;font-weight:800}
+.user-info .usign{font-size:13px;opacity:.6;margin-top:4px}
+.user-info .umeta{font-size:11px;opacity:.4;margin-top:6px}
+
+/* Cards */
+.section{margin-bottom:12px}
+.section-title{font-size:11px;opacity:.5;font-weight:600;padding:0 4px 8px;letter-spacing:2px;text-transform:uppercase}
+.card{background:rgba(255,255,255,.05);border-radius:16px;padding:18px;border:1px solid rgba(255,255,255,.06)}
+.card .row{display:flex;align-items:center;gap:12px;padding:6px 0;cursor:pointer}
+.card .row .icon{font-size:22px;width:32px;text-align:center}
+.card .row .label{font-size:14px;flex:1}
+.card .row .val{font-size:13px;opacity:.5;text-align:right;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card .row .arrow{opacity:.3}
+
+/* Share */
+.share-box{background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.15);border-radius:14px;padding:16px;text-align:center;margin-bottom:16px}
+.share-box h3{font-size:15px;color:#ffd700;margin-bottom:8px}
+.share-box .link{font-size:12px;background:rgba(255,255,255,.05);border-radius:10px;padding:12px;word-break:break-all;margin-bottom:10px;color:#aaa}
+.share-box button{padding:10px 24px;border-radius:10px;border:none;background:rgba(255,215,0,.15);color:#ffd700;font-weight:700;cursor:pointer;font-size:13px}
+.share-box button:active{background:rgba(255,215,0,.3)}
+.share-box .qr-placeholder{width:120px;height:120px;background:rgba(255,255,255,.05);border-radius:10px;margin:12px auto;display:flex;align-items:center;justify-content:center;font-size:40px}
+
+/* Edit */
+.edit-modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:999}
+.edit-modal.show{display:flex}
+.edit-box{background:#1a1640;border-radius:18px;padding:28px 22px;width:85vw;max-width:340px;text-align:center}
+.edit-box h3{font-size:16px;margin-bottom:16px}
+.edit-box input{width:100%;padding:14px;border-radius:10px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#fff;font-size:15px;outline:none;margin-bottom:10px}
+.edit-box input:focus{border-color:#667eea}
+.edit-box button{width:100%;padding:12px;border-radius:10px;border:none;background:#667eea;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:6px}
+.edit-box button.cancel{background:transparent;border:1px solid rgba(255,255,255,.15);color:#aaa}
+.av-grid{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:12px}
+.av-grid .av-item{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;border:2px solid transparent;background:rgba(255,255,255,.05)}
+.av-grid .av-item.selected{border-color:#ffd700;background:rgba(255,255,215,.1)}
+.av-grid .av-item img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+
+/* Toast */
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);padding:10px 24px;border-radius:18px;font-size:12px;font-weight:600;z-index:9999;opacity:0;transition:.3s;pointer-events:none;background:rgba(102,126,234,.9);color:#fff}
+.toast.show{opacity:1}
+
+.not-login{text-align:center;padding:60px 20px}
+.not-login h2{font-size:22px;margin-bottom:12px}
+.not-login p{font-size:13px;opacity:.6;margin-bottom:20px}
+.not-login button{padding:14px 32px;border-radius:14px;border:none;background:#667eea;color:#fff;font-size:15px;font-weight:700;cursor:pointer}
+</style>
+</head>
+<body>
+
+<div class="container" id="mainContainer">
+  <!-- Not logged in -->
+  <div id="notLoginView" class="not-login">
+    <h2>🚀 欢迎来到MIUI工作台</h2>
+    <p>注册一个账号，获得你的专属工作台空间</p>
+    <button onclick="location.href='https://weyoudonttalk.github.io/auth/?redirect='+encodeURIComponent(location.href)">🔐 登录 / 注册</button>
+  </div>
+
+  <!-- Logged in -->
+  <div id="loggedView" style="display:none">
+    <div class="cover">
+      <div class="avatar-wrap">
+        <div class="av" id="wsAv">🐧</div>
+      </div>
+    </div>
+    <div class="user-info">
+      <div class="uname" id="wsName"></div>
+      <div class="usign" id="wsSign">这个人很懒，什么都没写~</div>
+      <div class="umeta">🕐 注册于 <span id="wsDate"></span> · 👤 <span id="wsEmail"></span></div>
+    </div>
+
+    <div class="share-box">
+      <h3>📤 这是我的专属工作台</h3>
+      <div class="link" id="wsLink">-</div>
+      <div class="qr-placeholder">📱</div>
+      <p style="font-size:10px;opacity:.4;margin-bottom:8px">把链接分享给朋友，他们就能看到你的主页</p>
+      <button onclick="copyWS()">📋 复制分享链接</button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">个人资料</div>
+      <div class="card">
+        <div class="row" onclick="showEditAvatar()"><span class="icon">🖼️</span><span class="label">头像</span><span class="val" id="avVal">🐧</span><span class="arrow">›</span></div>
+        <div class="row" onclick="showEditNick()"><span class="icon">✏️</span><span class="label">昵称</span><span class="val" id="nickVal">-</span><span class="arrow">›</span></div>
+        <div class="row" onclick="showEditSign()"><span class="icon">📝</span><span class="label">签名</span><span class="val" id="signVal">-</span><span class="arrow">›</span></div>
+        <div class="row" onclick="showEditPw()"><span class="icon">🔑</span><span class="label">修改密码</span><span class="arrow">›</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">MIUI生态</div>
+      <div class="card">
+        <div class="row" onclick="go('/game-center/')"><span class="icon">🎮</span><span class="label">游戏中心</span><span class="arrow">›</span></div>
+        <div class="row" onclick="go('/music/')"><span class="icon">🎵</span><span class="label">QQ音乐</span><span class="arrow">›</span></div>
+        <div class="row" onclick="go('/miui-chat/')"><span class="icon">💬</span><span class="label">MIUI聊天室</span><span class="arrow">›</span></div>
+        <div class="row" onclick="go('/miui-studio/')"><span class="icon">🎮</span><span class="label">工作室官网</span><span class="arrow">›</span></div>
+        <div class="row" onclick="go('/nav/')"><span class="icon">🔗</span><span class="label">全部产品</span><span class="arrow">›</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="card">
+        <div class="row" onclick="logout()"><span class="icon">🔓</span><span class="label" style="color:#ff6b6b">退出登录</span><span class="arrow">›</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit modals -->
+<div class="edit-modal" id="nickModal"><div class="edit-box"><h3>✏️ 修改昵称</h3><input type="text" id="nickInput" maxlength="16"><button onclick="saveNick()">保存</button><button class="cancel" onclick="closeModal('nickModal')">取消</button></div></div>
+<div class="edit-modal" id="signModal"><div class="edit-box"><h3>📝 修改签名</h3><input type="text" id="signInput" maxlength="30"><button onclick="saveSign()">保存</button><button class="cancel" onclick="closeModal('signModal')">取消</button></div></div>
+<div class="edit-modal" id="pwModal"><div class="edit-box"><h3>🔑 修改密码</h3><input type="password" id="oldPw" placeholder="旧密码"><input type="password" id="newPw" placeholder="新密码"><input type="password" id="newPw2" placeholder="确认新密码"><button onclick="savePw()">保存</button><button class="cancel" onclick="closeModal('pwModal')">取消</button></div></div>
+<div class="edit-modal" id="avModal"><div class="edit-box"><h3>🖼️ 选择头像</h3>
+  <div class="av-grid" id="avGrid"></div>
+  <input type="file" id="avFile" accept="image/*" style="display:none" onchange="handleAvUpload(this)">
+  <button onclick="document.getElementById('avFile').click()">📸 从相册上传</button>
+  <button onclick="saveAv()">✅ 保存头像</button>
+  <button class="cancel" onclick="closeModal('avModal')">取消</button>
+</div></div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+const API='https://jsonblob.com/api/jsonBlob/019fa387-ce7a-7764-81c0-fbf7b93e931b';
+const AVATARS='🐧🐱🐶🐰🐼🐨🦊🐯🐸🐵🐙🦄🐲🐳🦋🐝🐞🐌🐢🐍🦖🦕🐠🦈🐅🐆🦓🐘🐪🦒🦘🐃🐏🐑🦙🐕🐩🐈🐓🦃🦜🦩🕊️🐇🦔🦇🐺🐗🐴🐒🦍🦧🐉🌟💎🔥🌈❄️🎩👑🤖👻🎃👾🚀💡🎮🎵🎸';
+let user=null,selectedAv='',uploadedAv='';
+
+(function init(){
+  const s=localStorage.getItem('miui_u');
+  if(s){try{user=JSON.parse(s);showWorkspace()}catch(e){}}else{
+    // Check if viewing someone else's workspace
+    const p=new URLSearchParams(location.search);
+    const u=p.get('user');
+    if(u){showSharedWorkspace(u)}
+  }
+})();
+
+async function loadUserFromServer(email){
+  try{const r=await fetch(API+'?t='+Date.now());const d=await r.json();const accounts=d.accounts||[];return accounts.find(a=>a.email===email)||null}catch(e){return null}
+}
+
+function showWorkspace(){
+  document.getElementById('notLoginView').style.display='none';
+  document.getElementById('loggedView').style.display='block';
+  refreshWS();
+}
+function refreshWS(){
+  if(!user)return;
+  const av=uploadedAv||user.avatar||'🐧';
+  document.getElementById('wsAv').textContent=uploadedAv?'':(user.avatar||'🐧');
+  if(uploadedAv)document.getElementById('wsAv').innerHTML='<img src="'+uploadedAv+'">';
+  if(user.avatar&&!uploadedAv)document.getElementById('wsAv').textContent=user.avatar;
+  document.getElementById('wsName').textContent=user.nick||user.email.split('@')[0];
+  document.getElementById('wsSign').textContent=user.sign||'这个人很懒，什么都没写~';
+  document.getElementById('wsDate').textContent=new Date(user.created||Date.now()).toLocaleDateString('zh-CN');
+  document.getElementById('wsEmail').textContent=user.email;
+  const wsUrl='https://weyoudonttalk.github.io/workspace/?user='+encodeURIComponent(user.email);
+  document.getElementById('wsLink').textContent=wsUrl;
+  document.getElementById('nickVal').textContent=user.nick||'-';
+  document.getElementById('signVal').textContent=user.sign||'-';
+  document.getElementById('avVal').textContent=user.avatar||'🐧';
+}
+
+async function showSharedWorkspace(email){
+  const acc=await loadUserFromServer(email);
+  if(!acc){document.getElementById('notLoginView').innerHTML='<h2>😕 用户不存在</h2><p>该用户尚未注册MIUI账号</p><button onclick="location.href=\'https://weyoudonttalk.github.io/auth/\'">🔐 注册一个</button>';return}
+  document.getElementById('notLoginView').style.display='none';
+  document.getElementById('loggedView').style.display='block';
+  const av=acc.avatar||'🐧';
+  document.getElementById('wsAv').textContent=av;
+  document.getElementById('wsName').textContent=acc.nick||email.split('@')[0];
+  document.getElementById('wsSign').textContent=acc.sign||'这个人很懒，什么都没写~';
+  document.getElementById('wsDate').textContent=new Date(acc.created||Date.now()).toLocaleDateString('zh-CN');
+  document.getElementById('wsEmail').textContent=email;
+  const wsUrl='https://weyoudonttalk.github.io/workspace/?user='+encodeURIComponent(email);
+  document.getElementById('wsLink').textContent=wsUrl;
+  document.getElementById('signVal').textContent=acc.sign||'-';
+  document.getElementById('nickVal').textContent=acc.nick||'-';
+  document.getElementById('avVal').textContent=av;
+  // Hide edit options for shared view (only own workspace can edit)
+  document.querySelectorAll('.card .row').forEach(r=>{if(r.querySelector('.icon')&&!r.querySelector('.label').textContent.includes('退出')&&!r.querySelector('.label').textContent.includes('MIUI生态')&&!r.querySelector('.label').textContent.includes('全部产品')){r.style.pointerEvents='none';r.style.opacity='.5'}});
+}
+
+async function saveAcc(){if(!user)return;try{const r=await fetch(API+'?t='+Date.now());const d=await r.json();const accounts=d.accounts||[];const idx=accounts.findIndex(a=>a.email===user.email);if(idx>=0)accounts[idx]=user;await fetch(API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({accounts,room:'miui_auth'})});localStorage.setItem('miui_u',JSON.stringify(user))}catch(e){}}
+
+function showEditAvatar(){
+  const grid=document.getElementById('avGrid');
+  let html='';
+  if(user.avatar)html+='<div class="av-item'+(selectedAv==='__CURRENT__'?' selected':'')+'" onclick="selectAv(\'__CURRENT__\',this)">'+user.avatar+'</div>';
+  for(let i=0;i<AVATARS.length;i++)html+='<div class="av-item'+(AVATARS[i]===selectedAv?' selected':'')+'" onclick="selectAv(\''+AVATARS[i]+'\',this)">'+AVATARS[i]+'</div>';
+  grid.innerHTML=html;selectedAv='';uploadedAv='';showModal('avModal');
+}
+function selectAv(av,el){selectedAv=av;uploadedAv='';document.querySelectorAll('.av-item').forEach(e=>e.classList.remove('selected'));el.classList.add('selected')}
+function handleAvUpload(input){const f=input.files[0];if(!f)return;const rdr=new FileReader();rdr.onload=function(e){uploadedAv=e.target.result;selectedAv='';document.querySelectorAll('.av-item').forEach(el=>el.classList.remove('selected'))};rdr.readAsDataURL(f);input.value=''}
+async function saveAv(){
+  if(!selectedAv&&!uploadedAv){toast('请选择头像');return}
+  if(uploadedAv)user.avatar='';else if(selectedAv!=='__CURRENT__')user.avatar=selectedAv;
+  // Store uploaded image in localStorage for workspace display
+  if(uploadedAv)localStorage.setItem('miui_ws_av_'+user.email,uploadedAv);
+  await saveAcc();closeModal('avModal');refreshWS();toast('✅ 头像已更新')
+}
+
+function showEditNick(){document.getElementById('nickInput').value=user.nick||'';showModal('nickModal')}
+async function saveNick(){const v=document.getElementById('nickInput').value.trim();if(!v){toast('昵称不能为空');return}user.nick=v;await saveAcc();closeModal('nickModal');refreshWS();toast('✅ 昵称已更新')}
+
+function showEditSign(){document.getElementById('signInput').value=user.sign||'';showModal('signModal')}
+async function saveSign(){user.sign=document.getElementById('signInput').value.trim();await saveAcc();closeModal('signModal');refreshWS();toast('✅ 签名已更新')}
+
+function showEditPw(){document.getElementById('oldPw').value='';document.getElementById('newPw').value='';document.getElementById('newPw2').value='';showModal('pwModal')}
+async function savePw(){
+  const old=document.getElementById('oldPw').value,nw=document.getElementById('newPw').value,nw2=document.getElementById('newPw2').value;
+  if(!old||!nw||!nw2){toast('请填写完整');return}
+  if(old!==user.password){toast('旧密码错误');return}
+  if(nw.length<6){toast('新密码至少6位');return}
+  if(nw!==nw2){toast('两次密码不一致');return}
+  user.password=nw;await saveAcc();closeModal('pwModal');toast('✅ 密码已修改')}
+
+function showModal(id){document.getElementById(id).classList.add('show')}
+function closeModal(id){document.getElementById(id).classList.remove('show')}
+
+function copyWS(){
+  const url='https://weyoudonttalk.github.io/workspace/?user='+encodeURIComponent(user.email);
+  const ta=document.createElement('textarea');ta.value=url;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+  toast('✅ 链接已复制！分享给朋友吧')
+}
+
+function logout(){localStorage.removeItem('miui_u');user=null;location.reload()}
+function go(path){location.href='https://weyoudonttalk.github.io'+path}
+
+var tt;function toast(m){const t=document.getElementById('toastEl');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2000)}
+</script>
+</body>
+</html>
