@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>三年回忆 · PUBGM地铁逃生</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none;font-family:'PingFang SC',system-ui,sans-serif}
+
+#bg{position:fixed;inset:0;z-index:0}
+#bg canvas{display:block}
+
+#app{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;pointer-events:none}
+#app>*{pointer-events:auto}
+
+/* Top bar */
+.top{display:flex;align-items:center;justify-content:center;padding:14px 16px;gap:8px}
+.top .badge{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:6px 16px;font-size:11px;color:rgba(255,255,255,.6);letter-spacing:1px}
+.top .badge.active{background:rgba(255,170,0,.15);border-color:rgba(255,170,0,.3);color:#fa0}
+
+/* Main content */
+.main{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+
+.card{width:100%;max-width:380px;text-align:center;color:#fff;animation:fadeIn .6s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.card .emoji{font-size:60px;margin-bottom:12px;filter:drop-shadow(0 0 20px rgba(255,170,0,.3))}
+.card .title{font-size:26px;font-weight:900;background:linear-gradient(135deg,#f90,#f60);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+.card .sub{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:20px;letter-spacing:2px}
+
+.card .line{font-size:14px;color:rgba(255,255,255,.7);line-height:2.2;margin-bottom:6px;text-align:left;padding:0 10px}
+.card .line.highlight{color:#fa0;font-weight:700;font-size:15px}
+.card .line.fade{color:rgba(255,255,255,.35);font-size:12px}
+.card .line.center{text-align:center}
+
+.card .divider{height:1px;background:rgba(255,255,255,.08);margin:16px 0}
+
+/* Character cards */
+.chars{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.char{border-radius:12px;padding:10px;text-align:left;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.03)}
+.char .cname{font-size:13px;font-weight:700;color:#fa0;margin-bottom:2px}
+.char .cdesc{font-size:10px;color:rgba(255,255,255,.5)}
+
+/* Quote */
+.quote{background:rgba(255,170,0,.06);border:1px solid rgba(255,170,0,.15);border-radius:14px;padding:14px 16px;margin:10px 0;text-align:left}
+.quote .qtext{font-size:13px;color:#fff;line-height:1.8;font-style:italic}
+.quote .qauthor{font-size:11px;color:rgba(255,255,255,.4);margin-top:8px;text-align:right}
+
+/* Bottom */
+.bottom{display:flex;gap:8px;justify-content:center;padding:16px}
+.bottom button{flex:1;max-width:140px;padding:12px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer;color:#fff;background:rgba(255,255,255,.08);transition:.2s}
+.bottom button:active{transform:scale(.95)}
+.bottom button.primary{background:linear-gradient(135deg,#f90,#f60);flex:2;max-width:200px}
+
+/* Ending */
+.ending{text-align:center;animation:fadeIn 1s ease}
+.ending .big{font-size:48px;margin-bottom:10px}
+.ending h2{font-size:22px;color:#fa0;margin-bottom:8px}
+.ending p{font-size:13px;color:rgba(255,255,255,.6);line-height:1.8}
+.ending .final{font-size:16px;color:#fa0;font-weight:900;margin-top:16px;letter-spacing:2px}
+
+.page{display:none}
+.page.active{display:block}
+</style>
+</head>
+<body>
+
+<div id="bg"><canvas id="bgCanvas"></canvas></div>
+
+<div id="app">
+  <div class="top">
+    <span class="badge active">📖 回忆录</span>
+    <span class="badge">🎵 武家坡</span>
+    <span class="badge">👤 名人堂</span>
+  </div>
+  <div class="main" id="mainContent"></div>
+  <div class="bottom">
+    <button onclick="prev()">◀ 上一页</button>
+    <button class="primary" onclick="next()">下一页 ▶</button>
+  </div>
+</div>
+
+<script>
+// ===== Background Particles =====
+const bgCv=document.getElementById('bgCanvas'),bctx=bgCv.getContext('2d');
+bgCv.width=innerWidth;bgCv.height=innerHeight;
+let bp=[];
+for(let i=0;i<80;i++)bp.push({x:Math.random()*bgCv.width,y:Math.random()*bgCv.height,r:Math.random()*1.5+.3,sp:.2+Math.random()*.6,op:.3+Math.random()*.5});
+function bgLoop(){
+  bctx.clearRect(0,0,bgCv.width,bgCv.height);
+  bctx.fillStyle='#0a0a14';bctx.fillRect(0,0,bgCv.width,bgCv.height);
+  bp.forEach(p=>{p.y-=p.sp;if(p.y<0){p.y=bgCv.height;p.x=Math.random()*bgCv.width}p.op=.3+Math.sin(Date.now()*.002+p.x)*.2;bctx.fillStyle='rgba(255,170,0,'+p.op+')';bctx.beginPath();bctx.arc(p.x,p.y,p.r,0,Math.PI*2);bctx.fill()});
+  requestAnimationFrame(bgLoop);
+}
+bgLoop();
+window.addEventListener('resize',()=>{bgCv.width=innerWidth;bgCv.height=innerHeight});
+
+// ===== Pages =====
+let page=0;
+
+const pages=[
+  // Page 0: Opening
+  `<div class="card">
+    <div class="emoji">🥀</div>
+    <div class="title">三年回忆</div>
+    <div class="sub">PUBGM · 地铁逃生</div>
+    <div class="line center">眼泪打湿了旧封锁<br>不见当年守塔人</div>
+    <div class="line center fade">以高打低配毒性<br>改变地铁大环境</div>
+    <div class="divider"></div>
+    <div class="line center highlight">地铁不倒，我们不散</div>
+    <div class="line center fade">不过，短短十几日，光阴罢了，怎会……</div>
+  </div>`,
+
+  // Page 1: The questions
+  `<div class="card">
+    <div class="emoji">❓</div>
+    <div class="title">哪有什么……</div>
+    <div class="line">哪有什么黑鹰？<span class="fade">只不过是钢铁罢了</span></div>
+    <div class="line">哪有什么铁爪？<span class="fade">只不过是独眼罢了</span></div>
+    <div class="line">哪有什么和平？<span class="fade">只不过是PUBG罢了</span></div>
+    <div class="line">哪有什么光子？<span class="fade">只不过是蓝洞罢了</span></div>
+    <div class="divider"></div>
+    <div class="line highlight">你问我地铁是什么？</div>
+    <div class="line fade">那是我们的青春啊。</div>
+  </div>`,
+
+  // Page 2: Tears
+  `<div class="card">
+    <div class="emoji">💧</div>
+    <div class="title">泪水打湿旧封锁</div>
+    <div class="line">不见当年<span class="highlight">改妹人</span></div>
+    <div class="line">不见当年<span class="highlight">猛攻人</span></div>
+    <div class="line">不见当年引路人</div>
+    <div class="line">不见当年突击仔</div>
+    <div class="line">不见当年老鼠人</div>
+    <div class="line">不见当年三图神</div>
+    <div class="line">不见当年扶贫人</div>
+    <div class="divider"></div>
+    <div class="line center fade">不见当年的我们</div>
+  </div>`,
+
+  // Page 3: Celebrity Hall
+  `<div class="card">
+    <div class="emoji">👑</div>
+    <div class="title">地铁名人堂</div>
+    <div class="chars">
+      <div class="char"><div class="cname">👨‍🦲 莽权</div><div class="cdesc">七图·单四·猛攻<br>那个臭光头</div></div>
+      <div class="char"><div class="cname">🦺 旧辞</div><div class="cdesc">三甲是生活<br>六甲是面子</div></div>
+      <div class="char"><div class="cname">🔫 白泽</div><div class="cdesc">一把精妹<br>一级甲打天下</div></div>
+      <div class="char"><div class="cname">💣 钢炮</div><div class="cdesc">六甲在我眼里<br>只是变卖物</div></div>
+      <div class="char"><div class="cname">🏃 奔奔</div><div class="cdesc">地铁有一次奔跑</div></div>
+      <div class="char"><div class="cname">🎯 蓝一</div><div class="cdesc">跑狙的传说</div></div>
+      <div class="char"><div class="cname">🍃 浊叶青</div><div class="cdesc">一片叶子</div></div>
+      <div class="char"><div class="cname">🦁 乔治</div><div class="cdesc">出紫的猪</div></div>
+    </div>
+  </div>`,
+
+  // Page 4: Quotes
+  `<div class="card">
+    <div class="emoji">🎙️</div>
+    <div class="title">经典语录</div>
+    <div class="quote"><div class="qtext">三甲是生活，六甲是面子。不是六甲买不起，而是三甲更有性价比。</div><div class="qauthor">—— 旧辞</div></div>
+    <div class="quote"><div class="qtext">七图，单四，猛攻！</div><div class="qauthor">—— 莽权</div></div>
+    <div class="quote"><div class="qtext">我只需要一把精妹，一个一级甲，就能打出无数的装备。</div><div class="qauthor">—— 白泽</div></div>
+    <div class="quote"><div class="qtext">钢枪不是首选，摸箱才是硬道理。</div><div class="qauthor">—— CK（博尔特）</div></div>
+  </div>`,
+
+  // Page 5: The Fall
+  `<div class="card">
+    <div class="emoji">🕯️</div>
+    <div class="title">可是……</div>
+    <div class="line fade">地铁真的落幕了</div>
+    <div class="line fade">陈涵也拿不起他的DBS</div>
+    <div class="line fade">再也没有那个臭光头</div>
+    <div class="line fade">再也没有一级甲一穿四了</div>
+    <div class="line fade">再也没有哨塔以高打低了</div>
+    <div class="line fade">白泽也拿不起改妹了</div>
+    <div class="line fade">冲锋枪也消失了……</div>
+    <div class="divider"></div>
+    <div class="line center highlight">再听一遍《武家坡》</div>
+    <div class="line center fade">回忆当年地铁人</div>
+  </div>`,
+
+  // Page 6: 武家坡 excerpt
+  `<div class="card">
+    <div class="emoji">🎵</div>
+    <div class="title">武家坡</div>
+    <div class="line center fade">啊～我的妻 王氏宝钏</div>
+    <div class="line center fade">可怜你守在寒窑</div>
+    <div class="line center fade">可怜你孤孤单单</div>
+    <div class="line center fade">苦等我薛男平贵</div>
+    <div class="line center fade">整整一十八年</div>
+    <div class="divider"></div>
+    <div class="line center fade">八月十五月儿圆</div>
+    <div class="line center fade">想起了夫妻们寒窑</div>
+    <div class="line center fade">受尽了惨然</div>
+    <div class="line center fade">身骑着红鬃烈马走三关</div>
+  </div>`,
+
+  // Page 7: We tried
+  `<div class="card">
+    <div class="emoji">😔</div>
+    <div class="title">我曾试过</div>
+    <div class="line fade">试过和平，但是手感永远不可能像PUBGM一样</div>
+    <div class="line fade">试过暗区，不像跑步机一样充满童趣</div>
+    <div class="line fade">试过三角洲，找不到帕布机的感觉</div>
+    <div class="divider"></div>
+    <div class="line center highlight">我们的三年</div>
+    <div class="line center fade">却变成了你的一句</div>
+    <div class="line center" style="color:#f44;font-size:18px;font-weight:900">"无版权"</div>
+  </div>`,
+
+  // Page 8: Final
+  `<div class="card">
+    <div class="emoji">🔥</div>
+    <div class="title">生是地铁人</div>
+    <div class="title" style="font-size:20px">死是地铁魂</div>
+    <div class="divider"></div>
+    <div class="line center highlight" style="font-size:16px">十年地铁无人知</div>
+    <div class="line center highlight" style="font-size:16px">局内抢包万人识</div>
+    <div class="divider"></div>
+    <div style="font-size:28px;font-weight:900;color:#fa0;margin:12px 0;letter-spacing:4px">五图！单四！猛攻！！</div>
+    <div class="line center fade">愿屏幕前的地铁人天天开心</div>
+    <div class="line center fade">坚持自己热爱的PUBG也很帅</div>
+  </div>`,
+];
+
+function renderPage(){
+  const mc=document.getElementById('mainContent');
+  mc.innerHTML=pages[page];
+  // Update badges
+  const badges=document.querySelectorAll('.badge');
+  badges.forEach(b=>b.classList.remove('active'));
+  if(badges[page])badges[page].classList.add('active');
+  // Scroll to top
+  mc.scrollTop=0;
+}
+
+function next(){
+  if(page<pages.length-1){page++;renderPage()}
+}
+function prev(){
+  if(page>0){page--;renderPage()}
+}
+
+// Keyboard support
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')next();if(e.key==='ArrowLeft')prev()});
+
+// Touch swipe
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX});
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx;
+  if(Math.abs(dx)>60){if(dx<0)next();else prev()}
+});
+
+// Init
+renderPage();
+</script>
+</body>
+</html>
