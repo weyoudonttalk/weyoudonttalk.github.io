@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>🚗 极限狂飙 · MIUI工作室</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none;font-family:'PingFang SC',system-ui,sans-serif}
+canvas{display:block;position:fixed;top:0;left:0;z-index:0}
+#hud{position:fixed;inset:0;z-index:10;pointer-events:none}
+#hud .speed{position:absolute;bottom:50px;right:30px;text-align:right}
+#hud .speed .n{font-size:72px;font-weight:900;color:#fff;line-height:1;text-shadow:0 0 30px rgba(0,180,255,.6);transition:.2s}
+#hud .speed .u{font-size:14px;color:rgba(255,255,255,.5);letter-spacing:2px}
+#hud .time{position:absolute;top:30px;left:50%;transform:translateX(-50%);font-size:28px;font-weight:900;color:#ff0;text-shadow:0 0 20px rgba(255,255,0,.4)}
+#hud .pos{position:absolute;top:30px;right:30px;text-align:right;font-size:12px;color:rgba(255,255,255,.5)}
+#hud .gear{position:absolute;bottom:140px;right:36px;font-size:18px;font-weight:900;color:#0cf;letter-spacing:2px}
+#hud .msg{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);font-size:20px;color:#ff0;font-weight:900;text-shadow:0 0 20px rgba(255,255,0,.4);opacity:0;transition:opacity .3s}
+#hud .msg.on{opacity:1}
+
+#minimap{position:fixed;bottom:20px;left:20px;z-index:10;pointer-events:none;width:140px;height:140px;border-radius:12px;border:2px solid rgba(255,255,255,.2);overflow:hidden;background:rgba(0,0,0,.6)}
+#minimap canvas{width:100%;height:100%}
+
+#joy{position:fixed;bottom:60px;left:24px;z-index:10;width:110px;height:110px}
+#joy .base{width:100%;height:100%;border-radius:50%;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.12)}
+#joy .knob{position:absolute;width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.18);top:50%;left:50%;margin:-25px 0 0 -25px;transition:.08s}
+
+#btns{position:fixed;bottom:70px;right:20px;z-index:10;display:flex;flex-direction:column;gap:10px}
+#btns button{width:56px;height:56px;border-radius:50%;background:rgba(0,0,0,.4);border:2px solid rgba(255,255,255,.15);color:#fff;font-size:22px;cursor:pointer}
+#btns button:active{background:rgba(255,102,0,.3);border-color:#f60}
+
+#overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center}
+#overlay .box{background:#1a1a28;border:2px solid #333;border-radius:20px;padding:32px 24px;text-align:center;color:#fff;max-width:340px;width:85vw}
+#overlay h2{font-size:22px;margin-bottom:4px;color:#f60}
+#overlay p{font-size:12px;color:#888;margin-bottom:18px;line-height:1.7}
+#overlay button{display:block;width:100%;padding:14px;border-radius:12px;border:none;margin-bottom:6px;font-size:15px;font-weight:700;cursor:pointer;background:#f60;color:#fff;transition:.2s}
+#overlay button:active{transform:scale(.96)}
+#overlay button.ghost{background:transparent;border:2px solid #444;color:#aaa}
+
+#viewBtns{position:fixed;top:50%;right:12px;z-index:10;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px}
+#viewBtns button{width:36px;height:36px;border-radius:8px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:14px;cursor:pointer}
+#viewBtns button.active{background:rgba(255,102,0,.3);border-color:#f60}
+@media(min-width:1024px){#viewBtns button{width:42px;height:42px;font-size:16px}}
+
+#controls{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:10;color:rgba(255,255,255,.3);font-size:10px;pointer-events:none}
+</style>
+</head>
+<body>
+
+<div id="viewBtns">
+  <button class="active" onclick="setView(0)">🚗</button>
+  <button onclick="setView(1)">🎥</button>
+  <button onclick="setView(2)">🦅</button>
+</div>
+
+<div id="hud">
+  <div class="time" id="timer">00:00.00</div>
+  <div class="speed"><div class="n" id="spd">0</div><div class="u">KM / H</div></div>
+  <div class="gear" id="gear">N</div>
+  <div class="pos">圈数: <span id="lap">0</span>/3</div>
+  <div class="msg" id="hudMsg"></div>
+</div>
+
+<div id="minimap"><canvas id="mmCanvas" width="140" height="140"></canvas></div>
+
+<div id="joy"><div class="base"></div><div class="knob"></div></div>
+
+<div id="btns">
+  <button id="brakeBtn">🛑</button>
+  <button id="nitroBtn">⚡</button>
+</div>
+<div id="controls">W/S加速减速 · A/D转向 · 空格手刹 · Shift氮气 · 1/2/3切视角</div>
+
+<div id="overlay"><div class="box">
+  <h2>🚗 极限狂飙</h2>
+  <p>MIUI工作室出品<br>开放世界自由驾驶 | 竞速模式<br>全视角切换 | 真实物理引擎</p>
+  <button onclick="startGame()">🎮 开始游戏</button>
+</div></div>
+
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script>
+// ============ SCENE ============
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x1a1a2e);
+scene.fog=new THREE.Fog(0x1a2a3e,100,600);
+
+const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,0.5,800);
+camera.position.set(0,6,-12);
+
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.3;
+document.body.appendChild(renderer.domElement);
+
+// ============ LIGHT ============
+scene.add(new THREE.AmbientLight(0x334466,0.6));
+const sun=new THREE.DirectionalLight(0xffeedd,1.2);
+sun.position.set(100,150,60);sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.near=0.5;sun.shadow.camera.far=500;
+sun.shadow.camera.left=-120;sun.shadow.camera.right=120;
+sun.shadow.camera.top=120;sun.shadow.camera.bottom=-120;
+scene.add(sun);
+
+// ============ WORLD ============
+// Terrain
+const worldGeo=new THREE.PlaneGeometry(600,600,120,120);
+const worldMat=new THREE.MeshStandardMaterial({color:0x3a6a2a,roughness:0.85});
+const ground=new THREE.Mesh(worldGeo,worldMat);
+ground.rotation.x=-Math.PI/2;ground.position.y=-0.05;ground.receiveShadow=true;scene.add(ground);
+
+// Road system - a loop track
+const roadMat=new THREE.MeshStandardMaterial({color:0x333333,roughness:0.7});
+const roadWidth=8;
+
+function addRoadSegment(x1,z1,x2,z2){
+  const dx=x2-x1,dz=z2-z1;
+  const len=Math.sqrt(dx*dx+dz*dz);
+  const ang=Math.atan2(dz,dx);
+  const seg=new THREE.Mesh(new THREE.PlaneGeometry(len,roadWidth),roadMat);
+  seg.rotation.x=-Math.PI/2;seg.rotation.z=ang;
+  seg.position.set((x1+x2)/2,0.02,(z1+z2)/2);seg.receiveShadow=true;scene.add(seg);
+  // Lane markings
+  for(let t=0;t<len;t+=4){
+    const mx=x1+Math.cos(ang)*t,mz=z1+Math.sin(ang)*t;
+    const line=new THREE.Mesh(new THREE.PlaneGeometry(2,0.3),new THREE.MeshBasicMaterial({color:0xffff00}));
+    line.rotation.x=-Math.PI/2;line.rotation.z=ang;
+    line.position.set(mx,0.03,mz);scene.add(line);
+  }
+  // Road edge lines
+  [-1,1].forEach(s=>{
+    const ex1=x1+Math.cos(ang+s*Math.PI/2)*roadWidth/2;
+    const ez1=z1+Math.sin(ang+s*Math.PI/2)*roadWidth/2;
+    const ex2=x2+Math.cos(ang+s*Math.PI/2)*roadWidth/2;
+    const ez2=z2+Math.sin(ang+s*Math.PI/2)*roadWidth/2;
+    const elen=Math.sqrt((ex2-ex1)**2+(ez2-ez1)**2);
+    const eang=Math.atan2(ez2-ez1,ex2-ex1);
+    const eline=new THREE.Mesh(new THREE.PlaneGeometry(elen,0.2),new THREE.MeshBasicMaterial({color:0xffffff}));
+    eline.rotation.x=-Math.PI/2;eline.rotation.z=eang;
+    eline.position.set((ex1+ex2)/2,0.03,(ez1+ez2)/2);scene.add(eline);
+  });
+}
+
+// Build a looping track
+const trackPoints=[];
+const cx=0,cz=0;
+// Outer loop
+for(let a=0;a<Math.PI*2;a+=Math.PI/12){
+  const r=80+Math.sin(a*3)*20+Math.cos(a*5)*10;
+  trackPoints.push({x:cx+Math.cos(a)*r,z:cz+Math.sin(a)*r});
+}
+trackPoints.push(trackPoints[0]); // close loop
+
+for(let i=0;i<trackPoints.length-1;i++){
+  addRoadSegment(trackPoints[i].x,trackPoints[i].z,trackPoints[i+1].x,trackPoints[i+1].z);
+}
+
+// Buildings around
+const bldgMat=new THREE.MeshStandardMaterial({color:0x555566,roughness:0.4});
+for(let i=0;i<60;i++){
+  const a=Math.random()*Math.PI*2,d=95+Math.random()*160;
+  const h=8+Math.random()*40;
+  const w=5+Math.random()*15,de=5+Math.random()*15;
+  const bldg=new THREE.Mesh(new THREE.BoxGeometry(w,h,de),bldgMat);
+  bldg.position.set(cx+Math.cos(a)*d,h/2,cz+Math.sin(a)*d);
+  bldg.castShadow=true;bldg.receiveShadow=true;scene.add(bldg);
+}
+
+// Trees
+const trunkMat=new THREE.MeshStandardMaterial({color:0x5a3a1a});
+const leavesMat=new THREE.MeshStandardMaterial({color:0x2d5a1e,roughness:0.7});
+for(let i=0;i<200;i++){
+  const tx=(Math.random()-.5)*500,tz=(Math.random()-.5)*500;
+  const onRoad=trackPoints.some(p=>Math.hypot(tx-p.x,tz-p.z)<12);
+  if(onRoad)continue;
+  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.5,3+Math.random()*4,6),trunkMat);
+  trunk.position.set(tx,1.5+Math.random()*2,tz);trunk.castShadow=true;scene.add(trunk);
+  const leaves=new THREE.Mesh(new THREE.SphereGeometry(1.5+Math.random()*2,6,4),leavesMat);
+  leaves.position.set(tx,3.5+Math.random()*4,tz);leaves.castShadow=true;scene.add(leaves);
+}
+
+// Checkpoint markers
+const cpMat=new THREE.MeshStandardMaterial({color:0xff4400,emissive:0xff2200,emissiveIntensity:0.5});
+trackPoints.forEach((p,i)=>{
+  const cp=new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.3,6,8),cpMat);
+  cp.position.set(p.x,3,p.z);scene.add(cp);
+});
+
+// ============ CAR ============
+const carGroup=new THREE.Group();
+const bodyGeo=new THREE.BoxGeometry(2.2,0.6,4.5);
+const bodyMat2=new THREE.MeshStandardMaterial({color:0xff4400,roughness:0.2,metalness:0.6});
+const carBody=new THREE.Mesh(bodyGeo,bodyMat2);carBody.position.y=0.7;carBody.castShadow=true;carGroup.add(carBody);
+// Cabin
+const cabinGeo=new THREE.BoxGeometry(1.8,0.4,2.2);
+const cabinMat=new THREE.MeshStandardMaterial({color:0x111122,roughness:0.1,metalness:0.3});
+const cabin=new THREE.Mesh(cabinGeo,cabinMat);cabin.position.y=1.2;cabin.position.z=-0.2;cabin.castShadow=true;carGroup.add(cabin);
+// Spoiler
+const spoilerGeo=new THREE.BoxGeometry(2.4,0.15,0.4);
+const spoiler=new THREE.Mesh(spoilerGeo,bodyMat2);spoiler.position.set(0,1.1,-2.4);carGroup.add(spoiler);
+// Wheels
+const wheelGeo=new THREE.CylinderGeometry(0.45,0.45,0.5,12);
+const wheelMat2=new THREE.MeshStandardMaterial({color:0x111111,roughness:0.8});
+const wheels=[];
+[[-1.2,-1.5],[1.2,-1.5],[-1.2,1.5],[1.2,1.5]].forEach(([wx,wz])=>{
+  const w=new THREE.Mesh(wheelGeo,wheelMat2);w.rotation.x=Math.PI/2;
+  w.position.set(wx,0.45,wz);carGroup.add(w);wheels.push(w);
+});
+scene.add(carGroup);
+
+// ============ STATE ============
+let carX=0,carZ=100,carAngle=Math.PI/2,carSpeed=0,wheelAngle=0;
+let steerAngle=0,maxSteer=0.6;
+let acceleration=0,brakeForce=0;
+let nitro=100,nitroActive=false,nitroCooldown=0;
+let gear='N';
+let lap=0,checkpoints=[],nextCp=0;
+let gameOn=false,gameTime=0,bestTime=Infinity;
+let viewMode=0; // 0=chase, 1=cockpit, 2=top
+
+// ============ PHYSICS ============
+const GRAVITY=-15;
+const DRAG=0.98;
+const ENGINE_POWER=350;
+const BRAKE_POWER=500;
+const NITRO_POWER=250;
+const STEER_SPEED=3;
+const MAX_SPEED=280;
+
+// Make all checkpoints from track points
+checkpoints=trackPoints.map(p=>({x:p.x,z:p.z,hit:false}));
+
+// ============ INPUT ============
+let thr=0,st=0,br=0;
+let keys={};
+document.addEventListener('keydown',e=>{
+  keys[e.key.toLowerCase()]=true;
+  if(e.key===' '){e.preventDefault();br=1}
+  if(e.key==='shift'&&nitro>0){nitroActive=true}
+  if(e.key==='1')setView(0);if(e.key==='2')setView(1);if(e.key==='3')setView(2);
+});
+document.addEventListener('keyup',e=>{
+  keys[e.key.toLowerCase()]=false;
+  if(e.key===' ')br=0;
+  if(e.key==='shift')nitroActive=false;
+});
+
+// Mobile joy
+let jId=null,jQX=0,jQY=0;
+const jBase=document.getElementById('joy'),jKnob=document.querySelector('#joy .knob');
+jBase.addEventListener('touchstart',e=>{
+  e.preventDefault();const t=e.touches[0];jId=t.identifier;
+  const r=jBase.getBoundingClientRect();
+  jQX=r.left+r.width/2;jQY=r.top+r.height/2;
+  thr=0.8;
+});
+jBase.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  for(let i=0;i<e.touches.length;i++)if(e.touches[i].identifier===jId){
+    const dx=e.touches[i].clientX-jQX,dy=e.touches[i].clientY-jQY;
+    const d=Math.min(45,Math.hypot(dx,dy))/45;
+    const a=Math.atan2(dy,dx);
+    st=-Math.cos(a)*d;thr=Math.max(0,-dy/45);
+    jKnob.style.transform=`translate(${Math.cos(a)*d*0.8}px,${Math.sin(a)*d*0.8}px)`;
+    break;
+  }
+});
+jBase.addEventListener('touchend',()=>{
+  jId=null;thr=0;st=0;jKnob.style.transform='translate(0,0)';
+});
+
+document.getElementById('brakeBtn').addEventListener('touchstart',e=>{e.preventDefault();br=1});
+document.getElementById('brakeBtn').addEventListener('touchend',()=>br=0);
+document.getElementById('nitroBtn').addEventListener('touchstart',e=>{e.preventDefault();if(nitro>0)nitroActive=true});
+document.getElementById('nitroBtn').addEventListener('touchend',()=>nitroActive=false);
+
+window.setView=function(v){
+  viewMode=v;
+  document.querySelectorAll('#viewBtns button').forEach((b,i)=>b.classList.toggle('active',i===v));
+};
+
+// ============ START ============
+function startGame(){
+  carX=0;carZ=100;carAngle=Math.PI/2;carSpeed=0;
+  lap=0;nextCp=0;gameTime=0;nitro=100;
+  checkpoints.forEach(c=>c.hit=false);checkpoints[0].hit=true;
+  gameOn=true;
+  document.getElementById('overlay').style.display='none';
+  msg('🏁 开始！',1500);
+}
+function msg(t,d){
+  const el=document.getElementById('hudMsg');el.textContent=t;el.classList.add('on');
+  setTimeout(()=>el.classList.remove('on'),d);
+}
+
+// ============ UPDATE ============
+function update(dt){
+  if(!gameOn)return;
+  if(dt>0.2)dt=0.2;
+  gameTime+=dt;
+
+  // Input
+  if(keys['w']||keys['arrowup'])thr=1;
+  else if(keys['s']||keys['arrowdown'])thr=-0.5;
+  else if(!jId)thr=0;
+
+  if(keys['a']||keys['arrowleft'])st=-1;
+  else if(keys['d']||keys['arrowright'])st=1;
+  else if(!jId)st=0;
+
+  // Steering
+  const targetSteer=st*maxSteer;
+  steerAngle+=(targetSteer-steerAngle)*Math.min(dt*STEER_SPEED,1);
+
+  // Engine force
+  let engineForce=0;
+  if(thr>0){
+    if(carSpeed<MAX_SPEED)engineForce=ENGINE_POWER*thr;
+  }else if(thr<0){
+    engineForce=ENGINE_POWER*thr*0.3;
+  }
+
+  // Brake
+  let brake=br*BRAKE_POWER;
+  if(carSpeed===0)brake=0;
+
+  // Nitro
+  if(nitroActive&&nitro>0){
+    engineForce+=NITRO_POWER;
+    nitro-=40*dt;
+    if(nitro<=0){nitro=0;nitroActive=false}
+  }else if(!nitroActive&&nitro<100){
+    nitro+=15*dt;
+  }
+  if(nitroCooldown>0)nitroCooldown-=dt;
+
+  // Speed-dependent steering
+  const speedFactor=Math.min(carSpeed/80,1);
+  const effectiveSteerAngle=steerAngle*speedFactor;
+
+  // Apply physics
+  carSpeed+=engineForce*dt;
+  carSpeed-=brake*dt;
+  if(Math.abs(carSpeed)<0.1&&thr===0&&br===0)carSpeed=0;
+  carSpeed*=DRAG;
+  carSpeed=Math.max(-20,Math.min(MAX_SPEED,carSpeed));
+
+  carAngle+=effectiveSteerAngle*dt*3;
+
+  carX+=Math.cos(carAngle)*carSpeed*dt;
+  carZ-=Math.sin(carAngle)*carSpeed*dt;
+
+  // Gears
+  if(carSpeed===0)gear='N';
+  else if(carSpeed<0)gear='R';
+  else if(carSpeed<60)gear='1';
+  else if(carSpeed<120)gear='2';
+  else if(carSpeed<180)gear='3';
+  else if(carSpeed<240)gear='4';
+  else gear='5';
+
+  // Checkpoints
+  if(nextCp<checkpoints.length){
+    const cp=checkpoints[nextCp];
+    const dist=Math.hypot(carX-cp.x,carZ-cp.z);
+    if(dist<10&&!cp.hit){
+      cp.hit=true;nextCp++;
+      if(nextCp===1)msg('✅ 通过起点！',1000);
+    }
+    if(nextCp>=checkpoints.length){
+      nextCp=0;lap++;
+      checkpoints.forEach(c=>c.hit=false);
+      msg('🏁 第'+lap+'圈！',1500);
+      if(lap>=3){
+        gameOn=false;
+        if(gameTime<bestTime)bestTime=gameTime;
+        document.getElementById('overlay').style.display='flex';
+        document.querySelector('#overlay h2').textContent='🏆 比赛完成！';
+        document.querySelector('#overlay p').textContent='时间: '+(gameTime).toFixed(2)+'秒 | 最佳: '+bestTime.toFixed(2)+'秒';
+        document.querySelector('#overlay button').textContent='🔄 再来一局';
+      }
+    }
+  }
+
+  // Camera
+  if(viewMode===0){
+    // Chase camera
+    const cx=carX-Math.cos(carAngle)*10;
+    const cz=carZ+Math.sin(carAngle)*10;
+    camera.position.lerp(new THREE.Vector3(cx,6,cz),5*dt);
+    camera.lookAt(carX,1,carZ);
+  }else if(viewMode===1){
+    // Cockpit
+    const cx=carX+Math.cos(carAngle)*1.2;
+    const cz=carZ-Math.sin(carAngle)*1.2;
+    camera.position.set(cx,1.6,cz);
+    camera.quaternion.setFromEuler(new THREE.Euler(-0.05,carAngle+Math.PI,0,'YXZ'));
+  }else{
+    // Top-down
+    camera.position.lerp(new THREE.Vector3(carX,60,carZ+5),3*dt);
+    camera.lookAt(carX,0,carZ);
+  }
+
+  // Update car mesh
+  carGroup.position.set(carX,0,carZ);
+  carGroup.rotation.y=carAngle;
+  wheels.forEach(w=>{
+    w.rotation.z+=carSpeed*dt*2;
+  });
+
+  // HUD
+  document.getElementById('spd').textContent=Math.abs(Math.floor(carSpeed*3.6));
+  document.getElementById('gear').textContent=gear;
+  document.getElementById('timer').textContent=gameTime.toFixed(2).padStart(7,'0');
+  document.getElementById('lap').textContent=lap;
+
+  // Minimap
+  const mm=document.getElementById('mmCanvas'),mc=mm.getContext('2d');
+  mc.fillStyle='rgba(0,0,0,.7)';mc.fillRect(0,0,140,140);
+  // Track
+  mc.strokeStyle='rgba(255,255,255,.2)';mc.lineWidth=1;mc.beginPath();
+  trackPoints.forEach((p,i)=>{
+    const px=70+(p.x-carX)*0.65,py=70+(p.z-carZ)*0.65;
+    if(i===0)mc.moveTo(px,py);else mc.lineTo(px,py);
+  });
+  mc.stroke();
+  // Player
+  mc.fillStyle='#ff0';mc.beginPath();mc.arc(70,70,3,0,Math.PI*2);mc.fill();
+  // Checkpoints
+  checkpoints.forEach(cp=>{
+    const cx=70+(cp.x-carX)*0.65,cy=70+(cp.z-carZ)*0.65;
+    if(cx>0&&cx<140&&cy>0&&cy<140){
+      mc.fillStyle=cp.hit?'#0f0':'#f44';
+      mc.fillRect(cx-1,cy-1,2,2);
+    }
+  });
+}
+
+// ============ LOOP ============
+let lt=0;
+function loop(t){
+  requestAnimationFrame(loop);
+  const dt=(t-lt)/1000;lt=t;
+  update(dt);
+  renderer.render(scene,camera);
+}
+
+window.addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+
+requestAnimationFrame(loop);
+console.log('🚗 极限狂飙 已就绪！');
+</script>
+</body>
+</html>
