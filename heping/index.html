@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>和平精英-官方网站-腾讯游戏</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"PingFang SC","Microsoft YaHei",system-ui;background:#0a0a0f;color:#ccc;min-width:1200px}
+a{text-decoration:none;color:#ccc}
+img{max-width:100%}
+
+/* Top bar */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;background:rgba(0,0,0,.85);backdrop-filter:blur(10px);display:flex;align-items:center;padding:0 40px;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.08)}
+.topbar .logo{display:flex;align-items:center;gap:8px}
+.topbar .logo img{height:32px}
+.topbar .logo span{font-size:16px;font-weight:700;color:#f60}
+.topbar nav{display:flex;gap:28px}
+.topbar nav a{font-size:13px;transition:.2s;position:relative;padding:4px 0}
+.topbar nav a:hover,.topbar nav a.active{color:#f60}
+.topbar nav a.active::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:#f60;border-radius:1px}
+.topbar .right{display:flex;align-items:center;gap:14px}
+.topbar .right .search{width:180px;height:32px;border-radius:16px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);padding:0 14px;color:#fff;font-size:12px;outline:none}
+.topbar .right .search:focus{border-color:#f60}
+.topbar .right .dl-btn{height:34px;padding:0 18px;border-radius:17px;border:none;background:linear-gradient(135deg,#f60,#f40);color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+
+/* Hero */
+.hero{height:680px;background:linear-gradient(180deg,#0d1117,#1a2a3a);position:relative;overflow:hidden;margin-top:60px}
+.hero .bg{position:absolute;inset:0;background:radial-gradient(ellipse at 30% 40%,rgba(255,100,20,.15),transparent 60%),radial-gradient(ellipse at 70% 60%,rgba(0,150,255,.1),transparent 50%)}
+.hero .content{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:120px 40px;display:flex;align-items:center;justify-content:space-between}
+.hero .left h1{font-size:42px;font-weight:900;color:#fff;margin-bottom:10px;letter-spacing:2px}
+.hero .left .sub{font-size:16px;color:rgba(255,255,255,.5);margin-bottom:30px}
+.hero .left .btns{display:flex;gap:14px;align-items:center}
+.hero .left .btns .dl{height:48px;padding:0 32px;border-radius:24px;border:none;font-size:15px;font-weight:700;cursor:pointer}
+.hero .left .btns .dl.android{background:#f60;color:#fff}
+.hero .left .btns .dl.ios{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.hero .left .qr{display:flex;align-items:center;gap:10px;margin-top:16px;font-size:11px;color:rgba(255,255,255,.35)}
+.hero .left .qr .qr-box{width:80px;height:80px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#999}
+.hero .right .hero-img{width:500px;height:350px;background:rgba(255,255,255,.03);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:80px}
+
+/* News section */
+.section{padding:50px 40px;max-width:1200px;margin:0 auto}
+.section h2{font-size:22px;color:#fff;margin-bottom:24px;font-weight:700}
+.tabs{display:flex;gap:20px;margin-bottom:20px;border-bottom:1px solid rgba(255,255,255,.06);padding-bottom:14px}
+.tabs span{font-size:13px;cursor:pointer;color:rgba(255,255,255,.4);padding:4px 0;transition:.2s}
+.tabs span.active,.tabs span:hover{color:#f60}
+.news-grid{display:grid;grid-template-columns:1.8fr 1fr;gap:20px}
+.news-card{background:rgba(255,255,255,.03);border-radius:12px;overflow:hidden;transition:.2s;cursor:pointer}
+.news-card:hover{background:rgba(255,255,255,.06)}
+.news-card .cover{height:200px;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;font-size:40px}
+.news-card .info{padding:16px}
+.news-card .tag{display:inline-block;padding:2px 8px;border-radius:3px;background:rgba(255,102,0,.2);color:#f60;font-size:10px;margin-right:8px}
+.news-card .title{font-size:15px;color:#fff;margin:8px 0 6px;font-weight:600;line-height:1.5}
+.news-card .date{font-size:11px;color:rgba(255,255,255,.3)}
+.news-list{display:flex;flex-direction:column;gap:8px}
+.news-item{display:flex;align-items:center;gap:8px;padding:10px;border-radius:8px;cursor:pointer;transition:.2s}
+.news-item:hover{background:rgba(255,255,255,.03)}
+.news-item .tag{flex-shrink:0;display:inline-block;padding:2px 8px;border-radius:3px;background:rgba(255,102,0,.2);color:#f60;font-size:10px}
+.news-item .t{font-size:13px;color:#fff;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.news-item .d{font-size:10px;color:rgba(255,255,255,.25);flex-shrink:0}
+
+/* Cards */
+.cards-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{background:rgba(255,255,255,.03);border-radius:12px;padding:24px;transition:.2s;cursor:pointer;border:1px solid rgba(255,255,255,.04)}
+.card:hover{background:rgba(255,255,255,.06);border-color:rgba(255,102,0,.15)}
+.card .icon{font-size:32px;margin-bottom:12px}
+.card .name{font-size:15px;color:#fff;font-weight:600;margin-bottom:6px}
+.card .desc{font-size:12px;color:rgba(255,255,255,.4);line-height:1.7}
+
+/* Feature highlight */
+.feature{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+.feature-box{border-radius:14px;padding:32px;border:1px solid rgba(255,255,255,.06)}
+.feature-box.orange{border-color:rgba(255,102,0,.15);background:rgba(255,80,0,.04)}
+.feature-box.blue{border-color:rgba(0,150,255,.1);background:rgba(0,120,255,.03)}
+.feature-box.green{border-color:rgba(0,200,100,.1);background:rgba(0,180,80,.03)}
+.feature-box.purple{border-color:rgba(150,50,255,.1);background:rgba(120,30,255,.03)}
+.feature-box h3{font-size:18px;color:#fff;margin-bottom:4px}
+.feature-box .fsub{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:16px}
+.feature-box .points{display:flex;flex-direction:column;gap:8px}
+.feature-box .point{display:flex;gap:10px;align-items:flex-start}
+.feature-box .point .no{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;background:rgba(255,255,255,.08);color:#fff}
+.feature-box .point .pt{font-size:13px;color:rgba(255,255,255,.7);line-height:1.6}
+
+/* Video */
+.video-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.video-card{background:rgba(255,255,255,.03);border-radius:10px;overflow:hidden;cursor:pointer;transition:.2s;cursor:pointer}
+.video-card:hover{transform:translateY(-2px)}
+.video-card .thumb{height:140px;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;font-size:36px;position:relative}
+.video-card .play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;opacity:.6}
+.video-card .vinfo{padding:12px}
+.video-card .vt{font-size:12px;color:#fff;line-height:1.5;margin-bottom:6px}
+.video-card .vm{font-size:10px;color:rgba(255,255,255,.25)}
+
+/* Story */
+.story-banner{height:280px;border-radius:14px;background:linear-gradient(135deg,#0a1628,#1a2a4a,#0d1a2d);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;cursor:pointer;margin-bottom:24px}
+.story-banner h3{font-size:24px;color:#fff}
+.story-banner p{font-size:13px;color:rgba(255,255,255,.4)}
+.story-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.story-card{background:rgba(255,255,255,.03);border-radius:12px;padding:20px;cursor:pointer;transition:.2s}
+.story-card:hover{background:rgba(255,255,255,.06)}
+.story-card .sn{font-size:14px;color:#fff;font-weight:600;margin-bottom:8px}
+.story-card .sd{font-size:12px;color:rgba(255,255,255,.4);line-height:1.7}
+
+/* Weapons */
+.weapon-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:16px}
+.weapon-scroll::-webkit-scrollbar{height:3px}
+.weapon-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+.weapon-item{flex-shrink:0;width:150px;text-align:center;cursor:pointer;padding:16px;border-radius:10px;background:rgba(255,255,255,.02);transition:.2s}
+.weapon-item:hover{background:rgba(255,255,255,.05)}
+.weapon-item .wicon{font-size:40px;margin-bottom:8px}
+.weapon-item .wn{font-size:13px;color:#fff;margin-bottom:4px}
+.weapon-item .wt{font-size:10px;color:rgba(255,255,255,.3)}
+
+/* Footer */
+.footer{background:rgba(0,0,0,.4);padding:40px;text-align:center;border-top:1px solid rgba(255,255,255,.04);margin-top:40px}
+.footer .links{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:20px}
+.footer .links a{font-size:11px;color:rgba(255,255,255,.35)}
+.footer .links a:hover{color:#f60}
+.footer .copy{font-size:10px;color:rgba(255,255,255,.2);line-height:1.8}
+.footer .warn{font-size:11px;color:rgba(255,255,255,.25);margin-top:8px;line-height:1.8}
+
+.sm-badge{display:inline-block;padding:3px 8px;border-radius:3px;font-size:10px;font-weight:600}
+.sm-badge.orange{background:#f60;color:#000}
+.sm-badge.blue{background:#28f;color:#fff}
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="logo">
+    <span style="font-size:24px">⚡</span>
+    <span>和平精英</span>
+  </div>
+  <nav>
+    <a href="#" class="active">首页</a>
+    <a href="#">版本专区</a>
+    <a href="#">游戏资料</a>
+    <a href="#">赛事专区</a>
+    <a href="#">安全中心</a>
+    <a href="#">自助工具</a>
+    <a href="#">社区互动</a>
+  </nav>
+  <div class="right">
+    <input class="search" placeholder="搜索攻略、新闻...">
+    <button class="dl-btn">下载游戏</button>
+  </div>
+</div>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="bg"></div>
+  <div class="content">
+    <div class="left">
+      <h1>全球玩家的竞技冒险世界</h1>
+      <div class="sub">全新版本 · 夏日探险 扬帆起航</div>
+      <div class="btns">
+        <button class="dl android">📱 安卓下载</button>
+        <button class="dl ios">🍎 AppStore下载</button>
+      </div>
+      <div class="qr">
+        <div class="qr-box">📱<br>扫码<br>下载</div>
+        <span>扫一扫，立即下载游戏</span>
+      </div>
+    </div>
+    <div class="right">
+      <div class="hero-img">🪂</div>
+    </div>
+  </div>
+</div>
+
+<!-- News -->
+<div class="section">
+  <h2>📰 官方资讯</h2>
+  <div class="tabs">
+    <span class="active">最新</span><span>新闻</span><span>公告</span><span>活动</span><span>赛事</span>
+  </div>
+  <div class="news-grid">
+    <div class="news-card">
+      <div class="cover">🕷️</div>
+      <div class="info">
+        <span class="tag">最新</span><span class="date">07-29</span>
+        <div class="title">崭新之日 酷燃海岛！携手电影《蜘蛛侠：崭新之日》联动惊喜上线</div>
+      </div>
+    </div>
+    <div class="news-list">
+      <div class="news-item"><span class="tag">最新</span><span class="t">启航玛雅 泼水寻宝！夏日探险新版本联动重庆玛雅海滩水公园</span><span class="d">07-27</span></div>
+      <div class="news-item"><span class="tag">新闻</span><span class="t">浩瀚宇宙 无尽征途！和平精英 x 吞噬星空 机甲外观揭晓</span><span class="d">07-24</span></div>
+      <div class="news-item"><span class="tag">公告</span><span class="t">SS40赛季开启公告</span><span class="d">07-25</span></div>
+      <div class="news-item"><span class="tag">公告</span><span class="t">超体进化-度假岛 玩法更新公告</span><span class="d">07-25</span></div>
+      <div class="news-item"><span class="tag">活动</span><span class="t">SS40赛季限定套装-聆海秘语上线</span><span class="d">07-23</span></div>
+      <div class="news-item"><span class="tag">赛事</span><span class="t">2026 PEL夏季赛 赛事规则</span><span class="d">06-02</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Game Features -->
+<div class="section">
+  <h2>🎮 新玩法介绍</h2>
+  <div class="feature">
+    <div class="feature-box orange">
+      <h3>⛵ 主题海岛—夏日航海</h3>
+      <div class="fsub">扬帆起航，出海探险！</div>
+      <div class="points">
+        <div class="point"><span class="no">01</span><span class="pt">巨船岛 — 水面+水下双重区域，打开神秘宝箱，挑战章鱼领主</span></div>
+        <div class="point"><span class="no">02</span><span class="pt">探险号 — 水空双栖四人载具，驾驶位·钓鱼位·观察位</span></div>
+        <div class="point"><span class="no">03</span><span class="pt">主题道具 — 鹦鹉、惊吓章鱼、登船飞爪，还设有水下钢琴打卡点</span></div>
+      </div>
+    </div>
+    <div class="feature-box green">
+      <h3>🚇 地铁逃生—异变密林</h3>
+      <div class="fsub">地铁逃生2周年，全新地图开启！</div>
+      <div class="points">
+        <div class="point"><span class="no">01</span><span class="pt">异变密林 — 演练·进阶·冲突三个难度，小图刚枪更刺激</span></div>
+        <div class="point"><span class="no">02</span><span class="pt">新传世武器 — 审判者骨鞭，专属武装</span></div>
+        <div class="point"><span class="no">03</span><span class="pt">黄金马桶 — 全新趣味高价值变卖物，需要双手搬运带出</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="feature">
+    <div class="feature-box blue">
+      <h3>🦈 超体新导师—深海之影·兰蒂</h3>
+      <div class="fsub">角色羁绊·潮汐双生</div>
+      <div class="points">
+        <div class="point"><span class="no">01</span><span class="pt">被动·觅食者 — 低血量敌人触发持续追踪，增加移速和伤害增益</span></div>
+        <div class="point"><span class="no">02</span><span class="pt">主动·深海通道 — 释放水元素网状通道，引爆后造成持续伤害</span></div>
+        <div class="point"><span class="no">03</span><span class="pt">终极·鲨鱼形态 — 在地面和墙面游动，蓄力跃出地面</span></div>
+      </div>
+    </div>
+    <div class="feature-box purple">
+      <h3>🛡️ HIT安全系统1.8</h3>
+      <div class="fsub">黑产作弊，逐一击破</div>
+      <div class="points">
+        <div class="point"><span class="no">01</span><span class="pt">地铁&古墓违规乱象逐一打击 — 连点器、脚本号、加速跑刀</span></div>
+        <div class="point"><span class="no">02</span><span class="pt">外挂技术反制 — 透视类作弊专项打击，坐标加密方案</span></div>
+        <div class="point"><span class="no">03</span><span class="pt">恶意语音管控 — 新增多个检测识别策略，禁言时长追加</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Video Center -->
+<div class="section">
+  <h2>🎬 视频中心</h2>
+  <div class="video-grid">
+    <div class="video-card"><div class="thumb"><span>🦠</span><div class="play">▶</div></div><div class="vinfo"><div class="vt">异变危机8月5日惊喜回归！一起共抗危机！</div><div class="vm">07-27 · 1476次</div></div></div>
+    <div class="video-card"><div class="thumb"><span>⚡</span><div class="play">▶</div></div><div class="vinfo"><div class="vt">超体进化现已超能返场，三大导师登场</div><div class="vm">07-27 · 524次</div></div></div>
+    <div class="video-card"><div class="thumb"><span>🎁</span><div class="play">▶</div></div><div class="vinfo"><div class="vt">2026刺激空投节，第一弹福利首发！</div><div class="vm">07-27 · 770次</div></div></div>
+    <div class="video-card"><div class="thumb"><span>🔫</span><div class="play">▶</div></div><div class="vinfo"><div class="vt">CH.13赛季即将开启，全新传世手枪</div><div class="vm">07-27 · 679次</div></div></div>
+  </div>
+</div>
+
+<!-- Weapons -->
+<div class="section">
+  <h2>🔫 游戏资料 · 武器</h2>
+  <div class="weapon-scroll">
+    <div class="weapon-item"><div class="wicon">🔴</div><div class="wn">赤霄突击步枪</div><div class="wt">空投武器 · 5.8mm</div></div>
+    <div class="weapon-item"><div class="wicon">🟠</div><div class="wn">AKM</div><div class="wt">突击步枪 · 7.62mm</div></div>
+    <div class="weapon-item"><div class="wicon">🟡</div><div class="wn">M416</div><div class="wt">突击步枪 · 5.56mm</div></div>
+    <div class="weapon-item"><div class="wicon">🟢</div><div class="wn">SCAR-L</div><div class="wt">突击步枪 · 5.56mm</div></div>
+    <div class="weapon-item"><div class="wicon">🔵</div><div class="wn">97MG轻机枪</div><div class="wt">轻机枪 · 5.56mm</div></div>
+    <div class="weapon-item"><div class="wicon">🟣</div><div class="wn">AS50狙击枪</div><div class="wt">狙击枪 · .50</div></div>
+    <div class="weapon-item"><div class="wicon">🟤</div><div class="wn">MP7-G冲锋枪</div><div class="wt">冲锋枪 · 9mm</div></div>
+    <div class="weapon-item"><div class="wicon">⚪</div><div class="wn">Kar98K</div><div class="wt">狙击步枪 · 7.62mm</div></div>
+  </div>
+</div>
+
+<!-- Story -->
+<div class="section">
+  <h2>📖 和平精英故事站</h2>
+  <div class="story-banner">
+    <span style="font-size:60px">🌍</span>
+    <h3>这个世界，远比你想象的广阔</h3>
+    <p>前往故事站 →</p>
+  </div>
+  <div class="story-cards">
+    <div class="story-card">
+      <div class="sn">🚇 地铁逃生</div>
+      <div class="sd">审判者·瓦伦携黑蚀异变来袭，灾难源自苏尔南近海的异变密林……</div>
+    </div>
+    <div class="story-card">
+      <div class="sn">🏔️ 古墓迷途</div>
+      <div class="sd">长白仙宫揭开长生之谜，雪山深处掩埋千年的秘密现世……</div>
+    </div>
+    <div class="story-card">
+      <div class="sn">🦈 超体对抗</div>
+      <div class="sd">深海之影·兰蒂，海洋中最危险的猎手，驱逐每一个入侵者……</div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="links">
+    <a href="#">腾讯互动娱乐</a><span>|</span>
+    <a href="#">服务条款</a><span>|</span>
+    <a href="#">隐私保护指引</a><span>|</span>
+    <a href="#">儿童隐私保护指引</a><span>|</span>
+    <a href="#">腾讯游戏招聘</a><span>|</span>
+    <a href="#">腾讯游戏客服</a><span>|</span>
+    <a href="#">游戏列表</a><span>|</span>
+    <a href="#">广告服务及商务合作</a>
+  </div>
+  <div class="copy">
+    COPYRIGHT © 1998 - 2026 TENCENT. ALL RIGHTS RESERVED.<br>
+    国新出审[2019]1394号 | ISBN 978-7-498-06474-5 | 全国文化市场统一举报电话：12318
+  </div>
+  <div class="warn">
+    抵制不良游戏 拒绝盗版游戏 注意自我保护 谨防受骗上当<br>
+    适度游戏益脑 沉迷游戏伤身 合理安排时间 享受健康生活
+  </div>
+</div>
+
+<script>
+// Tab switching
+document.querySelectorAll('.tabs span').forEach(el=>{
+  el.addEventListener('click',function(){
+    this.parentElement.querySelectorAll('span').forEach(s=>s.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+// Nav active
+document.querySelectorAll('nav a').forEach(el=>{
+  el.addEventListener('click',function(e){
+    e.preventDefault();
+    document.querySelectorAll('nav a').forEach(s=>s.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
