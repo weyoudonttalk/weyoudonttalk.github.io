@@ -1,429 +1,265 @@
-<!DOCTYPE html><html lang="zh"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>Gipsy Danger 危险流浪者 · MIUI STUDIO</title>
-<style>*{margin:0;padding:0;overflow:hidden}body{background:#87ceeb}canvas{display:block;width:100vw;height:100vh}
-#info{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.4);font-size:11px;pointer-events:none;z-index:10;text-shadow:0 0 6px rgba(0,0,0,.3)}
-#title{position:fixed;top:18px;left:50%;transform:translateX(-50%);color:#fff;font-size:22px;font-weight:900;z-index:10;letter-spacing:4px;pointer-events:none;text-align:center;text-shadow:0 2px 10px rgba(0,0,0,.4)}
-#title i{display:block;font-size:13px;font-weight:700;letter-spacing:5px;color:#fc0;font-style:normal;margin-top:2px}
-</style></head><body>
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Gipsy Danger 危险流浪者 · 3D模型</title>
+<style>
+*{margin:0;padding:0;overflow:hidden}
+body{background:#87ceeb}
+canvas{display:block;width:100vw;height:100vh}
+#info{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.5);font-size:11px;pointer-events:none;z-index:10}
+#title{position:fixed;top:16px;left:50%;transform:translateX(-50%);color:#fff;font-size:20px;font-weight:900;z-index:10;letter-spacing:3px;pointer-events:none;text-shadow:0 2px 8px rgba(0,0,0,.3)}
+#title i{display:block;font-size:12px;color:#fc0;font-style:normal;letter-spacing:5px;margin-top:2px}
+#err{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#f44;font-size:14px;z-index:99;display:none;text-align:center;background:rgba(0,0,0,.7);padding:16px 24px;border-radius:10px}
+</style>
+</head>
+<body>
+
 <div id="title">GIPSY <i>DANGER</i></div>
-<div id="info">🖱️ 拖动旋转 · 滚轮缩放 · 右键平移</div>
+<div id="info">拖动旋转 · 滚轮缩放</div>
+<div id="err">⚠️ 模型加载中，请稍候...</div>
+
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+
+<!-- 直接内嵌轨道控制，不依赖外部 CDN -->
 <script>
-(function(){
-  if(typeof THREE==='undefined')return setTimeout(arguments.callee,200);
-
-  // ================== 场景 ==================
-  var S=new THREE.Scene();
-  // 晴天：天蓝色背景 + 微弱远雾
-  S.background=new THREE.Color(0x87ceeb);
-  S.fog=new THREE.Fog(0x87ceeb,40,90);
-
-  var C=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,0.3,70);
-  C.position.set(7,10,14);
-
-  var R=new THREE.WebGLRenderer({antialias:true});
-  R.setSize(innerWidth,innerHeight);
-  R.setPixelRatio(Math.min(devicePixelRatio,2));
-  R.shadowMap.enabled=true;
-  R.shadowMap.type=THREE.PCFSoftShadowMap;
-  R.toneMapping=THREE.ACESFilmicToneMapping;
-  R.toneMappingExposure=1.1;
-  document.body.appendChild(R.domElement);
-
-  var ctrl=new THREE.OrbitControls(C,R.domElement);
-  ctrl.target.set(0,6,0);
-  ctrl.enableDamping=true;
-  ctrl.dampingFactor=0.08;
-  ctrl.minDistance=4;
-  ctrl.maxDistance=22;
-  ctrl.maxPolarAngle=Math.PI*0.72;
-  ctrl.update();
-
-  // ================== 晴天光照 ==================
-  S.add(new THREE.AmbientLight(0x8899cc,0.7));
-  // 主太阳光（暖色，模拟晴天）
-  var sunLight=new THREE.DirectionalLight(0xfff5e0,1.6);
-  sunLight.position.set(15,20,10);
-  sunLight.castShadow=true;
-  sunLight.shadow.mapSize.set(2048,2048);
-  sunLight.shadow.camera.near=0.3;
-  sunLight.shadow.camera.far=60;
-  sunLight.shadow.camera.left=-16;
-  sunLight.shadow.camera.right=16;
-  sunLight.shadow.camera.top=16;
-  sunLight.shadow.camera.bottom=-16;
-  S.add(sunLight);
-  // 天空补光（淡蓝，来自上方）
-  var skyFill=new THREE.DirectionalLight(0x88bbff,0.5);
-  skyFill.position.set(-5,12,-5);
-  S.add(skyFill);
-  // 半球光——模拟天空+地面反射
-  S.add(new THREE.HemisphereLight(0x88bbff,0x665544,0.5));
-  // 反应堆发光
-  var rctLight=new THREE.PointLight(0xff6600,3.5,9);
-  rctLight.position.set(0,4.8,0.8);
-  S.add(rctLight);
-  // 面罩发光
-  var visLight=new THREE.PointLight(0x4488ff,2.5,6);
-  visLight.position.set(0,7.8,1.5);
-  S.add(visLight);
-
-  // ================== 地面（停机坪风格） ==================
-  var groundGeo=new THREE.PlaneGeometry(35,35);
-  var groundMat=new THREE.MeshStandardMaterial({
-    color:0x555566,
-    roughness:0.55,
-    metalness:0.25
-  });
-  var ground=new THREE.Mesh(groundGeo,groundMat);
-  ground.rotation.x=-Math.PI/2;
-  ground.position.y=-0.02;
-  ground.receiveShadow=true;
-  S.add(ground);
-
-  // 水泥地面纹理（用 Canvas 过程式生成）
-  var canvas=document.createElement('canvas');
-  canvas.width=512;canvas.height=512;
-  var ctx=canvas.getContext('2d');
-  ctx.fillStyle='#5a5a6a';
-  ctx.fillRect(0,0,512,512);
-  // 随机裂纹/斑点
-  for(var i=0;i<300;i++){
-    var gx=Math.random()*512,gy=Math.random()*512;
-    ctx.fillStyle='rgba(0,0,0,'+(0.02+Math.random()*0.06)+')';
-    ctx.fillRect(gx,gy,Math.random()*8+2,Math.random()*8+2);
-  }
-  // 白色标线
-  ctx.strokeStyle='rgba(255,255,255,0.15)';
-  ctx.lineWidth=2;
-  for(var j=0;j<8;j++){
-    ctx.beginPath();
-    ctx.moveTo(0,j*64);
-    ctx.lineTo(512,j*64);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(j*64,0);
-    ctx.lineTo(j*64,512);
-    ctx.stroke();
-  }
-  var tex=new THREE.CanvasTexture(canvas);
-  tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
-  tex.repeat.set(6,6);
-  ground.material.map=tex;
-  ground.material.needsUpdate=true;
-
-  // ================== 机甲模型（用 LatheGeometry 做曲面部件） ==================
-  var bot=new THREE.Group();
-
-  // 材质
-  var B2=new THREE.MeshStandardMaterial({color:0x1e4d8c,roughness:0.22,metalness:0.78});
-  var D2=new THREE.MeshStandardMaterial({color:0x0a0a18,roughness:0.35,metalness:0.62});
-  var S2=new THREE.MeshStandardMaterial({color:0x8a8e9a,roughness:0.18,metalness:0.84});
-  var G2=new THREE.MeshStandardMaterial({color:0xcc8800,roughness:0.16,metalness:0.9});
-  var O2=new THREE.MeshStandardMaterial({color:0xff6600,emissive:0xff4400,emissiveIntensity:0.8,roughness:0.3,metalness:0.4});
-  var GL2=new THREE.MeshStandardMaterial({color:0x4488ff,emissive:0x2266ff,emissiveIntensity:0.95,roughness:0.08,metalness:0.12});
-  var RD2=new THREE.MeshStandardMaterial({color:0xcc2222,roughness:0.25,metalness:0.6});
-  var BL3=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0x4488ff,emissiveIntensity:0.6,roughness:0.02,metalness:0.95});
-
-  // === 用 LatheGeometry 做曲面部件（不只用方块） ===
-  function createCone(rtop,rbot,h,seg,mat){
-    var pts=[];
-    for(var i=0;i<=seg;i++){
-      var t=i/seg;
-      var r=rbot+(rtop-rbot)*t;
-      pts.push(new THREE.Vector2(r,h*(t-0.5)));
-    }
-    var geo=new THREE.LatheGeometry(pts,20);
-    var m=new THREE.Mesh(geo,mat);
-    m.castShadow=true;m.receiveShadow=true;
-    return m;
-  }
-
-  // 头部 Conn-Pod：用 LatheGeometry 做扁圆形
-  var headGroup=new THREE.Group();
-  // 头壳（扁椭球体——用缩放球体代替）
-  var headShell=new THREE.Mesh(new THREE.SphereGeometry(0.55,24,16),D2);
-  headShell.scale.set(1.1,0.85,0.75);
-  headShell.castShadow=true;headShell.receiveShadow=true;
-  headGroup.add(headShell);
-  // 面罩横条（发光Blue）
-  var visor=new THREE.Mesh(new THREE.BoxGeometry(0.7,0.1,0.03),GL2);
-  visor.position.set(0,0.15,0.35);
-  headGroup.add(visor);
-  // 面罩框
-  var visorFrame=new THREE.Mesh(new THREE.BoxGeometry(0.76,0.14,0.04),S2);
-  visorFrame.position.set(0,0.15,0.37);
-  headGroup.add(visorFrame);
-  // 下巴装甲
-  var jaw=createCone(0.3,0.35,0.25,8,S2);
-  jaw.position.set(0,-0.32,0.15);
-  headGroup.add(jaw);
-  // 头顶装甲板
-  var crown=createCone(0.4,0.5,0.1,8,D2);
-  crown.position.set(0,0.5,0.05);
-  headGroup.add(crown);
-  // 侧面天线
-  [-1,1].forEach(function(s){
-    var ant=createCone(0.06,0.08,0.35,6,S2);
-    ant.position.set(s*0.55,0.1,0);
-    ant.rotation.z=s*0.25;
-    headGroup.add(ant);
-  });
-  // 颈部连接
-  var neck=createCone(0.18,0.22,0.55,8,S2);
-  neck.position.set(0,-0.7,0);
-  headGroup.add(neck);
-  headGroup.position.set(0,10.6,0);
-  bot.add(headGroup);
-
-  // === 躯干 ===
-  var torso=new THREE.Group();
-  // 背部脊椎
-  var spine=createCone(0.5,0.6,3.2,10,D2);
-  spine.position.set(0,5.1,-0.6);
-  torso.add(spine);
-  // 前胸甲 V 型：用多个缩放椭圆
-  for(var i=0;i<6;i++){
-    var t=i/5;
-    var w=2.1*(1-t*0.45);
-    var h=0.18+Math.random()*0.05;
-    var d=0.6*(1-t*0.2);
-    var y=7.15-t*0.75;
-    var chestP=new THREE.Mesh(new THREE.BoxGeometry(w,h,d,4,1,1),B2);
-    chestP.position.set(0,y,0);
-    chestP.castShadow=true;
-    chestP.receiveShadow=true;
-    torso.add(chestP);
-  }
-  // 腹部
-  for(var i=0;i<4;i++){
-    var ab=new THREE.Mesh(new THREE.BoxGeometry(1.20,0.1,0.42,4,1,1),D2);
-    ab.position.set(0,4.9-i*0.26,0.2);
-    torso.add(ab);
-  }
-  // 反应堆（胸口圆形）
-  var reactorRing=new THREE.Mesh(new THREE.TorusGeometry(0.42,0.06,8,20),G2);
-  reactorRing.position.set(0,4.95,0.32);
-  reactorRing.castShadow=true;
-  torso.add(reactorRing);
-  var reactorCore=new THREE.Mesh(new THREE.SphereGeometry(0.32,16,12),O2);
-  reactorCore.position.set(0,4.95,0.38);
-  reactorCore.castShadow=true;
-  torso.add(reactorCore);
-  // 散热纹
-  for(var a=0;a<Math.PI*2;a+=Math.PI/4){
-    var rx2=Math.cos(a)*0.5,ry2=Math.sin(a)*0.5;
-    var vent=new THREE.Mesh(new THREE.BoxGeometry(0.04,0.015,0.06),D2);
-    vent.position.set(rx2,4.95+ry2,0.37);
-    vent.rotation.z=a;
-    torso.add(vent);
-  }
-  // 金色腰带
-  var belt=new THREE.Mesh(new THREE.TorusGeometry(0.7,0.06,6,16),G2);
-  belt.position.set(0,3.05,0.0);
-  belt.rotation.x=Math.PI/2;
-  belt.castShadow=true;
-  torso.add(belt);
-  // 腰带搭扣
-  var buckle=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.22,0.15),G2);
-  buckle.position.set(0,3.05,0.3);
-  torso.add(buckle);
-  // 肩部球关节
-  [-1,1].forEach(function(s){
-    var shoulderJ=createCone(0.4,0.45,0.5,10,S2);
-    shoulderJ.position.set(s*1.2,7.2,0);
-    torso.add(shoulderJ);
-    // 肩甲
-    var pauldron=new THREE.Mesh(new THREE.BoxGeometry(0.7,0.3,0.6,4,2,2),B2);
-    pauldron.position.set(s*1.5,7.5,0);
-    pauldron.rotation.z=s*0.25;
-    torso.add(pauldron);
-  });
-  // 领口装甲
-  var collar=createCone(0.65,0.8,0.2,10,G2);
-  collar.position.set(0,7.55,0.02);
-  torso.add(collar);
-  // 裆部
-  var groin=createCone(0.35,0.45,0.35,8,B2);
-  groin.position.set(0,2.85,0.25);
-  torso.add(groin);
-  torso.position.set(0,3.0,0);
-  bot.add(torso);
-
-  // === 腿部 ===
-  function leg(sx){
-    var L=new THREE.Group();
-    // 大腿
-    var thigh=createCone(0.35,0.42,2.8,12,B2);
-    thigh.position.set(0,1.3,0);
-    L.add(thigh);
-    // 大腿正面装甲
-    var tf=new THREE.Mesh(new THREE.BoxGeometry(0.45,1.9,0.3,4,2,1),D2);
-    tf.position.set(0,1.2,0.28);
-    L.add(tf);
-    // 膝盖关节
-    var knee=createCone(0.3,0.35,0.4,10,S2);
-    knee.position.set(0,-0.05,0);
-    L.add(knee);
-    // 膝盖护板
-    var kg=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.18,0.4,4,2,2),B2);
-    kg.position.set(0,-0.05,0.25);
-    L.add(kg);
-    // 小腿
-    var shin=createCone(0.27,0.33,2.5,12,B2);
-    shin.position.set(0,-1.5,0);
-    L.add(shin);
-    // 小腿装甲
-    var sf=new THREE.Mesh(new THREE.BoxGeometry(0.36,1.8,0.26,4,2,1),D2);
-    sf.position.set(0,-1.4,0.24);
-    L.add(sf);
-    // 脚踝
-    var ankle=createCone(0.22,0.26,0.3,8,S2);
-    ankle.position.set(0,-2.7,0);
-    L.add(ankle);
-    // 脚
-    var foot=new THREE.Mesh(new THREE.BoxGeometry(0.55,0.2,0.95,4,2,2),D2);
-    foot.position.set(0,-2.92,0.22);
-    L.add(foot);
-    // 脚趾装甲
-    var toe=new THREE.Mesh(new THREE.BoxGeometry(0.48,0.16,0.4,4,2,2),S2);
-    toe.position.set(0,-2.78,0.5);
-    L.add(toe);
-    L.position.set(sx*0.85,0,0);
-    return L;
-  }
-
-  // === 手臂 ===
-  function arm(sx){
-    var A=new THREE.Group();
-    // 上臂
-    var ua=createCone(0.3,0.36,1.8,12,B2);
-    ua.position.set(0,0.8,0);
-    A.add(ua);
-    // 上臂装甲板
-    var uap=new THREE.Mesh(new THREE.BoxGeometry(0.4,1.3,0.26,4,2,1),D2);
-    uap.position.set(0,0.7,0.22);
-    A.add(uap);
-    // 肘关节
-    var elbow=createCone(0.25,0.3,0.35,10,S2);
-    elbow.position.set(0,-0.05,0);
-    A.add(elbow);
-    // 肘护甲
-    var eg=new THREE.Mesh(new THREE.BoxGeometry(0.32,0.15,0.3,4,2,2),B2);
-    eg.position.set(0,-0.05,0.18);
-    A.add(eg);
-    // 前臂
-    var fa=createCone(0.24,0.3,1.7,12,B2);
-    fa.position.set(0,-1.0,0);
-    A.add(fa);
-    // 前臂装甲
-    var fap=new THREE.Mesh(new THREE.BoxGeometry(0.34,1.3,0.22,4,2,1),D2);
-    fap.position.set(0,-0.95,0.18);
-    A.add(fap);
-    // 手腕
-    var wrist=createCone(0.2,0.24,0.28,8,S2);
-    wrist.position.set(0,-1.9,0);
-    A.add(wrist);
-    if(sx>0){
-      // 右手：等离子炮+链剑
-      var cannon=createCone(0.12,0.18,0.7,8,S2);
-      cannon.position.set(0.15,-2.25,0.2);
-      cannon.rotation.x=Math.PI/2;
-      A.add(cannon);
-      // 链剑
-      var sword=new THREE.Mesh(new THREE.BoxGeometry(0.08,1.4,0.25),S2);
-      sword.position.set(0.25,-1.5,0.22);
-      sword.rotation.z=0.05;
-      A.add(sword);
-      // 刀刃发光
-      var blade=new THREE.Mesh(new THREE.BoxGeometry(0.04,1.15,0.08),BL3);
-      blade.position.set(0.25,-1.4,0.38);
-      blade.rotation.z=0.05;
-      A.add(blade);
-      // 拳套
-      var fistR=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.32,0.3,4,4,4),D2);
-      fistR.position.set(0,-2.1,0.12);
-      A.add(fistR);
-    }else{
-      // 左手：火箭肘+拳套
-      var rocket=createCone(0.08,0.1,0.45,6,RD2);
-      rocket.position.set(0,-0.05,0.3);
-      rocket.rotation.x=Math.PI/2;
-      A.add(rocket);
-      var fistL=new THREE.Mesh(new THREE.BoxGeometry(0.33,0.35,0.35,4,4,4),D2);
-      fistL.position.set(0,-2.05,0.1);
-      A.add(fistL);
-      for(var kk=0;kk<3;kk++){
-        var kn=createCone(0.03,0.03,0.16,6,S2);
-        kn.position.set(0.18+kk*0.1,-2.2,0.22);
-        kn.rotation.x=Math.PI/2;
-        A.add(kn);
-      }
-    }
-    A.position.set(sx*1.5,7.0,-0.5);
-    A.rotation.z=sx*0.12;
-    return A;
-  }
-
-  bot.add(leg(-1));bot.add(leg(1));
-  bot.add(arm(-1));bot.add(arm(1));
-
-  // === 液压连杆（细圆柱） ===
-  function rod(x1,y1,z1,x2,y2,z2){
-    var dx=x2-x1,dy=y2-y1,dz=z2-z1,len=Math.sqrt(dx*dx+dy*dy+dz*dz);
-    var g2=new THREE.CylinderGeometry(0.03,0.03,len,6);
-    var m2=new THREE.Mesh(g2,new THREE.MeshStandardMaterial({color:0x554422,roughness:0.35,metalness:0.55}));
-    m2.position.set((x1+x2)/2,(y1+y2)/2,(z1+z2)/2);
-    m2.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(dx,dy,dz).normalize());
-    m2.castShadow=true;
-    bot.add(m2);
-  }
-  [-1,1].forEach(function(s){
-    rod(s*0.7,2.6,-0.1,s*0.55,3.1,0);
-    rod(s*1.2,7.2,-0.2,s*1.0,7.2,0);
-    rod(s*0.7,6.0,-0.45,s*0.6,6.0,0.1);
-    rod(s*0.6,4.5,-0.4,s*0.5,4.5,0.1);
-  });
-  rod(-0.25,8.5,-0.35,0.25,8.5,-0.35);
-
-  S.add(bot);
-
-  // ================== 云朵（晴天元素） ==================
-  for(var ci=0;ci<12;ci++){
-    var cloud=new THREE.Group();
-    var wm=new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.9,metalness:0});
-    var cx2=(ci-5)*8,cy=18+Math.random()*10,cz2=-8+Math.random()*16;
-    for(var cj=0;cj<5;cj++){
-      var cb=new THREE.Mesh(new THREE.SphereGeometry(1.5+Math.random()*2,8,6),wm);
-      cb.position.set(Math.random()*5-2,Math.random()*2-1,Math.random()*3-1.5);
-      cb.scale.y=0.4+Math.random()*0.3;
-      cloud.add(cb);
-    }
-    cloud.position.set(cx2,cy,cz2);
-    S.add(cloud);
-  }
-
-  // ================== 动画循环 ==================
-  var clock=new THREE.Clock();
-  function anim(){
-    requestAnimationFrame(anim);
-    var t=clock.getElapsedTime();
-    // 反应堆呼吸
-    rctLight.intensity=3.5+Math.sin(t*2.2)*0.6;
-    reactorCore.scale.setScalar(0.9+Math.sin(t*2.2)*0.1);
-    // 面罩呼吸
-    visLight.intensity=2.5+Math.sin(t*1.9+1)*0.4;
-    ctrl.update();
-    R.render(S,C);
-  }
-  requestAnimationFrame(anim);
-
-  window.addEventListener('resize',function(){
-    C.aspect=innerWidth/innerHeight;
-    C.updateProjectionMatrix();
-    R.setSize(innerWidth,innerHeight);
-  });
+// === 等 Three.js 加载 ===
+(function wait(){
+  if(typeof THREE==='undefined'){setTimeout(wait,150);return}
+  start();
 })();
-</script></body></html>
+
+function start(){
+  try{
+
+// === 场景 ===
+var S=new THREE.Scene();
+S.background=new THREE.Color(0x87ceeb);
+S.fog=new THREE.Fog(0x87ceeb,40,100);
+
+var C=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,0.3,80);
+C.position.set(5,7,12);
+C.lookAt(0,5,0);
+
+var R=new THREE.WebGLRenderer({antialias:true});
+R.setSize(innerWidth,innerHeight);
+R.setPixelRatio(Math.min(devicePixelRatio,2));
+R.shadowMap.enabled=true;
+R.shadowMap.type=THREE.PCFSoftShadowMap;
+R.toneMapping=THREE.ACESFilmicToneMapping;
+R.toneMappingExposure=1.15;
+document.body.appendChild(R.domElement);
+
+// === 简易轨道控制（不依赖外部库） ===
+var camTarget=new THREE.Vector3(0,5,0);
+var isDown=false,prevX=0,prevY=0,spherical=new THREE.Spherical();
+spherical.setFromVector3(C.position.clone().sub(camTarget));
+
+R.domElement.addEventListener('pointerdown',function(e){isDown=true;prevX=e.clientX;prevY=e.clientY});
+R.domElement.addEventListener('pointermove',function(e){
+  if(!isDown)return;
+  var dx=e.clientX-prevX,dy=e.clientY-prevY;
+  prevX=e.clientX;prevY=e.clientY;
+  spherical.theta-=dx*0.005;
+  spherical.phi-=dy*0.005;
+  spherical.phi=Math.max(0.3,Math.min(1.5,spherical.phi));
+  var pos=new THREE.Vector3().setFromSpherical(spherical).add(camTarget);
+  C.position.copy(pos);
+  C.lookAt(camTarget);
+});
+R.domElement.addEventListener('pointerup',function(){isDown=false});
+R.domElement.addEventListener('wheel',function(e){
+  e.preventDefault();
+  spherical.radius+=e.deltaY*0.01;
+  spherical.radius=Math.max(4,Math.min(25,spherical.radius));
+  var pos=new THREE.Vector3().setFromSpherical(spherical).add(camTarget);
+  C.position.copy(pos);
+},{passive:false});
+
+// === 光照 ===
+S.add(new THREE.AmbientLight(0x8899cc,0.65));
+var sun=new THREE.DirectionalLight(0xfff5e0,1.6);
+sun.position.set(15,20,10);
+sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.near=0.3;
+sun.shadow.camera.far=60;
+sun.shadow.camera.left=-16;
+sun.shadow.camera.right=16;
+sun.shadow.camera.top=16;
+sun.shadow.camera.bottom=-16;
+S.add(sun);
+S.add(new THREE.DirectionalLight(0x88bbff,0.5)).position.set(-5,12,-5);
+S.add(new THREE.HemisphereLight(0x88bbff,0x665544,0.5));
+var rL=new THREE.PointLight(0xff6600,2.5,9);rL.position.set(0,4.8,0.8);S.add(rL);
+var vL=new THREE.PointLight(0x4488ff,2,6);vL.position.set(0,7.8,1.5);S.add(vL);
+
+// === 地面 ===
+var gnd=new THREE.Mesh(
+  new THREE.PlaneGeometry(35,35),
+  new THREE.MeshStandardMaterial({color:0x555566,roughness:0.55,metalness:0.25})
+);
+gnd.rotation.x=-Math.PI/2;gnd.position.y=-0.02;gnd.receiveShadow=true;S.add(gnd);
+
+// === GIPSY DANGER 模型 ===
+var B=new THREE.MeshStandardMaterial({color:0x1e4d8c,roughness:0.22,metalness:0.78});
+var D=new THREE.MeshStandardMaterial({color:0x0a0a18,roughness:0.35,metalness:0.62});
+var SV=new THREE.MeshStandardMaterial({color:0x8a8e9a,roughness:0.18,metalness:0.84});
+var G=new THREE.MeshStandardMaterial({color:0xcc8800,roughness:0.16,metalness:0.9});
+var O=new THREE.MeshStandardMaterial({color:0xff6600,emissive:0xff4400,emissiveIntensity:0.8});
+var GL=new THREE.MeshStandardMaterial({color:0x4488ff,emissive:0x2266ff,emissiveIntensity:0.95});
+var RD=new THREE.MeshStandardMaterial({color:0xcc2222,roughness:0.25,metalness:0.6});
+var BL=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0x4488ff,emissiveIntensity:0.6,roughness:0.02,metalness:0.95});
+
+var bot=new THREE.Group();
+
+function BX(w,h,d,mat,x,y,z,rx,ry,rz,p){
+  p=p||bot;var m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+  m.position.set(x,y,z);if(rx)m.rotation.x=rx;if(ry)m.rotation.y=ry;if(rz)m.rotation.z=rz;
+  m.castShadow=true;m.receiveShadow=true;p.add(m);return m;
+}
+function CY(rt,rb,h,sg,mat,x,y,z,rx,rz,p){
+  p=p||bot;var m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,sg),mat);
+  m.position.set(x,y,z);if(rx)m.rotation.x=rx;if(rz)m.rotation.z=rz;
+  m.castShadow=true;m.receiveShadow=true;p.add(m);return m;
+}
+function SP(r,mat,x,y,z,p){
+  p=p||bot;var m=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),mat);
+  m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;p.add(m);return m;
+}
+function TR(r,t,mat,x,y,z,rx,p){
+  p=p||bot;var m=new THREE.Mesh(new THREE.TorusGeometry(r,t,8,20),mat);
+  m.position.set(x,y,z);if(rx)m.rotation.x=rx;m.castShadow=true;m.receiveShadow=true;p.add(m);return m;
+}
+
+// HEAD
+var head=new THREE.Group();
+SP(0.55,D,0,0,0,head);
+BX(0.7,0.1,0.04,GL,0,0.15,0.35,0,0,0,head);
+BX(0.5,0.2,0.3,SV,0,-0.3,0.12,0,0,0,head);
+BX(0.6,0.08,0.4,D,0,0.5,0.05,0,0,0,head);
+[-1,1].forEach(function(s){CY(0.05,0.06,0.3,6,SV,s*0.5,0.1,0,0.2*s,0,head)});
+CY(0.2,0.22,0.5,8,SV,0,-0.65,0,0,0,head);
+head.position.set(0,10.6,0);
+
+// TORSO
+var torso=new THREE.Group();
+CY(0.55,0.6,3.2,12,D,0,5.1,-0.55,0,0,torso);
+for(var i=0;i<6;i++){var ty=7.15-i*0.75,sw=2.1*(1-i*0.08);BX(sw,0.18,0.55,B,0,ty,0,0,0,0,torso)}
+for(var i=0;i<4;i++)BX(1.18,0.1,0.4,D,0,4.9-i*0.26,0.2,0,0,0,torso);
+TR(0.42,0.06,G,0,4.95,0.32,Math.PI/2-0.1,torso);
+SP(0.3,O,0,4.95,0.38,torso);
+TR(0.7,0.06,G,0,3.05,0,Math.PI/2,torso);
+[-1,1].forEach(function(s){SP(0.4,SV,s*1.2,7.2,0,torso);BX(0.65,0.3,0.55,B,s*1.5,7.5,0,0,0,s*0.2,torso)});
+BX(1.5,0.22,0.6,G,0,7.55,0.02,0,0,0,torso);
+BX(0.9,0.3,0.3,B,0,2.85,0.25,0,0,0,torso);
+torso.position.set(0,3.0,0);
+
+// LEGS
+function leg(sx){
+  var L=new THREE.Group();
+  CY(0.35,0.42,2.8,12,B,0,1.3,0,0,0,L);
+  BX(0.45,2.0,0.28,D,0,1.2,0.26,0,0,0,L);
+  CY(0.3,0.35,0.4,10,SV,0,-0.05,0,0,0,L);
+  BX(0.5,0.18,0.38,B,0,-0.05,0.24,0,0,0,L);
+  CY(0.27,0.33,2.5,12,B,0,-1.5,0,0,0,L);
+  BX(0.36,1.8,0.24,D,0,-1.4,0.22,0,0,0,L);
+  CY(0.22,0.26,0.3,8,SV,0,-2.7,0,0,0,L);
+  BX(0.55,0.2,0.9,D,0,-2.92,0.2,0,0,0,L);
+  BX(0.48,0.15,0.38,SV,0,-2.78,0.48,0,0,0,L);
+  L.position.set(sx*0.85,0,0);
+  return L;
+}
+
+// ARMS
+function arm(sx){
+  var A=new THREE.Group();
+  CY(0.3,0.36,1.8,12,B,0,0.8,0,0,0,A);
+  BX(0.38,1.4,0.24,D,0,0.7,0.2,0,0,0,A);
+  CY(0.25,0.3,0.35,10,SV,0,-0.05,0,0,0,A);
+  BX(0.32,0.15,0.28,B,0,-0.05,0.18,0,0,0,A);
+  CY(0.24,0.3,1.7,12,B,0,-1.0,0,0,0,A);
+  BX(0.32,1.4,0.2,D,0,-0.95,0.17,0,0,0,A);
+  CY(0.2,0.24,0.28,8,SV,0,-1.9,0,0,0,A);
+  if(sx>0){
+    CY(0.12,0.18,0.7,8,SV,0.15,-2.25,0.2,Math.PI/2,0,A);
+    BX(0.08,1.3,0.22,SV,0.25,-1.5,0.2,0,0,0.05,A);
+    BX(0.04,1.0,0.07,BL,0.25,-1.4,0.35,0,0,0.05,A);
+    BX(0.3,0.3,0.28,D,0,-2.1,0.1,0,0,0,A);
+  }else{
+    CY(0.08,0.1,0.4,6,RD,0,-0.05,0.28,Math.PI/2,0,A);
+    BX(0.32,0.32,0.3,D,0,-2.05,0.08,0,0,0,A);
+    for(var kk=0;kk<3;kk++)CY(0.03,0.03,0.14,6,SV,0.18+kk*0.1,-2.2,0.2,Math.PI/2,0,A);
+  }
+  A.position.set(sx*1.5,7.0,-0.5);
+  A.rotation.z=sx*0.12;
+  return A;
+}
+
+bot.add(leg(-1));bot.add(leg(1));
+bot.add(torso);
+bot.add(head);
+bot.add(arm(-1));bot.add(arm(1));
+
+// HYDRAULIC RODS
+function rod(x1,y1,z1,x2,y2,z2){
+  var dx=x2-x1,dy=y2-y1,dz=z2-z1,len=Math.sqrt(dx*dx+dy*dy+dz*dz);
+  var c=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,len,6),new THREE.MeshStandardMaterial({color:0x554422,roughness:0.35,metalness:0.55}));
+  c.position.set((x1+x2)/2,(y1+y2)/2,(z1+z2)/2);
+  c.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(dx,dy,dz).normalize());
+  c.castShadow=true;bot.add(c);
+}
+[-1,1].forEach(function(s){
+  rod(s*0.7,2.6,-0.1,s*0.55,3.1,0);
+  rod(s*1.2,7.2,-0.2,s*1.0,7.2,0);
+  rod(s*0.7,6.0,-0.45,s*0.6,6.0,0.1);
+  rod(s*0.6,4.5,-0.4,s*0.5,4.5,0.1);
+});
+rod(-0.25,8.5,-0.35,0.25,8.5,-0.35);
+
+S.add(bot);
+
+// === 云朵 ===
+var wm=new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.9,metalness:0});
+for(var ci=0;ci<12;ci++){
+  var cloud=new THREE.Group();
+  for(var cj=0;cj<5;cj++){
+    var cb=new THREE.Mesh(new THREE.SphereGeometry(1.2+Math.random()*2.5,8,6),wm);
+    cb.position.set(Math.random()*5-2,Math.random()*2-1,Math.random()*3-1.5);
+    cb.scale.y=0.4+Math.random()*0.3;
+    cloud.add(cb);
+  }
+  cloud.position.set((ci-5)*8,18+Math.random()*10,-8+Math.random()*16);
+  S.add(cloud);
+}
+
+// === 动画 ===
+var clock=new THREE.Clock();
+function anim(){
+  requestAnimationFrame(anim);
+  var t=clock.getElapsedTime();
+  rL.intensity=2.5+Math.sin(t*2.2)*0.6;
+  vL.intensity=2+Math.sin(t*1.9+1)*0.4;
+  R.render(S,C);
+}
+requestAnimationFrame(anim);
+
+// 隐藏加载提示
+document.getElementById('err').style.display='none';
+
+window.addEventListener('resize',function(){
+  C.aspect=innerWidth/innerHeight;
+  C.updateProjectionMatrix();
+  R.setSize(innerWidth,innerHeight);
+});
+
+// === 错误捕获 ===
+  }catch(e){
+    document.getElementById('err').textContent='⚠️ 渲染错误: '+e.message;
+    document.getElementById('err').style.display='block';
+  }
+}
+</script>
+</body>
+</html>
