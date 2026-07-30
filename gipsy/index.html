@@ -1,265 +1,65 @@
-<!DOCTYPE html>
-<html lang="zh">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<!DOCTYPE html><html lang="zh"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>Gipsy Danger 危险流浪者 · 3D模型</title>
 <style>
 *{margin:0;padding:0;overflow:hidden}
-body{background:#87ceeb}
-canvas{display:block;width:100vw;height:100vh}
-#info{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.5);font-size:11px;pointer-events:none;z-index:10}
-#title{position:fixed;top:16px;left:50%;transform:translateX(-50%);color:#fff;font-size:20px;font-weight:900;z-index:10;letter-spacing:3px;pointer-events:none;text-shadow:0 2px 8px rgba(0,0,0,.3)}
-#title i{display:block;font-size:12px;color:#fc0;font-style:normal;letter-spacing:5px;margin-top:2px}
-#err{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#f44;font-size:14px;z-index:99;display:none;text-align:center;background:rgba(0,0,0,.7);padding:16px 24px;border-radius:10px}
-</style>
-</head>
-<body>
+body{
+  background:#87ceeb;
+  background-image:
+    radial-gradient(ellipse at 50% 30%, rgba(255,255,255,.7) 0%, transparent 60%),
+    linear-gradient(180deg, #6ab0ff 0%, #87ceeb 40%, #c8e6c9 100%);
+}
+#model-frame{
+  width:100vw;height:100vh;border:none;display:block;
+  position:fixed;top:0;left:0;z-index:1;
+}
+#info{
+  position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+  color:rgba(255,255,255,.6);font-size:11px;pointer-events:none;z-index:10;
+  text-shadow:0 0 8px rgba(0,0,0,.3);
+}
+#title{
+  position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:10;
+  color:#fff;font-size:20px;font-weight:900;text-align:center;pointer-events:none;
+  text-shadow:0 2px 10px rgba(0,0,0,.4);letter-spacing:4px;
+}
+#title i{display:block;font-size:12px;color:#fc0;font-style:normal;margin-top:3px;letter-spacing:5px}
+#fallback{display:none;position:fixed;inset:0;z-index:999;background:#0a0a12;color:#fff;
+  align-items:center;justify-content:center;text-align:center;padding:20px}
+#fallback a{color:#f80}
+</style></head><body>
 
 <div id="title">GIPSY <i>DANGER</i></div>
-<div id="info">拖动旋转 · 滚轮缩放</div>
-<div id="err">⚠️ 模型加载中，请稍候...</div>
+<div id="info">手指拖动旋转 · 双指缩放</div>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<div id="fallback">
+  <div>
+    <p style="font-size:18px;font-weight:900;margin-bottom:8px">⚠️ 模型加载被拦截</p>
+    <p style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:16px">
+      部分浏览器会拦截跨域iframe。请尝试：<br>
+      1. 用 Chrome/Safari 打开<br>
+      2. 或在浏览器设置中允许第三方内容<br>
+    </p>
+    <a href="https://sketchfab.com/3d-models/gipsy-danger-b0640cdfa71d47ef8177ea712779d871" target="_blank" style="color:#f80;font-size:14px">
+      直接打开 Sketchfab 查看 →</a>
+  </div>
+</div>
 
-<!-- 直接内嵌轨道控制，不依赖外部 CDN -->
+<iframe id="model-frame"
+  src="https://sketchfab.com/models/b0640cdfa71d47ef8177ea712779d871/embed?autostart=1&camera=0&transparent=0&ui_infos=0&ui_controls=1&ui_watermark=0&ui_fullscreen=0&ui_ar=0&ui_help=0&ui_settings=0&ui_vr=0"
+  allow="autoplay; fullscreen; xr-spatial-tracking"
+  allowfullscreen
+  loading="lazy"
+  title="Gipsy Danger 3D Model">
+</iframe>
+
 <script>
-// === 等 Three.js 加载 ===
-(function wait(){
-  if(typeof THREE==='undefined'){setTimeout(wait,150);return}
-  start();
-})();
-
-function start(){
-  try{
-
-// === 场景 ===
-var S=new THREE.Scene();
-S.background=new THREE.Color(0x87ceeb);
-S.fog=new THREE.Fog(0x87ceeb,40,100);
-
-var C=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,0.3,80);
-C.position.set(5,7,12);
-C.lookAt(0,5,0);
-
-var R=new THREE.WebGLRenderer({antialias:true});
-R.setSize(innerWidth,innerHeight);
-R.setPixelRatio(Math.min(devicePixelRatio,2));
-R.shadowMap.enabled=true;
-R.shadowMap.type=THREE.PCFSoftShadowMap;
-R.toneMapping=THREE.ACESFilmicToneMapping;
-R.toneMappingExposure=1.15;
-document.body.appendChild(R.domElement);
-
-// === 简易轨道控制（不依赖外部库） ===
-var camTarget=new THREE.Vector3(0,5,0);
-var isDown=false,prevX=0,prevY=0,spherical=new THREE.Spherical();
-spherical.setFromVector3(C.position.clone().sub(camTarget));
-
-R.domElement.addEventListener('pointerdown',function(e){isDown=true;prevX=e.clientX;prevY=e.clientY});
-R.domElement.addEventListener('pointermove',function(e){
-  if(!isDown)return;
-  var dx=e.clientX-prevX,dy=e.clientY-prevY;
-  prevX=e.clientX;prevY=e.clientY;
-  spherical.theta-=dx*0.005;
-  spherical.phi-=dy*0.005;
-  spherical.phi=Math.max(0.3,Math.min(1.5,spherical.phi));
-  var pos=new THREE.Vector3().setFromSpherical(spherical).add(camTarget);
-  C.position.copy(pos);
-  C.lookAt(camTarget);
-});
-R.domElement.addEventListener('pointerup',function(){isDown=false});
-R.domElement.addEventListener('wheel',function(e){
-  e.preventDefault();
-  spherical.radius+=e.deltaY*0.01;
-  spherical.radius=Math.max(4,Math.min(25,spherical.radius));
-  var pos=new THREE.Vector3().setFromSpherical(spherical).add(camTarget);
-  C.position.copy(pos);
-},{passive:false});
-
-// === 光照 ===
-S.add(new THREE.AmbientLight(0x8899cc,0.65));
-var sun=new THREE.DirectionalLight(0xfff5e0,1.6);
-sun.position.set(15,20,10);
-sun.castShadow=true;
-sun.shadow.mapSize.set(2048,2048);
-sun.shadow.camera.near=0.3;
-sun.shadow.camera.far=60;
-sun.shadow.camera.left=-16;
-sun.shadow.camera.right=16;
-sun.shadow.camera.top=16;
-sun.shadow.camera.bottom=-16;
-S.add(sun);
-S.add(new THREE.DirectionalLight(0x88bbff,0.5)).position.set(-5,12,-5);
-S.add(new THREE.HemisphereLight(0x88bbff,0x665544,0.5));
-var rL=new THREE.PointLight(0xff6600,2.5,9);rL.position.set(0,4.8,0.8);S.add(rL);
-var vL=new THREE.PointLight(0x4488ff,2,6);vL.position.set(0,7.8,1.5);S.add(vL);
-
-// === 地面 ===
-var gnd=new THREE.Mesh(
-  new THREE.PlaneGeometry(35,35),
-  new THREE.MeshStandardMaterial({color:0x555566,roughness:0.55,metalness:0.25})
-);
-gnd.rotation.x=-Math.PI/2;gnd.position.y=-0.02;gnd.receiveShadow=true;S.add(gnd);
-
-// === GIPSY DANGER 模型 ===
-var B=new THREE.MeshStandardMaterial({color:0x1e4d8c,roughness:0.22,metalness:0.78});
-var D=new THREE.MeshStandardMaterial({color:0x0a0a18,roughness:0.35,metalness:0.62});
-var SV=new THREE.MeshStandardMaterial({color:0x8a8e9a,roughness:0.18,metalness:0.84});
-var G=new THREE.MeshStandardMaterial({color:0xcc8800,roughness:0.16,metalness:0.9});
-var O=new THREE.MeshStandardMaterial({color:0xff6600,emissive:0xff4400,emissiveIntensity:0.8});
-var GL=new THREE.MeshStandardMaterial({color:0x4488ff,emissive:0x2266ff,emissiveIntensity:0.95});
-var RD=new THREE.MeshStandardMaterial({color:0xcc2222,roughness:0.25,metalness:0.6});
-var BL=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0x4488ff,emissiveIntensity:0.6,roughness:0.02,metalness:0.95});
-
-var bot=new THREE.Group();
-
-function BX(w,h,d,mat,x,y,z,rx,ry,rz,p){
-  p=p||bot;var m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
-  m.position.set(x,y,z);if(rx)m.rotation.x=rx;if(ry)m.rotation.y=ry;if(rz)m.rotation.z=rz;
-  m.castShadow=true;m.receiveShadow=true;p.add(m);return m;
-}
-function CY(rt,rb,h,sg,mat,x,y,z,rx,rz,p){
-  p=p||bot;var m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,sg),mat);
-  m.position.set(x,y,z);if(rx)m.rotation.x=rx;if(rz)m.rotation.z=rz;
-  m.castShadow=true;m.receiveShadow=true;p.add(m);return m;
-}
-function SP(r,mat,x,y,z,p){
-  p=p||bot;var m=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),mat);
-  m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;p.add(m);return m;
-}
-function TR(r,t,mat,x,y,z,rx,p){
-  p=p||bot;var m=new THREE.Mesh(new THREE.TorusGeometry(r,t,8,20),mat);
-  m.position.set(x,y,z);if(rx)m.rotation.x=rx;m.castShadow=true;m.receiveShadow=true;p.add(m);return m;
-}
-
-// HEAD
-var head=new THREE.Group();
-SP(0.55,D,0,0,0,head);
-BX(0.7,0.1,0.04,GL,0,0.15,0.35,0,0,0,head);
-BX(0.5,0.2,0.3,SV,0,-0.3,0.12,0,0,0,head);
-BX(0.6,0.08,0.4,D,0,0.5,0.05,0,0,0,head);
-[-1,1].forEach(function(s){CY(0.05,0.06,0.3,6,SV,s*0.5,0.1,0,0.2*s,0,head)});
-CY(0.2,0.22,0.5,8,SV,0,-0.65,0,0,0,head);
-head.position.set(0,10.6,0);
-
-// TORSO
-var torso=new THREE.Group();
-CY(0.55,0.6,3.2,12,D,0,5.1,-0.55,0,0,torso);
-for(var i=0;i<6;i++){var ty=7.15-i*0.75,sw=2.1*(1-i*0.08);BX(sw,0.18,0.55,B,0,ty,0,0,0,0,torso)}
-for(var i=0;i<4;i++)BX(1.18,0.1,0.4,D,0,4.9-i*0.26,0.2,0,0,0,torso);
-TR(0.42,0.06,G,0,4.95,0.32,Math.PI/2-0.1,torso);
-SP(0.3,O,0,4.95,0.38,torso);
-TR(0.7,0.06,G,0,3.05,0,Math.PI/2,torso);
-[-1,1].forEach(function(s){SP(0.4,SV,s*1.2,7.2,0,torso);BX(0.65,0.3,0.55,B,s*1.5,7.5,0,0,0,s*0.2,torso)});
-BX(1.5,0.22,0.6,G,0,7.55,0.02,0,0,0,torso);
-BX(0.9,0.3,0.3,B,0,2.85,0.25,0,0,0,torso);
-torso.position.set(0,3.0,0);
-
-// LEGS
-function leg(sx){
-  var L=new THREE.Group();
-  CY(0.35,0.42,2.8,12,B,0,1.3,0,0,0,L);
-  BX(0.45,2.0,0.28,D,0,1.2,0.26,0,0,0,L);
-  CY(0.3,0.35,0.4,10,SV,0,-0.05,0,0,0,L);
-  BX(0.5,0.18,0.38,B,0,-0.05,0.24,0,0,0,L);
-  CY(0.27,0.33,2.5,12,B,0,-1.5,0,0,0,L);
-  BX(0.36,1.8,0.24,D,0,-1.4,0.22,0,0,0,L);
-  CY(0.22,0.26,0.3,8,SV,0,-2.7,0,0,0,L);
-  BX(0.55,0.2,0.9,D,0,-2.92,0.2,0,0,0,L);
-  BX(0.48,0.15,0.38,SV,0,-2.78,0.48,0,0,0,L);
-  L.position.set(sx*0.85,0,0);
-  return L;
-}
-
-// ARMS
-function arm(sx){
-  var A=new THREE.Group();
-  CY(0.3,0.36,1.8,12,B,0,0.8,0,0,0,A);
-  BX(0.38,1.4,0.24,D,0,0.7,0.2,0,0,0,A);
-  CY(0.25,0.3,0.35,10,SV,0,-0.05,0,0,0,A);
-  BX(0.32,0.15,0.28,B,0,-0.05,0.18,0,0,0,A);
-  CY(0.24,0.3,1.7,12,B,0,-1.0,0,0,0,A);
-  BX(0.32,1.4,0.2,D,0,-0.95,0.17,0,0,0,A);
-  CY(0.2,0.24,0.28,8,SV,0,-1.9,0,0,0,A);
-  if(sx>0){
-    CY(0.12,0.18,0.7,8,SV,0.15,-2.25,0.2,Math.PI/2,0,A);
-    BX(0.08,1.3,0.22,SV,0.25,-1.5,0.2,0,0,0.05,A);
-    BX(0.04,1.0,0.07,BL,0.25,-1.4,0.35,0,0,0.05,A);
-    BX(0.3,0.3,0.28,D,0,-2.1,0.1,0,0,0,A);
-  }else{
-    CY(0.08,0.1,0.4,6,RD,0,-0.05,0.28,Math.PI/2,0,A);
-    BX(0.32,0.32,0.3,D,0,-2.05,0.08,0,0,0,A);
-    for(var kk=0;kk<3;kk++)CY(0.03,0.03,0.14,6,SV,0.18+kk*0.1,-2.2,0.2,Math.PI/2,0,A);
+// 10秒后如果iframe没加载出来，显示备用提示
+setTimeout(function(){
+  var iframe=document.getElementById('model-frame');
+  if(!iframe.contentDocument||iframe.contentDocument.body.innerHTML===''){
+    document.getElementById('fallback').style.display='flex';
   }
-  A.position.set(sx*1.5,7.0,-0.5);
-  A.rotation.z=sx*0.12;
-  return A;
-}
-
-bot.add(leg(-1));bot.add(leg(1));
-bot.add(torso);
-bot.add(head);
-bot.add(arm(-1));bot.add(arm(1));
-
-// HYDRAULIC RODS
-function rod(x1,y1,z1,x2,y2,z2){
-  var dx=x2-x1,dy=y2-y1,dz=z2-z1,len=Math.sqrt(dx*dx+dy*dy+dz*dz);
-  var c=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,len,6),new THREE.MeshStandardMaterial({color:0x554422,roughness:0.35,metalness:0.55}));
-  c.position.set((x1+x2)/2,(y1+y2)/2,(z1+z2)/2);
-  c.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(dx,dy,dz).normalize());
-  c.castShadow=true;bot.add(c);
-}
-[-1,1].forEach(function(s){
-  rod(s*0.7,2.6,-0.1,s*0.55,3.1,0);
-  rod(s*1.2,7.2,-0.2,s*1.0,7.2,0);
-  rod(s*0.7,6.0,-0.45,s*0.6,6.0,0.1);
-  rod(s*0.6,4.5,-0.4,s*0.5,4.5,0.1);
-});
-rod(-0.25,8.5,-0.35,0.25,8.5,-0.35);
-
-S.add(bot);
-
-// === 云朵 ===
-var wm=new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.9,metalness:0});
-for(var ci=0;ci<12;ci++){
-  var cloud=new THREE.Group();
-  for(var cj=0;cj<5;cj++){
-    var cb=new THREE.Mesh(new THREE.SphereGeometry(1.2+Math.random()*2.5,8,6),wm);
-    cb.position.set(Math.random()*5-2,Math.random()*2-1,Math.random()*3-1.5);
-    cb.scale.y=0.4+Math.random()*0.3;
-    cloud.add(cb);
-  }
-  cloud.position.set((ci-5)*8,18+Math.random()*10,-8+Math.random()*16);
-  S.add(cloud);
-}
-
-// === 动画 ===
-var clock=new THREE.Clock();
-function anim(){
-  requestAnimationFrame(anim);
-  var t=clock.getElapsedTime();
-  rL.intensity=2.5+Math.sin(t*2.2)*0.6;
-  vL.intensity=2+Math.sin(t*1.9+1)*0.4;
-  R.render(S,C);
-}
-requestAnimationFrame(anim);
-
-// 隐藏加载提示
-document.getElementById('err').style.display='none';
-
-window.addEventListener('resize',function(){
-  C.aspect=innerWidth/innerHeight;
-  C.updateProjectionMatrix();
-  R.setSize(innerWidth,innerHeight);
-});
-
-// === 错误捕获 ===
-  }catch(e){
-    document.getElementById('err').textContent='⚠️ 渲染错误: '+e.message;
-    document.getElementById('err').style.display='block';
-  }
-}
+},8000);
 </script>
-</body>
-</html>
+</body></html>
