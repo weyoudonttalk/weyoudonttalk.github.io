@@ -56,46 +56,34 @@ html,body{width:100%;height:100%;overflow:hidden;background:#87ceeb;font-family:
 </div>
 <div id="msg">⚡ 加载引擎…</div>
 
+<!-- ===== 双CDN互备 + 超时兜底 ===== -->
 <script>
-// ===== 双CDN兜底加载（不卡死） =====
 var _loadMsg=document.getElementById('msg');
 var _started=false;
-
 function _onThreeReady(){
   if(_started)return;
   _started=true;
   _loadMsg.textContent='🏗 生成场景…';
   setTimeout(go,10);
 }
-
 // CDN1: jsdelivr
 var _s1=document.createElement('script');
 _s1.src='https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js';
-_s1.onload=function(){if(!_started)_onThreeReady()};
+_s1.onload=_onThreeReady;
 _s1.onerror=function(){
   // CDN2: unpkg
   var _s2=document.createElement('script');
   _s2.src='https://unpkg.com/three@0.160.0/build/three.min.js';
-  _s2.onload=function(){if(!_started)_onThreeReady()};
-  _s2.onerror=function(){
-    _loadMsg.textContent='⚠️ 引擎加载失败，请检查网络后刷新';
-  };
+  _s2.onload=_onThreeReady;
+  _s2.onerror=function(){_loadMsg.textContent='⚠️ CDN加载失败，请检查网络'};
   document.head.appendChild(_s2);
 };
 document.head.appendChild(_s1);
-
-// 超时兜底
-setTimeout(function(){
-  if(!_started&&typeof THREE==='undefined'){
-    // 最后尝试全局检查
-    if(typeof THREE!=='undefined'){_onThreeReady();return}
-    _loadMsg.textContent='⚠️ 加载超时，请刷新重试';
-  }
-},10000);
+setTimeout(function(){if(!_started&&typeof THREE==='undefined')_loadMsg.textContent='⚠️ 加载超时，请刷新'},15000);
 </script>
 
+<!-- ===== 主游戏 ===== -->
 <script>
-// ===== 主游戏代码 =====
 function go(){
 try{
 var S=new THREE.Scene();
@@ -173,7 +161,7 @@ BOX(0.04,0.4,0.28,DK,4.1,0.25,0);
 BOX(1.2,0.04,0.2,GY,2.8,0.3,0);
 
 var mainRotor=new THREE.Group();
-CYL(0.1,0.12,0.18,12,SL,0,0.1,0,0,0,mainRotor);
+CYL(0.1,0.12,0.18,SL,0,0.1,0,0,0,mainRotor);
 for(var b=0;b<4;b++){var a=b*Math.PI/2;BOX(0.04,0.015,2.0,GY,Math.cos(a)*0.9,0.1,Math.sin(a)*0.9,0,0,a,mainRotor);BOX(0.05,0.013,0.35,SL,Math.cos(a)*1.7,0.1,Math.sin(a)*1.7,0,0,a,mainRotor)}
 var hubPts=[];for(var i=0;i<=8;i++)hubPts.push(new THREE.Vector2(Math.sin(i/8*Math.PI)*0.14,i/8*0.25));
 mainRotor.add(new THREE.Mesh(new THREE.LatheGeometry(hubPts,16),GY)).position.y=0.2;
@@ -181,13 +169,13 @@ mainRotor.position.set(0,0.6,0);heli.add(mainRotor);
 
 var tailRotor=new THREE.Group();
 for(var b=0;b<4;b++){var a=b*Math.PI/2;BOX(0.02,0.008,0.28,GY,0,Math.cos(a)*0.12,Math.sin(a)*0.12,0,0,a,tailRotor)}
-CYL(0.04,0.04,0.06,8,SL,0,0,0,0,0,tailRotor);
+CYL(0.04,0.04,0.06,SL,0,0,0,0,0,tailRotor);
 tailRotor.position.set(4.1,0.25,0.06);tailRotor.rotation.y=Math.PI/2;heli.add(tailRotor);
 
-function skid(s){var g=new THREE.Group();CYL(0.03,0.03,0.4,8,SL,0,0.3,0,0,0,g);CYL(0.04,0.04,0.8,8,SL,0,0.05,s*0.15,0,Math.PI/2,g);g.position.set(0.3,-0.45,s*0.5);return g}
+function skid(s){var g=new THREE.Group();CYL(0.03,0.03,0.4,SL,0,0.3,0,0,0,g);CYL(0.04,0.04,0.8,SL,0,0.05,s*0.15,0,Math.PI/2,g);g.position.set(0.3,-0.45,s*0.5);return g}
 heli.add(skid(-1));heli.add(skid(1));
 
-[-1,1].forEach(function(s){CYL(0.04,0.04,0.2,8,SL,0.8,0.2,s*0.55,0,0);CYL(0.06,0.08,0.5,12,GY,0.8,0.05,s*0.55,0,Math.PI/2);CYL(0.03,0.04,0.3,8,SL,0.8,0.05,s*0.55,0,Math.PI/2)});
+[-1,1].forEach(function(s){CYL(0.04,0.04,0.2,SL,0.8,0.2,s*0.55,0,0);CYL(0.06,0.08,0.5,GY,0.8,0.05,s*0.55,0,Math.PI/2);CYL(0.03,0.04,0.3,SL,0.8,0.05,s*0.55,0,Math.PI/2)});
 
 S.add(heli);
 
