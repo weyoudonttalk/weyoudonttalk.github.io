@@ -3,507 +3,433 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>烽火地带 · DELTA FORCE</title>
+<title>烽火地带 · 全动画序列</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none;font-family:'PingFang SC','Microsoft YaHei',sans-serif}
 #c{display:block;width:100%;height:100%}
-#skip{position:fixed;bottom:30px;right:20px;z-index:99;color:rgba(255,255,255,.3);font-size:12px;letter-spacing:2px;cursor:pointer;padding:8px 16px;border:1px solid rgba(255,255,255,.1);border-radius:4px;background:rgba(0,0,0,.3)}
-#skip:active{color:#f60;border-color:#f60}
+#hint{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.35);font-size:11px;z-index:99;letter-spacing:2px;transition:opacity .3s}
+#hint i{font-style:normal;animation:blink 1s infinite}@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 </style></head><body>
 <canvas id="c"></canvas>
-<div id="skip" onclick="skipAnim()">跳过</div>
+<div id="hint"><i>▸</i> 点击屏幕进入</div>
 <script>
-// ==================== 三角洲行动 · 烽火地带 启动动画 ====================
-var canvas=document.getElementById('c');
-var ctx=canvas.getContext('2d');
-var W,H;
+var C=document.getElementById('c'),ctx=C.getContext('2d'),W,H;
+var st=0,phase=0,entered=false; // 0=待机,1=启动,2=匹配,3=选干员,4=开场,5=下滑锁,6=撤离
+var pStart=0,phaseDur=[3.5,3.0,4.0,4.5,2.5,4.0]; // 各阶段持续秒数
 
-function resize(){
-  canvas.width=W=innerWidth*Math.min(devicePixelRatio,2);
-  canvas.height=H=innerHeight*Math.min(devicePixelRatio,2);
-  canvas.style.width=innerWidth+'px';
-  canvas.style.height=innerHeight+'px';
-  ctx.setTransform(1,0,0,1,0,0);
-}
-resize();
-window.addEventListener('resize',resize);
+function R(){C.width=W=innerWidth*Math.min(devicePixelRatio,2);C.height=H=innerHeight*Math.min(devicePixelRatio,2);C.style.width=innerWidth+'px';C.style.height=innerHeight+'px'}R();window.addEventListener('resize',R);
 
-var tStart=performance.now();
-var animDone=false;
-var globalAlpha=1;
+// 全局粒子
+var P=[],N=100;
+for(var i=0;i<N;i++)P.push({x:0,y:0,vx:0,vy:0,l:0,d:.008+Math.random()*.02,s:1+Math.random()*3,h:25+Math.random()*15,a:1});
 
-window.skipAnim=function(){
-  animDone=true;
-  globalAlpha=0;
-  document.getElementById('skip').style.opacity='0';
-};
+function spawn(x,y,t){return{x:x||W/2,y:y||H*.5,vx:(Math.random()-.5)*2,vy:-Math.random()*3-1,l:1,d:.005+Math.random()*.02,s:1+Math.random()*2.5,h:t==='ember'?20+Math.random()*15:t==='smoke'?200:35+Math.random()*10,a:1,type:t||'spark'}}
 
-// ============ 粒子系统 ============
-var particles=[];
-var PARTICLE_COUNT=120;
+// 用种子重置所有粒子
+function resetP(xs,ys,type){for(var i=0;i<N;i++){var sx=xs?xs+Math.random()*200-100:W/2,sy=ys?ys+Math.random()*60-30:H*.5;P[i]=spawn(sx,sy,type);P[i].l=Math.random()}}
 
-function spawnParticle(x,y,type){
-  return{
-    x:x||Math.random()*W,
-    y:y||Math.random()*H,
-    vx:(Math.random()-0.5)*0.8,
-    vy:-Math.random()*2-0.3,
-    life:1,
-    decay:0.005+Math.random()*0.015,
-    size:1+Math.random()*2.5,
-    type:type||'spark', // spark, smoke, ember
-    hue:type==='ember'?25+Math.random()*20:type==='smoke'?200+Math.random()*15:35+Math.random()*10,
-    alpha:type==='smoke'?0.3:0.9
-  };
-}
+// ========== 选择干员(点击切换) ==========
+var selOp=0;
+var ops=[{name:'骇爪',code:'HACKCLAW',role:'侦察',weapon:'Vector .45',color:'#00ccff',emoji:'🦅'},{name:'威龙',code:'WYVERN',role:'突击',weapon:'AK-47',color:'#ff4400',emoji:'🐉'},{name:'红狼',code:'REDWOLF',role:'突击',weapon:'M4A1',color:'#ff2200',emoji:'🐺'},{name:'深蓝',code:'DEEPBLUE',role:'工程',weapon:'M249',color:'#2266ff',emoji:'🛡️'},{name:'液氮',code:'CRYO',role:'工程',weapon:'MP5',color:'#88ccff',emoji:'❄️'},{name:'蜂医',code:'MEDIC',role:'支援',weapon:'P90',color:'#00ff88',emoji:'💉'},{name:'露娜',code:'LUNA',role:'侦察',weapon:'SR-25',color:'#ff88cc',emoji:'🌙'}];
 
-for(var i=0;i<PARTICLE_COUNT;i++){
-  particles.push(spawnParticle(null,null,'spark'));
-  particles[i].life=Math.random(); // stagger init
-}
+// 全局时间
+var gtStart=performance.now(),animT=0,gPhase=0,phaseT=0;
 
-// ============ 直升机数据 ============
-var heliData={x:W/2,y:-200,rot:0,entered:false};
-
-// ============ 主渲染 ============
-function draw(t){
-  var elapsed=(t-tStart)/1000;
-  if(animDone){
-    ctx.clearRect(0,0,W,H);
-    ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
-    if(globalAlpha>0.01){globalAlpha*=0.9;drawFrame(elapsed,globalAlpha)}
-    else{document.getElementById('skip').style.display='none';return}
-  }else{
-    drawFrame(elapsed,1);
+// 点击屏幕进入/切换
+C.addEventListener('click',function(e){
+  if(!entered){entered=true;gtStart=performance.now();gPhase=0;document.getElementById('hint').style.opacity='0';resetP(W/2,H*.5,'spark');return}
+  // 在选干员阶段点击切换干员
+  if(gPhase===3){var w3=Math.min(80,W*.13);var startX=W/2-(ops.length-1)*w3*.6;var cx=e.clientX;for(var i=0;i<ops.length;i++){var ox=startX+i*w3*1.2;if(cx>ox-w3/2&&cx<ox+w3/2){selOp=i;return}}}
+  // 在下滑锁阶段点击解锁
+  if(gPhase===5){
+    var lx=W/2-120,rx=W/2+120,ly=H*.55,ry=H*.55+46;
+    if(e.clientX>lx&&e.clientX<rx&&e.clientY>ly&&e.clientY<ry){redSliding=true}
   }
-  requestAnimationFrame(draw);
-}
+});
 
-function drawFrame(elapsed,alpha){
-  ctx.save();
-  ctx.globalAlpha=alpha;
-  ctx.clearRect(0,0,W,H);
+// 下滑锁滑动
+var redSliding=false,redSlideX=0;
+C.addEventListener('touchmove',function(e){if(gPhase===5&&redSliding){redSlideX=Math.max(0,Math.min(240,(e.touches[0].clientX-(W/2-120))));}});
+C.addEventListener('touchend',function(){if(redSliding&&redSlideX>200){gPhase=6;pStart=performance.now();phaseT=0}redSliding=false;redSlideX=0});
 
-  // ===== 背景 =====
-  var bgGrad=ctx.createLinearGradient(0,0,0,H);
-  bgGrad.addColorStop(0,'#0a0d14');
-  bgGrad.addColorStop(0.45,'#141a24');
-  bgGrad.addColorStop(0.75,'#1a2027');
-  bgGrad.addColorStop(1,'#1a2020');
-  ctx.fillStyle=bgGrad;
-  ctx.fillRect(0,0,W,H);
+C.addEventListener('mousemove',function(e){if(gPhase===5&&redSliding){redSlideX=Math.max(0,Math.min(240,(e.clientX-(W/2-120))))}});
+C.addEventListener('mouseup',function(){if(redSliding&&redSlideX>200){gPhase=6;pStart=performance.now();phaseT=0}redSliding=false;redSlideX=0});
 
-  // ===== 星空/噪点背景 =====
-  ctx.fillStyle='rgba(255,255,255,0.03)';
-  for(var i=0;i<60;i++){
-    var sx=(i*137.5*W/400)%W,sy=(i*89.3*H/800)%H;
-    ctx.fillRect(sx,sy,1,1);
+// ========== 主循环 ==========
+function tick(now){
+  requestAnimationFrame(tick);
+  if(!entered){drawIdle(now);return}
+  animT=(now-gtStart)/1000;
+  // 计算当前阶段和阶段时间
+  var acc=0;
+  for(var i=0;i<phaseDur.length;i++){if(animT<acc+phaseDur[i]){gPhase=i;phaseT=animT-acc;break}acc+=phaseDur[i]}
+  if(animT>=acc){gPhase=6;phaseT=animT-acc} // 最后阶段不重置
+
+  ctx.save();ctx.clearRect(0,0,W,H);
+
+  switch(gPhase){
+    case 0:drawPhase0(phaseT);break;   // 启动动画
+    case 1:drawPhase1(phaseT);break;   // 匹配动画
+    case 2:drawPhase2(phaseT);break;   // 选干员动画
+    case 3:drawPhase3(phaseT);break;   // 开场动画
+    case 4:drawPhase4(phaseT);break;   // 下滑锁
+    case 5:drawPhase5(phaseT);break;   // 撤离动画
   }
 
-  // ===== 相位线 =====
-  ctx.strokeStyle='rgba(100,150,200,0.08)';
-  ctx.lineWidth=1;
-  for(var i=0;i<8;i++){
-    var ly=H*0.15+i*H*0.08+Math.sin(elapsed*0.4+i)*15;
-    ctx.beginPath();ctx.moveTo(0,ly);ctx.lineTo(W,ly);ctx.stroke();
-  }
-
-  // ============ 第一阶段(0-2.5s): 地面基地场景 ============
-  if(elapsed<2.5){
-    drawPhase1(elapsed);
-  }
-
-  // ============ 第二阶段(2.5-4.5s): 直升机飞入 ============
-  if(elapsed>1.8&&elapsed<5){
-    drawHeliFlyIn(elapsed-1.8);
-  }
-
-  // ============ 第三阶段(2.5-5s): Logo揭露 ============
-  if(elapsed>2.5){
-    drawLogoReveal(elapsed-2.5);
-  }
-
-  // ============ 第四阶段(4.5-6.5s): 烽火地带标题 ============
-  if(elapsed>4.2){
-    drawTitleReveal(elapsed-4.2);
-  }
-
-  // ============ 粒子 ============
-  updateAndDrawParticles(elapsed);
-
-  // ============ 底部扫描线 ============
-  drawScanLine(elapsed);
-
-  // ============ 进度条(前3秒) ============
-  if(elapsed<3.5){
-    drawLoadingBar(Math.min(1,elapsed/3.5));
-  }
-
-  // ============ 版本信息 ============
-  ctx.font='10px "PingFang SC","Microsoft YaHei",sans-serif';
-  ctx.fillStyle='rgba(255,255,255,0.15)';
-  ctx.textAlign='right';
-  ctx.fillText('MIUI STUDIO · v1.0.0',W-20,H-20);
-
-  // ============ 6.5s后渐隐 ============
-  if(elapsed>6){
-    var fadeOut=Math.max(0,1-(elapsed-6)/1.2);
-    ctx.fillStyle='rgba(0,0,0,'+(1-fadeOut)+')';
-    ctx.fillRect(0,0,W,H);
-    if(elapsed>7.2){
-      animDone=true;
-    }
-  }
-
+  drawGlobalParticles(gPhase,phaseT);
+  // 底部阶段指示器
+  drawPhaseIndicator(gPhase);
   ctx.restore();
 }
 
-// ============ 第一阶段: 基地场景 ============
-function drawPhase1(elapsed){
-  var t=elapsed/2.5; // 0-1
-  var fadeIn=Math.min(1,t*1.5);
+// ========== 待机画面 ==========
+function drawIdle(now){
+  var bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#080e14');bg.addColorStop(1,'#0f1822');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  // 远处的火光
+  var fg=ctx.createRadialGradient(W/2,H*.55,0,W/2,H*.55,W*.7);fg.addColorStop(0,'rgba(255,100,20,.12)');fg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=fg;ctx.fillRect(0,H*.2,W,H*.8);
+  // 地面
+  ctx.fillStyle='#0d141c';ctx.fillRect(0,H*.55,W,H*.45);
+  // 停机坪标记
+  ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=2;ctx.strokeRect(W/2-80,H*.55-60,160,3);ctx.strokeRect(W/2-80,H*.55-60,3,60);
+  ctx.fillStyle='rgba(255,255,255,.06)';ctx.font='bold 40px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('H',W/2,H*.55-15);
+  // 直升机剪影
+  ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(W/2-50,H*.45-15,100,25);ctx.fillRect(W/2-15,H*.45-30,30,15);
+  // 标题
+  ctx.fillStyle='rgba(255,255,255,.15)';ctx.font='18px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('烽火地带',W/2,H*.68);
+  ctx.fillStyle='rgba(255,255,255,.08)';ctx.font='10px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillText('HAZARD OPERATIONS',W/2,H*.72);
+  // 旋翼微转
+  ctx.save();ctx.translate(W/2,H*.45-30);ctx.rotate(now*.002);
+  for(var i=0;i<4;i++){ctx.save();ctx.rotate(i*Math.PI/2);ctx.strokeStyle='rgba(255,255,255,.05)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(50,0);ctx.stroke();ctx.restore()}
+  ctx.restore();
+}
 
-  ctx.save();ctx.globalAlpha=fadeIn*0.9;
+// ==================== 阶段0: 启动动画 ====================
+function drawPhase0(t){
+  var bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#0a0d14');bg.addColorStop(1,'#111822');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+  // 扫描线
+  var sy=(t*80)%H;ctx.fillStyle='rgba(255,255,255,.03)';ctx.fillRect(0,sy,W,2);
+
+  // 中心三角Logo
+  var cx=W/2,cy=H*.35,triSz=45+Math.sin(t*3)*3;
+  ctx.save();ctx.translate(cx,cy);
+  ctx.shadowColor='rgba(255,80,20,.6)';ctx.shadowBlur=30;
+  var lg=ctx.createLinearGradient(0,-triSz,0,triSz);lg.addColorStop(0,'#ff6633');lg.addColorStop(.5,'#ff3300');lg.addColorStop(1,'#cc1100');
+  ctx.fillStyle=lg;ctx.beginPath();ctx.moveTo(0,-triSz);ctx.lineTo(-triSz*.82,triSz*.58);ctx.lineTo(triSz*.82,triSz*.58);ctx.closePath();ctx.fill();ctx.shadowBlur=0;
+  // 缺口
+  ctx.fillStyle='#0a0d14';var isz=triSz*.52;ctx.beginPath();ctx.moveTo(0,-isz*.75+4);ctx.lineTo(-isz*.65,isz*.47);ctx.lineTo(isz*.65,isz*.47);ctx.closePath();ctx.fill();
+  ctx.restore();
+
+  // DELTA FORCE
+  var a1=Math.min(1,t*2);
+  ctx.fillStyle='rgba(255,255,255,'+(a1*.9)+')';ctx.font='bold 20px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('DELTA FORCE',W/2,cy+58);
+  ctx.fillStyle='rgba(255,255,255,'+(a1*.5)+')';ctx.font='10px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillText('TENCENT GAMES',W/2,cy+72);
+
+  // 进度条
+  var pbw=W*.35,pbx=W/2-pbw/2,pby=H*.62,pg=Math.min(1,t/3.5);
+  ctx.fillStyle='rgba(255,255,255,.06)';ctx.fillRect(pbx,pby,pbw,2);
+  ctx.fillStyle='#ff4400';ctx.fillRect(pbx,pby,pbw*pg,2);
+  ctx.fillStyle='rgba(255,255,255,.25)';ctx.font='9px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('INITIALIZING '+Math.floor(pg*100)+'%',W/2,pby+14);
+
+  // 底部版本
+  ctx.fillStyle='rgba(255,255,255,.12)';ctx.font='9px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='right';ctx.fillText('MIUI STUDIO v1.0',W-20,H-15);
+}
+
+// ==================== 阶段1: 匹配动画 ====================
+function drawPhase1(t){
+  var bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#0c1018');bg.addColorStop(1,'#0f1822');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+  // 中心旋转图标
+  var cx=W/2,cy=H*.38,rad=30+Math.sin(t*2)*4;
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(t*3);
+  ctx.strokeStyle='rgba(255,120,40,.7)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,rad,0,Math.PI*1.5);ctx.stroke();
+  ctx.fillStyle='#ff6600';ctx.beginPath();ctx.arc(Math.cos(t*3)*rad,Math.sin(t*3)*rad,3,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+
+  // "正在匹配"
+  var pulse=1+Math.sin(t*4)*.05;
+  ctx.save();ctx.translate(cx,cy+60);ctx.scale(pulse,pulse);
+  ctx.fillStyle='rgba(255,255,255,.9)';ctx.font='bold 18px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('正在匹配…',0,0);
+  ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='11px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillText('SEARCHING FOR SQUAD',0,20);
+  ctx.restore();
+
+  // 预计时间
+  var est=Math.max(0,3-t)*3;
+  ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='10px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('预计 ~'+Math.floor(est)+'s',W/2,H*.52);
+
+  // 玩家头像(静态)
+  var avatars=[];
+  for(var i=0;i<3;i++){var ax=W/2-30+i*30,ay=H*.58;ctx.strokeStyle='rgba(255,255,255,.1)';ctx.lineWidth=2;ctx.strokeRect(ax-12,ay-12,24,24);ctx.fillStyle='rgba(255,255,255,.05)';ctx.fillRect(ax-12,ay-12,24,24);ctx.fillStyle='rgba(255,255,255,.15)';ctx.font='14px sans-serif';ctx.textAlign='center';ctx.fillText('+',ax,ay+5)}
+}
+
+// ==================== 阶段2: 选干员 ====================
+function drawPhase2(t){
+  var bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#0a0f16');bg.addColorStop(1,'#111822');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+  // 顶部标题
+  ctx.fillStyle='rgba(255,255,255,.7)';ctx.font='bold 15px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('选择干员',W/2,H*.08);
+  ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='9px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillText('SELECT OPERATOR',W/2,H*.12);
+
+  // 当前选中干员大卡片(上部居中)
+  var op=ops[selOp],scx=W/2,scy=H*.35;
+  var cardAlpha=Math.min(1,t*3);
+  ctx.save();ctx.globalAlpha=cardAlpha;
+
+  // 卡片背景
+  ctx.fillStyle='rgba(20,25,35,.8)';ctx.strokeStyle=op.color;ctx.lineWidth=2;
+  var cw=W*.5,ch=H*.32,cx3=scx-cw/2,cy3=scy-ch/2;
+  ctx.fillRect(cx3,cy3,cw,ch);ctx.strokeRect(cx3,cy3,cw,ch);
+
+  // 干员代号
+  ctx.fillStyle=op.color;ctx.font='bold 22px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText(op.emoji+' '+op.name,scx,scy-15);
+  ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='10px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillText('代号: '+op.code,scx,scy+5);
+  ctx.fillText('兵种: '+op.role,scx,scy+18);
+  ctx.fillText('主武器: '+op.weapon,scx,scy+31);
+
+  // 技能槽
+  var skills=['战术道具','被动技能','主动技能','大招'];
+  for(var i=0;i<4;i++){
+    var sx3=scx-90+i*60;
+    ctx.fillStyle=i===0?op.color:'rgba(255,255,255,.15)';ctx.fillRect(sx3-18,scy+45,36,36);
+    ctx.fillStyle='rgba(255,255,255,.4)';ctx.font='7px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText(skills[i],sx3,scy+92);
+  }
+
+  ctx.restore();
+
+  // 底部干员头像栏
+  var bw3=Math.min(55,W*.1),gap3=bw3*.2,startX3=W/2-ops.length*bw3*.55;
+  var bottomY=H*.85;
+
+  for(var i=0;i<ops.length;i++){
+    var x3=startX3+i*(bw3+gap3),isSel=i===selOp;
+    // 跳动进入
+    var offset=Math.max(0,Math.min(1,(t-i*.08)*3));
+    var y3=bottomY+(1-offset)*60;
+
+    ctx.save();ctx.globalAlpha=offset;
+    if(isSel){
+      ctx.strokeStyle=ops[i].color;ctx.lineWidth=3;ctx.strokeRect(x3-3,y3-3,bw3+6,bw3+6);
+      ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(x3-3,y3-3,bw3+6,bw3+6);
+    }
+    ctx.fillStyle='rgba(20,25,38,.7)';ctx.fillRect(x3,y3,bw3,bw3);
+    // 图标
+    ctx.fillStyle=ops[i].color;ctx.font=Math.floor(bw3*.4)+'px sans-serif';ctx.textAlign='center';ctx.fillText(ops[i].emoji,x3+bw3/2,y3+bw3*.65);
+    // 名字
+    ctx.fillStyle='rgba(255,255,255,.7)';ctx.font='8px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText(ops[i].name,x3+bw3/2,y3+bw3+12);
+    ctx.restore();
+  }
+
+  // 倒计时
+  var remain=Math.max(0,4-t);
+  ctx.fillStyle='rgba(255,255,255,'+(.3+Math.abs(Math.sin(t*3))*.3)+')';ctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('⏱ 即将开始 '+Math.ceil(remain)+'s',W/2,H*.93);
+
+  // 聊天框(模拟)
+  ctx.fillStyle='rgba(0,0,0,.4)';ctx.fillRect(10,H*.75,120,20);
+  ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='9px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='left';ctx.fillText('队伍: 准备出击',16,H*.75+14);
+}
+
+// ==================== 阶段3: 开场动画 ====================
+function drawPhase3(t){
+  var bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#0a0e18');bg.addColorStop(.4,'#0f1520');bg.addColorStop(1,'#0d1218');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+  // 地平线火光
+  var fg2=ctx.createRadialGradient(W/2,H*.48,0,W/2,H*.48,W*.8);fg2.addColorStop(0,'rgba(255,100,30,.18)');fg2.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=fg2;ctx.fillRect(0,H*.15,W,H*.6);
 
   // 地面
-  var gndY=H*0.55;
-  var gndGrad=ctx.createLinearGradient(0,gndY,0,H);
-  gndGrad.addColorStop(0,'#1a2028');gndGrad.addColorStop(0.3,'#14181e');gndGrad.addColorStop(1,'#0a0d12');
-  ctx.fillStyle=gndGrad;ctx.fillRect(0,gndY,W,H-gndY);
+  ctx.fillStyle='#0b1018';ctx.fillRect(0,H*.48,W,H*.52);
 
-  // 地平线光
-  var horGrad=ctx.createRadialGradient(W/2,gndY,0,W/2,gndY,W*0.8);
-  horGrad.addColorStop(0,'rgba(255,140,30,0.15)');horGrad.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=horGrad;ctx.fillRect(0,gndY-80,W,160);
+  // 远处建筑
+  var blds=[{x:W*.55,y:H*.48,h:90,w:50},{x:W*.65,y:H*.48,h:60,w:40},{x:W*.15,y:H*.48,h:40,w:35}];
+  blds.forEach(function(b){ctx.fillStyle='#111822';ctx.fillRect(b.x,b.y-b.h,b.w,b.h);ctx.fillStyle='rgba(255,200,100,.15)';ctx.fillRect(b.x+8,b.y-b.h+5,6,8)});
 
-  // 基地建筑(右侧)
-  var bx=W*0.6,by=gndY-100;
-  ctx.fillStyle='#1a2230';ctx.fillRect(bx-20,by-100,50,100);
-  ctx.fillStyle='#0f151d';ctx.fillRect(bx+30,by-50,35,50);
-  ctx.fillStyle='#151e28';ctx.fillRect(bx-50,by-70,70,70);
-  // 窗户
-  for(var i=0;i<3;i++){
-    ctx.fillStyle='rgba(255,200,100,0.2)';ctx.fillRect(bx-10+i*15,by-85,8,10);
-    ctx.fillStyle='rgba(255,200,100,0.1)';ctx.fillRect(bx+40,by-38,8,10);
-  }
-  // 天线塔
-  ctx.strokeStyle='#2a3545';ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(bx+60,by-50);ctx.lineTo(bx+60,by-140);ctx.stroke();
-  ctx.fillStyle='rgba(255,0,0,0.6)';ctx.fillRect(bx+58,by-140,4,4);
+  // 直升机编队
+  var hCount=3;
+  for(var h=0;h<hCount;h++){
+    var ht=Math.min(1,t*.5+h*.1);
+    var hx=W*.2+h*W*.25;
+    var hy=H*.15+Math.sin(t+h)*15-ht*50;
+    var hs=.4+ht*.3;
+    ctx.save();ctx.translate(hx,hy);ctx.scale(hs,hs);ctx.rotate(-0.15);
 
-  // 左侧建筑(远处的机库/掩体)
-  ctx.fillStyle='#111822';ctx.fillRect(W*0.1,H*0.5-30,W*0.15,30);
-  ctx.fillStyle='#0d1218';ctx.fillRect(W*0.18,H*0.45-20,40,20);
+    // 简易直升机
+    ctx.fillStyle='#1a2535';ctx.fillRect(-25,-6,50,12);
+    ctx.fillStyle='#0d1520';ctx.fillRect(-10,-10,20,8);
+    // 旋翼
+    ctx.save();ctx.rotate(t*20+h);
+    ctx.strokeStyle='rgba(200,220,240,.4)';ctx.lineWidth=1.5;
+    for(var r=0;r<4;r++){ctx.save();ctx.rotate(r*Math.PI/2);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(35,0);ctx.stroke();ctx.restore()}
+    ctx.restore();
+    // 尾梁
+    ctx.fillStyle='#1a2535';ctx.fillRect(22,-2,18,4);
 
-  // 地面标记
-  ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=1;
-  for(var i=0;i<5;i++){
-    ctx.beginPath();ctx.moveTo(W*0.2+i*W*0.15,gndY);ctx.lineTo(W*0.2+i*W*0.15,gndY+40);ctx.stroke();
-  }
-
-  ctx.restore();
-}
-
-// ============ 直升机飞入动画 ============
-function drawHeliFlyIn(elapsed){
-  var t=Math.min(1,elapsed/2.5);
-  // 直升机从左上角斜飞入画面
-  var startX=-100,startY=H*0.1;
-  var endX=W*0.35,endY=H*0.45;
-  var x=startX+(endX-startX)*easeOutBack(t);
-  var y=startY+(endY-startY)*t;
-
-  heliData.x=x;heliData.y=y;
-
-  ctx.save();
-  ctx.translate(x,y);
-  // 轻微机身旋转
-  var rot=-0.18+t*0.06;
-  ctx.rotate(rot);
-
-  var scale=0.6+Math.min(1,t)*0.4;
-
-  // 旋翼转动
-  var rotorSpeed=elapsed*25;
-  drawHelicopter(0,0,scale,rotorSpeed);
-
-  ctx.restore();
-
-  // 直升机下方的地面阴影
-  if(t>0.3){
-    ctx.save();ctx.translate(endX,endY+120*scale);
-    ctx.fillStyle='rgba(0,0,0,0.3)';ctx.beginPath();ctx.ellipse(0,0,50*scale,15*scale,0,0,Math.PI*2);ctx.fill();
     ctx.restore();
   }
+
+  // 右下角准备空降信号
+  var sa=Math.max(0,(t-2)*3);
+  ctx.fillStyle='rgba(255,100,30,'+sa+')';ctx.font='bold 16px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('⚠ 准备空降',W*.7,H*.55);
+  ctx.fillStyle='rgba(0,255,0,'+sa*.5+')';ctx.font='11px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillText('INSERTION INBOUND',W*.7,H*.58);
+
+  // 干员剪影(左下)
+  for(var s=0;s<3;s++){
+    var isa=Math.max(0,(t-1.5+s*.3)*2);
+    ctx.fillStyle='rgba(0,0,0,'+isa+')';ctx.fillRect(W*.1+s*40,H*.42-40,20,40);
+    ctx.fillStyle='rgba(255,255,255,'+isa*.3+')';ctx.fillRect(W*.1+s*40+2,H*.42-38,16,20);
+  }
+
+  // 地图标记
+  ctx.strokeStyle='rgba(255,100,30,.4)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(W*.55,H*.3,25+Math.sin(t)*3,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle='rgba(255,50,0,.5)';ctx.font='12px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('DZ',W*.55,H*.3+4);
 }
 
-function easeOutBack(t){
-  var c1=1.70158;var c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);
+// ==================== 阶段4: 下滑锁动画 ====================
+function drawPhase4(t){
+  var bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#0c1018');bg.addColorStop(1,'#0f1822');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+  var cx=W/2,cy=H*.42;
+
+  // 锁定图标
+  var lockSz=28+Math.sin(t*3)*2;
+  ctx.save();ctx.translate(cx,cy-30);
+  ctx.strokeStyle='rgba(255,255,255,.3)';ctx.lineWidth=2;
+  // 锁身
+  ctx.fillStyle='rgba(255,255,255,.05)';ctx.fillRect(-lockSz/2,0,lockSz,lockSz*1.3);
+  ctx.strokeRect(-lockSz/2,0,lockSz,lockSz*1.3);
+  // 锁环
+  ctx.beginPath();ctx.arc(0,-lockSz*.15,lockSz*.5,Math.PI,0);ctx.stroke();
+  // 钥匙孔
+  ctx.fillStyle='rgba(255,255,255,.2)';ctx.beginPath();ctx.arc(0,lockSz*.7,lockSz*.15,0,Math.PI);ctx.fill();
+  ctx.restore();
+
+  // "滑动解锁"
+  ctx.fillStyle='rgba(255,255,255,.7)';ctx.font='bold 16px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('滑动解锁出发',W/2,cy+30);
+  ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='10px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillText('SLIDE TO DEPLOY',W/2,cy+46);
+
+  // 滑动条
+  var sbx=W/2-120,sby=H*.55,sbw=240,sbh=46;
+  ctx.fillStyle='rgba(255,255,255,.06)';ctx.fillRect(sbx,sby,sbw,sbh);
+  ctx.strokeStyle='rgba(255,255,255,.15)';ctx.lineWidth=1;ctx.strokeRect(sbx,sby,sbw,sbh);
+
+  // 当前滑动进度
+  var progress=redSliding?redSlideX/sbw:0;
+  var kg=ctx.createLinearGradient(sbx,0,sbx+sbw*progress,0);kg.addColorStop(0,'#ff4400');kg.addColorStop(1,'#ff8800');
+  ctx.fillStyle=progress>.05?kg:'rgba(255,68,0,.3)';ctx.fillRect(sbx,sby,sbw*progress,sbh);
+
+  // 滑动按钮
+  var btnX=sbx+sbw*progress;
+  if(btnX>sbx+sbw-16)btnX=sbx+sbw-16;
+  if(btnX<sbx+8)btnX=sbx+8;
+  ctx.fillStyle='#fff';ctx.fillRect(btnX-8,sby+4,16,sbh-8);
+  ctx.fillStyle='#ff4400';ctx.beginPath();ctx.moveTo(btnX-4,sby+sbh/2-5);ctx.lineTo(btnX+5,sby+sbh/2);ctx.lineTo(btnX-4,sby+sbh/2+5);ctx.closePath();ctx.fill();
+
+  // 提示文字
+  var ha=1-Math.abs(Math.sin(t*2))*.4;
+  ctx.fillStyle='rgba(255,255,255,'+(.4+ha*.3)+')';ctx.font='10px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('→ 向右滑动 →',W/2,sby+sbh+18);
+
+  // 目标点信息
+  ctx.fillStyle='rgba(255,255,255,.2)';ctx.font='9px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('目标: 零号大坝 · 机密模式',W/2,H*.75);
+  ctx.fillText('小队: '+ops[selOp].name+' + 2名队友',W/2,H*.78);
 }
 
-function drawHelicopter(cx,cy,s,rSpeed){
-  ctx.save();ctx.translate(cx,cy);ctx.scale(s,s);
+// ==================== 阶段5: 撤离动画 ====================
+function drawPhase5(t){
+  var bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#0c1018');bg.addColorStop(.5,'#1a1520');bg.addColorStop(1,'#0d1018');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
 
-  // 主旋翼
-  ctx.save();ctx.rotate(rSpeed);
-  ctx.fillStyle='rgba(180,200,220,0.5)';ctx.strokeStyle='rgba(200,220,240,0.7)';ctx.lineWidth=2;
-  for(var i=0;i<4;i++){
-    ctx.save();ctx.rotate(i*Math.PI/2);
-    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(85,0);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(70,0);ctx.lineTo(95,0);ctx.lineWidth=1;ctx.strokeStyle='rgba(255,100,50,0.6)';ctx.stroke();
+  // 地面
+  var gndY=H*.52;
+  ctx.fillStyle='#0d141c';ctx.fillRect(0,gndY,W,H-gndY);
+
+  // 绿色信号烟
+  for(var sm=0;sm<3;sm++){
+    var smx=W*.35+sm*W*.15,smy=gndY-10+Math.sin(t*2+sm)*8;
+    var sga=Math.min(1,t*.5)*.6;
+    ctx.save();ctx.globalAlpha=sga;
+    ctx.fillStyle='rgba(0,200,50,.15)';ctx.beginPath();
+    for(var j=0;j<20;j++){var sa3=j/19*Math.PI;var sr=20+Math.sin(t*3+j)*8;ctx.lineTo(smx+Math.cos(sa3)*sr,smy+Math.sin(sa3)*sr*.4);}
+    ctx.closePath();ctx.fill();
     ctx.restore();
   }
-  ctx.restore();
 
-  // 尾旋翼
-  ctx.save();ctx.translate(95,8);
-  ctx.save();ctx.rotate(rSpeed*1.5);
-  ctx.fillStyle='rgba(180,200,220,0.4)';ctx.strokeStyle='rgba(200,220,240,0.6)';ctx.lineWidth=1.5;
-  for(var i=0;i<4;i++){
-    ctx.save();ctx.rotate(i*Math.PI/2);
-    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(12,0);ctx.stroke();
-    ctx.restore();
-  }
-  ctx.restore();
-
+  // 撤离直升机(右下)
+  var ehx=W*.65+Math.sin(t)*2,ehy=gndY-80+Math.cos(t)*3;
+  ctx.save();ctx.translate(ehx,ehy);ctx.scale(.55,.55);ctx.rotate(-0.12);
   // 机身
-  var bodyGrad=ctx.createLinearGradient(-45,0,80,0);
-  bodyGrad.addColorStop(0,'#2a3540');bodyGrad.addColorStop(0.2,'#3a4555');bodyGrad.addColorStop(0.5,'#4a5565');bodyGrad.addColorStop(0.8,'#3a4555');bodyGrad.addColorStop(1,'#1a2530');
-  ctx.fillStyle=bodyGrad;
-
-  // 机身前段
-  ctx.beginPath();ctx.moveTo(-45,-8);ctx.lineTo(-35,-15);ctx.lineTo(0,-18);ctx.lineTo(35,-14);ctx.lineTo(60,-8);ctx.lineTo(65,0);ctx.lineTo(60,8);ctx.lineTo(35,14);ctx.lineTo(0,18);ctx.lineTo(-35,15);ctx.lineTo(-45,8);ctx.closePath();ctx.fill();
-  ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1;ctx.stroke();
-
-  // 驾驶舱
-  var cPitch=20;
-  ctx.fillStyle='rgba(80,140,200,0.4)';
-  ctx.beginPath();ctx.moveTo(-30,-10);ctx.lineTo(-10,-14);ctx.lineTo(-10,-5);ctx.lineTo(-30,-2);ctx.closePath();ctx.fill();
-  ctx.strokeStyle='rgba(200,230,255,0.5)';ctx.lineWidth=1;ctx.stroke();
-
-  // 发动机罩
-  ctx.fillStyle='#1a2230';
-  ctx.fillRect(-5,-5,25,-10);
-
-  // 尾梁
-  ctx.fillStyle='#2a3548';ctx.fillRect(55,-4,45,8);
-  ctx.fillStyle='#1a2535';ctx.fillRect(55,-4,45,3);
-
-  // 垂尾
-  ctx.fillStyle='#1a2530';ctx.beginPath();ctx.moveTo(85,-4);ctx.lineTo(95,-25);ctx.lineTo(98,-4);ctx.closePath();ctx.fill();
-
-  // 尾灯
-  ctx.fillStyle='#ff0000';ctx.beginPath();ctx.arc(98,0,2,0,Math.PI*2);ctx.fill();
-
-  // 武器挂架
-  ctx.fillStyle='#1a2230';ctx.fillRect(20,16,8,10);
-  ctx.strokeStyle='#3a4555';ctx.lineWidth=1;ctx.strokeRect(20,16,8,10);
-  ctx.fillStyle='#2a3545';ctx.beginPath();ctx.arc(24,22,3,0,Math.PI*2);ctx.fill();
-
-  // 起落架
-  ctx.strokeStyle='#3a4555';ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(-15,18);ctx.lineTo(-20,30);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(15,18);ctx.lineTo(10,30);ctx.stroke();
-  ctx.strokeStyle='#4a5565';ctx.lineWidth=3;
-  ctx.beginPath();ctx.moveTo(-25,30);ctx.lineTo(20,30);ctx.stroke();
-
+  ctx.fillStyle='#1a2535';ctx.fillRect(-30,-8,60,16);
+  ctx.fillStyle='#0d1520';ctx.fillRect(-12,-14,24,10);
+  // 旋翼
+  ctx.save();ctx.rotate(t*18);
+  ctx.strokeStyle='rgba(200,220,240,.4)';ctx.lineWidth=2;
+  for(var r=0;r<4;r++){ctx.save();ctx.rotate(r*Math.PI/2);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(40,0);ctx.stroke();ctx.restore()}
   ctx.restore();
-}
-
-// ============ Logo揭露 ============
-function drawLogoReveal(elapsed){
-  var t=Math.min(1,elapsed/2.5);
-  var alpha=Math.min(1,t*1.8);
-
-  ctx.save();ctx.globalAlpha=alpha;
-
-  var cx=W/2-10,cy=H*0.38;
-
-  // 三角形Logo(三角洲)
-  var logoGrad=ctx.createLinearGradient(cx,cy-45,cx,cy+35);
-  logoGrad.addColorStop(0,'#ff6633');logoGrad.addColorStop(0.5,'#ff4400');logoGrad.addColorStop(1,'#cc3300');
-
-  // 三角形(缺口三角形，像△但更锋利)
-  var triSize=42+Math.sin(elapsed*3)*2; // 微呼吸动画
-  ctx.save();ctx.translate(cx,cy);
-
-  // 外层发光
-  ctx.shadowColor='rgba(255,100,20,0.5)';ctx.shadowBlur=25;
-  ctx.fillStyle=logoGrad;
-  ctx.beginPath();
-  ctx.moveTo(0,-triSize);
-  ctx.lineTo(-triSize*0.85,triSize*0.6);
-  ctx.lineTo(triSize*0.85,triSize*0.6);
-  ctx.closePath();
-  ctx.fill();
-  ctx.shadowBlur=0;
-
-  // 内层切出空隙
-  ctx.fillStyle='#0a0d14';
-  var innerSize=triSize*0.55;
-  ctx.beginPath();
-  ctx.moveTo(0,-innerSize*0.8+5);
-  ctx.lineTo(-innerSize*0.7,innerSize*0.5);
-  ctx.lineTo(innerSize*0.7,innerSize*0.5);
-  ctx.closePath();
-  ctx.fill();
-
+  ctx.fillStyle='#1a2535';ctx.fillRect(27,-4,20,6);
   ctx.restore();
 
-  // "DELTA FORCE" 文字
-  var textAlpha=Math.max(0,(t-0.3)*2.5);
-  ctx.fillStyle='rgba(255,255,255,'+textAlpha+')';
-  ctx.font='bold 22px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.letterSpacing='6px';
-  ctx.fillText('DELTA FORCE',cx,cy+65);
+  // 撤离标记(顶角)
+  ctx.fillStyle='rgba(0,255,80,.8)';ctx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('✓ 撤离点已激活',W*.35,gndY-60);
+  ctx.fillStyle='rgba(0,255,80,.3)';ctx.font='9px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillText('EXTRACTION ACTIVE',W*.35,gndY-48);
 
-  // 腾讯出品
-  ctx.fillStyle='rgba(255,255,255,'+textAlpha*0.6+')';
-  ctx.font='11px "PingFang SC","Microsoft YaHei",sans-serif';
-  ctx.fillText('TENCENT GAMES',cx,cy+82);
+  // 倒计时条
+  var extTime=Math.max(0,4-t);
+  var ebw=W*.3,ebx=W*.35-ebw/2,eby=gndY-35;
+  ctx.fillStyle='rgba(255,255,255,.06)';ctx.fillRect(ebx,eby,ebw,3);
+  ctx.fillStyle='#00cc44';ctx.fillRect(ebx,eby,ebw*(extTime/4),3);
+  ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='bold 20px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText(Math.ceil(extTime),W*.35,eby-8);
 
-  ctx.restore();
-}
-
-// ============ 烽火地带标题 ============
-function drawTitleReveal(elapsed){
-  var t=Math.min(1,elapsed/2);
-  if(t<0.1)return;
-
-  var alpha=Math.min(1,(t-0.1)*3);
-
-  ctx.save();ctx.globalAlpha=alpha;
-
-  var cx=W/2,cy=H*0.62;
-
-  // 标题背景火焰光
-  var flGrad=ctx.createRadialGradient(cx,cy-10,0,cx,cy-10,W*0.5);
-  flGrad.addColorStop(0,'rgba(255,100,20,0.2)');flGrad.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=flGrad;ctx.fillRect(0,cy-80,W,160);
-
-  // 主标题
-  var titleScale=1+Math.sin(elapsed*2)*0.02*(1-t); // 落地时的微震
-  ctx.save();ctx.translate(cx,cy);
-
-  // 火焰粒子背景
-  for(var i=0;i<12;i++){
-    var fx=(Math.sin(elapsed*3+i*1.7)*60)*titleScale;
-    var fy=(i-5)*8-Math.abs(Math.sin(elapsed+i))*30;
-    var fa=0.3+Math.sin(elapsed*2+i)*0.3;
-    ctx.fillStyle='rgba(255,'+(100+i*8)+',20,'+fa+')';
-    ctx.beginPath();ctx.arc(fx,fy,1+Math.random()*2,0,Math.PI*2);ctx.fill();
+  // 撤离成功字样(后半段)
+  if(t>3){
+    var sa2=Math.min(1,(t-3)*2);
+    ctx.fillStyle='rgba(255,255,255,'+sa2+')';ctx.font='bold 28px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('撤离成功',W/2,H*.45);
+    ctx.fillStyle='rgba(0,200,50,'+sa2*.6+')';ctx.font='12px "PingFang SC","Microsoft YaHei",sans-serif';ctx.fillText('EXTRACTION COMPLETE',W/2,H*.45+20);
   }
 
-  ctx.scale(titleScale,titleScale);
+  // 小队成功剪影(左下)
+  for(var s=0;s<3;s++){
+    ctx.fillStyle='rgba(255,255,255,'+Math.min(1,t*.6)*.4+')';ctx.fillRect(W*.1+s*25,gndY-30,16,30);
+    ctx.fillStyle='rgba(255,255,255,'+Math.min(1,t*.6)*.2+')';ctx.fillRect(W*.1+s*25+2,gndY-28,12,15);
+  }
 
-  // 描边
-  ctx.font='bold 48px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';
-  ctx.strokeStyle='rgba(255,255,255,'+alpha+')';ctx.lineWidth=4;ctx.lineJoin='round';
-  ctx.strokeText('烽火地带',0,0);
-
-  // 填充(渐变)
-  var txtGrad=ctx.createLinearGradient(0,-25,0,25);
-  txtGrad.addColorStop(0,'#ff8844');txtGrad.addColorStop(0.3,'#ff5500');txtGrad.addColorStop(0.7,'#cc2200');txtGrad.addColorStop(1,'#991100');
-  ctx.fillStyle=txtGrad;
-  ctx.fillText('烽火地带',0,0);
-
-  ctx.restore();
-
-  // 副标题
-  var subAlpha=Math.max(0,(t-0.4)*3);
-  ctx.fillStyle='rgba(255,255,255,'+subAlpha+')';
-  ctx.font='13px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.letterSpacing='4px';
-  ctx.fillText('HAZARD OPERATIONS',cx,cy+30);
-
-  // 分割线
-  ctx.strokeStyle='rgba(255,120,30,'+alpha+')';ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(cx-80,cy+45);ctx.lineTo(cx+80,cy+45);ctx.stroke();
-  ctx.fillStyle='rgba(255,120,30,'+alpha+')';ctx.beginPath();ctx.arc(cx,cy+45,3,0,Math.PI*2);ctx.fill();
-
-  ctx.restore();
-}
-
-// ============ 粒子更新 ============
-function updateAndDrawParticles(elapsed){
-  for(var i=0;i<particles.length;i++){
-    var p=particles[i];
-    p.x+=p.vx;p.y+=p.vy;
-    p.life-=p.decay;
-    if(p.life<=0){
-      // 重生
-      if(elapsed<3){
-        // 地面火花
-        p.x=W*0.3+Math.random()*W*0.4;
-        p.y=H*0.55+Math.random()*20;
-        p.vx=(Math.random()-0.5)*1.5;
-        p.vy=-Math.random()*3-1;
-        p.life=0.6+Math.random()*0.5;
-        p.type='spark';
-        p.hue=25+Math.random()*20;
-      }else if(elapsed<5){
-        // 飞入阶段的火花
-        if(heliData.y>0){
-          p.x=heliData.x+Math.random()*60-30;
-          p.y=heliData.y+Math.random()*30-10;
-        }else{
-          p.x=W*0.35+Math.random()*30;
-          p.y=H*0.45+Math.random()*20;
-        }
-        p.vx=(Math.random()-0.5)*2;
-        p.vy=-Math.random()*3-0.5;
-        p.life=0.5+Math.random()*0.4;
-        p.type='ember';
-        p.hue=20+Math.random()*15;
-      }else{
-        // Logo/Titles阶段的粒子
-        p.x=W/2+Math.random()*W*0.4-W*0.2;
-        p.y=H*0.3+Math.random()*H*0.4;
-        p.vx=(Math.random()-0.5)*2;
-        p.vy=-Math.random()*2-0.8;
-        p.life=0.6+Math.random()*0.6;
-        p.type=Math.random()<0.5?'ember':'spark';
-        p.hue=Math.random()<0.3?20+Math.random()*10:35+Math.random()*5;
-      }
-      p.alpha=p.type==='smoke'?0.3:0.85;
-    }
-    // 渲染
-    var a=p.alpha*p.life;
-    if(a<0.01)continue;
-    if(p.type==='smoke'){
-      ctx.fillStyle='rgba('+Math.floor(p.hue)+','+Math.floor(p.hue*0.7)+','+Math.floor(p.hue*0.5)+','+a+')';
-      ctx.beginPath();ctx.arc(p.x,p.y,p.size*2,0,Math.PI*2);ctx.fill();
-    }else{
-      ctx.fillStyle='hsla('+p.hue+',100%,'+(50+p.life*30)+'%,'+a+')';
-      ctx.fillRect(p.x,p.y,p.size*1.5,p.size*1.5);
-    }
+  // 飞机逐渐上升(如果t>2)
+  if(t>2){
+    var la=Math.min(1,(t-2)*1.5);
+    ctx.fillStyle='rgba(0,0,0,'+la+')';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='rgba(255,255,255,'+(la*.8)+')';ctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('返回准备大厅…',W/2,H*.7);
   }
 }
 
-// ============ 扫描线 ============
-function drawScanLine(elapsed){
-  var scanY=(elapsed*60)%H;
-  var scanGrad=ctx.createLinearGradient(0,scanY-2,0,scanY+2);
-  scanGrad.addColorStop(0,'rgba(255,255,255,0)');scanGrad.addColorStop(0.5,'rgba(255,255,255,0.06)');scanGrad.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.fillStyle=scanGrad;ctx.fillRect(0,scanY-2,W,4);
+// ========== 全局粒子 ==========
+function drawGlobalParticles(phase,t){
+  for(var i=0;i<P.length;i++){
+    var p=P[i];
+    if(t<.5||p.l<=0){var xSource,ySource,type='spark';
+      if(phase===0){xSource=W*.4+Math.random()*W*.2;ySource=H*.35}
+      else if(phase===1){xSource=W/2;ySource=H*.38}
+      else if(phase===3){xSource=W*.2+Math.random()*W*.6;ySource=H*.45}
+      else if(phase===4){xSource=W/2;ySource=H*.42}
+      else if(phase===5){xSource=W*.35;ySource=H*.5}
+      else{xSource=W/2;ySource=H*.4}
+      p.x=xSource+Math.random()*100-50;p.y=ySource+Math.random()*30-15;
+      p.vx=(Math.random()-.5)*2;p.vy=-Math.random()*3-.5;
+      p.l=.5+Math.random()*.6;p.h=phase===5?120+Math.random()*30:20+Math.random()*15;
+    }
+    p.x+=p.vx;p.y+=p.vy;p.l-=p.d;
+    var a2=(p.a||1)*p.l;if(a2<.01)continue;
+    ctx.fillStyle='hsla('+p.h+',90%,'+(40+p.l*30)+'%,'+a2+')';
+    ctx.fillRect(p.x,p.y,p.s*1.5,p.s*1.5);
+  }
 }
 
-// ============ 加载进度条 ============
-function drawLoadingBar(progress){
-  var bw=Math.min(200,W*0.4),bh=2;
-  var bx=(W-bw)/2,by=H*0.78;
-  // 轨道
-  ctx.fillStyle='rgba(255,255,255,0.08)';ctx.fillRect(bx,by,bw,bh);
-  // 进度
-  var pgGrad=ctx.createLinearGradient(bx,0,bx+bw,0);
-  pgGrad.addColorStop(0,'#ff4400');pgGrad.addColorStop(1,'#ff8800');
-  ctx.fillStyle=pgGrad;ctx.fillRect(bx,by,bw*progress,bh);
-  // 加载文字
-  ctx.fillStyle='rgba(255,255,255,0.3)';ctx.font='10px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';
-  ctx.fillText('INITIALIZING... '+Math.floor(progress*100)+'%',W/2,by+16);
+// ========== 底部阶段指示器 ==========
+function drawPhaseIndicator(phase){
+  var names=['启动','匹配','选人','空降','解锁','撤离'];
+  var dots=6,dr=4,dx=W/2-(dots-1)*dr*3.5,dy=H-24;
+  for(var i=0;i<dots;i++){
+    ctx.fillStyle=i===phase?'rgba(255,120,30,.8)':'rgba(255,255,255,.15)';
+    ctx.beginPath();ctx.arc(dx+i*dr*7,dy,(i===phase?dr+1:dr),0,Math.PI*2);ctx.fill();
+  }
+  ctx.fillStyle='rgba(255,255,255,.25)';ctx.font='9px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText(names[phase],W/2,dy-12);
 }
 
-// ============ 启动 ============
-resize();
-requestAnimationFrame(draw);
-</script>
-</body></html>
+// 启动
+requestAnimationFrame(tick);
+</script></body></html>
