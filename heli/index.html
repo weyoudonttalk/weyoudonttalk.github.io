@@ -36,13 +36,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:#87ceeb;touch-action
   <div id="lockUI"><div></div><p>锁定中…</p></div>
 </div>
 <div id="stickBox"><div class="bg"></div><div class="kn" id="knob"></div></div>
-<div id="btns"><button id="fireBtn">🎯</button></div>
+<div id="btns">
+  <button id="upBtn">⬆</button>
+  <button id="downBtn">⬇</button>
+  <button id="fireBtn">🎯</button>
+</div>
 <div id="views">
   <button class="sel" id="v0">☁️</button>
   <button id="v1">🎥</button>
   <button id="v2">🛰</button>
 </div>
-<div id="msg">⚡ 加载模型… 0%</div>
+<div id="msg">⚡ 生成场景…</div>
 
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
@@ -50,7 +54,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#87ceeb;touch-action
 
 <script type="module">
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const msgEl=document.getElementById('msg');
 const scene=new THREE.Scene();
@@ -58,7 +61,8 @@ scene.background=new THREE.Color(0x87ceeb);
 scene.fog=new THREE.Fog(0x87ceeb,200,800);
 
 const camera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,1,600);
-camera.position.set(25,15,25);camera.lookAt(0,3,0);
+camera.position.set(20,12,20);
+camera.lookAt(0,2,0);
 
 const renderer=new THREE.WebGLRenderer({canvas:document.getElementById('g'),antialias:true});
 renderer.setSize(innerWidth,innerHeight);
@@ -74,9 +78,11 @@ sun2.shadow.camera.left=-200;sun2.shadow.camera.right=200;
 sun2.shadow.camera.top=200;sun2.shadow.camera.bottom=-200;
 scene.add(sun2);
 
+// 地面
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(800,800),new THREE.MeshStandardMaterial({color:0x4a8c2a,roughness:0.9}));
 ground.rotation.x=-Math.PI/2;ground.position.y=-0.05;ground.receiveShadow=true;scene.add(ground);
 
+// 建筑
 const bM3=new THREE.MeshStandardMaterial({color:0x8899aa,roughness:0.3});
 for(let i=0;i<50;i++){
   const bx=(Math.random()-0.5)*500,bz=(Math.random()-0.5)*500;
@@ -92,6 +98,7 @@ for(let i=0;i<200;i++){
   scene.add(new THREE.Mesh(new THREE.SphereGeometry(1+Math.random()*2,6,4),new THREE.MeshStandardMaterial({color:0x2d5a1e}))).position.set(tx,4+Math.random()*4,tz);
 }
 
+// 红色靶子
 const targets=[];
 for(let i=0;i<8;i++){
   const a=(i/8)*Math.PI*2,d=50+Math.random()*70;
@@ -100,34 +107,59 @@ for(let i=0;i<8;i++){
   targets.push({mesh:t,alive:true});
 }
 
+// ===== 代码直升机组（立即可见，不等GLB加载） =====
+const builtHeli=new THREE.Group();
+const DK=new THREE.MeshStandardMaterial({color:0x1a1a22,roughness:0.28,metalness:0.62});
+const GY=new THREE.MeshStandardMaterial({color:0x3a3a44,roughness:0.24,metalness:0.55});
+const SL=new THREE.MeshStandardMaterial({color:0x7a7a88,roughness:0.18,metalness:0.72});
+const GL=new THREE.MeshStandardMaterial({color:0x334455,roughness:0.04,transparent:true,opacity:0.55});
+
+// 机身
+const pts=[];
+for(let i=0;i<=24;i++){
+  const t=i/24,x=t*7-2.5;
+  let r;
+  if(t<.08)r=.08+t*.35;else if(t<.18)r=.30+(t-.08)*.22/.10;
+  else if(t<.38)r=.48+Math.sin((t-.18)/.20*Math.PI)*.15;
+  else if(t<.62)r=.50;else if(t<.80)r=.50-(t-.62)*.28/.18;
+  else r=.18-(t-.80)*.12/.20;
+  pts.push(new THREE.Vector2(r,x));
+}
+builtHeli.add(new THREE.Mesh(new THREE.LatheGeometry(pts,32),DK));
+builtHeli.add(new THREE.Mesh(new THREE.BoxGeometry(2.5,0.15,0.4),GY)).position.set(0,0.45,0);
+builtHeli.add(new THREE.Mesh(new THREE.BoxGeometry(3.2,0.08,0.1),GY)).position.set(2.8,0.25,0);
+
+// 主旋翼
+const mainRotor2=new THREE.Group();
+for(let b=0;b<4;b++){
+  const a=b*Math.PI/2;
+  const bl=new THREE.Mesh(new THREE.BoxGeometry(0.03,0.012,1.8),GY);
+  bl.position.set(Math.cos(a)*0.85,0.08,Math.sin(a)*0.85);bl.rotation.z=a;mainRotor2.add(bl);
+}
+mainRotor2.position.set(0,0.55,0);builtHeli.add(mainRotor2);
+
+// 尾旋翼
+const tailRotor2=new THREE.Group();
+for(let b=0;b<4;b++){
+  const a=b*Math.PI/2;
+  const tb=new THREE.Mesh(new THREE.BoxGeometry(0.015,0.006,0.22),GY);
+  tb.position.set(0,Math.cos(a)*0.1,Math.sin(a)*0.1);tb.rotation.z=a;tailRotor2.add(tb);
+}
+tailRotor2.position.set(3.7,0.22,0.05);tailRotor2.rotation.y=Math.PI/2;builtHeli.add(tailRotor2);
+
+scene.add(builtHeli);
+
+msgEl.textContent='🚁 就绪';
+document.getElementById('hud').style.display='block';
+setTimeout(()=>{msgEl.style.opacity='0';setTimeout(()=>msgEl.style.display='none',500)},600);
+
+// ===== 飞行状态 =====
 let hx=0,hy=2.0,hz=0,vy3=0,hs3=0,pitch3=0,roll3=0,yaw3=0,thr3=0,onGround=true;
 let view3=0,locked3=false,lkStart3=0,missiles3=[];
-let keys3={},stickId3=null,stickX3=0,stickY3=0,sThrottle=0,sForward=0,sSide2=0;
-let heliModel=null;
+let keys3={},stickId3=null,stickX3=0,stickY3=0,sForward=0,sSide2=0,sLift=0;
+let heliTarget=builtHeli; // 指向当前使用的直升机组
 
-const loader=new GLTFLoader();
-loader.load(
-  'https://raw.githubusercontent.com/srcejon/sdrangel-3d-models/main/helicopter.glb',
-  gltf=>{
-    heliModel=gltf.scene;
-    heliModel.scale.set(0.12,0.12,0.12);
-    heliModel.rotation.y=Math.PI;
-    heliModel.traverse(c=>{if(c.isMesh){c.castShadow=true;c.receiveShadow=true}});
-    scene.add(heliModel);
-    msgEl.textContent='🚁 就绪';
-    document.getElementById('hud').style.display='block';
-    setTimeout(()=>{msgEl.style.opacity='0';setTimeout(()=>msgEl.style.display='none',500)},600);
-    requestAnimationFrame(tick);
-  },
-  xhr=>{msgEl.textContent=`⚡ 加载模型… ${Math.floor(xhr.loaded/xhr.total*100)}%`},
-  err=>{msgEl.textContent='⚠️ 加载失败: '+err.message}
-);
-
-// 键盘
-document.addEventListener('keydown',e=>{keys3[e.key.toLowerCase()]=true;e.key===' '&&e.preventDefault()});
-document.addEventListener('keyup',e=>{keys3[e.key.toLowerCase()]=false});
-
-// 摇杆
+// ===== 摇杆：前推=前进，左右=转向 =====
 const stickEl2=document.getElementById('stickBox'),knobEl2=document.getElementById('knob');
 stickEl2.addEventListener('touchstart',e=>{
   e.preventDefault();e.stopPropagation();
@@ -141,21 +173,33 @@ stickEl2.addEventListener('touchmove',e=>{
     if(e.touches[i].identifier===stickId3){
       const dx=e.touches[i].clientX-stickX3,dy=e.touches[i].clientY-stickY3;
       const d=Math.min(38,Math.hypot(dx,dy))/38,ag=Math.atan2(dy,dx);
-      sForward=-dy/38;sSide2=dx/38;sThrottle=Math.max(0,-dy/38+0.3);
+      sForward=-dy/38;  // 上=负→前飞
+      sSide2=dx/38;     // 左右=转向
       knobEl2.style.transform=`translate(${Math.cos(ag)*d*34}px,${Math.sin(ag)*d*34}px)`;
       break;
     }
   }
 },{passive:false});
 stickEl2.addEventListener('touchend',e=>{
-  e.preventDefault();stickId3=null;sForward=0;sSide2=0;sThrottle=0;
+  e.preventDefault();stickId3=null;sForward=0;sSide2=0;
   knobEl2.style.transform='translate(0,0)';
 },{passive:false});
 
-// 导弹
+// ===== 上升/下降按钮（油门） =====
+document.getElementById('upBtn').addEventListener('touchstart',e=>{e.preventDefault();sLift=1},{passive:false});
+document.getElementById('upBtn').addEventListener('touchend',e=>{e.preventDefault();sLift=0},{passive:false});
+document.getElementById('upBtn').addEventListener('mousedown',e=>{e.preventDefault();sLift=1});
+document.getElementById('upBtn').addEventListener('mouseup',e=>{e.preventDefault();sLift=0});
+
+document.getElementById('downBtn').addEventListener('touchstart',e=>{e.preventDefault();sLift=-0.3},{passive:false});
+document.getElementById('downBtn').addEventListener('touchend',e=>{e.preventDefault();sLift=0},{passive:false});
+document.getElementById('downBtn').addEventListener('mousedown',e=>{e.preventDefault();sLift=-0.3});
+document.getElementById('downBtn').addEventListener('mouseup',e=>{e.preventDefault();sLift=0});
+
+// ===== 导弹 =====
 document.getElementById('fireBtn').addEventListener('touchstart',e=>{
   e.preventDefault();
-  if(locked3||!heliModel)return;
+  if(locked3)return;
   let cl=null,cd=Infinity;
   targets.forEach(t=>{if(!t.alive)return;const d=Math.hypot(t.mesh.position.x-hx,t.mesh.position.z-hz);if(d<cd){cd=d;cl=t}});
   if(!cl||cd>100)return;
@@ -164,45 +208,70 @@ document.getElementById('fireBtn').addEventListener('touchstart',e=>{
   setTimeout(()=>{
     if(!locked3)return;
     const m=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.04,0.35,8),new THREE.MeshStandardMaterial({color:0xcccccc,emissive:0xff4400,emissiveIntensity:0.5}));
-    m.position.copy(heliModel.position);m.position.y+=0.25;scene.add(m);
+    m.position.copy(heliTarget.position);m.position.y+=0.25;scene.add(m);
     missiles3.push({mesh:m,target:cl,born:performance.now()});
     locked3=false;document.getElementById('lockUI').classList.remove('on');
   },1200);
 },{passive:false});
 
-// 视角
+// ===== 视角切换 =====
 ['v0','v1','v2'].forEach((id,i)=>{
   const btn=document.getElementById(id);
   btn.addEventListener('click',()=>{view3=i;for(let j=0;j<3;j++)document.getElementById('v'+j).classList.toggle('sel',j===i)});
-  btn.addEventListener('touchstart',e=>{e.preventDefault();view3=i;for(let j=0;j<3;j++)document.getElementById('v'+j).classList.toggle('sel',j===i)},{passive:false});
+  btn.addEventListener('touchstart',e=>(e.preventDefault(),view3=i,['v0','v1','v2'].forEach((_,j)=>document.getElementById('v'+j).classList.toggle('sel',j===i))),{passive:false});
 });
 
+// 键盘（Shift=升, Ctrl=降, W/S=前/后, A/D=转向, Q/E=偏航）
+document.addEventListener('keydown',e=>{keys3[e.key.toLowerCase()]=true;e.key===' '&&e.preventDefault()});
+document.addEventListener('keyup',e=>{keys3[e.key.toLowerCase()]=false});
+
+// ===== 主循环 =====
 let prevTime3=performance.now();
 function tick(now){
   requestAnimationFrame(tick);
-  if(!heliModel){renderer.render(scene,camera);return}
   let dt=(now-prevTime3)/1000;prevTime3=now;
   if(dt<=0||dt>0.3)dt=0.016;
 
-  if(keys3['w']||keys3['arrowup'])sForward=1;else if(keys3['s']||keys3['arrowdown'])sForward=-1;else if(stickId3===null)sForward*=0.88;
-  if(keys3['a']||keys3['arrowleft'])sSide2=-1;else if(keys3['d']||keys3['arrowright'])sSide2=1;else if(stickId3===null)sSide2*=0.88;
-  if(keys3['shift'])sThrottle=Math.min(1,sThrottle+0.03);else if(keys3['control'])sThrottle=Math.max(-0.3,sThrottle-0.03);else if(stickId3===null)sThrottle*=0.92;
-  if(keys3['q'])yaw3+=0.03;if(keys3['e'])yaw3-=0.03;
+  // 键盘输入
+  if(keys3['w']||keys3['arrowup'])sForward=1;
+  else if(keys3['s']||keys3['arrowdown'])sForward=-1;
+  else if(stickId3===null)sForward*=0.88;
 
-  thr3+=(sThrottle-thr3)*Math.min(dt*3,1);
+  if(keys3['a']||keys3['arrowleft'])sSide2=-1;
+  else if(keys3['d']||keys3['arrowright'])sSide2=1;
+  else if(stickId3===null)sSide2*=0.88;
+
+  if(keys3['shift'])sLift=Math.min(1,sLift+0.03);
+  else if(keys3['control'])sLift=Math.max(-0.3,sLift-0.03);
+  else if(stickId3===null&&!keys3['shift']&&!keys3['control'])sLift=0; // 按钮驱动的上升下降除外
+
+  // 油门（sLift + 自动维持悬停）
+  thr3+=(sLift-thr3)*Math.min(dt*3,1);
   if(onGround)thr3=Math.max(0,thr3);
 
-  vy3+=(thr3*14-9.8)*dt;vy3*=0.98;
+  // 垂直速度
+  vy3+=(thr3*14-9.8)*dt;
+  vy3*=0.98;
   hy+=vy3*dt;
-  if(hy<2.0){hy=2.0;vy3=0;onGround=true}else onGround=false;
+  if(hy<2.0){hy=2.0;vy3=0;onGround=true;}else onGround=false;
 
+  // 姿态 → 水平运动
   pitch3+=(sForward*0.5-pitch3)*Math.min(dt*2.5,1);
   roll3+=(sSide2*0.3-roll3)*Math.min(dt*2.5,1);
-  hs3+=(pitch3*9-hs3*0.6)*dt;hs3*=0.97;
-  const cy=Math.cos(yaw3),sy=Math.sin(yaw3);
-  hx+=cy*hs3*dt+cy*roll3*4*dt;hz+=sy*hs3*dt+sy*roll3*4*dt;
-  hx=Math.max(-280,Math.min(280,hx));hz=Math.max(-280,Math.min(280,hz));hy=Math.max(2.0,Math.min(180,hy));
+  yaw3+=sSide2*0.03; // 左右摇杆=偏航
 
+  hs3+=(pitch3*10-hs3*0.6)*dt;
+  hs3*=0.97;
+
+  const cy=Math.cos(yaw3),sy=Math.sin(yaw3);
+  hx+=cy*hs3*dt;
+  hz+=sy*hs3*dt;
+
+  hx=Math.max(-280,Math.min(280,hx));
+  hz=Math.max(-280,Math.min(280,hz));
+  hy=Math.max(2.0,Math.min(180,hy));
+
+  // 导弹
   for(let mi=missiles3.length-1;mi>=0;mi--){
     const ms=missiles3[mi];
     const tdx=ms.target.mesh.position.x-ms.mesh.position.x;
@@ -214,22 +283,37 @@ function tick(now){
     if(now-ms.born>6000){scene.remove(ms.mesh);missiles3.splice(mi,1)}
   }
 
-  if(locked3){const el=document.getElementById('lockUI'),e2=(now-lkStart3)/1000,r=el.querySelector('div');if(r)r.style.transform=`scale(${1+Math.sin(e2*10)*0.2})`}
+  if(locked3){const el2=document.getElementById('lockUI');el2.classList.add('on');}
 
-  if(view3===0){camera.position.lerp(new THREE.Vector3(hx-Math.cos(yaw3)*12,hy+9,hz-Math.sin(yaw3)*12),3*dt);camera.lookAt(hx,hy,hz)}
-  else if(view3===1){camera.position.set(hx+Math.cos(yaw3)*1.3,hy+0.7,hz+Math.sin(yaw3)*1.3);camera.quaternion.setFromEuler(new THREE.Euler(-0.05-pitch3*0.2,yaw3+Math.PI,0,'YXZ'))}
-  else{camera.position.lerp(new THREE.Vector3(hx,hy+55,hz+2),2*dt);camera.lookAt(hx,hy,hz)}
+  // 相机
+  if(view3===0){
+    camera.position.lerp(new THREE.Vector3(hx-Math.cos(yaw3)*12,hy+9,hz-Math.sin(yaw3)*12),3*dt);
+    camera.lookAt(hx,hy,hz);
+  }else if(view3===1){
+    camera.position.set(hx+Math.cos(yaw3)*1.3,hy+0.7,hz+Math.sin(yaw3)*1.3);
+    camera.quaternion.setFromEuler(new THREE.Euler(-0.05-pitch3*0.2,yaw3+Math.PI,0,'YXZ'));
+  }else{
+    camera.position.lerp(new THREE.Vector3(hx,hy+55,hz+2),2*dt);
+    camera.lookAt(hx,hy,hz);
+  }
 
-  heliModel.position.set(hx,hy,hz);
-  heliModel.rotation.y=yaw3;
-  heliModel.rotation.z=roll3;
-  heliModel.rotation.x=-pitch3*0.3;
+  // 直升机transform
+  heliTarget.position.set(hx,hy,hz);
+  heliTarget.rotation.y=yaw3;
+  heliTarget.rotation.z=roll3;
+  heliTarget.rotation.x=-pitch3*0.3;
+
+  // 旋翼旋转
+  mainRotor2.rotation.y+=dt*12*(0.3+thr3*0.7);
+  tailRotor2.rotation.z+=dt*16*(0.3+Math.abs(thr3)*0.7);
 
   document.getElementById('altV').textContent=Math.floor(hy*3);
   document.getElementById('spdV').textContent=Math.abs(Math.floor(hs3*3.2));
 
   renderer.render(scene,camera);
 }
+
+requestAnimationFrame(tick);
 
 window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 </script>
