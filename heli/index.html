@@ -3,7 +3,7 @@
 <title>武装直升机 · 飞行射击</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#87ceeb;touch-action:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#87ceeb;touch-action:none;font-family:system-ui}
 #g{display:block;width:100%;height:100%}
 #hud{position:fixed;inset:0;z-index:10;pointer-events:none;display:none}
 #altBox{position:absolute;top:14px;right:14px;text-align:right}
@@ -21,22 +21,19 @@ html,body{width:100%;height:100%;overflow:hidden;background:#87ceeb;touch-action
 #stickBox .bg{width:100%;height:100%;border-radius:50%;background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.12)}
 #stickBox .kn{position:absolute;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.18);top:50%;left:50%;margin:-20px 0 0 -20px}
 #btns{position:absolute;bottom:50px;right:14px;z-index:5;display:flex;flex-direction:column;gap:6px;pointer-events:auto}
-#btns button{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.35);border:2px solid rgba(255,255,255,.15);color:#fff;font-size:16px;cursor:pointer;touch-action:manipulation}
-#btns button:active{background:rgba(255,100,0,.3);border-color:#f60}
+#btns button{width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.4);border:2px solid rgba(255,255,255,.18);color:#fff;font-size:16px;cursor:pointer;touch-action:manipulation}
+#btns button:active{background:rgba(255,100,0,.3);border-color:#f60;transform:scale(.92)}
 #views{position:absolute;top:50%;right:6px;transform:translateY(-50%);display:flex;flex-direction:column;gap:3px;pointer-events:auto}
 #views button{width:26px;height:26px;border-radius:5px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.12);color:#fff;font-size:9px;cursor:pointer}
 #views button.sel{background:rgba(255,100,0,.25);border-color:#f60}
-#msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:14px;z-index:99;background:rgba(0,0,0,.75);padding:10px 24px;border-radius:8px;transition:opacity 0.4s}
-#info{position:absolute;top:14px;left:14px;color:rgba(255,255,255,.4);font-size:9px;pointer-events:none}
+#msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:13px;z-index:99;background:rgba(0,0,0,.7);padding:8px 20px;border-radius:8px;transition:opacity .4s}
 </style></head><body>
 
 <canvas id="g"></canvas>
-
 <div id="hud">
-  <div id="altBox"><b id="altV">0</b><i>METERS</i></div>
+  <div id="altBox"><b id="altV">0</b><i>M</i></div>
   <div id="spdBox"><b id="spdV">0</b><i>KM/H</i></div>
   <div id="lockUI"><div></div><p>锁定中…</p></div>
-  <div id="info">🏙️ 城市加载中…</div>
 </div>
 <div id="stickBox"><div class="bg"></div><div class="kn" id="knob"></div></div>
 <div id="btns">
@@ -49,315 +46,277 @@ html,body{width:100%;height:100%;overflow:hidden;background:#87ceeb;touch-action
   <button id="v1">🎥</button>
   <button id="v2">🛰</button>
 </div>
-<div id="msg">⚡ 加载引擎…</div>
+<div id="msg">⚡ 加载中…</div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script>
-(function W(){
-  if(typeof THREE==='undefined'){setTimeout(W,100);return}
-  go();
-})();
+(function(){
+if(typeof THREE==='undefined'){setTimeout(arguments.callee,100);return}
 
-function go(){
-try{
-var msgEl=document.getElementById('msg');
-msgEl.textContent='🏗 创建场景…';
+var M=document.getElementById('msg');
+M.textContent='🏗 场景…';
 
-// ===== 场景 =====
 var scene=new THREE.Scene();
 scene.background=new THREE.Color(0x87ceeb);
 scene.fog=new THREE.Fog(0x87ceeb,200,800);
 
-var camera=new THREE.PerspectiveCamera(52,innerWidth/innerHeight,0.3,500);
-camera.position.set(6,5,8);
-camera.lookAt(0,1.5,0);
+var cam=new THREE.PerspectiveCamera(52,innerWidth/innerHeight,0.3,500);
+cam.position.set(8,6,10);
+cam.lookAt(0,1.5,0);
 
-var renderer=new THREE.WebGLRenderer({canvas:document.getElementById('g'),antialias:true});
-renderer.setSize(innerWidth,innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-renderer.shadowMap.enabled=false;
+var R=new THREE.WebGLRenderer({canvas:document.getElementById('g'),antialias:true});
+R.setSize(innerWidth,innerHeight);
+R.setPixelRatio(Math.min(devicePixelRatio,2));
 
 scene.add(new THREE.AmbientLight(0x8899bb,0.7));
 var sun=new THREE.DirectionalLight(0xfff5e0,1.3);sun.position.set(100,200,80);scene.add(sun);
 scene.add(new THREE.HemisphereLight(0x88bbff,0x665544,0.4));
 
 // 地面
-var groundGeo=new THREE.PlaneGeometry(600,600);
-var groundMat=new THREE.MeshStandardMaterial({color:0x4a8c2a,roughness:0.9});
-var ground=new THREE.Mesh(groundGeo,groundMat);
-ground.rotation.x=-Math.PI/2;ground.position.y=-0.05;scene.add(ground);
+var gnd=new THREE.Mesh(new THREE.PlaneGeometry(600,600),new THREE.MeshStandardMaterial({color:0x4a8c2a,roughness:0.9}));
+gnd.rotation.x=-Math.PI/2;gnd.position.y=-0.05;scene.add(gnd);
 
-// ================== 城市建筑 ==================
-// 代码生成的基础建筑（立即可见）
-var bm4=new THREE.MeshStandardMaterial({color:0x8899aa,roughness:0.3});
-var bm5=new THREE.MeshStandardMaterial({color:0x667788,roughness:0.35});
-var bm6=new THREE.MeshStandardMaterial({color:0x99aabb,roughness:0.25});
-var wm=new THREE.MeshStandardMaterial({color:0xccccdd,roughness:0.2});
-var mats=[bm4,bm5,bm6,wm];
-
-// 城市街区：在直升机周围布置建筑群
+// 建筑
+var m1=new THREE.MeshStandardMaterial({color:0x8899aa,roughness:0.3});
+var m2=new THREE.MeshStandardMaterial({color:0x667788,roughness:0.35});
+var m3=new THREE.MeshStandardMaterial({color:0x99aabb,roughness:0.25});
+var m4=new THREE.MeshStandardMaterial({color:0xccccdd,roughness:0.2});
+var MTS=[m1,m2,m3,m4];
 for(var i=0;i<80;i++){
-  var bx, bz;
-  // 环形分布+随机街区
-  var angle=Math.random()*Math.PI*2;
-  var dist=35+Math.random()*200;
-  bx=Math.cos(angle)*dist;
-  bz=Math.sin(angle)*dist;
-  // 避开正中心
+  var ang=Math.random()*Math.PI*2,dst=35+Math.random()*200;
+  var bx=Math.cos(ang)*dst,bz=Math.sin(ang)*dst;
   if(Math.hypot(bx,bz)<30)continue;
-  var bh=8+Math.random()*60;
-  var bw=5+Math.random()*20;
-  var bd=5+Math.random()*20;
-  var mat=mats[Math.floor(Math.random()*mats.length)];
-  var b=new THREE.Mesh(new THREE.BoxGeometry(bw,bh,bd),mat);
-  b.position.set(bx,bh/2,bz);
-  scene.add(b);
-}
-
-// 道路（灰色平面条）
-var roadMat=new THREE.MeshStandardMaterial({color:0x555555,roughness:0.8});
-for(var r=0;r<6;r++){
-  var ra=(r/6)*Math.PI;
-  var road=new THREE.Mesh(new THREE.PlaneGeometry(8,300),roadMat);
-  road.rotation.x=-Math.PI/2;
-  road.rotation.z=ra;
-  road.position.y=0.01;
-  scene.add(road);
-}
-// 横穿道路
-for(var r=0;r<4;r++){
-  var rr=r*60-90;
-  var road2=new THREE.Mesh(new THREE.PlaneGeometry(280,6),roadMat);
-  road2.rotation.x=-Math.PI/2;
-  road2.position.set(0,0.01,rr);
-  scene.add(road2);
+  var b=new THREE.Mesh(new THREE.BoxGeometry(5+Math.random()*20,8+Math.random()*60,5+Math.random()*20),MTS[Math.floor(Math.random()*4)]);
+  b.position.set(bx,(8+Math.random()*60)/2,bz);scene.add(b);
 }
 
 // 树
-var tm=new THREE.MeshStandardMaterial({color:0x5a3a1a});
-var lm=new THREE.MeshStandardMaterial({color:0x2d5a1e});
-for(var i=0;i<200;i++){
+var tm2=new THREE.MeshStandardMaterial({color:0x5a3a1a});
+var lm2=new THREE.MeshStandardMaterial({color:0x2d5a1e});
+for(var i=0;i<150;i++){
   var tx=(Math.random()-0.5)*500,tz=(Math.random()-0.5)*500;
   if(Math.hypot(tx,tz)<35)continue;
-  var tr2=new THREE.Mesh(new THREE.CylinderGeometry(.15,.25,4+Math.random()*4,6),tm);tr2.position.set(tx,2,tz);scene.add(tr2);
-  var lf2=new THREE.Mesh(new THREE.SphereGeometry(1+Math.random()*2.5,6,4),lm);lf2.position.set(tx,4+Math.random()*4,tz);scene.add(lf2);
+  scene.add(new THREE.Mesh(new THREE.CylinderGeometry(.15,.25,4+Math.random()*4,6),tm2)).position.set(tx,2,tz);
+  scene.add(new THREE.Mesh(new THREE.SphereGeometry(1+Math.random()*2.5,6,4),lm2)).position.set(tx,4+Math.random()*4,tz);
 }
 
-// === 红色靶子 ===
+// 靶子
 var targets=[];
 for(var i=0;i<10;i++){
   var a=(i/10)*Math.PI*2,d=50+Math.random()*100;
-  var tgg=new THREE.Group();
-  var tSph=new THREE.Mesh(new THREE.SphereGeometry(1.2,10,10),new THREE.MeshStandardMaterial({color:0xff0000,emissive:0xff0000,emissiveIntensity:0.6}));
-  tgg.add(tSph);
-  var ring=new THREE.Mesh(new THREE.TorusGeometry(1.6,0.06,8,16),new THREE.MeshBasicMaterial({color:0xff0000,transparent:true,opacity:0.4}));
-  ring.rotation.x=Math.PI/2;tgg.add(ring);
-  tgg.position.set(Math.cos(a)*d,3,Math.sin(a)*d);
-  scene.add(tgg);
-  targets.push({mesh:tgg,alive:true});
+  var tg=new THREE.Group();
+  tg.add(new THREE.Mesh(new THREE.SphereGeometry(1.2,10,10),new THREE.MeshStandardMaterial({color:0xff0000,emissive:0xff0000,emissiveIntensity:0.6})));
+  var r2=new THREE.Mesh(new THREE.TorusGeometry(1.6,0.06,8,16),new THREE.MeshBasicMaterial({color:0xff0000,transparent:true,opacity:0.4}));
+  r2.rotation.x=Math.PI/2;tg.add(r2);
+  tg.position.set(Math.cos(a)*d,3,Math.sin(a)*d);scene.add(tg);
+  targets.push({mesh:tg,alive:true});
 }
 
-// ================== 真实GLB城市建筑模型 ==================
-// 从 GitHub 加载 CC0 授权的真实建筑模型
-function loadCityModel(url,x,y,z,scl,rot){
-  var loader=new THREE.ObjectLoader?null:null;
-  // 直接用XMLHttpRequest加载GLB
-  fetch(url).then(function(res){
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    return res.arrayBuffer();
-  }).then(function(buf){
-    // 简单的GLB解析不能用，用GLTFLoader
-    // 暂时用代码生成的更精致的建筑代替
-  }).catch(function(){});
-}
-
-// 用更精致的代码创建城市地标建筑（模拟真实3D模型的外观）
-function createLandmark(w,h,d,color,x,y,z){
-  var g2=new THREE.Group();
-  // 主塔身
-  var main=new THREE.Mesh(new THREE.BoxGeometry(w*0.8,h*0.9,d*0.9),new THREE.MeshStandardMaterial({color:color,roughness:0.25,metalness:0.4}));
-  g2.add(main);
-  // 顶部装饰
-  var top2=new THREE.Mesh(new THREE.BoxGeometry(w*0.6,h*0.1,d*0.6),new THREE.MeshStandardMaterial({color:0x444444,roughness:0.2,metalness:0.5}));
-  top2.position.y=h*0.5;
-  g2.add(top2);
-  // 窗户带
-  for(var fi=0;fi<Math.floor(h/4);fi++){
-    var floor2=new THREE.Mesh(new THREE.BoxGeometry(w*0.85,0.15,d*0.95),new THREE.MeshStandardMaterial({color:0xaabbcc,roughness:0.15,metalness:0.3}));
-    floor2.position.y=-h*0.4+fi*4;
-    g2.add(floor2);
-  }
-  g2.position.set(x,h/2,z);
-  scene.add(g2);
-}
-
-// 地标建筑群
-var landmarkColors=[0x334466,0x445566,0x556677,0x334455,0x445577,0x335566];
-for(var li=0;li<20;li++){
-  var la=(li/20)*Math.PI*2;
-  var ld=60+Math.random()*120;
-  var lx=Math.cos(la)*ld;
-  var lz=Math.sin(la)*ld;
-  if(Math.hypot(lx,lz)<40)lx+=20;
-  var lw=6+Math.random()*14;
-  var lh=15+Math.random()*70;
-  var ld2=6+Math.random()*14;
-  var lc=landmarkColors[Math.floor(Math.random()*landmarkColors.length)];
-  createLandmark(lw,lh,ld2,lc,lx,0,lz);
-}
-
-// ================== 直升机 ==================
+// ==============================
+// 武装直升机 —— 军绿迷彩涂装
+// ==============================
 var heli=new THREE.Group();
-var orangeMat=new THREE.MeshStandardMaterial({color:0xff6a00,roughness:0.25,metalness:0.5});
-var darkMat=new THREE.MeshStandardMaterial({color:0x1a1a22,roughness:0.3});
-var silverMat=new THREE.MeshStandardMaterial({color:0xaaaaaa,roughness:0.15,metalness:0.7});
-var redMat=new THREE.MeshStandardMaterial({color:0xff0000});
 
-// 机身(Lathe曲面)
+var camoGreen=new THREE.MeshStandardMaterial({color:0x3d5c28,roughness:0.3,metalness:0.35});
+var camoDark=new THREE.MeshStandardMaterial({color:0x1e2d14,roughness:0.32,metalness:0.3});
+var camoBrown=new THREE.MeshStandardMaterial({color:0x5a3d1e,roughness:0.33,metalness:0.3});
+var metalGray=new THREE.MeshStandardMaterial({color:0x777777,roughness:0.18,metalness:0.7});
+var darkMetal=new THREE.MeshStandardMaterial({color:0x1a1a1a,roughness:0.25,metalness:0.65});
+var canopy=new THREE.MeshStandardMaterial({color:0x1a2533,roughness:0.04,metalness:0.2,transparent:true,opacity:0.55});
+var rocketRed=new THREE.MeshStandardMaterial({color:0xcc0000});
+var stripeYellow=new THREE.MeshStandardMaterial({color:0xccaa00,roughness:0.2,metalness:0.4});
+
+// 机身 —— 军绿色 LatheGeometry
 var pts=[];
-for(var i=0;i<=28;i++){
-  var t=i/28,x=t*8-3;
-  var r;
-  if(t<0.06)r=0.06+t*0.45;
-  else if(t<0.16)r=0.28+(t-0.06)*0.3/0.1;
-  else if(t<0.35)r=0.50+Math.sin((t-0.16)/0.19*Math.PI)*0.2;
-  else if(t<0.62)r=0.52;
-  else if(t<0.78)r=0.52-(t-0.62)*0.30/0.16;
-  else r=0.20-(t-0.78)*0.14/0.22;
+for(var i=0;i<=30;i++){
+  var t=i/30,x=t*8-3;
+  var r;if(t<.06)r=.06+t*.45;else if(t<.16)r=.28+(t-.06)*.3/.1;else if(t<.35)r=.50+Math.sin((t-.16)/.19*Math.PI)*.2;else if(t<.62)r=.52;else if(t<.78)r=.52-(t-.62)*.3/.16;else r=.20-(t-.78)*.14/.22;
   pts.push(new THREE.Vector2(r,x));
 }
-var fuselage=new THREE.Mesh(new THREE.LatheGeometry(pts,40),orangeMat);heli.add(fuselage);
+var fuse=new THREE.Mesh(new THREE.LatheGeometry(pts,40),camoGreen);
+fuse.castShadow=true;heli.add(fuse);
 
-// 发动机罩
-var eng=new THREE.Mesh(new THREE.BoxGeometry(2.6,0.18,0.42),darkMat);eng.position.set(0,0.48,0);heli.add(eng);
-
-// 尾梁+垂尾+水平尾翼
-var tailBoom=new THREE.Mesh(new THREE.BoxGeometry(3.4,0.09,0.12),darkMat);tailBoom.position.set(3.0,0.26,0);heli.add(tailBoom);
-var vertFin=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.48,0.22),darkMat);vertFin.position.set(3.8,0.28,0);heli.add(vertFin);
-var horizFin=new THREE.Mesh(new THREE.BoxGeometry(1.1,0.04,0.2),darkMat);horizFin.position.set(2.7,0.26,0);heli.add(horizFin);
-
-// 主旋翼
-var mainRotor=new THREE.Group();
-mainRotor.position.set(0,0.58,0);
-for(var b=0;b<4;b++){
-  var a=b*Math.PI/2;
-  var blade=new THREE.Mesh(new THREE.BoxGeometry(0.04,0.014,2.0),silverMat);
-  blade.position.set(Math.cos(a)*0.95,0,Math.sin(a)*0.95);blade.rotation.z=a;mainRotor.add(blade);
-  var tip=new THREE.Mesh(new THREE.BoxGeometry(0.04,0.014,0.3),redMat);
-  tip.position.set(Math.cos(a)*1.85,0,Math.sin(a)*1.85);tip.rotation.z=a;mainRotor.add(tip);
+// 机身迷彩条纹（深绿+棕褐斑块）
+function camoStripe(y,s){
+  var sc=new THREE.Mesh(new THREE.BoxGeometry(0.85,0.06,0.38),camoDark);
+  sc.position.set(0,y,s*0.25);heli.add(sc);
+  var sb=new THREE.Mesh(new THREE.BoxGeometry(0.6,0.05,0.3),camoBrown);
+  sb.position.set(0.15,y-0.1,-s*0.2);heli.add(sb);
 }
-heli.add(mainRotor);
+for(var i=0;i<6;i++)camoStripe(-1.2+i*0.55,(i%2===0?1:-1));
 
-// 尾旋翼
-var tailRotor=new THREE.Group();
-tailRotor.position.set(4.1,0.24,0.07);
+// 机鼻——暗色防眩光
+var noseCap=new THREE.Mesh(new THREE.SphereGeometry(0.2,12,8),darkMetal);
+noseCap.position.set(-3.5,0.05,0);heli.add(noseCap);
+
+// 驾驶舱玻璃（绿色镀膜）
+var windsh=new THREE.Mesh(new THREE.BoxGeometry(0.25,0.2,0.35),canopy);
+windsh.position.set(-2.4,0.55,0);windsh.rotation.z=0.25;heli.add(windsh);
+
+// 发动机罩——深色金属
+var engCover=new THREE.Mesh(new THREE.BoxGeometry(2.6,0.2,0.44),darkMetal);
+engCover.position.set(0,0.5,0);heli.add(engCover);
+// 发动机进气口(两侧)
+[-1,1].forEach(function(s){
+  var intake=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.1,0.18,12),metalGray);
+  intake.position.set(1.0,0.48,s*0.3);intake.rotation.z=s*0.3;heli.add(intake);
+});
+
+// 尾梁
+var boom=new THREE.Mesh(new THREE.BoxGeometry(3.4,0.1,0.14),camoGreen);boom.position.set(3.0,0.28,0);heli.add(boom);
+// 尾梁条纹
+var boomStripe=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.11,0.15),stripeYellow);boomStripe.position.set(3.8,0.28,0);heli.add(boomStripe);
+
+// 垂尾——军绿色
+var vFin1=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.5,0.24),camoGreen);vFin1.position.set(3.9,0.3,0);heli.add(vFin1);
+var vFin2=new THREE.Mesh(new THREE.BoxGeometry(0.04,0.35,0.22),darkMetal);vFin2.position.set(4.0,0.22,0);heli.add(vFin2);
+
+// 水平尾翼
+var hFin=new THREE.Mesh(new THREE.BoxGeometry(1.1,0.05,0.22),camoGreen);hFin.position.set(2.7,0.28,0);heli.add(hFin);
+
+// 尾灯（红色闪烁球）
+var tailLight=new THREE.Mesh(new THREE.SphereGeometry(0.05,6,6),new THREE.MeshBasicMaterial({color:0xff0000}));
+tailLight.position.set(4.2,0.3,0);heli.add(tailLight);
+
+// ===== 主旋翼（4叶+桨毂） =====
+var mr=new THREE.Group();
+mr.position.set(0,0.6,0);
+// 桨毂
+var hub3=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.1,0.16,16),metalGray);
+mr.add(hub3);
+// 桨毂顶盖
+var hubCap3=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.08,0.12,12),darkMetal);
+hubCap3.position.y=0.12;mr.add(hubCap3);
+// 4片桨叶
 for(var b=0;b<4;b++){
-  var a=b*Math.PI/2;
-  var tb=new THREE.Mesh(new THREE.BoxGeometry(0.018,0.007,0.25),silverMat);
-  tb.position.set(0,Math.cos(a)*0.12,Math.sin(a)*0.12);tb.rotation.z=a;tailRotor.add(tb);
+  var an=b*Math.PI/2;
+  // 桨叶主体——灰色
+  var bl=new THREE.Mesh(new THREE.BoxGeometry(0.04,0.016,2.0),metalGray);
+  bl.position.set(Math.cos(an)*0.95,0.02,Math.sin(an)*0.95);bl.rotation.z=an;mr.add(bl);
+  // 桨叶根——深色
+  var blr=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.018,0.5),darkMetal);
+  blr.position.set(Math.cos(an)*0.3,0.02,Math.sin(an)*0.3);blr.rotation.z=an;mr.add(blr);
+  // 桨尖——红色警示
+  var tip2=new THREE.Mesh(new THREE.BoxGeometry(0.04,0.016,0.25),rocketRed);
+  tip2.position.set(Math.cos(an)*1.85,0.02,Math.sin(an)*1.85);tip2.rotation.z=an;mr.add(tip2);
 }
-tailRotor.rotation.y=Math.PI/2;heli.add(tailRotor);
+heli.add(mr);
+
+// ===== 尾旋翼（4叶+桨毂） =====
+var tr=new THREE.Group();
+tr.position.set(4.2,0.26,0.07);
+var trHub=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,0.06,8),metalGray);
+trHub.rotation.y=Math.PI/2;tr.add(trHub);
+for(var b=0;b<4;b++){
+  var an=b*Math.PI/2;
+  var tb2=new THREE.Mesh(new THREE.BoxGeometry(0.018,0.008,0.26),metalGray);
+  tb2.position.set(0,Math.cos(an)*0.12,Math.sin(an)*0.12);tb2.rotation.z=an;tr.add(tb2);
+}
+tr.rotation.y=Math.PI/2;heli.add(tr);
+
+// ===== 武器挂架 =====
+[-1,1].forEach(function(s){
+  // 挂架支柱
+  var pyl=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.04,0.2,8),metalGray);
+  pyl.position.set(0.7,0.22,s*0.55);heli.add(pyl);
+  // 火箭弹巢（圆柱+红色弹头）
+  var pod=new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.08,0.5,12),darkMetal);
+  pod.position.set(0.7,0.08,s*0.55);pod.rotation.x=Math.PI/2;heli.add(pod);
+  // 导弹（地狱火风格）
+  var msl=new THREE.Mesh(new THREE.CylinderGeometry(0.025,0.035,0.35,8),metalGray);
+  msl.position.set(0.7,0.08,s*0.55);msl.rotation.x=Math.PI/2;heli.add(msl);
+  // 弹头红色
+  var warhead=new THREE.Mesh(new THREE.SphereGeometry(0.03,6,6),rocketRed);
+  warhead.position.set(0.7,0.08,s*0.72);heli.add(warhead);
+});
 
 // 地面投影
-var shadowDisc=new THREE.Mesh(new THREE.CircleGeometry(1.2,16),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.2,side:THREE.DoubleSide}));
-shadowDisc.rotation.x=-Math.PI/2;shadowDisc.position.y=-1.8;heli.add(shadowDisc);
+var sd=new THREE.Mesh(new THREE.CircleGeometry(1.3,16),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.2,side:THREE.DoubleSide}));
+sd.rotation.x=-Math.PI/2;sd.position.y=-1.8;heli.add(sd);
 
 scene.add(heli);
 
-// === 状态 ===
-var hx=0,hy=2.0,hz=0,vy=0,hs=0,pitch=0,roll=0,yaw=0,thr=0,onGround=true;
-var view=0,locked=false,lkStart=0,missiles=[];
+// ==== 状态 ====
+var hx=0,hy=2.2,hz=0,vy3=0,hs3=0,pitch3=0,roll3=0,yaw3=0,thr3=0,onGnd=true;
+var view=0,locked=false,lkSt=0,miss=[];
 
-// === 输入 ===
+// ==== 输入 ====
 var keys={};
 document.addEventListener('keydown',function(e){keys[e.key.toLowerCase()]=true;if(e.key===' ')e.preventDefault()});
 document.addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false});
 
 var sId=null,sOX=0,sOY=0,sFwd=0,sSide=0,sLift=0;
-var stick=document.getElementById('stickBox'),knob=document.getElementById('knob');
-stick.addEventListener('touchstart',function(e){e.preventDefault();e.stopPropagation();sId=e.touches[0].identifier;var r=stick.getBoundingClientRect();sOX=r.left+r.width/2;sOY=r.top+r.height/2},{passive:false});
-stick.addEventListener('touchmove',function(e){e.preventDefault();e.stopPropagation();for(var i=0;i<e.touches.length;i++){if(e.touches[i].identifier===sId){var dx=e.touches[i].clientX-sOX,dy=e.touches[i].clientY-sOY;var d=Math.min(38,Math.hypot(dx,dy))/38,ag=Math.atan2(dy,dx);sFwd=-dy/38;sSide=dx/38;knob.style.transform='translate('+(Math.cos(ag)*d*34)+'px,'+(Math.sin(ag)*d*34)+'px)';break}}},{passive:false});
-stick.addEventListener('touchend',function(e){e.preventDefault();sId=null;sFwd=0;sSide=0;knob.style.transform='translate(0,0)'},{passive:false});
+var st=document.getElementById('stickBox'),kn=document.getElementById('knob');
+st.addEventListener('touchstart',function(e){e.preventDefault();e.stopPropagation();sId=e.touches[0].identifier;var r=st.getBoundingClientRect();sOX=r.left+r.width/2;sOY=r.top+r.height/2},{passive:false});
+st.addEventListener('touchmove',function(e){e.preventDefault();e.stopPropagation();for(var i=0;i<e.touches.length;i++){if(e.touches[i].identifier===sId){var dx=e.touches[i].clientX-sOX,dy=e.touches[i].clientY-sOY;var dd=Math.min(38,Math.hypot(dx,dy))/38,ag=Math.atan2(dy,dx);sFwd=-dy/38;sSide=dx/38;kn.style.transform='translate('+(Math.cos(ag)*dd*34)+'px,'+(Math.sin(ag)*dd*34)+'px)';break}}},{passive:false});
+st.addEventListener('touchend',function(e){e.preventDefault();sId=null;sFwd=0;sSide=0;kn.style.transform='translate(0,0)'},{passive:false});
 
-// 上升/下降按钮
-document.getElementById('upBtn').addEventListener('touchstart',function(e){e.preventDefault();sLift=1},{passive:false});
-document.getElementById('upBtn').addEventListener('touchend',function(e){e.preventDefault();sLift=0},{passive:false});
-document.getElementById('upBtn').addEventListener('mousedown',function(e){e.preventDefault();sLift=1});
-document.getElementById('upBtn').addEventListener('mouseup',function(e){e.preventDefault();sLift=0});
-document.getElementById('downBtn').addEventListener('touchstart',function(e){e.preventDefault();sLift=-0.3},{passive:false});
-document.getElementById('downBtn').addEventListener('touchend',function(e){e.preventDefault();sLift=0},{passive:false});
-document.getElementById('downBtn').addEventListener('mousedown',function(e){e.preventDefault();sLift=-0.3});
-document.getElementById('downBtn').addEventListener('mouseup',function(e){e.preventDefault();sLift=0});
+var upBtn=document.getElementById('upBtn'),downBtn=document.getElementById('downBtn');
+upBtn.addEventListener('touchstart',function(e){e.preventDefault();sLift=1},{passive:false});
+upBtn.addEventListener('touchend',function(e){e.preventDefault();sLift=0},{passive:false});
+upBtn.addEventListener('mousedown',function(e){e.preventDefault();sLift=1});
+upBtn.addEventListener('mouseup',function(e){e.preventDefault();sLift=0});
+downBtn.addEventListener('touchstart',function(e){e.preventDefault();sLift=-0.3},{passive:false});
+downBtn.addEventListener('touchend',function(e){e.preventDefault();sLift=0},{passive:false});
+downBtn.addEventListener('mousedown',function(e){e.preventDefault();sLift=-0.3});
+downBtn.addEventListener('mouseup',function(e){e.preventDefault();sLift=0});
 
-// 导弹
-document.getElementById('fireBtn').addEventListener('touchstart',function(e){e.preventDefault();if(locked)return;var cl=null,cd=Infinity;for(var i=0;i<targets.length;i++){if(!targets[i].alive)continue;var d=Math.hypot(targets[i].mesh.position.x-hx,targets[i].mesh.position.z-hz);if(d<cd){cd=d;cl=targets[i]}};if(!cl||cd>120)return;locked=true;lkStart=performance.now();document.getElementById('lockUI').classList.add('on');setTimeout(function(){if(!locked)return;var m=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.04,0.35,8),new THREE.MeshStandardMaterial({color:0xcccccc,emissive:0xff4400,emissiveIntensity:0.6}));m.position.copy(heli.position);m.position.y+=0.3;scene.add(m);missiles.push({mesh:m,target:cl,born:performance.now()});locked=false;document.getElementById('lockUI').classList.remove('on')},1200)},{passive:false});
+document.getElementById('fireBtn').addEventListener('touchstart',function(e){e.preventDefault();if(locked)return;var cl=null,cd=Infinity;for(var i=0;i<targets.length;i++){if(!targets[i].alive)continue;var dd=Math.hypot(targets[i].mesh.position.x-hx,targets[i].mesh.position.z-hz);if(dd<cd){cd=dd;cl=targets[i]}}if(!cl||cd>120)return;locked=true;lkSt=performance.now();document.getElementById('lockUI').classList.add('on');setTimeout(function(){if(!locked)return;var m=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.04,0.35,8),new THREE.MeshStandardMaterial({color:0xcccccc,emissive:0xff4400,emissiveIntensity:0.6}));m.position.copy(heli.position);m.position.y+=0.3;scene.add(m);miss.push({mesh:m,target:cl,born:performance.now()});locked=false;document.getElementById('lockUI').classList.remove('on')},1200)},{passive:false});
 
-// 视角
-['v0','v1','v2'].forEach(function(id,i){var btn=document.getElementById(id);btn.addEventListener('click',function(){view=i;upV()});btn.addEventListener('touchstart',function(e){e.preventDefault();view=i;upV()},{passive:false})});
+['v0','v1','v2'].forEach(function(id,i){var b2=document.getElementById(id);b2.addEventListener('click',function(){view=i;upV()});b2.addEventListener('touchstart',function(e){e.preventDefault();view=i;upV()},{passive:false})});
 function upV(){for(var i=0;i<3;i++)document.getElementById('v'+i).classList.toggle('sel',i===view)}
 
-// 完成加载
-msgEl.textContent='🚁 就绪';
-document.getElementById('hud').style.display='block';
-document.getElementById('info').textContent='🏙️ 城市已就绪';
-setTimeout(function(){msgEl.style.opacity='0';setTimeout(function(){msgEl.style.display='none'},500)},600);
+M.textContent='🚁 就绪';document.getElementById('hud').style.display='block';
+setTimeout(function(){M.style.opacity='0';setTimeout(function(){M.style.display='none'},500)},600);
 
-// ===== 主循环 =====
-var prevTime=performance.now();
-function tick(now){
-  requestAnimationFrame(tick);
-  var dt=(now-prevTime)/1000;prevTime=now;if(dt<=0||dt>0.3)dt=0.016;
+// ==== 主循环 ====
+var pt=performance.now();
+function tck(now){
+  requestAnimationFrame(tck);
+  var dt=(now-pt)/1000;pt=now;if(dt<=0||dt>0.3)dt=0.016;
 
-  // 键盘
   if(keys['w']||keys['arrowup'])sFwd=1;else if(keys['s']||keys['arrowdown'])sFwd=-1;else if(sId===null)sFwd*=0.88;
   if(keys['a']||keys['arrowleft'])sSide=-1;else if(keys['d']||keys['arrowright'])sSide=1;else if(sId===null)sSide*=0.88;
   if(keys['shift'])sLift=Math.min(1,sLift+0.03);else if(keys['control'])sLift=Math.max(-0.3,sLift-0.03);
 
-  thr+=(sLift-thr)*Math.min(dt*3,1);
-  if(onGround)thr=Math.max(0,thr);
+  thr3+=(sLift-thr3)*Math.min(dt*3,1);
+  if(onGnd)thr3=Math.max(0,thr3);
 
-  vy+=(thr*14-9.8)*dt;vy*=0.98;
-  hy+=vy*dt;
-  if(hy<2.0){hy=2.0;vy=0;onGround=true}else onGround=false;
+  vy3+=(thr3*14-9.8)*dt;vy3*=0.98;
+  hy+=vy3*dt;
+  if(hy<2.2){hy=2.2;vy3=0;onGnd=true}else onGnd=false;
 
-  pitch+=(sFwd*0.5-pitch)*Math.min(dt*2.5,1);
-  yaw+=sSide*0.04;
-  hs+=(pitch*10-hs*0.6)*dt;hs*=0.97;
-  var cy=Math.cos(yaw),sy=Math.sin(yaw);
-  hx+=cy*hs*dt;hz+=sy*hs*dt;
-  hx=Math.max(-250,Math.min(250,hx));hz=Math.max(-250,Math.min(250,hz));hy=Math.max(2.0,Math.min(200,hy));
+  pitch3+=(sFwd*0.5-pitch3)*Math.min(dt*2.5,1);
+  yaw3+=sSide*0.04;
+  hs3+=(pitch3*10-hs3*0.6)*dt;hs3*=0.97;
+  var cy=Math.cos(yaw3),sy=Math.sin(yaw3);
+  hx+=cy*hs3*dt;hz+=sy*hs3*dt;
+  hx=Math.max(-250,Math.min(250,hx));hz=Math.max(-250,Math.min(250,hz));hy=Math.max(2.2,Math.min(200,hy));
 
-  // 导弹
-  for(var mi=missiles.length-1;mi>=0;mi--){
-    var ms=missiles[mi];
-    var tdx=ms.target.mesh.position.x-ms.mesh.position.x;
-    var tdz=ms.target.mesh.position.z-ms.mesh.position.z;
-    var td=Math.sqrt(tdx*tdx+tdz*tdz);
-    if(td<2.5){ms.target.alive=false;ms.target.mesh.visible=false;scene.remove(ms.mesh);missiles.splice(mi,1);continue}
+  for(var mi=miss.length-1;mi>=0;mi--){
+    var ms=miss[mi];
+    var tdx=ms.target.mesh.position.x-ms.mesh.position.x,tdz=ms.target.mesh.position.z-ms.mesh.position.z,td=Math.sqrt(tdx*tdx+tdz*tdz);
+    if(td<2.5){ms.target.alive=false;ms.target.mesh.visible=false;scene.remove(ms.mesh);miss.splice(mi,1);continue}
     ms.mesh.position.x+=tdx/td*35*dt;ms.mesh.position.z+=tdz/td*35*dt;ms.mesh.position.y+=0.3*dt;
     ms.mesh.lookAt(ms.target.mesh.position);
-    if(now-ms.born>6000){scene.remove(ms.mesh);missiles.splice(mi,1)}
+    if(now-ms.born>6000){scene.remove(ms.mesh);miss.splice(mi,1)}
   }
+  if(locked)document.getElementById('lockUI').classList.add('on');
 
-  if(locked){document.getElementById('lockUI').classList.add('on')}
+  if(view===0){cam.position.lerp(new THREE.Vector3(hx-Math.cos(yaw3)*8,hy+6,hz-Math.sin(yaw3)*8),3*dt);cam.lookAt(hx,hy,hz)}
+  else if(view===1){cam.position.set(hx+Math.cos(yaw3)*1.2,hy+0.65,hz+Math.sin(yaw3)*1.2);cam.quaternion.setFromEuler(new THREE.Euler(-0.08-pitch3*0.2,yaw3+Math.PI,0,'YXZ'))}
+  else{cam.position.lerp(new THREE.Vector3(hx,hy+50,hz+1),2*dt);cam.lookAt(hx,hy,hz)}
 
-  // 相机
-  if(view===0){camera.position.lerp(new THREE.Vector3(hx-Math.cos(yaw)*7,hy+5,hz-Math.sin(yaw)*7),3*dt);camera.lookAt(hx,hy,hz)}
-  else if(view===1){camera.position.set(hx+Math.cos(yaw)*1.2,hy+0.65,hz+Math.sin(yaw)*1.2);camera.quaternion.setFromEuler(new THREE.Euler(-0.08-pitch*0.2,yaw+Math.PI,0,'YXZ'))}
-  else{camera.position.lerp(new THREE.Vector3(hx,hy+50,hz+1),2*dt);camera.lookAt(hx,hy,hz)}
-
-  // 直升机
-  heli.position.set(hx,hy,hz);heli.rotation.y=yaw;heli.rotation.x=-pitch*0.3;
-  mainRotor.rotation.y+=dt*14*(0.3+thr*0.7);tailRotor.rotation.z+=dt*18*(0.3+Math.abs(thr)*0.7);
+  heli.position.set(hx,hy,hz);heli.rotation.y=yaw3;heli.rotation.x=-pitch3*0.3;
+  mr.rotation.y+=dt*14*(0.3+thr3*0.7);
+  tr.rotation.z+=dt*18*(0.3+Math.abs(thr3)*0.7);
 
   document.getElementById('altV').textContent=Math.floor(hy*3);
-  document.getElementById('spdV').textContent=Math.abs(Math.floor(hs*3.2));
-  renderer.render(scene,camera);
+  document.getElementById('spdV').textContent=Math.abs(Math.floor(hs3*3.2));
+  R.render(scene,cam);
 }
-requestAnimationFrame(tick);
-window.addEventListener('resize',function(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+requestAnimationFrame(tck);
+window.addEventListener('resize',function(){cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();R.setSize(innerWidth,innerHeight)});
 
-}catch(e){var m2=document.getElementById('msg');m2.textContent='⚠️ 错误: '+e.message;m2.style.opacity='1';console.error(e)}
-}
-</script>
-</body></html>
+})();
+</script></body></html>
