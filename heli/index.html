@@ -1,0 +1,261 @@
+<!DOCTYPE html><html lang="zh"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>UH-60 黑鹰直升机 · MIUI STUDIO</title>
+<style>*{margin:0;padding:0;overflow:hidden}body{background:#87ceeb}canvas{display:block;width:100vw;height:100vh}
+#t{position:fixed;top:14px;left:50%;transform:translateX(-50%);color:#fff;font-size:20px;font-weight:900;z-index:10;letter-spacing:3px;pointer-events:none;text-shadow:0 2px 8px rgba(0,0,0,.35);text-align:center}
+#t b{display:block;font-size:12px;color:#fc0;letter-spacing:4px;margin-top:2px}
+#h{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.4);font-size:10px;pointer-events:none;z-index:10}
+#m{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:13px;z-index:99;background:rgba(0,0,0,.6);padding:8px 18px;border-radius:6px;transition:opacity .3s}
+</style></head><body>
+<div id="t">UH-60<i>BLACK HAWK</i></div><div id="h">拖动旋转 · 滚轮缩放</div><div id="m">⚡ 生成中...</div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+(function W(){if(typeof THREE==='undefined')return setTimeout(W,150);M()})();
+function M(){try{
+document.getElementById('m').textContent='⚡ 构建直升机...';
+
+var S=new THREE.Scene();S.background=new THREE.Color(0x87ceeb);S.fog=new THREE.Fog(0x87ceeb,30,100);
+var C=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,0.2,70);C.position.set(10,5,14);
+var R=new THREE.WebGLRenderer({antialias:true});R.setSize(innerWidth,innerHeight);R.setPixelRatio(Math.min(devicePixelRatio,2));
+R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.15;
+document.body.appendChild(R.domElement);
+
+// 轨道控制
+var tar=new THREE.Vector3(0,2,0),sph2=new THREE.Spherical(14,0.7,4.5),dn=false,px2=0,py2=0;
+function uc(){var p=new THREE.Vector3().setFromSpherical(sph2).add(tar);C.position.copy(p);C.lookAt(tar)}
+R.domElement.addEventListener('pointerdown',function(e){dn=true;px2=e.clientX;py2=e.clientY});
+R.domElement.addEventListener('pointermove',function(e){if(!dn)return;sph2.theta-=(e.clientX-px2)*0.005;sph2.phi-=(e.clientY-py2)*0.005;sph2.phi=Math.max(0.3,Math.min(1.5,sph2.phi));px2=e.clientX;py2=e.clientY;uc()});
+R.domElement.addEventListener('pointerup',function(){dn=false});
+R.domElement.addEventListener('wheel',function(e){e.preventDefault();sph2.radius+=e.deltaY*0.008;sph2.radius=Math.max(5,Math.min(30,sph2.radius));uc()},{passive:false});uc();
+
+// 光照
+S.add(new THREE.AmbientLight(0x8899cc,0.7));
+var sun=new THREE.DirectionalLight(0xfff5e0,1.6);sun.position.set(18,22,12);sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.near=0.3;sun.shadow.camera.far=60;
+sun.shadow.camera.left=-18;sun.shadow.camera.right=18;sun.shadow.camera.top=18;sun.shadow.camera.bottom=-18;S.add(sun);
+S.add(new THREE.DirectionalLight(0x88bbff,0.5)).position.set(-6,10,-8);
+S.add(new THREE.HemisphereLight(0x88bbff,0x665544,0.5));
+
+// 地面（停机坪）
+var gnd=new THREE.Mesh(new THREE.PlaneGeometry(50,50),new THREE.MeshStandardMaterial({color:0x444455,roughness:0.5,metalness:0.25}));
+gnd.rotation.x=-Math.PI/2;gnd.position.y=-0.02;gnd.receiveShadow=true;S.add(gnd);
+var gd=new THREE.GridHelper(40,40,0x555566,0x222233);gd.position.y=0.005;S.add(gd);
+
+// 材质
+var DK=new THREE.MeshStandardMaterial({color:0x1a1a22,roughness:0.35,metalness:0.6});
+var GY=new THREE.MeshStandardMaterial({color:0x3a3a44,roughness:0.3,metalness:0.55});
+var SL=new THREE.MeshStandardMaterial({color:0x7a7a88,roughness:0.2,metalness:0.7});
+var BLK=new THREE.MeshStandardMaterial({color:0x0a0a0a,roughness:0.45,metalness:0.3});
+var GL2=new THREE.MeshStandardMaterial({color:0x334455,roughness:0.05,transparent:true,opacity:0.6,metalness:0.1});
+var WH=new THREE.MeshStandardMaterial({color:0xcccccc,roughness:0.3,metalness:0.4});
+var OR2=new THREE.MeshStandardMaterial({color:0xff4400,emissive:0xff2200,emissiveIntensity:0.4,roughness:0.3,metalness:0.3});
+var YL=new THREE.MeshStandardMaterial({color:0xcccc00,emissive:0x888800,emissiveIntensity:0.3,roughness:0.3,metalness:0.3});
+
+var bot=new THREE.Group();
+
+function cy(rt,rb,h,sg,mat,x,y,z,rx,rz,p){p=p||bot;var m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,sg),mat);m.position.set(x,y,z);if(rx)m.rotation.x=rx;if(rz)m.rotation.z=rz;m.castShadow=true;m.receiveShadow=true;p.add(m);return m}
+function bx(w,h,d,mat,x,y,z,rx,ry,rz,p){p=p||bot;var m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);if(rx)m.rotation.x=rx;if(ry)m.rotation.y=ry;if(rz)m.rotation.z=rz;m.castShadow=true;m.receiveShadow=true;p.add(m);return m}
+function sp(r,mat,x,y,z,p){p=p||bot;var m=new THREE.Mesh(new THREE.SphereGeometry(r,20,14),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;p.add(m);return m}
+
+//=== 机身主体(Lathe曲面) ===
+var bs=[]; // 从机头到尾梁的侧轮廓
+for(var i=0;i<=16;i++){var t=i/16;var r;var x=t*7.5-3.5;
+  if(t<0.08)r=0.05+t*0.5; // 机头尖
+  else if(t<0.2)r=0.35+(t-0.08)*1.2; // 机头过渡
+  else if(t<0.4)r=0.52+Math.sin((t-0.2)/0.2*Math.PI)*0.2; // 驾驶舱鼓起
+  else if(t<0.65)r=0.55; // 客舱（最宽段）
+  else if(t<0.8)r=0.55-(t-0.65)*0.35; // 过渡到尾梁
+  else r=0.3-(t-0.8)*0.28; // 尾梁收窄
+  bs.push(new THREE.Vector2(r,t*7.5-3.5));
+}
+var fuse=new THREE.Mesh(new THREE.LatheGeometry(bs,36),DK);fuse.castShadow=true;fuse.receiveShadow=true;bot.add(fuse);
+
+// 机身上部整流罩（发动机舱鼓起）
+var engCover=[];for(var i=0;i<=8;i++){var t=i/8,x2=t*3.0-1.5;engCover.push(new THREE.Vector2(0.02+Math.sin(t*Math.PI)*0.45,x2))}
+var ec=new THREE.Mesh(new THREE.LatheGeometry(engCover,24),GY);ec.position.set(0,0.35,-0.2);ec.castShadow=true;bot.add(ec);
+// 发动机舱两侧鼓起
+[-1,1].forEach(function(s){bx(2.8,0.25,0.25,GY,0,0.42,s*0.4,0,0,0)});
+// 发动机排气口
+[-1,1].forEach(function(s){bx(0.35,0.25,0.2,SL,1.2,0.42,s*0.35,0,0,0)});
+
+//=== 驾驶舱 ===
+// 前风挡（倾斜梯形面）
+[-1,1].forEach(function(sz){
+  var ws=new THREE.Shape();ws.moveTo(-0.35,0.2);ws.lineTo(-0.1,0.55);ws.lineTo(0.1,0.55);ws.lineTo(0.35,0.2);ws.closePath();
+  var wg=new THREE.ExtrudeGeometry(ws,{depth:0.02,bevelEnabled:true,bevelThickness:0.01,bevelSize:0.01,bevelSegments:2});
+  var wm=new THREE.Mesh(wg,GL2);wm.position.set(-2.5,0.6,sz*0.25);wm.rotation.y=sz*0.25;wm.castShadow=true;bot.add(wm);
+});
+// 侧窗
+[-1,1].forEach(function(s){
+  bx(0.35,0.28,0.02,GL2,-1.8,0.65,s*0.52,0,0.2*s,0);
+  bx(0.7,0.21,0.02,GL2,-0.5,0.62,s*0.53,0,0,0);
+});
+// 驾驶舱框架
+bx(0.04,0.4,0.55,DK,-1.5,0.65,0,0,0,0);
+
+//=== 机头 ===
+// 雷达罩/机鼻
+var nosePts=[];for(var i=0;i<=8;i++){var t=i/8;nosePts.push(new THREE.Vector2(0.08+Math.sin(t*Math.PI)*0.35,t*0.5-0.25))}
+var nose=new THREE.Mesh(new THREE.LatheGeometry(nosePts,20),GY);nose.position.set(-3.5,0.15,0);nose.rotation.z=Math.PI/2;bot.add(nose);
+// 空速管
+cy(0.02,0.03,0.6,8,SL,-3.7,0.15,0,0,Math.PI/2);
+
+//=== 驾驶舱顶部的避碰灯 ===
+sp(0.06,OR2,-2.3,0.9,0);sp(0.04,OR2,2.0,0.85,0);
+
+//=== 尾梁 ===
+// 尾梁水平翼
+bx(1.5,0.06,0.35,GY,2.5,0.3,0,0,0,0);
+// 垂尾（垂直安定面）
+var vf=new THREE.Shape();vf.moveTo(0,0);vf.lineTo(0.1,0.6);vf.lineTo(0.4,0.8);vf.lineTo(0.8,0.7);vf.lineTo(0.5,0.3);vf.closePath();
+var vfg=new THREE.ExtrudeGeometry(vf,{depth:0.06,bevelEnabled:true,bevelThickness:0.01,bevelSize:0.01,bevelSegments:2});
+var vfm=new THREE.Mesh(vfg,DK);vfm.position.set(3.2,0.05,-0.03);vfm.rotation.x=-Math.PI/2;vfm.castShadow=true;bot.add(vfm);
+// 垂尾顶部
+var vf2=new THREE.Shape();vf2.moveTo(0,0);vf2.lineTo(0.08,0.35);vf2.lineTo(0.2,0.4);vf2.lineTo(0.3,0.15);vf2.closePath();
+var vf2g=new THREE.ExtrudeGeometry(vf2,{depth:0.05,bevelEnabled:true,bevelThickness:0.01,bevelSize:0.01,bevelSegments:2});
+var vf2m=new THREE.Mesh(vf2g,GY);vf2m.position.set(3.3,0.35,-0.025);vf2m.rotation.x=-Math.PI/2;vf2m.castShadow=true;bot.add(vf2m);
+
+// 尾灯
+sp(0.04,OR2,3.8,0.15,0);
+
+//=== 主旋翼系统 ===
+var rotorHead=new THREE.Group();
+// 桨毂（球形核心）
+sp(0.22,SL,0,0,0,rotorHead);
+// 变距杆（4根，延伸到桨叶）
+for(var b=0;b<4;b++){
+  var a=b*Math.PI/2;
+  // 桨叶根部连接臂
+  cy(0.04,0.05,0.5,12,SL,Math.cos(a)*0.25,0.05,Math.sin(a)*0.25,0,a,rotorHead);
+  cy(0.03,0.03,0.45,8,DK,Math.cos(a)*0.45,0.05,Math.sin(a)*0.45,0,a,rotorHead);
+  // 桨叶（长条扁形）
+  bx(0.06,0.02,1.8,GY,Math.cos(a)*1.0,0.05,Math.sin(a)*1.0,0,0,a,rotorHead);
+  bx(0.05,0.015,1.6,DK,Math.cos(a)*1.0,0.05,Math.sin(a)*1.0,0,0,a,rotorHead);
+  // 桨尖（略宽）
+  var tx=new THREE.Mesh(new THREE.BoxGeometry(0.07,0.015,0.35),GY);tx.position.set(Math.cos(a)*1.7,0.05,Math.sin(a)*1.7);tx.rotation.z=a;tx.castShadow=true;rotorHead.add(tx);
+}
+// 桨毂罩(尖锥形)
+var hbPts=[];for(var i=0;i<=8;i++){var t=i/8;hbPts.push(new THREE.Vector2(Math.sin(t*Math.PI)*0.22,t*0.35))}
+var hb=new THREE.Mesh(new THREE.LatheGeometry(hbPts,20),GY);hb.position.y=0.15;rotorHead.add(hb);
+rotorHead.position.set(0,1.0,0);
+bot.add(rotorHead);
+
+//=== 尾旋翼 ===
+var tailRotor=new THREE.Group();
+for(var b=0;b<4;b++){
+  var a=b*Math.PI/2;
+  bx(0.04,0.01,0.35,GY,0,Math.cos(a)*0.15,Math.sin(a)*0.15,0,0,a,tailRotor);
+}
+var trHub=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,0.08,12),SL);trHub.rotation.x=Math.PI/2;tailRotor.add(trHub);
+tailRotor.position.set(3.85,0.25,-0.05);
+tailRotor.rotation.y=Math.PI/2;
+bot.add(tailRotor);
+
+//=== 起落架 ===
+// 前起落架（单轮）
+var ng=new THREE.Group();
+cy(0.04,0.04,0.35,8,SL,0,0.35,0,0,0,ng); // 支柱
+cy(0.04,0.05,0.2,8,SL,0,0.15,0,0,Math.PI/2,ng); // 横轴
+var nw=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.12,0.06,16),BLK);nw.rotation.x=Math.PI/2;nw.rotation.z=Math.PI/2;nw.position.set(0,0.1,0.1);ng.add(nw);
+ng.position.set(-2.5,-0.35,-0.05);
+
+// 主起落架（双轮，左右各一）
+function mlg(s){
+  var g=new THREE.Group();
+  cy(0.05,0.06,0.5,8,SL,0,0.4,0,0,0,g); // 主支柱
+  cy(0.06,0.06,0.3,8,SL,0,0.25,0,0,Math.PI/2,g); // 横轴
+  // 双轮
+  [-1,1].forEach(function(w){
+    var wh=new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.15,0.08,16),BLK);wh.rotation.x=Math.PI/2;wh.rotation.z=Math.PI/2;wh.position.set(w*0.18,0.15,0.15);g.add(wh);
+  });
+  // 起落架短翼整流罩
+  bx(0.3,0.08,0.25,GY,s*0.6,0.38,-0.15,0,0,0,g);
+  g.position.set(s*0.45,-0.35,-0.2);
+  return g;
+}
+bot.add(ng);bot.add(mlg(-1));bot.add(mlg(1));
+
+//=== 短翼 + 武器挂架 ===
+[-1,1].forEach(function(s){
+  // 短翼
+  bx(0.3,0.07,0.5,GY,s*0.6,0.25,-0.3,0,0,0);
+  // 挂架支柱
+  cy(0.03,0.03,0.25,8,SL,s*0.75,0.1,-0.3,0,0);
+  // 副油箱/武器吊舱（圆柱）
+  cy(0.08,0.1,0.55,12,GY,s*0.75,-0.05,-0.3,0,Math.PI/2);
+  cy(0.07,0.08,0.4,10,DK,s*0.75,-0.05,-0.3,0,Math.PI/2);
+  // 导弹（地狱火风格）
+  cy(0.03,0.04,0.35,8,SL,s*0.85,-0.05,-0.3,0,Math.PI/2);
+  // 导弹导引头
+  sp(0.035,DK,s*0.85,0.0,-0.45);
+});
+
+//=== 机舱门 ===
+[-1,1].forEach(function(s){
+  // 侧舱门轮廓
+  bx(0.8,0.4,0.02,GY,0.3,0.25,s*0.52,0,0,0);
+  // 门框
+  bx(0.82,0.42,0.03,DK,0.3,0.25,s*0.51,0,0,0);
+  // 舷窗
+  bx(0.3,0.2,0.02,GL2,0.3,0.3,s*0.54,0,0,0);
+});
+
+//=== 后舱门 ===
+bx(0.5,0.45,0.02,GY,1.5,0.2,0.4,0,0,0);
+bx(0.52,0.47,0.03,DK,1.5,0.2,0.39,0,0,0);
+
+//=== 发动机进气口 ===
+[-1,1].forEach(function(s){
+  cy(0.12,0.15,0.25,12,DK,0.8,0.45,s*0.35,0,0);
+  cy(0.1,0.12,0.2,10,SL,0.8,0.45,s*0.35,0,0);
+});
+
+//=== 细节：面板线/铆钉 ===
+for(var i=0;i<5;i++){bx(0.2,0.005,0.4,DK,-1.0+i*0.6,0.25,0,0,0,0)} // 面板线
+for(var j=0;j<8;j++){sp(0.02,SL,-2.5+j*0.7,0.35,0.38)} // 铆钉行
+
+//=== 标识编号 "51" ===
+// 用白色小方块拼出数字
+function num51(s){
+  var ng2=new THREE.Group();
+  // "5" 用方块模拟
+  bx(0.06,0.04,0.01,WH,0,0.1,0,0,0,0,ng2); // 横顶
+  bx(0.04,0.06,0.01,WH,-0.04,0.06,0,0,0,0,ng2); // 竖左
+  bx(0.06,0.04,0.01,WH,0,0.02,0,0,0,0,ng2); // 横中
+  bx(0.04,0.06,0.01,WH,0.04,0.0,0,0,0,0,ng2); // 竖右
+  bx(0.06,0.04,0.01,WH,0,-0.04,0,0,0,0,ng2); // 横底
+  // "1"
+  bx(0.03,0.14,0.01,WH,0.12,0.02,0,0,0,0,ng2);
+  ng2.position.set(s*0.28,0.25,0.48);
+  ng2.rotation.z=0;
+  return ng2;
+}
+[-1,1].forEach(function(s){bot.add(num51(s))});
+
+//=== 云朵 ===
+var wm2=new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.95,metalness:0});
+for(var ci=0;ci<8;ci++){var cloud=new THREE.Group();
+  for(var cj=0;cj<5;cj++){var cb=new THREE.Mesh(new THREE.SphereGeometry(1.5+Math.random()*2,8,6),wm2);cb.position.set(Math.random()*5-2.5,Math.random()*2-1,Math.random()*2.5-1.2);cb.scale.y=0.3+Math.random()*0.35;cloud.add(cb)}
+  cloud.position.set((ci-3)*10,16+Math.random()*8,-6+Math.random()*14);S.add(cloud);
+}
+
+S.add(bot);
+
+//=== 动画 ===
+var rAngle=0;
+var clock2=new THREE.Clock();
+function anim(){
+  requestAnimationFrame(anim);
+  var dt=Math.min(clock2.getDelta(),0.1);
+  rAngle+=dt*8; // 主旋翼旋转
+  rotorHead.rotation.y=rAngle;
+  tailRotor.rotation.z+=dt*15; // 尾旋翼更快的旋转
+  R.render(S,C);
+}
+requestAnimationFrame(anim);
+
+document.getElementById('m').style.opacity='0';
+window.addEventListener('resize',function(){C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix();R.setSize(innerWidth,innerHeight)});
+
+}catch(e){document.getElementById('m').textContent='⚠️ '+e.message;document.getElementById('m').style.opacity='1';}}
+</script></body></html>
