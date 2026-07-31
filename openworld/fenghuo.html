@@ -3,467 +3,350 @@
 <title>烽火地带 · 直升机开场</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none;font-family:'PingFang SC','Microsoft YaHei',sans-serif}
-#bg,#fx,#ui{position:absolute;inset:0;display:block}
-#skip{position:fixed;bottom:20px;right:16px;z-index:999;color:rgba(255,255,255,.2);font-size:11px;padding:6px 14px;border:1px solid rgba(255,255,255,.08);border-radius:4px;cursor:pointer;pointer-events:auto}#skip:active{color:#f60}
+html,body{width:100%;height:100%;overflow:hidden;background:#111;touch-action:none;font-family:sans-serif}
+#c{display:block;width:100%;height:100%}
+#skip{position:fixed;bottom:20px;right:16px;z-index:99;color:rgba(255,255,255,.3);font-size:11px;padding:6px 14px;border:1px solid rgba(255,255,255,.1);border-radius:4px;cursor:pointer;pointer-events:auto}#skip:active{color:#f60}
 </style></head><body>
-<canvas id="bg"></canvas><canvas id="fx"></canvas><canvas id="ui"></canvas>
+<canvas id="c"></canvas>
 <div id="skip" onclick="window._skip=true;this.style.display='none'">跳过</div>
 <script>
 (function(){
-var B=document.getElementById('bg'),F=document.getElementById('fx'),U=document.getElementById('ui');
-var bC=B.getContext('2d'),fC=F.getContext('2d'),uC=U.getContext('2d');
-var W=innerWidth,H=innerHeight,startTime=0,nowTime=0;
-B.width=F.width=U.width=W;B.height=F.height=U.height=H;
-window.addEventListener('resize',function(){W=B.width=F.width=U.width=innerWidth;H=B.height=F.height=U.height=innerHeight});
+var C=document.getElementById('c'),ctx=C.getContext('2d');
+var W=innerWidth,H=innerHeight,START=0,NOW=0;
+C.width=W;C.height=H;
+window.addEventListener('resize',function(){W=C.width=innerWidth;H=C.height=innerHeight});
 window._skip=false;
 
-// ================================== UTILITY ==================================
+// ========== HELPERS ==========
+function clamp(v,a,b){return v<a?a:v>b?b:v}
 function lerp(a,b,t){return a+(b-a)*t}
-function clamp(v,min,max){return Math.max(min,Math.min(max,v))}
-function easeOut(t){return 1-Math.pow(1-t,3)}
-function easeInOut(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2}
+function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
 
-// Gradient sky draw
-function skyGradient(ctx,colors){
- var grd=ctx.createLinearGradient(0,0,0,H);for(var i=0;i<colors.length;i++)grd.addColorStop(i/(colors.length-1),colors[i]);return grd;
+// ========== PARTICLES ==========
+var P=[];
+function emit(x,y,vx,vy,life,col,sz){
+ P.push({x:x,y:y,vx:vx||0,vy:vy||0,life:life||1,ml:life||1,col:col||'#fff',sz:sz||1});
+}
+function blast(x,y,big){
+ var n=big?80:30;
+ for(var i=0;i<n;i++){
+  var a=Math.random()*Math.PI*2,sp=20+Math.random()*(big?200:80);
+  emit(x,y,Math.cos(a)*sp,Math.sin(a)*sp,.5+Math.random()*(big?3:1),['#f20','#f40','#f60','#f80','#fa0','#fc0','#fd4','#fff','#320','#210'][i%10],1+Math.random()*(big?4:2));
+ }
 }
 
-// Draw star
-function drawStar(ctx,x,y,r,inner,p){ctx.beginPath();for(var i=0;i<p*2;i++){var a=i*Math.PI/p-Math.PI/2,rad=i%2===0?r:inner;ctx.lineTo(x+Math.cos(a)*rad,y+Math.sin(a)*rad)}ctx.closePath();ctx.fill()}
-
-// ================================== PARTICLES ==================================
-var particles=[];
-function emit(x,y,vx,vy,life,col,sz){particles.push({x:x,y:y,vx:vx||0,vy:vy||0,life:life||1,ml:life||1,col:col||'#fff',sz:sz||1})}
-function explosion(x,y,big){
- var n=big?120:50;for(var i=0;i<n;i++){var a=Math.random()*Math.PI*2,s=30+Math.random()*(big?250:100),c=['#ff2200','#ff4400','#ff6600','#ff8800','#ffaa00','#ffcc00','#ffdd44','#ffffff','#332200','#221100'][Math.floor(Math.random()*10)];emit(x,y,Math.cos(a)*s,Math.sin(a)*s,.6+Math.random()*(big?3:1.5),c,1+Math.random()*(big?4:2))}
-}
-var screenShake=0;
-function bigBoom(x,y){explosion(x,y,true);screenShake=60;}
-
-// ================================== SCENE STATE ==================================
-var sceneActive='INIT',sceneTimer=0;
-var helicopterX=0,helicopterY=0,cameraX=0,cameraY=0;
-var damExploded=false,rocketExploded=false,bridgeFallen=false;
-var damDebris=[],rocketDebris=[],bridgeDebris=[];
-var smokeClouds=[];
-var missileTrails=[];
-
-// ================================== DRAW: HELICOPTER ==================================
-function drawHelicopter(ctx,x,y,scale,rotorA){
- ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
- // Shadow
- ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(0,8,22,3,0,0,Math.PI*2);ctx.fill();
- // Body
- ctx.fillStyle='#2a2a2a';ctx.beginPath();ctx.rect(-18,-5,36,10,4);ctx.fill();
- ctx.strokeStyle='#555';ctx.lineWidth=1.2;ctx.stroke();
- // Cockpit
- ctx.fillStyle='#111';ctx.beginPath();ctx.moveTo(-18,-3);ctx.lineTo(-24,0);ctx.lineTo(-18,3);ctx.closePath();ctx.fill();
- ctx.fillStyle='rgba(0,140,255,.5)';ctx.beginPath();ctx.moveTo(-18,-3);ctx.lineTo(-27,-.5);ctx.lineTo(-18,0);ctx.closePath();ctx.fill();
- ctx.fillStyle='rgba(0,180,255,.3)';ctx.beginPath();ctx.moveTo(-18,0);ctx.lineTo(-27,.5);ctx.lineTo(-18,3);ctx.closePath();ctx.fill();
- // Tail boom
- ctx.fillStyle='#2a2a2a';ctx.fillRect(18,-1.5,28,3);
- ctx.fillStyle='#1a1a1a';ctx.strokeStyle='#444';ctx.lineWidth=.8;ctx.fillRect(42,-2.5,8,5);ctx.strokeRect(42,-2.5,8,5);
- // Tail rotor
- ctx.fillStyle='#888';ctx.save();ctx.translate(48,0);ctx.rotate(rotorA*3);ctx.fillRect(-3,-.2,6,.4);ctx.restore();
- // Main rotor mast
- ctx.fillStyle='#444';ctx.fillRect(-1,-6,2,4);
- // Main rotor
- ctx.fillStyle='rgba(180,180,180,.8)';ctx.save();ctx.translate(0,-7);ctx.rotate(rotorA);for(var i=0;i<4;i++){ctx.rotate(Math.PI/2);ctx.fillRect(-20,-.3,40,.6)}ctx.restore();
- // Rotor hub
- ctx.fillStyle='#333';ctx.beginPath();ctx.arc(0,-7,3,0,Math.PI*2);ctx.fill();
- // Skids
- ctx.fillStyle='#333';ctx.fillRect(-12,4,2,7);ctx.fillRect(14,4,2,7);
- ctx.fillStyle='#444';ctx.fillRect(-14,11,30,1);
- // Engine intakes
- ctx.fillStyle='#1a1a1a';ctx.beginPath();ctx.arc(-6,2,3,0,Math.PI*2);ctx.fill();
- ctx.beginPath();ctx.arc(8,2,3,0,Math.PI*2);ctx.fill();
+// ========== DRAW: HELICOPTER ==========
+function drawHeli(x,y,sz,rotorA){
+ ctx.save();ctx.translate(x,y);ctx.scale(sz,sz);
+ // shadow
+ ctx.fillStyle='rgba(0,0,0,.25)';ctx.beginPath();ctx.ellipse(0,6,18,2.5,0,0,Math.PI*2);ctx.fill();
+ // body - draw manually with lines (NO roundRect)
+ ctx.fillStyle='#3a3a3a';
+ ctx.beginPath();
+ ctx.arc(-12,0,7,Math.PI*.5,Math.PI*1.5,false);
+ ctx.lineTo(18,-5);ctx.lineTo(18,5);
+ ctx.arc(-12,0,7,Math.PI*1.5,Math.PI*.5,false);
+ ctx.closePath();ctx.fill();
+ ctx.strokeStyle='#555';ctx.lineWidth=1;ctx.stroke();
+ // nose
+ ctx.fillStyle='#444';ctx.beginPath();ctx.moveTo(-19,-2);ctx.lineTo(-25,0);ctx.lineTo(-19,2);ctx.closePath();ctx.fill();
+ // cockpit
+ ctx.fillStyle='rgba(0,160,255,.45)';ctx.beginPath();ctx.ellipse(-15,0,5,2.5,-0.1,0,Math.PI*2);ctx.fill();
+ // tail boom
+ ctx.fillStyle='#3a3a3a';ctx.fillRect(16,-1,25,2);
+ // tail fin
+ ctx.fillStyle='#333';ctx.beginPath();ctx.moveTo(41,-1);ctx.lineTo(45,-8);ctx.lineTo(47,-1);ctx.closePath();ctx.fill();
+ // tail rotor
+ ctx.fillStyle='#777';ctx.save();ctx.translate(44,0);ctx.rotate(rotorA*3);ctx.fillRect(-3,-.15,6,.3);ctx.restore();
+ // main rotor mast
+ ctx.fillStyle='#555';ctx.fillRect(-1,-5,2,3);
+ // main rotor
+ ctx.fillStyle='rgba(200,200,200,.8)';ctx.save();ctx.translate(0,-6);
+ for(var i=0;i<4;i++){ctx.rotate(Math.PI/2);ctx.fillRect(-18,-.3,36,.6)}ctx.restore();
+ // rotor hub
+ ctx.fillStyle='#444';ctx.beginPath();ctx.arc(0,-6,2.5,0,Math.PI*2);ctx.fill();
+ // skids
+ ctx.fillStyle='#444';ctx.fillRect(-10,3,1.5,6);ctx.fillRect(10,3,1.5,6);
+ ctx.fillStyle='#555';ctx.fillRect(-13,9,28,.8);
  ctx.restore();
 }
 
-// ================================== DRAW: DAM (零号大坝) ==================================
-var damStructure={x:W*.55,y:H*.55};
-function drawDam(ctx,x,y,exploded){
+// ========== DRAW: DAM ==========
+function drawDam(x,y,broken){
  ctx.save();ctx.translate(x,y);
- var dw=250,dh=H*.55,top=y-dh;
+ var dw=200,dh=H*.5;
  // Main wall
- var wallGr=ctx.createLinearGradient(0,top,0,y);
- wallGr.addColorStop(0,'#667788');wallGr.addColorStop(.5,'#556677');wallGr.addColorStop(1,'#445566');
- ctx.fillStyle=wallGr;ctx.beginPath();ctx.rect(-dw/2,-dh,dw,dh,6);ctx.fill();
- ctx.strokeStyle='#778899';ctx.lineWidth=2;ctx.stroke();
- // Concrete texture lines
- for(var i=0;i<8;i++){ctx.strokeStyle='rgba(255,255,255,.05)';ctx.beginPath();ctx.moveTo(-dw/2+20,-dh+i*dh/7);ctx.lineTo(dw/2-20,-dh+i*dh/7);ctx.stroke()}
- // Gate (central)
- ctx.fillStyle='#3a3a3a';ctx.beginPath();ctx.rect(-30,-dh*.7,60,dh*.7,4);ctx.fill();
- ctx.strokeStyle='#555';ctx.lineWidth=2;ctx.stroke();
- // Gate details
- ctx.fillStyle='#444';ctx.fillRect(-30,-dh*.35,60,2);
- ctx.fillRect(-30,-dh*.5,60,2);
- // Gate rivets
- for(var j=0;j<4;j++){ctx.fillStyle='#555';ctx.beginPath();ctx.arc(-20,-dh*.65+j*dh*.2,2,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(20,-dh*.65+j*dh*.2,2,0,Math.PI*2);ctx.fill()}
- // Water behind dam (reservoir)
- ctx.fillStyle='rgba(30,80,120,.5)';ctx.fillRect(-dw/2-20,top-30,dw+40,30);
- // Water ripples
- ctx.strokeStyle='rgba(100,180,220,.3)';ctx.lineWidth=1;
- for(var k=0;k<5;k++){ctx.beginPath();ctx.arc(-dw/4+k*60,top-15,8+Math.sin(k)*4,0,Math.PI,false);ctx.stroke()}
- // Control tower on top
- ctx.fillStyle='#555566';ctx.fillRect(-15,top-25,30,25);
- ctx.fillStyle='rgba(0,140,255,.3)';ctx.fillRect(-10,top-20,20,8);
+ var grd=ctx.createLinearGradient(0,-dh,0,0);
+ grd.addColorStop(0,'#778899');grd.addColorStop(.5,'#667788');grd.addColorStop(1,'#556677');
+ ctx.fillStyle=grd;
+ ctx.beginPath();ctx.moveTo(-dw/2,-dh);ctx.lineTo(dw/2,-dh);ctx.lineTo(dw/2,0);ctx.lineTo(-dw/2,0);ctx.closePath();ctx.fill();
+ ctx.strokeStyle='#889';ctx.lineWidth=1.5;ctx.stroke();
+ // Gate
+ ctx.fillStyle='#333';
+ ctx.beginPath();ctx.moveTo(-28,-dh*.65);ctx.lineTo(28,-dh*.65);ctx.lineTo(28,0);ctx.lineTo(-28,0);ctx.closePath();ctx.fill();
+ ctx.strokeStyle='#555';ctx.stroke();
+ // Gate lines
+ ctx.strokeStyle='#444';ctx.beginPath();ctx.moveTo(-28,-dh*.35);ctx.lineTo(28,-dh*.35);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(-28,-dh*.5);ctx.lineTo(28,-dh*.5);ctx.stroke();
+ // Water on top (reservoir)
+ ctx.fillStyle='rgba(20,60,100,.45)';ctx.fillRect(-dw/2-15,-dh-25,dw+30,25);
+ // Control tower
+ ctx.fillStyle='#556';ctx.fillRect(-12,-dh-22,24,22);
+ ctx.fillStyle='rgba(0,140,255,.25)';ctx.fillRect(-8,-dh-18,16,8);
  
- // Explosion effect on gate
- if(exploded){
-  ctx.fillStyle='rgba(0,0,0,.4)';ctx.beginPath();ctx.rect(-35,-dh*.8,70,dh*.8,4);ctx.fill();
-  // Rubble
-  ctx.fillStyle='#444';ctx.fillRect(-25,y-20,50,15);
-  ctx.fillStyle='#333';ctx.beginPath();ctx.moveTo(-20,y-5);ctx.lineTo(-25,y-20);ctx.lineTo(25,y-20);ctx.lineTo(20,y-5);ctx.closePath();ctx.fill();
-  // Cracks on wall
-  ctx.strokeStyle='rgba(0,0,0,.5)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-30,-dh*.7);ctx.lineTo(-50,-dh*.5);ctx.lineTo(-55,-dh*.2);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(30,-dh*.7);ctx.lineTo(45,-dh*.4);ctx.lineTo(55,-dh*.1);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(0,-dh*.5);ctx.lineTo(10,-dh*.2);ctx.lineTo(20,-dh*.05);ctx.stroke();
-  // Smoke
-  smokeClouds.push({x:x,y:y-dh*.7,vx:-.5,vy:-1.5,life:4,ml:4,size:20+Math.random()*30,alpha:.6});
-  smokeClouds.push({x:x+20,y:y-dh*.5,vx:.8,vy:-2,life:3.5,ml:3.5,size:15+Math.random()*25,alpha:.5});
-  smokeClouds.push({x:x-20,y:y-dh*.6,vx:-1,vy:-1.8,life:3,ml:3,size:18+Math.random()*28,alpha:.55});
-  // Sparks
-  for(var s=0;s<20;s++){emit(x+Math.random()*60-30,y-dh*.5,Math.random()*60-30,-Math.random()*80,.5+Math.random(),'#ffff00',1+Math.random())}
+ if(broken){
+  // gate destroyed
+  ctx.fillStyle='#222';ctx.beginPath();ctx.moveTo(-32,-dh*.65);ctx.lineTo(32,-dh*.65);ctx.lineTo(28,-dh*.1);ctx.lineTo(-28,-dh*.1);ctx.closePath();ctx.fill();
+  // cracks
+  ctx.strokeStyle='rgba(0,0,0,.6)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-25,-dh*.6);ctx.lineTo(-45,-dh*.4);ctx.moveTo(25,-dh*.6);ctx.lineTo(40,-dh*.3);ctx.stroke();
+  // rubble
+  ctx.fillStyle='#333';ctx.fillRect(-20,-20,40,12);
  }
-
  ctx.restore();
 }
 
-// ================================== DRAW: SPACE BASE LAUNCH TOWER ==================================
-function drawSpaceBase(ctx,x,y,exploded){
+// ========== DRAW: SPACE BASE ==========
+function drawBase(x,y,broken){
  ctx.save();ctx.translate(x,y);
+ var th=180;
  // Ground platform
- ctx.fillStyle='#3a3a3a';ctx.fillRect(-80,0,160,12);
- ctx.strokeStyle='#555';ctx.lineWidth=1;ctx.strokeRect(-80,0,160,12);
- // Yellow hazard stripes
- for(var i=0;i<20;i++){ctx.fillStyle=i%2===0?'#ffcc00':'#333';ctx.fillRect(-80+i*8,0,8,12)}
- // Launch tower (truss structure)
- var th=200;
- var twr=ctx.createLinearGradient(0,-th,0,0);twr.addColorStop(0,'#667788');twr.addColorStop(1,'#445566');
- ctx.fillStyle=twr;ctx.fillRect(-12,-th,24,th);
- // Truss crossbars
- ctx.strokeStyle='#889999';ctx.lineWidth=1.5;
- for(var j=0;j<8;j++){var ty=-th+j*th/7;ctx.beginPath();ctx.moveTo(-12,ty);ctx.lineTo(12,ty);ctx.stroke();ctx.beginPath();ctx.moveTo(-8,ty);ctx.lineTo(-15,ty+8);ctx.moveTo(8,ty);ctx.lineTo(15,ty+8);ctx.stroke()}
+ ctx.fillStyle='#333';ctx.fillRect(-70,0,140,10);
+ // Stripes
+ for(var i=0;i<18;i++){ctx.fillStyle=i%2?'#fa0':'#333';ctx.fillRect(-70+i*8,0,8,10)}
+ // Tower
+ ctx.fillStyle='#667';ctx.fillRect(-10,-th,20,th);
+ ctx.strokeStyle='#889';ctx.lineWidth=1;ctx.strokeRect(-10,-th,20,th);
+ // Crossbars
+ for(var j=0;j<7;j++){var y2=-th+(j+1)*th/8;ctx.strokeStyle='#889';ctx.beginPath();ctx.moveTo(-10,y2);ctx.lineTo(10,y2);ctx.stroke()}
  // Top platform
- ctx.fillStyle='#556677';ctx.fillRect(-18,-th-10,36,12);
- ctx.strokeStyle='#889999';ctx.strokeRect(-18,-th-10,36,12);
+ ctx.fillStyle='#556';ctx.fillRect(-15,-th-8,30,10);ctx.strokeStyle='#889';ctx.strokeRect(-15,-th-8,30,10);
  // Antenna
- ctx.fillStyle='#ff2200';ctx.beginPath();ctx.moveTo(0,-th-30);ctx.lineTo(-3,-th-10);ctx.lineTo(3,-th-10);ctx.closePath();ctx.fill();
- ctx.fillStyle='#666';ctx.fillRect(-1,-th-10,2,20);
- if(!exploded){ctx.fillStyle='rgba(255,0,0,.5)';ctx.beginPath();ctx.arc(0,-th-30,4,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(255,0,0,.3)';ctx.beginPath();ctx.arc(0,-th-30,8,0,Math.PI*2);ctx.fill()}
- // Support arms
- ctx.strokeStyle='#778888';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-12,-10);ctx.lineTo(-35,8);ctx.moveTo(12,-10);ctx.lineTo(35,8);ctx.stroke();
+ ctx.fillStyle='#f00';ctx.beginPath();ctx.moveTo(0,-th-28);ctx.lineTo(-3,-th-8);ctx.lineTo(3,-th-8);ctx.closePath();ctx.fill();
+ if(!broken){ctx.fillStyle='rgba(255,0,0,.5)';ctx.beginPath();ctx.arc(0,-th-28,4,0,Math.PI*2);ctx.fill()}
  // Rocket on tower
- if(!exploded){
-  var rkGr=ctx.createLinearGradient(-6,-th,6,-th);rkGr.addColorStop(0,'#ddd');rkGr.addColorStop(.3,'#fff');rkGr.addColorStop(.7,'#ccc');rkGr.addColorStop(1,'#aaa');
-  ctx.fillStyle=rkGr;ctx.beginPath();ctx.rect(-6,-th+10,12,th-10,3);ctx.fill();
-  ctx.strokeStyle='#999';ctx.lineWidth=1;ctx.stroke();
-  // Nose cone
-  ctx.fillStyle='#dd2200';ctx.beginPath();ctx.moveTo(0,-th-5);ctx.lineTo(-6,-th+10);ctx.lineTo(6,-th+10);ctx.closePath();ctx.fill();
-  // Fins
-  ctx.fillStyle='#dd2200';ctx.beginPath();ctx.moveTo(-6,-5);ctx.lineTo(-15,5);ctx.lineTo(-6,5);ctx.closePath();ctx.fill();
-  ctx.beginPath();ctx.moveTo(6,-5);ctx.lineTo(15,5);ctx.lineTo(6,5);ctx.closePath();ctx.fill();
+ if(!broken){
+  ctx.fillStyle='#ccc';ctx.beginPath();ctx.moveTo(-5,-th+8);ctx.lineTo(5,-th+8);ctx.lineTo(5,0);ctx.lineTo(-5,0);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#d20';ctx.beginPath();ctx.moveTo(0,-th-3);ctx.lineTo(-5,-th+8);ctx.lineTo(5,-th+8);ctx.closePath();ctx.fill();
+  // fins
+  ctx.fillStyle='#d20';ctx.beginPath();ctx.moveTo(-5,-3);ctx.lineTo(-13,4);ctx.lineTo(-5,4);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(5,-3);ctx.lineTo(13,4);ctx.lineTo(5,4);ctx.closePath();ctx.fill();
  }
-
- if(exploded){
-  // Explosion at top
-  smokeClouds.push({x:0,y:-th-20,vx:0,vy:-3,life:5,ml:5,size:40,alpha:.7});
-  smokeClouds.push({x:15,y:-th-10,vx:2,vy:-4,life:4,ml:4,size:35,alpha:.6});
-  smokeClouds.push({x:-15,y:-th-15,vx:-2,vy:-3.5,life:4.5,ml:4.5,size:38,alpha:.65});
-  smokeClouds.push({x:0,y:-th+20,vx:.5,vy:-2,life:3,ml:3,size:25,alpha:.5});
-  // Burning debris falling
-  for(var d=0;d<30;d++){rocketDebris.push({x:Math.random()*40-20,y:-th-20-Math.random()*60,vx:Math.random()*80-40,vy:Math.random()*30,life:2+Math.random()*3,ml:2+Math.random()*3,color:'#ff4400',size:2+Math.random()*4})}
-  // Spark shower
-  for(var s2=0;s2<40;s2++){emit(Math.random()*60-30,-th-20,Math.random()*120-60,20-Math.random()*80,.4+Math.random(),'#ffaa00',1+Math.random()*2)}
- }
-
- // Bridge to launch area (spans from left)
- ctx.fillStyle='#556666';ctx.fillRect(-120,-5,120,10);
- ctx.strokeStyle='#666';ctx.lineWidth=1;ctx.strokeRect(-120,-5,120,10);
- // Guardrails
- ctx.fillStyle='#888';ctx.fillRect(-120,-6,120,.8);ctx.fillRect(-120,5,120,.8);
-
- // Bridge broken?
- if(bridgeFallen){
-  // break at x=-40
-  ctx.fillStyle='#556666';ctx.fillRect(-40,-5,80,10);
-  ctx.strokeStyle='#666';ctx.strokeRect(-40,-5,80,10);
-  // Right side fallen (angled)
-  ctx.save();ctx.translate(-40,0);ctx.rotate(.3);ctx.fillStyle='#445555';ctx.fillRect(0,-5,50,10);ctx.strokeStyle='#555';ctx.strokeRect(0,-5,50,10);ctx.restore();
-  // Rubble
-  ctx.fillStyle='#444';ctx.fillRect(-45,-2,10,5);
-  ctx.fillStyle='#333';ctx.beginPath();ctx.moveTo(-50,-1);ctx.lineTo(-45,5);ctx.lineTo(-35,3);ctx.closePath();ctx.fill();
- }
-
+ // Bridge
+ ctx.fillStyle='#555';ctx.fillRect(-120,-3,120,8);
+ ctx.strokeStyle='#666';ctx.strokeRect(-120,-3,120,8);
  ctx.restore();
 }
 
-// ================================== DRAW: MOUNTAINS ==================================
-function drawMountains(ctx,T){
- ctx.save();
- // Far mountains
+// ========== DRAW: MOUNTAINS ==========
+function drawMnts(t){
+ ctx.fillStyle='#151a25';
+ ctx.beginPath();ctx.moveTo(0,H*.55);
+ for(var x=0;x<=W;x+=5){ctx.lineTo(x,H*.52-Math.sin(x*.003+t*.01)*35-Math.sin(x*.006+t*.008)*25)}
+ ctx.lineTo(W,H*.62);ctx.lineTo(0,H*.62);ctx.closePath();ctx.fill();
  ctx.fillStyle='#1a2030';
- ctx.beginPath();ctx.moveTo(0,H*.55);for(var x=0;x<=W;x+=5){ctx.lineTo(x,H*.5-Math.sin(x*.003+T*.02)*40-Math.sin(x*.007+T*.015)*30)}ctx.lineTo(W,H*.65);ctx.lineTo(0,H*.65);ctx.closePath();ctx.fill();
- // Mid mountains
- ctx.fillStyle='#1e2840';
- ctx.beginPath();ctx.moveTo(0,H*.58);for(var x=0;x<=W;x+=5){ctx.lineTo(x,H*.55-Math.sin(x*.005+T*.025)*50-Math.cos(x*.004+T*.02)*35)}ctx.lineTo(W,H*.68);ctx.lineTo(0,H*.68);ctx.closePath();ctx.fill();
- // Tree line
- ctx.fillStyle='#152010';ctx.fillRect(0,H*.56,W,H*.03);
- ctx.restore();
+ ctx.beginPath();ctx.moveTo(0,H*.58);
+ for(var x=0;x<=W;x+=5){ctx.lineTo(x,H*.55-Math.sin(x*.004+t*.012)*40-Math.cos(x*.003+t*.01)*28)}
+ ctx.lineTo(W,H*.65);ctx.lineTo(0,H*.65);ctx.closePath();ctx.fill();
 }
 
-// ================================== DRAW: SEARCHLIGHTS / AA ==================================
-function drawSpotlights(ctx,T){
- ctx.save();
- // Searchlights from dam/groud
- for(var i=0;i<2;i++){
-  var sx=(W*.3+i*W*.5),sy=H*.5;
-  var a=Math.sin(T*1.5+i)*1.2;
-  ctx.fillStyle='rgba(255,255,200,.06)';
-  ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+Math.cos(a-.15)*600,sy-Math.sin(a-.15)*600);ctx.lineTo(sx+Math.cos(a+.15)*600,sy-Math.sin(a+.15)*600);ctx.closePath();ctx.fill();
-  // brighter sweep line
-  ctx.strokeStyle='rgba(255,255,200,.15)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+Math.cos(a)*500,sy-Math.sin(a)*500);ctx.stroke();
- }
- ctx.restore();
-}
-
-// ================================== HELPER: RIVER ==================================
-function drawRiver(ctx,x,y,w){
- ctx.save();ctx.translate(x,y);
- ctx.fillStyle='rgba(20,60,100,.6)';
- ctx.beginPath();ctx.moveTo(-w/2,0);ctx.bezierCurveTo(-w/2,40,-w/4,80,w/2,120);ctx.lineTo(w/2+20,120);ctx.bezierCurveTo(-w/4+20,80,-w/2+20,40,-w/2+20,0);ctx.closePath();ctx.fill();
- ctx.strokeStyle='rgba(80,140,200,.3)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-w/2+5,10);ctx.bezierCurveTo(-w/2+5,45,-w/4+5,75,w/2+5,110);ctx.stroke();
- ctx.restore();
-}
-
-// ================================== URBAN SILHOUETTE ==================================
-function drawUrban(ctx,x,y){
- ctx.save();ctx.translate(x,y);
- var builds=[
-  [0,60,12],[20,30,8],[35,80,10],[50,45,14],[70,25,6],[85,70,11],[100,35,9],[120,55,13],[140,40,7],[160,65,10],[175,20,8],[195,50,12],
- ];
- for(var i=0;i<builds.length;i++){
-  var b=builds[i];
-  ctx.fillStyle='#111520';ctx.fillRect(b[0],-b[1],b[2],b[1]);
-  // Window lights
-  for(var wy=0;wy<b[1]-8;wy+=10){
-   for(var wx=2;wx<b[2]-2;wx+=4){
-    if(Math.random()<.3)continue;
-    ctx.fillStyle='rgba(255,180,80,'+(.2+Math.random()*.3)+')';
-    ctx.fillRect(b[0]+wx,-b[1]+wy+6,2,3);
-   }
-  }
- }
- // Smoke stacks
- ctx.fillStyle='#1a1a20';ctx.fillRect(55,-85,3,35);ctx.fillRect(145,-45,3,25);
- ctx.fillStyle='rgba(80,80,90,.2)';ctx.beginPath();ctx.moveTo(56,-85);ctx.bezierCurveTo(50,-95,60,-100,55,-110);ctx.fill();
- ctx.restore();
-}
-
-// ================================== MAIN LOOP ==================================
-var lastT=0;
-var totalT=0;
-var triggeredDamExplosion=false,triggeredRocketExplosion=false,triggeredBridge=false;
+// ========== MAIN LOOP ==========
+var lastT=0,totalT=0;
+var damBoom=false,rocketBoom=false,shake=0;
 
 function loop(now){
  requestAnimationFrame(loop);
- if(!lastT){lastT=now;startTime=now;return}
+ if(!lastT){lastT=now;START=now;return}
  if(window._skip)return;
  var dt=Math.min(.15,(now-lastT)/1000);lastT=now;
  if(dt<.001)dt=.016;
- totalT=(now-startTime)/1000;
+ totalT=(now-START)/1000;
 
- // Clear
- bC.clearRect(0,0,W,H);
- fC.clearRect(0,0,W,H);
- uC.clearRect(0,0,W,H);
+ if(shake>0){shake*=Math.pow(.9,dt*60)}else shake=0;
+ var sx=(Math.random()-.5)*shake,sy=(Math.random()-.5)*shake;
 
- // Screen shake
- var sX=0,sY=0;
- if(screenShake>0){sX=(Math.random()-.5)*screenShake;sY=(Math.random()-.5)*screenShake;screenShake*=Math.pow(.92,dt*60)}
+ // == ENTIRE SCENE on ONE canvas - simple and reliable ==
+ ctx.clearRect(0,0,W,H);
 
- // ===== SKY RENDERING (bg canvas) =====
- var nightColors=['#050a15','#0a1025','#101830','#152035','#1a2840','#1e3050','#1e3050'];
- if(totalT<4){nightColors=['#001','#002','#003','#004','#003','#002','#000']}
- var sky=skyGradient(bC,nightColors);bC.fillStyle=sky;bC.fillRect(0,0,W,H);
+ // ===== SKY =====
+ var sky=ctx.createLinearGradient(0,0,0,H);
+ if(totalT<5){
+  sky.addColorStop(0,'#002');sky.addColorStop(.5,'#012');sky.addColorStop(1,'#023');
+ }else{
+  sky.addColorStop(0,'#081524');sky.addColorStop(.3,'#102238');sky.addColorStop(.6,'#182d48');sky.addColorStop(1,'#203852');
+ }
+ ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
 
  // Stars
- for(var s=0;s<80;s++){var sx2=(s*137+50)%W,sy2=(s*89+30)%(H*.45);bC.fillStyle='rgba(255,255,255,'+(.2+Math.sin(totalT+s)*.3+.3)+')';bC.beginPath();bC.arc(sx2,sy2,.5+Math.random()*.5,0,Math.PI*2);bC.fill()}
+ for(var s=0;s<60;s++){
+  var sx2=(s*137+50)%W,sy2=(s*89+30)%(H*.4);
+  ctx.fillStyle='rgba(255,255,255,'+(.2+.3*Math.sin(totalT+s))+.2+')';
+  ctx.beginPath();ctx.arc(sx2,sy2,.5+Math.random()*.4,0,Math.PI*2);ctx.fill();
+ }
 
- // Moon (crescent)
- var mx=W*.75,my=H*.12;
- bC.fillStyle='rgba(255,250,240,.9)';bC.beginPath();bC.arc(mx,my,30,0,Math.PI*2);bC.fill();
- bC.fillStyle=nightColors[3];bC.beginPath();bC.arc(mx+10,my-5,25,0,Math.PI*2);bC.fill();
+ // Moon
+ var mx=W*.78,my=H*.1;
+ ctx.fillStyle='rgba(255,245,235,.85)';ctx.beginPath();ctx.arc(mx,my,25,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#081524';ctx.beginPath();ctx.arc(mx+8,my-4,20,0,Math.PI*2);ctx.fill();
 
- // Ground terrain
- drawMountains(bC,totalT);
- bC.fillStyle='#0f150a';bC.fillRect(0,H*.58,W,H*.42);
+ // Mountains
+ drawMnts(totalT);
+
+ // Ground
+ ctx.fillStyle='#0f150a';ctx.fillRect(0,H*.56,W,H*.44);
 
  // ===== SCENE LOGIC =====
- var scenePhase='';
- if(totalT<4){scenePhase='BLACK_FADE'} // fade in from black
- else if(totalT<12){scenePhase='HELI_APPROACH'} // helicopter approaching dam
- else if(totalT<20){scenePhase='DAM_REVEAL'} // reveal the dam
- else if(totalT<22){scenePhase='DAM_EXPLODE'} // missiles hit dam
- else if(totalT<28){scenePhase='DAM_AFTERMATH'} // aftermath of dam explosion
- else if(totalT<34){scenePhase='TRANSITION'} // transition to space base
- else if(totalT<42){scenePhase='SPACE_REVEAL'} // reveal space base
- else if(totalT<44){scenePhase='ROCKET_EXPLODE'} // rocket explodes
- else if(totalT<50){scenePhase='BRIDGE_COLLAPSE'} // bridge collapses
- else if(totalT<58){scenePhase='HELI_FINAL'} // helicopter flies over destruction
- else{scenePhase='FADE_OUT'}
+ var phase='';
+ if(totalT<4)phase='FADEIN';
+ else if(totalT<14)phase='APPROACH';
+ else if(totalT<22)phase='DAMVIEW';
+ else if(totalT<24)phase='DAMHIT';
+ else if(totalT<30)phase='AFTERMATH';
+ else if(totalT<36)phase='TRANS';
+ else if(totalT<44)phase='BASEREVEAL';
+ else if(totalT<46)phase='ROCKETHIT';
+ else if(totalT<52)phase='AFTERMATH2';
+ else if(totalT<60)phase='FINALFLY';
+ else phase='OUTRO';
 
- // ===== FOREGROUND DRAWING =====
- if(scenePhase==='BLACK_FADE'){
-  fC.fillStyle='rgba(0,0,0,'+clamp(1-totalT/3,0,1)+')';fC.fillRect(0,0,W,H);
- }else if(scenePhase==='HELI_APPROACH'){
-  var t12=totalT-4;
-  // Helicopter comes from right, flying left toward dam
-  var hx=lerp(W+100,W*.65,easeOut(clamp(t12/7,0,1)));
-  var hy=lerp(H*.3,H*.35,clamp(t12/7,0,1));
-  var hscale=lerp(.4,.7,clamp(t12/7,0,1));
-  drawHelicopter(fC,hx+sX,hy+sY,hscale,totalT*15);
-  // Interior POV - brief flash of operator equipment
-  if(t12>2&&t12<4){
-   fC.fillStyle='rgba(0,0,0,'+Math.sin(t12*5)*.3+.3+')';fC.fillRect(0,0,W,H);
-   fC.fillStyle='rgba(255,255,255,.05)';fC.font='bold '+(W<400?14:20)+'px "PingFang SC","Microsoft YaHei",sans-serif';fC.textAlign='center';
-   fC.fillText('烽火地带',W/2,H*.45);
-   fC.fillStyle='rgba(255,255,255,.03)';fC.font=(W<400?10:14)+'px "PingFang SC","Microsoft YaHei",sans-serif';
-   fC.fillText('DELTA FORCE · HAWK OPS',W/2,H*.48);
-  }
-  // Dam silhouette in distance
-  drawDam(bC,W*.55,H*.55,false);
- }else if(scenePhase==='DAM_REVEAL'){
-  drawDam(bC,W*.55,H*.55,false);
-  // Helicopter circles
-  var t20=totalT-12;
-  var angle=t20*1.5;
-  hx=W*.55+Math.cos(angle)*200;
-  hy=H*.4+Math.sin(angle)*40;
-  drawHelicopter(fC,hx+sX,hy+sY,.65,totalT*15);
-  drawSpotlights(bC,totalT);
-  // Dramatic text overlay
-  if(t20>2&&t20<6){
-   fC.fillStyle='rgba(255,255,255,'+(.03*Math.sin(t20*3)*.5+.05)+')';
-   fC.font='bold '+(W<400?16:24)+'px "PingFang SC","Microsoft YaHei",sans-serif';fC.textAlign='center';
-   fC.fillText('零号大坝',W*.55,H*.65);
-   fC.font=(W<400?8:11)+'px "PingFang SC","Microsoft YaHei",sans-serif';
-   fC.fillText('ZERO DAM',W*.55,H*.65+18);
-  }
- }else if(scenePhase==='DAM_EXPLODE'){
-  drawDam(bC,W*.55,H*.55,true);
-  if(!triggeredDamExplosion){triggeredDamExplosion=true;bigBoom(W*.55,H*.3);bigBoom(W*.58,H*.35);setTimeout(function(){screenShake=40},800)}
-  // Afterburner missiles
-  fC.fillStyle='#ff4400';fC.beginPath();fC.moveTo(W*.3,H*.2);fC.lineTo(W*.4,H*.25);fC.lineTo(W*.38,H*.22);fC.closePath();fC.fill();
-  fC.fillStyle='#ffcc00';fC.beginPath();fC.moveTo(W*.32,H*.22);fC.lineTo(W*.42,H*.27);fC.lineTo(W*.4,H*.24);fC.closePath();fC.fill();
-  // Second missile
-  fC.fillStyle='#ff4400';fC.beginPath();fC.moveTo(W*.25,H*.28);fC.lineTo(W*.35,H*.32);fC.lineTo(W*.33,H*.29);fC.closePath();fC.fill();
-  // Flash
-  fC.fillStyle='rgba(255,200,100,'+(.3*Math.sin(totalT*20)*.5+.5)+')';fC.fillRect(0,0,W,H);
- }else if(scenePhase==='DAM_AFTERMATH'){
-  drawDam(bC,W*.55,H*.55,true);
-  drawHelicopter(fC,W*.45,H*.38+(Math.sin(totalT)*3),.5,totalT*12);
-  // Text
-  if(totalT<26){
-   fC.fillStyle='rgba(255,150,50,'+((26-totalT)/4*.15)+')';
-   fC.font='bold '+(W<400?14:20)+'px "PingFang SC","Microsoft YaHei",sans-serif';fC.textAlign='center';
-   fC.fillText('金库大门已被炸开',W*.55,H*.7);
-  }
- }else if(scenePhase==='TRANSITION'){
-  // Fade to black, then to space base
-  var fade=clamp((totalT-28)/2,0,1);
-  if(fade<.5){// damp to black
-   drawDam(bC,W*.55,H*.55,true);
-   fC.fillStyle='rgba(0,0,0,'+clamp(fade*2,0,.8)+')';fC.fillRect(0,0,W,H);
-  }else{// black to space
-   var fade2=clamp((fade-.5)*2,0,1);
-   drawSpaceBase(bC,W*.5,H*.45+(1-fade2)*100,false);
-   fC.fillStyle='rgba(0,0,0,'+clamp(1-fade2,.2,1)+')';fC.fillRect(0,0,W,H);
-  }
- }else if(scenePhase==='SPACE_REVEAL'){
-  drawSpaceBase(bC,W*.5,H*.45,false);
-  // Helicopter approaching from right
-  var t42=totalT-34;
-  hx=lerp(W+100,W*.3,clamp(t42/6,0,1));
-  hy=lerp(H*.3,H*.2,clamp(t42/6,0,1));
-  drawHelicopter(fC,hx+sX,hy+sY,.5,totalT*15);
-  if(t42>2&&t42<5){
-   fC.fillStyle='rgba(255,255,255,'+(.03*Math.sin(t42*4)*.5+.05)+')';
-   fC.font='bold '+(W<400?16:24)+'px "PingFang SC","Microsoft YaHei",sans-serif';fC.textAlign='center';
-   fC.fillText('航天基地',W*.5,H*.7);
-   fC.font=(W<400?8:11)+'px "PingFang SC","Microsoft YaHei",sans-serif';
-   fC.fillText('SPACE BASE',W*.5,H*.7+18);
-  }
-  drawUrban(bC,W*.2,H*.62);
- }else if(scenePhase==='ROCKET_EXPLODE'){
-  drawSpaceBase(bC,W*.5,H*.45,true);
-  if(!triggeredRocketExplosion){triggeredRocketExplosion=true;bigBoom(W*.5,H*.25);setTimeout(function(){screenShake=80},500)}
-  fC.fillStyle='rgba(255,150,50,'+(.5*Math.sin(totalT*15)*.5+.5)+')';fC.fillRect(0,0,W,H);
-  drawHelicopter(fC,W*.35,H*.25+Math.sin(totalT)*5,.4,totalT*12);
- }else if(scenePhase==='BRIDGE_COLLAPSE'){
-  if(!triggeredBridge){triggeredBridge=true;bridgeFallen=true;bigBoom(W*.3,H*.52)}
-  drawSpaceBase(bC,W*.5,H*.45,true);
-  // Falling debris
-  for(var d=0;d<bridgeDebris.length;d++){var db=bridgeDebris[d];db.x+=db.vx*dt;db.y+=db.vy*dt;db.life-=dt;if(db.life>0){fC.fillStyle=db.color;fC.fillRect(db.x,db.y,db.sz,db.sz)}}
-  drawHelicopter(fC,W*.6,H*.3+Math.cos(totalT*.8)*8,.45,totalT*14);
-  fC.fillStyle='rgba(255,150,50,'+(.3*Math.sin(totalT*10)*.5+.5)+')';fC.fillRect(0,0,W,H);
- }else if(scenePhase==='HELI_FINAL'){
-  drawSpaceBase(bC,W*.5,H*.45,true);
-  // Helicopter flies through chaos toward the viewer
-  var t58=totalT-50;
-  hx=W*.3+Math.sin(t58)*150;
-  hy=H*.4-t58*8;
-  drawHelicopter(fC,hx+sX,hy+sY,.6+.t58/30,totalT*18);
-  // Aftermath text
-  if(t58>3&&t58<6){
-   fC.fillStyle='rgba(255,255,255,.08)';
-   fC.font='bold '+(W<400?16:26)+'px "PingFang SC","Microsoft YaHei",sans-serif';fC.textAlign='center';
-   fC.fillText('烽火地带 · 即将部署',W/2,H*.45);
-   fC.font=(W<400?10:14)+'px "PingFang SC","Microsoft YaHei",sans-serif';
-   fC.fillText('准备空降',W/2,H*.48);
-  }
-  if(t58>6){fC.fillStyle='rgba(0,0,0,'+((t58-6)/6)+')';fC.fillRect(0,0,W,H)}
- }else if(scenePhase==='FADE_OUT'){
-  fC.fillStyle='rgba(0,0,0,'+clamp((totalT-58)/2,.5,1)+')';fC.fillRect(0,0,W,H);
- }
- 
- // ===== SMOKE CLOUDS =====
- for(var i=smokeClouds.length-1;i>=0;i--){
-  var sm=smokeClouds[i];
-  sm.x+=sm.vx*dt;sm.y+=sm.vy*dt;sm.life-=dt;
-  if(sm.life<=0){smokeClouds.splice(i,1);continue}
-  var a=sm.alpha*(sm.life/sm.ml);
-  var gr=ctx.createRadialGradient(sm.x,sm.y,0,sm.x,sm.y,sm.size);
-  var colors=['rgba(50,40,30,'+a+')','rgba(40,35,25,'+a*.7+')','rgba(30,28,20,'+a*.4+')','rgba(20,20,15,0)'];
-  gr.addColorStop(0,colors[0]);gr.addColorStop(.4,colors[1]);gr.addColorStop(.7,colors[2]);gr.addColorStop(1,colors[3]);
-  ctx=fC;ctx.fillStyle=gr;ctx.fillRect(sm.x-sm.size,sm.y-sm.size,sm.size*2,sm.size*2);
+ var heliX=0,heliY=0,heliSz=.6;
+
+ switch(phase){
+  case 'FADEIN':
+   ctx.fillStyle='rgba(0,0,0,'+(1-totalT/3)+')';ctx.fillRect(0,0,W,H);
+   break;
+
+  case 'APPROACH':
+   var t=totalT-4;
+   heliX=lerp(W+120,W*.62,ease(clamp(t/8,0,1)));
+   heliY=lerp(H*.32,H*.34,ease(clamp(t/8,0,1)));
+   heliSz=lerp(.4,.65,ease(clamp(t/8,0,1)));
+   drawHeli(heliX+sx,heliY+sy,heliSz,totalT*14);
+   // Brief operator POV
+   if(t>2.5&&t<5){
+    ctx.fillStyle='rgba(0,0,0,'+(.2+.15*Math.sin(t*6))+.2+')';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='rgba(255,255,255,.06)';ctx.font='bold '+(W<400?16:24)+'px sans-serif';ctx.textAlign='center';
+    ctx.fillText('烽火地带',W/2,H*.42);
+    ctx.fillStyle='rgba(255,255,255,.04)';ctx.font=(W<400?10:13)+'px sans-serif';
+    ctx.fillText('DELTA FORCE · HAWK OPS',W/2,H*.46);
+   }
+   drawDam(W*.58,H*.55,false);
+   break;
+
+  case 'DAMVIEW':
+   var t2=totalT-14;
+   var ang=t2*1.3;
+   heliX=W*.58+Math.cos(ang)*180;
+   heliY=H*.38+Math.sin(ang)*35;
+   heliSz=.6;
+   drawHeli(heliX+sx,heliY+sy,heliSz,totalT*14);
+   drawDam(W*.58,H*.55,false);
+   // searchlights
+   ctx.fillStyle='rgba(255,255,180,.04)';ctx.beginPath();ctx.moveTo(W*.38,H*.5);ctx.lineTo(W*.55,H*.28);ctx.lineTo(W*.62,H*.3);ctx.closePath();ctx.fill();
+   ctx.fillStyle='rgba(255,255,180,.03)';ctx.beginPath();ctx.moveTo(W*.72,H*.5);ctx.lineTo(W*.6,H*.25);ctx.lineTo(W*.68,H*.22);ctx.closePath();ctx.fill();
+   if(t2>3&&t2<7){
+    ctx.fillStyle='rgba(255,255,255,'+(.04+.03*Math.sin(t2*2))+.05+')';
+    ctx.font='bold '+(W<400?15:22)+'px sans-serif';ctx.textAlign='center';
+    ctx.fillText('零号大坝',W*.58,H*.65);
+    ctx.font=(W<400?8:10)+'px sans-serif';ctx.fillText('ZERO DAM',W*.58,H*.67);
+   }
+   break;
+
+  case 'DAMHIT':
+   drawDam(W*.58,H*.55,true);
+   if(!damBoom){damBoom=true;blast(W*.58,H*.32,true);blast(W*.61,H*.35,true);shake=60}
+   // missiles
+   ctx.fillStyle='#f40';ctx.beginPath();ctx.moveTo(W*.28,H*.22);ctx.lineTo(W*.38,H*.28);ctx.lineTo(W*.36,H*.25);ctx.closePath();ctx.fill();
+   ctx.fillStyle='#fc0';ctx.beginPath();ctx.moveTo(W*.3,H*.23);ctx.lineTo(W*.4,H*.29);ctx.lineTo(W*.38,H*.26);ctx.closePath();ctx.fill();
+   ctx.fillStyle='#f40';ctx.beginPath();ctx.moveTo(W*.22,H*.3);ctx.lineTo(W*.32,H*.34);ctx.lineTo(W*.3,H*.31);ctx.closePath();ctx.fill();
+   ctx.fillStyle='rgba(255,180,100,'+(.3+.2*Math.sin(totalT*18))+.3+')';ctx.fillRect(0,0,W,H);
+   break;
+
+  case 'AFTERMATH':
+   drawDam(W*.58,H*.55,true);
+   drawHeli(W*.42+sx,H*.35+sy+Math.sin(totalT)*4,.45,totalT*11);
+   if(totalT<28){
+    ctx.fillStyle='rgba(255,150,50,'+((28-totalT)/4*.15)+')';
+    ctx.font='bold '+(W<400?13:18)+'px sans-serif';ctx.textAlign='center';
+    ctx.fillText('金库大门已被炸开',W*.58,H*.68);
+   }
+   break;
+
+  case 'TRANS':
+   var tf=clamp((totalT-30)/3,0,1);
+   drawDam(W*.58,H*.55,true);
+   ctx.fillStyle='rgba(0,0,0,'+tf+')';ctx.fillRect(0,0,W,H);
+   break;
+
+  case 'BASEREVEAL':
+   var t3=totalT-36;
+   drawBase(W*.5,H*.45,false);
+   heliX=lerp(W+100,W*.32,ease(clamp(t3/6,0,1)));
+   heliY=lerp(H*.3,H*.22,ease(clamp(t3/6,0,1)));
+   drawHeli(heliX+sx,heliY+sy,.48,totalT*14);
+   if(t3>2.5&&t3<5){
+    ctx.fillStyle='rgba(255,255,255,'+(.03+.02*Math.sin(t3*3))+.04+')';
+    ctx.font='bold '+(W<400?15:22)+'px sans-serif';ctx.textAlign='center';
+    ctx.fillText('航天基地',W*.5,H*.68);
+    ctx.font=(W<400?8:10)+'px sans-serif';ctx.fillText('SPACE BASE',W*.5,H*.7);
+   }
+   // industrial silhouette
+   ctx.fillStyle='#111520';for(var b=0;b<12;b++){ctx.fillRect(W*.15+b*33,H*.62,-15,-(20+Math.abs(Math.sin(b*1.3))*80))}
+   break;
+
+  case 'ROCKETHIT':
+   drawBase(W*.5,H*.45,true);
+   if(!rocketBoom){rocketBoom=true;blast(W*.5,H*.25,true);shake=80}
+   ctx.fillStyle='rgba(255,150,50,'+(.4+.3*Math.sin(totalT*14))+.4+')';ctx.fillRect(0,0,W,H);
+   drawHeli(W*.38+sx,H*.28+sy+Math.sin(totalT)*6,.42,totalT*11);
+   break;
+
+  case 'AFTERMATH2':
+   drawBase(W*.5,H*.45,true);
+   // broken bridge - draw manually
+   ctx.fillStyle='#555';ctx.fillRect(W*.3,-3+H*.45,60,8);ctx.strokeStyle='#666';ctx.strokeRect(W*.3,-3+H*.45,60,8);
+   ctx.save();ctx.translate(W*.38,H*.45);ctx.rotate(.25);ctx.fillStyle='#444';ctx.fillRect(0,-3,40,8);ctx.restore();
+   drawHeli(W*.58+sx,H*.32+sy+Math.cos(totalT*.7)*7,.5,totalT*13);
+   ctx.fillStyle='rgba(255,150,50,'+(.25+.15*Math.sin(totalT*9))+.25+')';ctx.fillRect(0,0,W,H);
+   break;
+
+  case 'FINALFLY':
+   drawBase(W*.5,H*.45,true);
+   var t5=totalT-52;
+   var hlX=W*.3+Math.sin(t5)*160,hlY=H*.38-t5*7;
+   drawHeli(hlX+sx,hlY+sy,.55+t5/30,totalT*16);
+   if(t5>3.5&&t5<6.5){
+    ctx.fillStyle='rgba(255,255,255,.07)';ctx.font='bold '+(W<400?15:24)+'px sans-serif';ctx.textAlign='center';
+    ctx.fillText('烽火地带 · 即将部署',W/2,H*.42);
+    ctx.font=(W<400?10:13)+'px sans-serif';ctx.fillText('准备空降',W/2,H*.46);
+   }
+   if(t5>6.5){ctx.fillStyle='rgba(0,0,0,'+((t5-6.5)/2)+')';ctx.fillRect(0,0,W,H)}
+   break;
+
+  case 'OUTRO':
+   ctx.fillStyle='rgba(0,0,0,'+clamp((totalT-60)/2,.5,1)+')';ctx.fillRect(0,0,W,H);
+   break;
  }
 
- // ===== PARTICLES (on fx canvas) =====
- var ctx=fC;
- for(var i=particles.length-1;i>=0;i--){
-  var p=particles[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;
-  if(p.life<=0){particles.splice(i,1);continue}
-  p.vy+=60*dt;
-  var a2=Math.min(1,p.life/p.ml);
-  ctx.fillStyle=p.col.replace('rgb','rgba');
-  if(p.col.startsWith('#')){var hx2=p.col;ctx.fillStyle='rgba('+parseInt(hx2.substr(1,2),16)+','+parseInt(hx2.substr(3,2),16)+','+parseInt(hx2.substr(5,2),16)+','+a2+')'}
-  ctx.beginPath();ctx.arc(p.x,p.y,p.sz*a2,0,Math.PI*2);ctx.fill();
+ // ===== PARTICLES =====
+ for(var i=P.length-1;i>=0;i--){
+  var p=P[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;
+  if(p.life<=0){P.splice(i,1);continue}
+  p.vy+=50*dt;
+  var a=clamp(p.life/p.ml,0,1);
+  ctx.fillStyle='rgba(255,255,255,0)'; // default
+  try{var c=p.col;if(c[0]==='#'){var r=parseInt(c.substr(1,2),16),g=parseInt(c.substr(3,2),16),b=parseInt(c.substr(5,2),16);ctx.fillStyle='rgba('+r+','+g+','+b+','+a+')'}else{ctx.fillStyle=c}}catch(e){ctx.fillStyle='rgba(255,100,0,'+a+')'}
+  ctx.beginPath();ctx.arc(p.x,p.y,p.sz*a,0,Math.PI*2);ctx.fill();
  }
 
- // ===== HUD / TIMER =====
- uC.fillStyle='rgba(255,255,255,.25)';
- uC.font='10px "PingFang SC","Microsoft YaHei",sans-serif';uC.textAlign='right';
+ // ===== HUD =====
+ ctx.fillStyle='rgba(255,255,255,.25)';ctx.font='10px sans-serif';ctx.textAlign='right';
  var mT=Math.floor(totalT),min=Math.floor(mT/60),sec=mT%60;
- uC.fillText((min<10?'0'+min:min)+':'+(sec<10?'0'+sec:sec)+' / 01:08',W-14,18);
- uC.textAlign='left';
- var mapName='';
- if(scenePhase==='DAM_REVEAL'||scenePhase==='DAM_EXPLODE'||scenePhase==='DAM_AFTERMATH')mapName='零号大坝';
- else if(scenePhase==='SPACE_REVEAL'||scenePhase==='ROCKET_EXPLODE'||scenePhase==='BRIDGE_COLLAPSE'||scenePhase==='HELI_FINAL')mapName='航天基地';
- uC.fillText(mapName,14,18);
-
+ ctx.fillText((min<10?'0'+min:min)+':'+(sec<10?'0'+sec:sec)+' / 01:08',W-12,16);
+ ctx.textAlign='left';
+ var nmap='';
+ if(phase==='DAMVIEW'||phase==='DAMHIT'||phase==='AFTERMATH')nmap='零号大坝';
+ if(phase==='BASEREVEAL'||phase==='ROCKETHIT'||phase==='AFTERMATH2'||phase==='FINALFLY')nmap='航天基地';
+ ctx.fillText(nmap,12,16);
 }
 requestAnimationFrame(loop);
 })();</script></body></html>
