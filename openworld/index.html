@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>开放世界飞行</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#87ceeb;touch-action:none}
+#g{display:block;width:100%;height:100%}
+#hud{position:fixed;inset:0;z-index:10;pointer-events:none}
+#hL{position:absolute;top:12px;left:12px}
+#hL span{display:block;font-size:11px;color:#fff;text-shadow:0 0 6px rgba(0,0,0,.7);margin:2px 0}
+#hR{position:absolute;top:12px;right:12px;text-align:right}
+#hR b{display:block;font-size:26px;font-weight:900;color:#fff;text-shadow:0 0 10px rgba(0,0,0,.6)}
+#hR i{font-size:8px;color:rgba(255,255,255,.5)}
+#altBar{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:5px;height:100px;background:rgba(255,255,255,.08);border-radius:3px}
+#altBar div{position:absolute;bottom:0;width:100%;background:#0f8;border-radius:3px;transition:height .3s}
+#msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:13px;background:rgba(0,0,0,.7);padding:6px 18px;border-radius:8px;z-index:99;transition:opacity .4s}
+#switch{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);pointer-events:auto;display:flex;gap:4px}
+#switch button{background:rgba(0,0,0,.4);color:#fff;border:1px solid rgba(255,255,255,.15);padding:6px 14px;border-radius:16px;font-size:11px;cursor:pointer;touch-action:manipulation}
+#switch button.sel{background:rgba(255,120,20,.25);border-color:#f80}
+#stickBox{position:absolute;bottom:80px;left:20px;width:100px;height:100px;pointer-events:auto;touch-action:none}
+#stickBox .bg{width:100%;height:100%;border-radius:50%;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.1)}
+#stickBox .kn{position:absolute;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);top:50%;left:50%;margin:-22px 0 0 -22px}
+#btns{position:absolute;bottom:90px;right:20px;display:flex;flex-direction:column;gap:4px;pointer-events:auto}
+#btns button{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.35);border:2px solid rgba(255,255,255,.12);color:#fff;font-size:14px;cursor:pointer;touch-action:manipulation}
+#btns button:active{background:rgba(255,100,0,.25);border-color:#f60}
+</style></head><body>
+<canvas id="g"></canvas>
+<div id="hud">
+ <div id="hL"><span>🛩️ <i id="planeName">战斗机</i></span><span>⚡ <i id="thrust">0</i>%</span></div>
+ <div id="hR"><b id="altV">0</b><i>M</i><div style="margin-top:6px"><b id="spdV" style="font-size:22px">0</b><i>KM/H</i></div></div>
+ <div id="altBar"><div id="altFill"></div></div>
+</div>
+<div id="stickBox"><div class="bg"></div><div class="kn" id="knob"></div></div>
+<div id="btns">
+ <button id="thrUp">🚀</button>
+ <button id="thrDown">🛑</button>
+ <button id="camBtn">📷</button>
+</div>
+<div id="switch">
+ <button class="sel" onclick="switchPlane(0)">✈️ 战斗机</button>
+ <button onclick="switchPlane(1)">🚁 直升机</button>
+</div>
+<div id="msg">⚡ 生成世界…</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+(function W(){if(typeof THREE==='undefined'){setTimeout(W,150);return};go()})();
+
+function go(){
+var M=document.getElementById('msg');
+M.textContent='🌍 地形…';
+try{
+
+// ===== 场景 =====
+var S=new THREE.Scene();
+S.background=new THREE.Color(0x7ec8e3);
+S.fog=new THREE.Fog(0x9dd5f0,300,1200);
+
+var cam=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,1,1500);
+cam.position.set(0,100,180);
+
+var R=new THREE.WebGLRenderer({canvas:document.getElementById('g'),antialias:true});
+R.setSize(innerWidth,innerHeight);
+R.setPixelRatio(Math.min(devicePixelRatio,2));
+
+// 光照
+S.add(new THREE.AmbientLight(0xffffff,1.3));
+S.add(new THREE.DirectionalLight(0xffffff,0.5)).position.set(300,500,200);
+
+// ===== 地面(2000x2000) =====
+var gndGeo=new THREE.PlaneGeometry(2000,2000,1,1);
+var gndMat=new THREE.MeshBasicMaterial({color:0x55aa44});
+var gnd=new THREE.Mesh(gndGeo,gndMat);
+gnd.rotation.x=-Math.PI/2;gnd.position.y=-0.5;S.add(gnd);
+
+// ===== 海洋(地面以外东侧) =====
+var seaGeo=new THREE.PlaneGeometry(2000,1000);
+var sea=new THREE.Mesh(seaGeo,new THREE.MeshBasicMaterial({color:0x2266aa}));
+sea.rotation.x=-Math.PI/2;sea.position.set(1500,-1,0);S.add(sea);
+
+// ===== 山脉(西侧和北侧) =====
+for(var m=0;m<25;m++){
+  var mx=(Math.random()-.5)*1800,mz=(Math.random()-.5)*1800;
+  if(Math.hypot(mx,mz)<200)continue;
+  var mh=40+Math.random()*200,mr=50+Math.random()*150;
+  var mt=new THREE.Mesh(new THREE.ConeGeometry(mr,Math.random()<.3?mh*2:mh,12,6),new THREE.MeshBasicMaterial({color:Math.random()<.5?0x889988:0x776655}));
+  mt.position.set(mx,mh/2,mz);S.add(mt);
+  // 山顶雪
+  if(mh>120){
+    var snow=new THREE.Mesh(new THREE.ConeGeometry(mr*.5,mh*.15,12,6),new THREE.MeshBasicMaterial({color:0xeeeeee}));
+    snow.position.set(mx,mh*.85,mz);S.add(snow);
+  }
+}
+
+// ===== 城市(中央区域) =====
+var bColors=[0xaabbcc,0x8899aa,0x667788,0xccddee,0x778899];
+for(var b=0;b<400;b++){
+  var bx=(Math.random()-.5)*600,bz=-200+Math.random()*400;
+  if(Math.hypot(bx,bz)<60)continue;
+  var bh=10+Math.random()*120,bw=8+Math.random()*25,bd=8+Math.random()*25;
+  var bb=new THREE.Mesh(new THREE.BoxGeometry(bw,bh,bd),new THREE.MeshBasicMaterial({color:bColors[b%5]}));
+  bb.position.set(bx,bh/2,bz);S.add(bb);
+  // 窗户横线
+  if(bh>20){
+    for(var wf=0;wf<Math.floor(bh/10);wf++){
+      var win=new THREE.Mesh(new THREE.BoxGeometry(bw*.9,.1,bd*.05),new THREE.MeshBasicMaterial({color:0x334455}));
+      win.position.set(bx,-bh*.35+wf*10,bz+bd/2+.3);S.add(win);
+    }
+  }
+}
+
+// ===== 道路网格 =====
+var rd=new THREE.MeshBasicMaterial({color:0x444444});
+for(var r=0;r<12;r++){var ra=(r/12)*Math.PI*2;var road=new THREE.Mesh(new THREE.PlaneGeometry(10,600),rd);road.rotation.x=-Math.PI/2;road.rotation.z=ra;road.position.y=0.02;S.add(road)}
+for(var r=0;r<8;r++){var road2=new THREE.Mesh(new THREE.PlaneGeometry(500,8),rd);road2.rotation.x=-Math.PI/2;road2.position.set(0,.02,-200+r*50);S.add(road2)}
+
+// ===== 森林 =====
+var tBrown=new THREE.MeshBasicMaterial({color:0x5a3a1a});
+var tGreen=new THREE.MeshBasicMaterial({color:0x338822});
+for(var t=0;t<500;t++){
+  var tx=(Math.random()-.5)*1200,tz=(Math.random()-.5)*1200;
+  if(Math.hypot(tx,tz)<200)continue;
+  var th=5+Math.random()*8;
+  S.add(new THREE.Mesh(new THREE.CylinderGeometry(.15,.22,th,6),tBrown)).position.set(tx,th/2,tz);
+  S.add(new THREE.Mesh(new THREE.SphereGeometry(1+Math.random()*3,6,4),tGreen)).position.set(tx,th+1,tz);
+}
+
+// ===== 河流(从山到海) =====
+for(var rv=0;rv<6;rv++){
+  var rx=-500+rv*200,rz0=-300,rz1=300;
+  var rvPts=[new THREE.Vector3(rx,0,rz0),new THREE.Vector3(rx+50+Math.random()*100,0,(rz0+rz1)/2),new THREE.Vector3(rx+30,0,rz1)];
+  var rvCurve=new THREE.QuadraticBezierCurve3(rvPts[0],rvPts[1],rvPts[2]);
+  var rvGeo=new THREE.TubeGeometry(rvCurve,30,4+Math.random()*6,8,false);
+  S.add(new THREE.Mesh(rvGeo,new THREE.MeshBasicMaterial({color:0x3388cc})));
+}
+
+// ===== 机场跑道 =====
+var runway=new THREE.Mesh(new THREE.PlaneGeometry(20,200),new THREE.MeshBasicMaterial({color:0x333333}));
+runway.rotation.x=-Math.PI/2;runway.position.set(0,.03,0);S.add(runway);
+var rwMark=new THREE.Mesh(new THREE.PlaneGeometry(18,8),new THREE.MeshBasicMaterial({color:0xffffff}));
+rwMark.rotation.x=-Math.PI/2;rwMark.position.set(0,.04,-50);S.add(rwMark);
+rwMark=new THREE.Mesh(new THREE.PlaneGeometry(18,8),new THREE.MeshBasicMaterial({color:0xffffff}));
+rwMark.rotation.x=-Math.PI/2;rwMark.position.set(0,.04,50);S.add(rwMark);
+
+// ===== 建筑群(浮力大门风格工业区) =====
+for(var f=0;f<30;f++){
+  var fx=-150+Math.random()*300,fz=-250+Math.random()*100;
+  var fh=15+Math.random()*40,fw=10+Math.random()*30;
+  var fac=new THREE.Mesh(new THREE.BoxGeometry(fw,fh,fw),new THREE.MeshBasicMaterial({color:0x555566}));
+  fac.position.set(fx,fh/2,fz);S.add(fac);
+  // 烟囱
+  var chm=new THREE.Mesh(new THREE.CylinderGeometry(1,1.5,15+Math.random()*25,8),new THREE.MeshBasicMaterial({color:0x883333}));
+  chm.position.set(fx,fh+10,fz);S.add(chm);
+}
+
+M.textContent='🏗 飞机…';
+
+// ==================== 战斗机(鲜红色) ====================
+var jet=new THREE.Group();
+var JR=new THREE.MeshBasicMaterial({color:0xff2200});
+var JW=new THREE.MeshBasicMaterial({color:0xffffff});
+var JY=new THREE.MeshBasicMaterial({color:0xffcc00});
+var JD=new THREE.MeshBasicMaterial({color:0x111122});
+var JG=new THREE.MeshBasicMaterial({color:0x888899});
+var JC=new THREE.MeshBasicMaterial({color:0x113355,transparent:true,opacity:.55});
+
+// 机身(纺锤形Lathe)
+var jpts=[];for(var i=0;i<=30;i++){var t=i/30,x=t*35-17;var r;if(t<.05)r=.5;else if(t<.15)r=.5+(t-.05)*4/.1;else if(t<.35)r=4.5;else if(t<.6)r=4.5-.8*Math.sin((t-.35)/.25*Math.PI);else if(t<.85)r=3.7-.8*Math.sin((t-.6)/.25*Math.PI);else r=2.5-(t-.85)*2.2/.15;jpts.push(new THREE.Vector2(r,x))}
+jet.add(new THREE.Mesh(new THREE.LatheGeometry(jpts,36),JR));
+
+// 座舱盖
+var canopy2=new THREE.Mesh(new THREE.BoxGeometry(1.5,.4,1.2),JC);canopy2.position.set(-4,.7,0);jet.add(canopy2);
+
+// 机翼
+var wL=new THREE.Mesh(new THREE.BoxGeometry(4,0.15,16),JW);wL.position.set(-2,-0.1,0);jet.add(wL);
+// 机翼红边
+var wLE=new THREE.Mesh(new THREE.BoxGeometry(4.1,0.17,.5),JR);wLE.position.set(-2,-0.1,7.5);jet.add(wLE);
+var wLE2=new THREE.Mesh(new THREE.BoxGeometry(4.1,0.17,.5),JR);wLE2.position.set(-2,-0.1,-7.5);jet.add(wLE2);
+
+// 垂尾
+var vt=new THREE.Mesh(new THREE.BoxGeometry(0.2,2.5,3),JR);vt.position.set(-9,1.5,0);jet.add(vt);
+// 水平尾翼
+var ht=new THREE.Mesh(new THREE.BoxGeometry(1.5,0.1,6),JW);ht.position.set(-15,0,0);jet.add(ht);
+
+// 发动机喷口
+var engN=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.4,3,16),JD);engN.position.set(-17,0,0);engN.rotation.z=Math.PI/2;jet.add(engN);
+
+// 导弹挂架
+for(var s=-1;s<=1;s+=2){
+  var pylon2=new THREE.Mesh(new THREE.CylinderGeometry(.08,.1,.6,8),JD);pylon2.position.set(1,-.6,s*3);jet.add(pylon2);
+  var msl2=new THREE.Mesh(new THREE.CylinderGeometry(.12,.15,3,8),JY);msl2.position.set(1,-1,s*3);jet.add(msl2);
+  var tip2=new THREE.Mesh(new THREE.ConeGeometry(.14,.4,8),JR);tip2.position.set(2.2,-1,s*3);jet.add(tip2);
+}
+
+// 起落架
+jet.add(new THREE.Mesh(new THREE.CylinderGeometry(.15,.15,1.5,8),JD)).position.set(2,-1.5,2);
+jet.add(new THREE.Mesh(new THREE.CylinderGeometry(.15,.15,1.5,8),JD)).position.set(2,-1.5,-2);
+jet.add(new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,1,8),JD)).position.set(-5,-1.5,0);
+
+// 加力火焰(后燃器)
+var ab=new THREE.Mesh(new THREE.ConeGeometry(1.0,6,8),new THREE.MeshBasicMaterial({color:0xff8800}));
+ab.position.set(-20.5,0,0);ab.rotation.z=Math.PI/2;jet.add(ab);jet.userData.afterburner=ab;
+
+S.add(jet);
+
+// ==================== 直升机(鲜绿色) ====================
+var heli2=new THREE.Group();
+var HG=new THREE.MeshBasicMaterial({color:0x33cc33});
+var HB=new THREE.MeshBasicMaterial({color:0x1a5c1a});
+var HS=new THREE.MeshBasicMaterial({color:0xaaaaaa});
+var HR=new THREE.MeshBasicMaterial({color:0xff0000});
+var HC=new THREE.MeshBasicMaterial({color:0x0a1a2a,transparent:true,opacity:.5});
+
+var hpts=[];for(var i=0;i<=32;i++){var t=i/32,x=t*16-7;var r;if(t<.06)r=.5+t*2.5;else if(t<.16)r=2.5+(t-.06)*2/.1;else if(t<.35)r=4.2+Math.sin((t-.16)/.19*Math.PI)*1.2;else if(t<.62)r=4.0;else if(t<.78)r=4.0-(t-.62)*2.8/.16;else r=1.0-(t-.78)*.8/.22;hpts.push(new THREE.Vector2(r,x))}
+heli2.add(new THREE.Mesh(new THREE.LatheGeometry(hpts,36),HG));
+
+// 发动机罩
+heli2.add(new THREE.Mesh(new THREE.BoxGeometry(4,0.3,1),HB)).position.set(0,.6,0);
+
+// 尾梁
+heli2.add(new THREE.Mesh(new THREE.BoxGeometry(6,0.15,0.25),HG)).position.set(6.5,0.4,0);
+heli2.add(new THREE.Mesh(new THREE.BoxGeometry(1,.16,.27),new THREE.MeshBasicMaterial({color:0xffcc00})).position.set(8,0.4,0));
+
+// 垂尾
+heli2.add(new THREE.Mesh(new THREE.BoxGeometry(0.1,0.9,0.4),HG)).position.set(8,0.55,0);
+heli2.add(new THREE.Mesh(new THREE.BoxGeometry(2,0.08,0.35),HG)).position.set(5.5,0.4,0));
+
+// 座舱
+heli2.add(new THREE.Mesh(new THREE.BoxGeometry(0.5,0.35,0.7),HC)).position.set(-5,.9,0));
+
+// 主旋翼
+var mr4=new THREE.Group();mr4.position.set(0,.8,0);
+for(var b=0;b<5;b++){
+  var an=b*Math.PI*2/5;
+  var bld=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.02,4.5),HS);bld.position.set(Math.cos(an)*2,0,Math.sin(an)*2);bld.rotation.z=an;mr4.add(bld);
+  var tip4=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.02,0.5),HR);tip4.position.set(Math.cos(an)*4,0,Math.sin(an)*4);tip4.rotation.z=an;mr4.add(tip4);
+}
+heli2.add(mr4);
+heli2.userData.mainRotor=mr4;
+
+// 尾旋翼
+var tr5=new THREE.Group();tr5.position.set(9.5,0.4,0.15);
+for(var b=0;b<4;b++){var an=b*Math.PI/2;var tb2=new THREE.Mesh(new THREE.BoxGeometry(0.03,0.01,0.5),HS);tb2.position.set(0,Math.cos(an)*.25,Math.sin(an)*.25);tb2.rotation.z=an;tr5.add(tb2)}
+tr5.rotation.y=Math.PI/2;heli2.add(tr5);
+heli2.userData.tailRotor=tr5;
+
+heli2.visible=false;
+S.add(heli2);
+
+M.textContent='🛩️ 起飞!';setTimeout(function(){M.style.opacity='0';setTimeout(function(){M.style.display='none'},500)},400);
+
+// ===== 状态 =====
+var planeIdx=0; // 0=jet, 1=heli
+var hx=0,hy=20,hz=40,hs=0,vs=0;
+var pitch=0,roll=0,yaw=0;
+var thr=0.5,targetThr=0.5;
+
+// ===== 输入 =====
+var keys={};
+document.addEventListener('keydown',function(e){keys[e.key.toLowerCase()]=true;e.key===' '&&e.preventDefault()});
+document.addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false});
+
+var sId=null,sOX=0,sOY=0,pitchJoy=0,rollJoy=0;
+var st=document.getElementById('stickBox'),kn=document.getElementById('knob');
+st.addEventListener('touchstart',function(e){e.preventDefault();e.stopPropagation();sId=e.touches[0].identifier;var r=st.getBoundingClientRect();sOX=r.left+r.width/2;sOY=r.top+r.height/2},{passive:false});
+st.addEventListener('touchmove',function(e){e.preventDefault();e.stopPropagation();for(var i=0;i<e.touches.length;i++)if(e.touches[i].identifier===sId){var dx=e.touches[i].clientX-sOX,dy=e.touches[i].clientY-sOY,dd=Math.min(44,Math.hypot(dx,dy))/44;rollJoy=dx/44*0.8;pitchJoy=-dy/44;kn.style.transform='translate('+(dx*.65)+'px,'+(dy*.65)+'px)';break}},{passive:false});
+st.addEventListener('touchend',function(e){e.preventDefault();sId=null;rollJoy=0;pitchJoy=0;kn.style.transform='translate(0,0)'},{passive:false});
+
+// 油门按钮
+document.getElementById('thrUp').addEventListener('touchstart',function(e){e.preventDefault();targetThr=Math.min(1,targetThr+.02)},{passive:false});
+document.getElementById('thrDown').addEventListener('touchstart',function(e){e.preventDefault();targetThr=Math.max(0,targetThr-.02)},{passive:false});
+document.getElementById('thrUp').addEventListener('mousedown',function(e){e.preventDefault();targetThr=Math.min(1,targetThr+.02)});
+document.getElementById('thrDown').addEventListener('mousedown',function(e){e.preventDefault();targetThr=Math.max(0,targetThr-.02)});
+
+var camMode=0;
+document.getElementById('camBtn').addEventListener('click',function(){camMode=(camMode+1)%3});
+document.getElementById('camBtn').addEventListener('touchstart',function(e){e.preventDefault();camMode=(camMode+1)%3},{passive:false});
+
+window.switchPlane=function(idx){
+  planeIdx=idx;
+  jet.visible=(idx===0);
+  heli2.visible=(idx===1);
+  document.querySelectorAll('#switch button').forEach(function(b2,i){b2.classList.toggle('sel',i===idx)});
+  document.getElementById('planeName').textContent=idx===0?'✈️ 战斗机':'🚁 直升机';
+};
+
+// ===== 主循环 =====
+var pt=performance.now();
+function tick(now){
+  requestAnimationFrame(tick);
+  var dt=(now-pt)/1000;pt=now;if(dt<=0||dt>0.2)dt=0.016;
+
+  // 键盘
+  var joyP=0,joyR=0;
+  if(keys['w']||keys['arrowup'])joyP=-1;
+  else if(keys['s']||keys['arrowdown'])joyP=1;
+  if(keys['a']||keys['arrowleft'])joyR=-0.8;
+  else if(keys['d']||keys['arrowright'])joyR=0.8;
+  if(sId===null){joyP+=pitchJoy*.3;joyR+=rollJoy*.3}else{joyP=pitchJoy;joyR=rollJoy}
+  if(keys['shift'])targetThr=Math.min(1,targetThr+.01);
+  if(keys['control'])targetThr=Math.max(0,targetThr-.01);
+
+  // 油门平滑
+  thr+=(targetThr-thr)*Math.min(dt*3,1);
+
+  var isHeli2=planeIdx===1;
+
+  // 姿态
+  pitch+=(joyP*(isHeli2?.4:1.5)-pitch)*Math.min(dt*3,1);
+  roll+=(joyR*(isHeli2?1:2.5)-roll)*Math.min(dt*3,1);
+  yaw+=joyR*(isHeli2?.06:.1);
+
+  // 速度与位置
+  var maxSpd=isHeli2?80:250;
+  hs+=(thr*maxSpd-hs)*(isHeli2?dt*2:dt*.8);
+  if(isHeli2)hs*=0.98;
+  vs+=(isHeli2?(thr-0.45)*40:(hs>30?-2:.2)-vs*.3)*dt;
+  vs*=0.97;
+
+  // 直升机VS下降
+  if(isHeli2&&keys['shift']){vs+=40*dt;targetThr=Math.min(1,targetThr+.02)}
+  if(isHeli2&&keys['control']){vs-=20*dt;targetThr=Math.max(0,targetThr-.02)}
+
+  hy+=vs*dt;
+  if(hy<2){hy=2;vs=0}
+  if(hy>800)hy=800;
+
+  var cy=Math.cos(yaw),sy=Math.sin(yaw);
+  hx+=cy*hs*dt;
+  hz+=sy*hs*dt;
+
+  // 边界循环
+  if(hx>900)hx=-900;if(hx<-900)hx=900;
+  if(hz>900)hz=-900;if(hz<-900)hz=900;
+
+  // 地效
+  if(hy<5&&!isHeli2){vs=Math.max(vs,-5);pitch*=.9}
+
+  // 当前飞行器
+  var ac=planeIdx===0?jet:heli2;
+  ac.position.set(hx,hy,hz);
+  ac.rotation.set(-pitch*.3,planeIdx===0?yaw+Math.PI/2:yaw,roll);
+  if(planeIdx===0){var orb=ac.rotation;ac.rotation.set(-pitch*.25,orb.y,roll*.5)}
+
+  // 旋翼
+  if(isHeli2&&heli2.userData.mainRotor){heli2.userData.mainRotor.rotation.y+=dt*18*(.3+thr*.7)}
+  if(isHeli2&&heli2.userData.tailRotor){heli2.userData.tailRotor.rotation.z+=dt*22*(.3+Math.abs(thr)*.7)}
+
+  // 后燃器
+  if(jet.userData.afterburner){jet.userData.afterburner.visible=thr>0.7}
+
+  // 相机
+  if(camMode===0){
+    // 追尾视角
+    var cd=12+planeIdx*5,ch=5+planeIdx*3;
+    var cx2=hx-Math.cos(yaw)*cd,cz2=hz-Math.sin(yaw)*cd;
+    cam.position.set(cx2,hy+ch,cz2);
+    cam.lookAt(hx,hy+1,hz);
+  }else if(camMode===1){
+    // 侧视角
+    cam.position.set(hx-Math.cos(yaw+1.5)*20,hy+15,hz-Math.sin(yaw+1.5)*20);
+    cam.lookAt(hx,hy,hz);
+  }else{
+    // 俯瞰
+    cam.position.set(hx,hy+80,hz+5);
+    cam.lookAt(hx,hy,hz);
+  }
+
+  // HUD
+  document.getElementById('altV').textContent=Math.floor(hy);
+  document.getElementById('spdV').textContent=Math.abs(Math.floor(hs*3.6));
+  document.getElementById('thrust').textContent=Math.floor(thr*100);
+  var af2=document.getElementById('altFill');
+  af2.style.height=Math.min(100,hy/800*100)+'%';
+
+  R.render(S,cam);
+}
+requestAnimationFrame(tick);
+
+window.addEventListener('resize',function(){
+  cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();
+  R.setSize(innerWidth,innerHeight);
+});
+
+}catch(e){M.textContent='⚠️ '+e.message;M.style.opacity='1';console.error(e)}
+}
+</script>
+</body></html>
