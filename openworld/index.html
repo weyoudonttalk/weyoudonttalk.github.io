@@ -1,397 +1,412 @@
-<!DOCTYPE html>
-<html lang="zh">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>空地大战</title>
+<!DOCTYPE html><html lang="zh"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>烈火苍穹 · 空地大战</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none}
-#c{display:block;width:100%;height:100%}
-#info{position:fixed;top:10px;left:10px;color:#fff;font-size:11px;z-index:99;text-shadow:0 0 6px #000;line-height:1.6}
-</style>
-</head>
-<body>
-<canvas id="c"></canvas>
-<div id="info">加载中…</div>
+html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none;font-family:'PingFang SC','Microsoft YaHei',sans-serif}
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+#stage{width:100%;height:100%;position:relative;overflow:hidden}
+#stage canvas{position:absolute;top:0;left:0;width:100%;height:100%}
+#stage .layer{position:absolute;inset:0;pointer-events:none}
+#stage .vehicle{position:absolute;pointer-events:none}
+#stage .hud{position:absolute;inset:0;pointer-events:none;z-index:90}
+
+/* title cards */
+.title-card{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;text-align:center;z-index:100;text-shadow:0 0 60px rgba(255,120,0,.8),0 0 120px rgba(255,60,0,.5)}
+.title-card h1{font-size:clamp(24px,8vw,60px);font-weight:900;letter-spacing:4px;margin:0}
+.title-card p{font-size:clamp(10px,3vw,16px);color:rgba(255,255,255,.5);letter-spacing:6px;margin-top:8px}
+
+/* skip */
+#skip{position:fixed;bottom:30px;right:20px;z-index:999;color:rgba(255,255,255,.3);font-size:11px;cursor:pointer;padding:6px 14px;border:1px solid rgba(255,255,255,.1);border-radius:4px;background:rgba(0,0,0,.3);pointer-events:auto}
+#skip:active{color:#f60}
+
+/* explosion */
+@keyframes expl{0%{transform:scale(0);opacity:1}50%{opacity:1}100%{transform:scale(3);opacity:0}}
+@keyframes flash{0%,100%{opacity:0}50%{opacity:.4}}
+@keyframes smoke{0%{transform:translateY(0) scale(1);opacity:.6}100%{transform:translateY(-200px) scale(3);opacity:0}}
+</style></head><body>
+<div id="stage">
+ <canvas id="sky"></canvas>
+ <canvas id="ground"></canvas>
+ <canvas id="fx"></canvas>
+ <div class="layer" id="vehicles"></div>
+ <div class="hud" id="hud"></div>
+</div>
+<div id="skip" onclick="window._skip=true;this.style.display='none'">跳过</div>
 
 <script>
-(function () {
+(function(){
+var _skip=false,stage=document.getElementById('stage'),_v=document.getElementById('vehicles');
+var _f=document.getElementById('fx'),_g=document.getElementById('ground'),_s=document.getElementById('sky');
+var W=innerWidth,H=innerHeight;
+var ctxS=_s.getContext('2d'),ctxG=_g.getContext('2d'),ctxF=_f.getContext('2d');
+var T=0,startT=0;
+_s.width=_f.width=_g.width=W;_s.height=_f.height=_g.height=H;
 
-var I=document.getElementById('info');
-if(typeof THREE === 'undefined'){
- I.textContent='THREE.js 加载失败';
- return;
+// resize
+window.addEventListener('resize',function(){W=innerWidth;H=innerHeight;_s.width=_f.width=_g.width=W;_s.height=_f.height=_g.height=H});
+
+// ======================== SCENE TIMELINE (900 seconds = 15 minutes) ========================
+var scenes=[
+ {start:0, end:30, name:'LOGOS', desc:'片头'},
+ {start:30, end:120, name:'DAWN', desc:'黎明集结'},
+ {start:120, end:300, name:'GROUND', desc:'地面装甲推进'},
+ {start:300, end:480, name:'AIR', desc:'制空权争夺'},
+ {start:480, end:660, name:'COMBINED', desc:'空地协同作战'}, 
+ {start:660, end:810, name:'CLIMAX', desc:'最终决战'},
+ {start:810, end:900, name:'CREDITS', desc:'终章'},
+];
+
+// ======================== PARTICLES ========================
+var particles=[];
+function spawn(x,y,color,count,spd,life,size){
+ spd=spd||30;life=life||1;size=size||1;
+ for(var i=0;i<count;i++){particles.push({x:x,y:y,vx:(Math.random()-.5)*spd,vy:-Math.random()*spd,l:life,c:color,s:size})}
 }
-I.textContent='THREE v'+THREE.REVISION+' 已加载, 初始化…';
-
-try {
-
-var S=new THREE.Scene();
-S.background=new THREE.Color(0x5a88bb);
-
-var C=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,1,1000);
-C.position.set(60,35,80);
-C.lookAt(0,5,0);
-
-var R=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true});
-R.setSize(innerWidth,innerHeight);
-R.setPixelRatio(Math.min(devicePixelRatio,1.5));
-
-S.add(new THREE.AmbientLight(0xffffff,1.4));
-var dl=new THREE.DirectionalLight(0xfff8e8,0.7);
-dl.position.set(200,400,150);
-S.add(dl);
-
-// 地面
-S.add(new THREE.Mesh(
- new THREE.PlaneGeometry(1500,1500),
- new THREE.MeshBasicMaterial({color:0x448844})
-)).rotation.x=-Math.PI/2;
-
-// 山脉
-for(var i=0;i<20;i++){
- var mx=(Math.random()-.5)*1000,mz=(Math.random()-.5)*1000;
- if(mx*mx+mz*mz<22500)continue;
- var mh=30+Math.random()*180;
- S.add(new THREE.Mesh(
-  new THREE.ConeGeometry(30+Math.random()*110,mh,10,6),
-  new THREE.MeshBasicMaterial({color:Math.random()<.5?0x887766:0x778866})
- )).position.set(mx,mh/2,mz);
+function spawnExplosion(x,y,big){
+ var c=big?'#ff4400':'#ff8800',n=big?80:30,l=big?2:1,s=big?2.5:1.5;
+ spawn(x,y,c,n,80,l,s);spawn(x,y,'#ffaa00',n/2,60,l,s*.8);spawn(x,y,'#ffcc00',n/4,40,l*1.5,s*.5);
+ if(big){spawn(x,y,'#222222',30,50,2.5,2);document.getElementById('stage').style.background=big?'rgba(255,200,100,.15)':'';setTimeout(function(){document.getElementById('stage').style.background=''},200)}
 }
 
-// 建筑
-var bcs=[0xaabbcc,0x8899aa,0x667788,0xccddee];
-for(var i=0;i<50;i++){
- var bx=(Math.random()-.5)*600,bz=(Math.random()-.5)*600;
- if(bx*bx+bz*bz<6400)continue;
- S.add(new THREE.Mesh(
-  new THREE.BoxGeometry(5+Math.random()*15,8+Math.random()*60,5+Math.random()*15),
-  new THREE.MeshBasicMaterial({color:bcs[i%4]})
- )).position.set(bx,(8+Math.random()*60)/2,bz);
+// ======================== VEHICLE CLASS ========================
+function Vehicle(tag,emoji,x,y,speed,dir,spriteFn){
+ this.tag=tag;this.emoji=emoji;this.x=x;this.y=y;this.speed=speed;this.dir=dir||1;
+ this.el=null;this.alive=true;this.sprite=spriteFn;
+ this.init=function(){var d=document.createElement('div');d.className='vehicle';d.innerHTML='<span style="font-size:40px;position:absolute;transform:translate(-50%,-50%)">'+this.emoji+'</span>';d.style.left=this.x+'px';d.style.top=this.y+'px';d.style.zIndex='10';_v.appendChild(d);this.el=d}
+ this.update=function(dt){if(!this.alive||!this.el)return;this.x+=this.speed*this.dir*dt;if(this.el){this.el.style.left=this.x+'px';this.el.style.top=this.y+'px'}}
+ this.remove=function(){if(this.el){_v.removeChild(this.el);this.el=null}}
 }
 
-// 树
-for(var i=0;i<200;i++){
- var tX=(Math.random()-.5)*900,tZ=(Math.random()-.5)*900;
- if(tX*tX+tZ*tZ<6400)continue;
- S.add(new THREE.Mesh(
-  new THREE.CylinderGeometry(.12,.2,3+Math.random()*5,6),
-  new THREE.MeshBasicMaterial({color:0x5a3a1a})
- )).position.set(tX,1.5,tZ);
- S.add(new THREE.Mesh(
-  new THREE.SphereGeometry(1+Math.random()*2,6,4),
-  new THREE.MeshBasicMaterial({color:0x338822})
- )).position.set(tX,3.5+Math.random()*3,tZ);
-}
-
-// === 坦克 ===
-function makeTank(c){
- var g=new THREE.Group();
- var CT=new THREE.MeshBasicMaterial({color:c});
- var DK=new THREE.MeshBasicMaterial({color:0x111111});
- var GR=new THREE.MeshBasicMaterial({color:0x777777});
- var h1=new THREE.Mesh(new THREE.BoxGeometry(5,1.5,8),CT);g.add(h1);
- for(var s=-1;s<=1;s+=2){
-  var t1=new THREE.Mesh(new THREE.BoxGeometry(.6,2.2,9),DK);t1.position.set(s*2.8,-0.5,0);g.add(t1);
-  var t2=new THREE.Mesh(new THREE.CylinderGeometry(.7,.7,9,8),DK);t2.position.set(s*2.8,-1.6,0);t2.rotation.x=Math.PI/2;g.add(t2);
+// Spawn ground vehicle sprite (CSS tank/APC)
+function spawnTankSprite(x,y,type){
+ var d=document.createElement('div');d.className='vehicle';d.style.left=x+'px';d.style.top=y+'px';d.style.zIndex='10';
+ if(type==='tank'){
+  d.innerHTML='<div style="position:relative;width:70px;height:35px"><div style="position:absolute;bottom:6px;left:8px;width:50px;height:18px;background:linear-gradient(180deg,#4a5a2a,#2d3a18);border-radius:3px 3px 1px 1px;border:1px solid #1a2510"></div><div style="position:absolute;bottom:0;left:2px;width:14px;height:10px;background:#111;border-radius:50%;border:2px solid #333"></div><div style="position:absolute;bottom:0;left:20px;width:14px;height:10px;background:#111;border-radius:50%;border:2px solid #333"></div><div style="position:absolute;bottom:0;left:38px;width:14px;height:10px;background:#111;border-radius:50%;border:2px solid #333"></div><div style="position:absolute;bottom:0;left:54px;width:14px;height:10px;background:#111;border-radius:50%;border:2px solid #333"></div><div style="position:absolute;bottom:22px;left:22px;width:22px;height:16px;background:linear-gradient(180deg,#5a6a3a,#3a4a22);border-radius:6px 6px 2px 2px;border:1px solid #2a3a15"></div><div style="position:absolute;bottom:36px;left:28px;width:6px;height:20px;background:#333;border-radius:2px;transform:rotate(-5deg);transform-origin:bottom center"></div></div>';
+ }else if(type==='apc'){
+  d.innerHTML='<div style="position:relative;width:60px;height:30px"><div style="position:absolute;bottom:5px;left:6px;width:44px;height:20px;background:linear-gradient(180deg,#556633,#334422);border-radius:4px 4px 2px 2px"></div><div style="position:absolute;bottom:0;left:2px;width:10px;height:8px;background:#111;border-radius:50%"></div><div style="position:absolute;bottom:0;left:15px;width:10px;height:8px;background:#111;border-radius:50%"></div><div style="position:absolute;bottom:0;left:28px;width:10px;height:8px;background:#111;border-radius:50%"></div><div style="position:absolute;bottom:0;left:41px;width:10px;height:8px;background:#111;border-radius:50%"></div><div style="position:absolute;bottom:20px;left:20px;width:12px;height:10px;background:#445533;border-radius:50%"></div><div style="position:absolute;bottom:28px;left:22px;width:4px;height:8px;background:#333"></div></div>';
+ }else if(type==='jet'){
+  d.innerHTML='<div style="position:relative;width:80px;height:20px;transform:rotate(-10deg)"><div style="position:absolute;left:0;top:6px;width:65px;height:8px;background:linear-gradient(90deg,#ddd,#999);clip-path:polygon(0% 30%,90% 0%,100% 50%,90% 100%,0% 70%)"></div><div style="position:absolute;left:10px;top:2px;width:40px;height:16px;background:linear-gradient(90deg,#eee,#ccc);clip-path:polygon(0% 40%,85% 0%,100% 50%,85% 100%,0% 60%)"></div><div style="position:absolute;left:60px;top:6px;width:8px;height:6px;background:#ff4400;border-radius:0 2px 2px 0"></div></div>';
+ }else if(type==='heli'){
+  d.innerHTML='<div style="position:relative;width:60px;height:25px"><div style="position:absolute;bottom:2px;left:8px;width:40px;height:14px;background:linear-gradient(180deg,#5a7a3a,#3a5522);border-radius:4px 4px 2px 2px"></div><div style="position:absolute;bottom:12px;left:18px;width:20px;height:6px;background:#222"></div><div style="position:absolute;bottom:14px;left:24px;width:8px;height:14px;background:linear-gradient(180deg,#5a7a3a,#3a5522);border-radius:2px"></div><div style="position:absolute;top:0;left:16px;width:24px;height:3px;background:#888;border-radius:10px;transform-origin:12px 1.5px;animation:heliRotor .3s linear infinite"></div></div>';
+  var st=document.createElement('style');st.textContent='@keyframes heliRotor{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}';document.head.appendChild(st);
  }
- var turret=new THREE.Group();
- var t3=new THREE.Mesh(new THREE.CylinderGeometry(2,2.2,1.2,12),CT);t3.position.y=0.6;turret.add(t3);
- var t4=new THREE.Mesh(new THREE.CylinderGeometry(.15,.22,7,12),GR);t4.position.set(0,1.5,-3);t4.rotation.x=-0.2;turret.add(t4);
- turret.position.set(0,0.4,0.5);g.add(turret);
- return g;
+ _v.appendChild(d);return {el:d,x:x,y:y,alive:true};
 }
 
-// === APC ===
-function makeAPC(c){
- var g=new THREE.Group();
- var CT2=new THREE.MeshBasicMaterial({color:c});
- var DK2=new THREE.MeshBasicMaterial({color:0x1a1a1a});
- var a1=new THREE.Mesh(new THREE.BoxGeometry(4,2.5,7.5),CT2);g.add(a1);
- for(var s=-1;s<=1;s+=2){
-  for(var w=0;w<4;w++){
-   var a2=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,.3,10),DK2);a2.position.set(s*2.1,-1.8,-2.5+w*1.8);g.add(a2);
-  }
+// ======================== SKY RENDERING ========================
+var stars=[],cloudsR=[];
+for(var i=0;i<100;i++){stars.push({x:Math.random()*W,y:Math.random()*H*.6,r:.3+Math.random()*1.2,b:Math.random()})}
+for(var i=0;i<20;i++){cloudsR.push({x:Math.random()*W,y:Math.random()*H*.7,r:30+Math.random()*80,spd:.2+Math.random()*.5})}
+
+function drawSky(t,scene){
+ var sn=scenes[scene];
+ ctxS.clearRect(0,0,W,H);
+
+ // Sky gradient based on scene
+ var topC,botC;
+ if(sn.name==='DAWN'||sn.name==='LOGOS'){
+  topC='#0a0a1a';botC='#1a2a44';
+ }else if(sn.name==='NIGHT'){
+  topC='#050510';botC='#0a1525';
+ }else{
+  topC='#1a3a5c';botC='#5a88bb';
  }
- var a3=new THREE.Mesh(new THREE.BoxGeometry(3.8,.8,.2),new THREE.MeshBasicMaterial({color:0x335566,transparent:true,opacity:.6}));a3.position.set(0,0.6,3.5);g.add(a3);
- var t2=new THREE.Group();
- var a4=new THREE.Mesh(new THREE.CylinderGeometry(.8,.9,.6,10),DK2);t2.add(a4);
- var a5=new THREE.Mesh(new THREE.CylinderGeometry(.08,.1,2,8),DK2);a5.rotation.x=-0.15;t2.add(a5);
- t2.position.set(0,1.5,-0.5);g.add(t2);
- return g;
-}
+ var grd=ctxS.createLinearGradient(0,0,0,H);
+ grd.addColorStop(0,topC);grd.addColorStop(1,botC);
+ ctxS.fillStyle=grd;ctxS.fillRect(0,0,W,H);
 
-// === 战斗机 ===
-function makeJet(){
- var g=new THREE.Group();
- var JR=new THREE.MeshBasicMaterial({color:0xdd2200});
- var JW=new THREE.MeshBasicMaterial({color:0xeeeedd});
- var JD=new THREE.MeshBasicMaterial({color:0x111122});
- var JA=new THREE.MeshBasicMaterial({color:0xffaa00});
- var j1=new THREE.Mesh(new THREE.ConeGeometry(1,5,8),JR);j1.position.set(25,0,0);j1.rotation.z=Math.PI/2;g.add(j1);
- var j2=new THREE.Mesh(new THREE.CylinderGeometry(1,3,10,16),JR);j2.position.set(17,0,0);j2.rotation.z=Math.PI/2;g.add(j2);
- var j3=new THREE.Mesh(new THREE.CylinderGeometry(3,3.5,12,16),JR);j3.position.set(6,0,0);j3.rotation.z=Math.PI/2;g.add(j3);
- var j4=new THREE.Mesh(new THREE.CylinderGeometry(3.5,2.5,10,16),JR);j4.position.set(-5,0,0);j4.rotation.z=Math.PI/2;g.add(j4);
- var j5=new THREE.Mesh(new THREE.CylinderGeometry(2.5,1.5,6,16),JR);j5.position.set(-13,0,0);j5.rotation.z=Math.PI/2;g.add(j5);
- var j6=new THREE.Mesh(new THREE.BoxGeometry(3,0.12,16),JW);j6.position.set(2,-0.1,0);g.add(j6);
- var j7=new THREE.Mesh(new THREE.BoxGeometry(0.15,2.5,3),JR);j7.position.set(-8,1.5,0);g.add(j7);
- var j8=new THREE.Mesh(new THREE.BoxGeometry(1.5,0.08,6),JW);j8.position.set(-14,0,0);g.add(j8);
- var j9=new THREE.Mesh(new THREE.CylinderGeometry(1,1.2,3,12),JD);j9.position.set(-16.5,0,0);j9.rotation.z=Math.PI/2;g.add(j9);
- var j10=new THREE.Mesh(new THREE.ConeGeometry(.9,5,8),JA);j10.position.set(-19,0,0);j10.rotation.z=Math.PI/2;g.add(j10);
- return g;
-}
-
-// === 运输直升机 ===
-function makeHeli(){
- var g=new THREE.Group();
- var HM=new THREE.MeshBasicMaterial({color:0x3d5530});
- var HD=new THREE.MeshBasicMaterial({color:0x1a2815});
- var HL=new THREE.MeshBasicMaterial({color:0x999999});
- var HR=new THREE.MeshBasicMaterial({color:0xff0000});
- var h1=new THREE.Mesh(new THREE.BoxGeometry(3,2.5,12),HM);g.add(h1);
- var h2=new THREE.Mesh(new THREE.BoxGeometry(3.2,0.3,12.2),HD);h2.position.y=-1.2;g.add(h2);
- var h3=new THREE.Mesh(new THREE.BoxGeometry(2.5,1.5,2.5),HM);h3.position.set(0,-0.2,6);g.add(h3);
- var h4=new THREE.Mesh(new THREE.BoxGeometry(1,0.8,9),HM);h4.position.set(0,0.3,9.5);g.add(h4);
- var h5=new THREE.Mesh(new THREE.BoxGeometry(2.8,1,0.2),new THREE.MeshBasicMaterial({color:0x445566,transparent:true,opacity:0.55}));h5.position.set(0,0.5,5.5);g.add(h5);
- var mr=new THREE.Group();mr.position.set(0,1.6,1);
- for(var i=0;i<5;i++){
-  var a=i*Math.PI*2/5;
-  var bl=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.02,5),HL);bl.position.set(Math.cos(a)*2.2,0,Math.sin(a)*2.2);bl.rotation.z=a;mr.add(bl);
-  var tp=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.02,0.4),HR);tp.position.set(Math.cos(a)*4.3,0,Math.sin(a)*4.3);tp.rotation.z=a;mr.add(tp);
- }
- g.add(mr);
- g.userData={mr:mr,alive:true,spin:0,fallV:0};
- return g;
-}
-
-// 放置载具
-var tanks=[];
-for(var i=0;i<5;i++){
- var t=makeTank([0x556633,0x664422,0x445533,0x554433,0x635533][i]);
- t.position.set(-60+i*30,-0.5,-40+Math.sin(i)*10);
- t.rotation.y=0.3;
- S.add(t);
- tanks.push(t);
-}
-
-var apcs=[];
-for(var i=0;i<3;i++){
- var a=makeAPC([0x445522,0x334422,0x445533][i]);
- a.position.set(-90+i*40,-0.5,20);
- a.rotation.y=-0.2;
- S.add(a);
- apcs.push(a);
-}
-
-var heli=makeHeli();
-heli.position.set(50,25,-30);
-S.add(heli);
-
-var heli2=makeHeli();
-heli2.position.set(70,30,-60);
-S.add(heli2);
-heli2.userData.alive=true;
-heli2.userData.spin=0;
-heli2.userData.fallV=0;
-
-var jet=makeJet();
-jet.position.set(-100,50,80);
-jet.rotation.y=Math.PI/2-0.3;
-S.add(jet);
-
-I.innerHTML='<b>空地大战</b><br>坦克×5 APC×3 直升机×2 战斗机×1';
-
-// 粒子
-var P=[];
-function sp(x,y,z,col,n,spd){
- spd=spd||60;
- for(var i=0;i<n;i++){
-  P.push({
-   x:x,y:y,z:z,
-   vx:(Math.random()-0.5)*spd,
-   vy:Math.random()*spd*0.3-Math.random()*spd*0.5,
-   vz:(Math.random()-0.5)*spd,
-   l:0.5+Math.random()*1.5,
-   c:col,
-   sz:1+Math.random()*3
+ // Stars (only in dawn/logos scenes)
+ if(sn.name==='DAWN'||sn.name==='LOGOS'){
+  stars.forEach(function(s){
+   ctxS.fillStyle='rgba(255,255,255,'+(.3+s.b*.5*Math.sin(t*2+s.x)*.5+.5)+')';
+   ctxS.beginPath();ctxS.arc(s.x,s.y,s.r,0,Math.PI*2);ctxS.fill();
   });
  }
+
+ // Sun/moon
+ if(sn.name!=='LOGOS'){
+  var sunY=H*.3+Math.sin(t*.1)*20;
+  var sunGr=ctxS.createRadialGradient(W*.7,sunY,0,W*.7,sunY,120);
+  sunGr.addColorStop(0,'rgba(255,240,200,.8)');sunGr.addColorStop(.3,'rgba(255,200,100,.3)');sunGr.addColorStop(1,'rgba(255,150,50,0)');
+  ctxS.fillStyle=sunGr;ctxS.beginPath();ctxS.arc(W*.7,sunY,120,0,Math.PI*2);ctxS.fill();
+ }
+
+ // Clouds
+ cloudsR.forEach(function(c){
+  c.x-=c.spd;if(c.x<-100)c.x=W+100;
+  ctxS.fillStyle='rgba(255,255,255,'+(.15+.1*Math.sin(t+c.x*.01))+.1+')';
+  ctxS.beginPath();ctxS.arc(c.x,c.y,c.r,0,Math.PI*2);ctxS.fill();
+  ctxS.beginPath();ctxS.arc(c.x-c.r*.6,c.y+c.r*.1,c.r*.7,0,Math.PI*2);ctxS.fill();
+ });
 }
 
-// 导弹
-var M=[];
-var f1=false,f2=false;
+// ======================== GROUND RENDERING ========================
+function drawGround(t,scene){
+ ctxG.clearRect(0,0,W,H);
+ var grH=H*.55;
+ // ground
+ var grd=ctxG.createLinearGradient(0,grH,0,H);
+ grd.addColorStop(0,'#3a5a28');grd.addColorStop(.5,'#2a4a18');grd.addColorStop(1,'#1a3010');
+ ctxG.fillStyle=grd;ctxG.fillRect(0,grH,W,H-grH);
+ // road
+ ctxG.fillStyle='#333';ctxG.fillRect(0,grH+50,W,16);
+ ctxG.strokeStyle='rgba(255,255,255,.15)';ctxG.setLineDash([20,15]);ctxG.beginPath();
+ ctxG.moveTo(0,grH+58);ctxG.lineTo(W,grH+58);ctxG.stroke();ctxG.setLineDash([]);
+}
 
-// 主循环
-var startT=0,lastT=0;
+// ======================== FX RENDERING ========================
+function drawFX(t){
+ ctxF.clearRect(0,0,W,H);
+ // particles
+ for(var i=particles.length-1;i>=0;i--){
+  var p=particles[i];p.x+=p.vx*0.016;p.y+=p.vy*0.016;p.l-=.016;
+  if(p.l<=0){particles.splice(i,1);continue}
+  var a=Math.min(1,p.l);ctxF.fillStyle=p.c.replace(')',','+a+')').replace('rgb','rgba');
+  if(p.c.startsWith('#')){
+   var hx=p.c;ctxF.fillStyle='rgba('+parseInt(hx.substr(1,2),16)+','+parseInt(hx.substr(3,2),16)+','+parseInt(hx.substr(5,2),16)+','+a+')';
+  }
+  ctxF.beginPath();ctxF.arc(p.x,p.y,p.s*a,0,Math.PI*2);ctxF.fill();
+ }
+}
+
+// ======================== VEHICLE MANAGEMENT ========================
+var groundVehicles=[],airVehicles=[],explosionTimers=[];
+
+function clearAllVehicles(){
+ groundVehicles.forEach(function(v){if(v.el)_v.removeChild(v.el)});
+ airVehicles.forEach(function(v){if(v.el)_v.removeChild(v.el)});
+ groundVehicles=[];airVehicles=[];
+ // also clear leftover child divs
+ var ch=_v.children;for(var i=ch.length-1;i>=0;i--){if(ch[i].className==='vehicle')_v.removeChild(ch[i])}
+}
+
+// ======================== SCENE 0: LOGOS (0-30s) ========================
+function sceneLogos(t,ts){
+ if(ts<1){drawTitle('烈火苍穹','Fire & Steel',ts/1)}else if(ts<3){drawTitle('','',1-(ts-1)/2)}
+ if(ts>3&&ts<10){drawSubtitle('导演: 小Q AI Studio','',ts-3)}
+ if(ts>10)drawSubtitle('','',1-(ts-10)/3);
+}
+
+// ======================== SCENE 1: DAWN (30-120s) ========================
+function sceneDawn(t,ts){
+ if(ts<2){
+  drawSubtitle('第一章','黎明集结',ts/2);
+ }else{drawSubtitle('','',1-(ts-2)/3)}
+
+ if(ts>5&&groundVehicles.length===0){
+  // spawn initial forces
+  for(var i=0;i<5;i++){var s=spawnTankSprite(W*.1+i*160,H*.58,'tank');s.x=W*.1+i*160;s.y=H*.58;groundVehicles.push(s)}
+  for(var i=0;i<3;i++){var s2=spawnTankSprite(W*.05+i*180,H*.58+40,'apc');s2.x=W*.05+i*180;s2.y=H*.58+40;groundVehicles.push(s2)}
+ }
+
+ // Move ground forces slowly
+ groundVehicles.forEach(function(v,i){
+  if(!v.alive)return;v.x+=.3;if(v.x>W+80)v.x=-80;v.el.style.left=v.x+'px';
+  // terrain bounce
+  v.el.style.top=(v.y+Math.sin(t*2+i)*3)+'px';
+ });
+}
+
+// ======================== SCENE 2: GROUND ASSAULT (120-300s) ========================
+var groundPhase2=false;
+function sceneGround(t,ts){
+ if(ts<2){drawSubtitle('第二章','装甲洪流',ts/2)}
+ else if(ts<5){drawSubtitle('','',1)}
+
+ if(ts>3&&!groundPhase2){
+  groundPhase2=true;
+  clearAllVehicles();
+  // Massive ground force
+  for(var i=0;i<8;i++){var s=spawnTankSprite(-80-i*60,H*.58-i*2,'tank');s.x=-80-i*60;s.y=H*.58-i*2;groundVehicles.push(s)}
+  for(var i=0;i<5;i++){var s2=spawnTankSprite(-50-i*70,H*.58+40-i*2,'apc');s2.x=-50-i*70;s2.y=H*.58+40-i*2;groundVehicles.push(s2)}
+  // Air support
+  for(var i=0;i<3;i++){var j=spawnTankSprite(W*.3+i*200,H*.2+i*30,'jet');j.x=W*.3+i*200;j.y=H*.2+i*30;airVehicles.push(j)}
+  for(var i=0;i<2;i++){var h=spawnTankSprite(W*.5+i*180,H*.3+i*20,'heli');h.x=W*.5+i*180;h.y=H*.3+i*20;airVehicles.push(h)}
+ }
+
+ // Move forces faster
+ groundVehicles.forEach(function(v,i){if(v.alive){v.x+=.8;if(v.x>W+80)v.x=-80;v.el.style.left=v.x+'px';v.el.style.top=(v.y+Math.sin(t*1.5+i)*2)+'px'}});
+ airVehicles.forEach(function(v,i){
+  if(!v.alive)return;
+  if(v.el.innerHTML.indexOf('jet')!==-1||JSON.stringify(v.el.innerHTML).indexOf('dddd')!==-1||v.el.innerHTML.indexOf('80px')!==-1){
+   // jet
+   v.x+=2;v.y=H*.2+Math.sin(t+i)*40;if(v.x>W+100){v.x=-100}
+  }else{
+   // heli
+   v.x+=.6;v.y=H*.3+Math.cos(t*.8+i)*20;if(v.x>W+80){v.x=-80}
+  }
+  v.el.style.left=v.x+'px';v.el.style.top=v.y+'px';
+ });
+
+ // Explosions every 30 seconds
+ if(Math.floor(ts)%30===0&&Math.floor(ts)>0&&!explosionTimers[Math.floor(ts)]){
+  explosionTimers[Math.floor(ts)]=true;
+  spawnExplosion(W*.4+Math.random()*W*.3,H*.5+Math.random()*H*.2,Math.random()>.5);
+ }
+}
+
+// ======================== SCENE 3: AIR BATTLE (300-480s) ========================
+var airPhase3=false;
+function sceneAir(t,ts){
+ if(ts<2){drawSubtitle('第三章','制空权',ts/2)}else if(ts<5){drawSubtitle('','',1)}
+ if(ts>3&&!airPhase3){
+  airPhase3=true;clearAllVehicles();
+  for(var i=0;i<6;i++){var j=spawnTankSprite(-60-i*80,H*.15+i*25,'jet');j.x=-60-i*80;j.y=H*.15+i*25;airVehicles.push(j)}
+  for(var i=0;i<4;i++){var h=spawnTankSprite(W+60+i*70,H*.25+i*30,'heli');h.x=W+60+i*70;h.y=H*.25+i*30;airVehicles.push(h)}
+  for(var i=0;i<3;i++){var s=spawnTankSprite(W*.2+i*200,H*.58,'tank');s.x=W*.2+i*200;s.y=H*.58;groundVehicles.push(s)}
+ }
+ airVehicles.forEach(function(v,i){
+  if(!v.alive)return;
+  v.x+=1.5+Math.sin(t*.5+i)*.5;v.y+=Math.sin(t*.3+i*.7)*30;if(v.x>W+100)v.x=-100;if(v.x<-100)v.x=W+100;
+  v.el.style.left=v.x+'px';v.el.style.top=v.y+'px';
+ });
+ groundVehicles.forEach(function(v,i){if(v.alive){v.x+=.4;if(v.x>W+80)v.x=-80;v.el.style.left=v.x+'px';v.el.style.top=(v.y+Math.sin(t+1)*2)+'px'}});
+
+ if(Math.floor(ts)%15===0&&ts>0&&!explosionTimers['air'+Math.floor(ts)]){
+  explosionTimers['air'+Math.floor(ts)]=true;
+  spawnExplosion(W*.2+Math.random()*W*.6,H*.2+Math.random()*H*.3,true);
+  // flash screen
+  document.getElementById('stage').style.background='rgba(255,150,50,.08)';
+  setTimeout(function(){document.getElementById('stage').style.background=''},150);
+ }
+}
+
+// ======================== SCENE 4: COMBINED ARMS (480-660s) ========================
+var combinedPhase4=false;
+function sceneCombined(t,ts){
+ if(ts<2){drawSubtitle('第四章','空地协同',ts/2)}else if(ts<5){drawSubtitle('','',1)}
+ if(ts>3&&!combinedPhase4){combinedPhase4=true;clearAllVehicles();
+  for(var i=0;i<6;i++){var s=spawnTankSprite(-80-i*50,H*.58-i*3,'tank');s.x=-80-i*50;s.y=H*.58-i*3;groundVehicles.push(s)}
+  for(var i=0;i<4;i++){var s2=spawnTankSprite(-50-i*60,H*.58+40-i*2,'apc');s2.x=-50-i*60;s2.y=H*.58+40-i*2;groundVehicles.push(s2)}
+  for(var i=0;i<4;i++){var j=spawnTankSprite(W*.1+i*220,H*.18+i*20,'jet');j.x=W*.1+i*220;j.y=H*.18+i*20;airVehicles.push(j)}
+  for(var i=0;i<3;i++){var h=spawnTankSprite(W*.3+i*200,H*.28+i*15,'heli');h.x=W*.3+i*200;h.y=H*.28+i*15;airVehicles.push(h)}
+ }
+ // intense movement
+ groundVehicles.forEach(function(v,i){if(v.alive){v.x+=1.2;if(v.x>W+80)v.x=-80;v.el.style.left=v.x+'px';v.el.style.top=(v.y+Math.sin(t*2+i)*3)+'px'}});
+ airVehicles.forEach(function(v,i){if(!v.alive)return;v.x+=2+Math.sin(t+i)*.6;v.y+=Math.sin(t*.4+i*.5)*35;if(v.x>W+100)v.x=-100;if(v.x<-100)v.x=W+100;v.el.style.left=v.x+'px';v.el.style.top=v.y+'px'});
+
+ if(Math.floor(ts)%10===0&&ts>0&&!explosionTimers['comb'+Math.floor(ts)]){
+  explosionTimers['comb'+Math.floor(ts)]=true;
+  var bx=W*.2+Math.random()*W*.6,by=H*.3+Math.random()*H*.4;
+  spawnExplosion(bx,by,Math.random()>.4);
+  document.getElementById('stage').style.background='rgba(255,180,60,'+(.05+Math.random()*.08)+')';
+  setTimeout(function(){document.getElementById('stage').style.background=''},200);
+ }
+}
+
+// ======================== SCENE 5: CLIMAX (660-810s) ========================
+var climaxPhase5=false;
+function sceneClimax(t,ts){
+ if(ts<2){drawSubtitle('第五章','最终决战',ts/2)}else if(ts<5){drawSubtitle('','',1)}
+ if(ts>3&&!climaxPhase5){climaxPhase5=true;clearAllVehicles();
+  for(var i=0;i<10;i++){var s=spawnTankSprite(-80-i*45,H*.58-(i%3)*4,'tank');s.x=-80-i*45;s.y=H*.58-(i%3)*4;groundVehicles.push(s)}
+  for(var i=0;i<6;i++){var s2=spawnTankSprite(-50-i*55,H*.58+40-(i%3)*3,'apc');s2.x=-50-i*55;s2.y=H*.58+40-(i%3)*3;groundVehicles.push(s2)}
+  for(var i=0;i<8;i++){var j=spawnTankSprite(W*.05+i*120,H*.12+i*18,'jet');j.x=W*.05+i*120;j.y=H*.12+i*18;airVehicles.push(j)}
+  for(var i=0;i<5;i++){var h=spawnTankSprite(W*.2+i*160,H*.22+i*14,'heli');h.x=W*.2+i*160;h.y=H*.22+i*14;airVehicles.push(h)}
+ }
+
+ groundVehicles.forEach(function(v,i){if(v.alive){v.x+=1.8;if(v.x>W+80)v.x=-80;v.el.style.left=v.x+'px';v.el.style.top=(v.y+Math.sin(t*3+i)*4)+'px'}});
+ airVehicles.forEach(function(v,i){if(!v.alive)return;v.x+=3+Math.sin(t*.8+i)*.7;v.y+=Math.sin(t*.5+i*.6)*40;if(v.x>W+120)v.x=-120;if(v.x<-120)v.x=W+120;v.el.style.left=v.x+'px';v.el.style.top=v.y+'px'});
+
+ // Constant explosions
+ if(Math.floor(ts)%4===0&&!explosionTimers['clx'+Math.floor(ts)]){
+  explosionTimers['clx'+Math.floor(ts)]=true;
+  var bx=W*.15+Math.random()*W*.7,by=H*.25+Math.random()*H*.45;
+  spawnExplosion(bx,by,true);
+  document.getElementById('stage').style.background='rgba(255,200,80,'+(.08+Math.random()*.12)+')';
+  setTimeout(function(){document.getElementById('stage').style.background=''},300);
+  // occasional screen shake
+  var oX=Math.random()*10-5,oY=Math.random()*10-5;
+  document.getElementById('stage').style.transform='translate('+oX+'px,'+oY+'px)';
+  setTimeout(function(){document.getElementById('stage').style.transform=''},100);
+ }
+}
+
+// ======================== SCENE 6: CREDITS (810-900s) ========================
+var creditsPhase6=false;
+function sceneCredits(t,ts){
+ if(!creditsPhase6){creditsPhase6=true;clearAllVehicles()}
+ if(ts<3){drawTitle('','',ts/3)}else if(ts<20){drawCredits(ts)}else{drawTitle('烈火苍穹','感谢观看',(ts-20)/10)}
+}
+
+// ======================== TITLE/SUBTITLE HELPERS ========================
+var titleDiv=null,subDiv=null;
+function drawTitle(main,sub,a){
+ if(!titleDiv){titleDiv=document.createElement('div');titleDiv.className='title-card';titleDiv.innerHTML='<h1></h1><p></p>';_v.appendChild(titleDiv)}
+ titleDiv.style.opacity=a;titleDiv.querySelector('h1').textContent=main;titleDiv.querySelector('p').textContent=sub;
+}
+function drawSubtitle(main,sub,a){
+ if(!subDiv){subDiv=document.createElement('div');subDiv.style.cssText='position:absolute;bottom:20%;left:50%;transform:translateX(-50%);color:#fff;font-size:clamp(14px,4vw,22px);font-weight:700;z-index:110;text-shadow:0 0 20px rgba(255,100,0,.6);text-align:center';subDiv.innerHTML='<div></div><div style="font-size:60%;opacity:.5;margin-top:4px"></div>';_v.appendChild(subDiv)}
+ subDiv.style.opacity=a;subDiv.children[0].textContent=main;subDiv.children[1].textContent=sub;
+}
+function drawCredits(ts){
+ if(subDiv)subDiv.style.opacity=0;
+ if(!titleDiv){titleDiv=document.createElement('div');titleDiv.className='title-card';titleDiv.innerHTML='<h1></h1><p></p>';_v.appendChild(titleDiv)}
+ titleDiv.style.opacity=1;
+ titleDiv.querySelector('h1').style.fontSize='clamp(16px,5vw,36px)';
+ var credits=[
+  '','总导演: 小Q AI Studio','','视觉效果: Three.js/CSS','','音效设计: 粒子系统','','军事顾问: 三角洲行动','','特别鸣谢: 所有热爱军事的你','','','烈火苍穹 · 空地大战','© 2026 Q-Studio',
+ ];
+ var idx=Math.floor(ts/2);
+ var txt=credits.slice(Math.max(0,idx-3),idx+3).join('<br>');
+ titleDiv.querySelector('h1').innerHTML=txt;
+ var fadeProgress=Math.min(1,ts/15);
+ titleDiv.style.opacity=fadeProgress;
+}
+
+// ======================== MAIN LOOP ========================
+var lastT=0,sceneIdx=0,sceneTime=0;
+function clearTitle(){
+ if(titleDiv){titleDiv.style.opacity=0}
+ if(subDiv){subDiv.style.opacity=0}
+}
 
 function loop(now){
  requestAnimationFrame(loop);
- if(!startT){startT=now;lastT=now;R.render(S,C);return}
+ if(!startT){startT=now;lastT=now;return}
+ var dt=(now-lastT)/1000;lastT=now;
+ if(dt<=0||dt>1)dt=.016;
+ if(_skip){drawFX(0);return}
 
- var dt=(now-lastT)/1000;
- lastT=now;
- if(dt<=0||dt>0.2)dt=0.016;
- var t=(now-startT)/1000;
+ T=(now-startT)/1000;
 
- // 坦克
- for(var i=0;i<tanks.length;i++){var tk=tanks[i];if(!tk)continue;tk.position.z+=3*dt;if(tk.position.z>80)tk.position.z=-80}
- // APC
- for(var i=0;i<apcs.length;i++){var ap=apcs[i];if(!ap)continue;ap.position.z+=2.5*dt;if(ap.position.z>80)ap.position.z=-80}
+ // Find current scene
+ for(var i=scenes.length-1;i>=0;i--){if(T>=scenes[i].start){sceneIdx=i;break}}
+ var sc=scenes[sceneIdx];sceneTime=T-sc.start;
 
- // 直升机1
- if(heli.userData.alive){
-  heli.position.z+=12*dt;
-  heli.position.y=25+Math.sin(t*0.4)*5;
-  if(heli.position.z>100)heli.position.z=-100;
-  if(heli.userData.mr)heli.userData.mr.rotation.y+=dt*15;
+ // Clear titles between scenes
+ if(sceneIdx!==(sceneIdx||0))clearTitle();
+
+ // Draw layers
+ drawSky(T,sceneIdx);
+ drawGround(T,sceneIdx);
+ drawFX(T);
+
+ // Scene logic
+ switch(sc.name){
+  case 'LOGOS':sceneLogos(T,sceneTime);break;
+  case 'DAWN':sceneDawn(T,sceneTime);break;
+  case 'GROUND':sceneGround(T,sceneTime);break;
+  case 'AIR':sceneAir(T,sceneTime);break;
+  case 'COMBINED':sceneCombined(T,sceneTime);break;
+  case 'CLIMAX':sceneClimax(T,sceneTime);break;
+  case 'CREDITS':sceneCredits(T,sceneTime);break;
  }
 
- // 战斗机
- jet.position.z+=30*dt;
- jet.position.y=50+Math.sin(t*0.5)*15;
- if(jet.position.z>150)jet.position.z=-100;
+ // HUD timer
+ var totalS=Math.floor(T);
+ var m=Math.floor(totalS/60),s=totalS%60;
+ document.getElementById('hud').innerHTML='<div style="position:absolute;top:10px;right:14px;color:rgba(255,255,255,.4);font-size:11px">'+
+  (m<10?'0'+m:m)+':'+(s<10?'0'+s:s)+' / 15:00</div>'+
+  '<div style="position:absolute;top:10px;left:14px;color:rgba(255,255,255,.3);font-size:10px">'+sc.desc+'</div>';
 
- // 直升机2
- if(heli2.userData.alive){
-  heli2.position.z+=10*dt;
-  heli2.position.y=30+Math.sin(t*0.35)*4;
-  if(heli2.position.z>100)heli2.position.z=-100;
-  if(heli2.userData.mr)heli2.userData.mr.rotation.y+=dt*16;
- }
-
- // 导弹1
- if(t>2.5&&!f1){
-  f1=true;
-  sp(jet.position.x,jet.position.y,jet.position.z,'#ffaa00',15,30);
-  var dx=heli.position.x-jet.position.x,dy=heli.position.y-jet.position.y,dz=heli.position.z-jet.position.z;
-  var dl=Math.sqrt(dx*dx+dy*dy+dz*dz);
-  M.push({x:jet.position.x,y:jet.position.y,z:jet.position.z,vx:dx/dl*70,vy:dy/dl*70,vz:dz/dl*70,life:0,maxL:3,tid:0});
- }
-
- // 导弹2
- if(t>5&&!f2){
-  f2=true;
-  sp(jet.position.x,jet.position.y,jet.position.z,'#ffcc00',15,30);
-  var dx=heli2.position.x-jet.position.x,dy=heli2.position.y-jet.position.y,dz=heli2.position.z-jet.position.z;
-  var dl=Math.sqrt(dx*dx+dy*dy+dz*dz);
-  M.push({x:jet.position.x,y:jet.position.y,z:jet.position.z,vx:dx/dl*70,vy:dy/dl*70,vz:dz/dl*70,life:0,maxL:3,tid:1});
- }
-
- // 更新导弹
- for(var i=M.length-1;i>=0;i--){
-  var m=M[i];
-  m.x+=m.vx*dt;m.y+=m.vy*dt;m.z+=m.vz*dt;m.life+=dt;
-  sp(m.x,m.y,m.z,'#ff8800',1,5);
-  var tg=m.tid===0?heli:heli2;
-  var ddd=Math.sqrt((m.x-tg.position.x)*(m.x-tg.position.x)+(m.y-tg.position.y)*(m.y-tg.position.y)+(m.z-tg.position.z)*(m.z-tg.position.z));
-  if(ddd<10){
-   tg.userData.alive=false;
-   sp(tg.position.x,tg.position.y,tg.position.z,'#ff4400',60,140);
-   M.splice(i,1);
-   continue;
-  }
-  if(m.life>m.maxL){M.splice(i,1);continue}
- }
-
- // 直升机1坠毁
- if(!heli.userData.alive&&heli.visible!==false){
-  heli.userData.spin+=dt*9;
-  heli.userData.fallV+=dt*35;
-  heli.rotation.z+=dt*7;
-  heli.position.y-=heli.userData.fallV*dt;
-  heli.position.x+=Math.sin(heli.userData.spin)*3*dt;
-  sp(heli.position.x,heli.position.y,heli.position.z,'#555555',1,5);
-  if(heli.position.y<1){
-   heli.position.y=1;
-   sp(heli.position.x,1,heli.position.z,'#ff4400',100,180);
-   heli.visible=false;
-  }
- }
-
- // 直升机2坠毁
- if(!heli2.userData.alive&&heli2.visible!==false){
-  heli2.userData.spin+=dt*8;
-  heli2.userData.fallV+=dt*32;
-  heli2.rotation.z+=dt*6;
-  heli2.position.y-=heli2.userData.fallV*dt;
-  heli2.position.x-=Math.cos(heli2.userData.spin)*3*dt;
-  sp(heli2.position.x,heli2.position.y,heli2.position.z,'#555555',1,5);
-  if(heli2.position.y<1){
-   heli2.position.y=1;
-   sp(heli2.position.x,1,heli2.position.z,'#ff6600',100,180);
-   heli2.visible=false;
-  }
- }
-
- // 粒子渲染
- for(var i=P.length-1;i>=0;i--){
-  var p=P[i];
-  p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;p.l-=dt;
-  if(p.l<=0){P.splice(i,1);continue}
-  try{
-   var pm=new THREE.Mesh(
-    new THREE.SphereGeometry(p.sz*0.2,4,4),
-    new THREE.MeshBasicMaterial({color:parseInt(p.c.replace('#',''),16),transparent:true,opacity:Math.min(1,p.l)})
-   );
-   pm.position.set(p.x,p.y,p.z);
-   S.add(pm);
-   setTimeout(function(){try{S.remove(pm)}catch(e){}},60);
-  }catch(e){}
- }
-
- // 导弹渲染
- for(var i=M.length-1;i>=0;i--){
-  var ms=M[i];
-  if(!ms||isNaN(ms.x)){M.splice(i,1);continue}
-  try{
-   var mm=new THREE.Mesh(
-    new THREE.SphereGeometry(0.3,6,6),
-    new THREE.MeshBasicMaterial({color:0xff6600})
-   );
-   mm.position.set(ms.x,ms.y,ms.z);
-   S.add(mm);
-   setTimeout(function(){try{S.remove(mm)}catch(e){}},80);
-  }catch(e){}
- }
-
- // 电影运镜
- if(t<2){
-  C.position.set(40,25,60);
-  C.lookAt(0,5,0);
- }else if(t<4){
-  C.position.set(jet.position.x-15,jet.position.y+10,jet.position.z+8);
-  C.lookAt(heli.position);
- }else if(t<7){
-  C.position.set(heli.position.x+15,heli.position.y+12,heli.position.z+15);
-  C.lookAt(heli.position);
- }else{
-  C.position.set(heli2.position.x-10,heli2.position.y+12,heli2.position.z+10);
-  C.lookAt(heli2.position);
- }
-
- R.render(S,C);
+ if(T>900){return}
 }
-
-// 第一帧
-R.render(S,C);
-// 启动循环
 requestAnimationFrame(loop);
 
-window.addEventListener('resize',function(){
- C.aspect=innerWidth/innerHeight;
- C.updateProjectionMatrix();
- R.setSize(innerWidth,innerHeight);
-});
-
-} catch(e){
- I.textContent='错误: '+e.message;
-}
+document.getElementById('stage').style.transformOrigin='center center';
 
 })();
 </script>
-</body>
-</html>
+</body></html>
