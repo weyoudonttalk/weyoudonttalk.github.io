@@ -43,9 +43,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#87ceeb;touch-action
 </div>
 <div id="msg">⚡ 生成世界…</div>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js" onerror="this.onerror=null;this.src='https://cdn.skypack.dev/three@0.160.0/build/three.min.js'"></script>
 <script>
-(function W(){if(typeof THREE==='undefined'){setTimeout(W,150);return};go()})();
+var _tLoad=0,_tMax=30;
+(function W(){
+  _tLoad++;
+  if(typeof THREE!=='undefined'){go();return}
+  if(_tLoad>_tMax){document.getElementById('msg').textContent='⚠ 引擎加载超时,请检查网络后刷新';return}
+  setTimeout(W,200)
+})();
 
 function go(){
 var M=document.getElementById('msg');
