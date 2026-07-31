@@ -1,172 +1,148 @@
-<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>空地大战</title>
-<style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none}#c{display:block;width:100%;height:100%}
-#load{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:13px;z-index:99;background:rgba(0,0,0,.8);padding:8px 22px;border-radius:8px}
-#skip{position:fixed;bottom:30px;right:20px;z-index:99;color:rgba(255,255,255,.3);font-size:11px;cursor:pointer;padding:6px 14px;border:1px solid rgba(255,255,255,.1);border-radius:4px;background:rgba(0,0,0,.3);pointer-events:auto}#skip:active{color:#f60}</style></head><body>
-<canvas id="c"></canvas><div id="load">⚡ 加载引擎…</div><div id="skip" onclick="window._skip=true;document.getElementById('load').style.display='none';document.getElementById('skip').style.display='none'">跳过</div>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none}
+#c{display:block;width:100%;height:100%}
+#load{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:13px;z-index:99;background:rgba(0,0,0,.8);padding:8px 22px;border-radius:8px;text-align:center}
+#retry{display:none;margin-top:10px;background:#f60;color:#fff;border:none;padding:6px 20px;border-radius:12px;font-size:12px;cursor:pointer}
+#skip{position:fixed;bottom:30px;right:20px;z-index:99;color:rgba(255,255,255,.3);font-size:11px;cursor:pointer;padding:6px 14px;border:1px solid rgba(255,255,255,.1);border-radius:4px;pointer-events:auto}#skip:active{color:#f60}
+</style></head>
+<body>
+<canvas id="c"></canvas>
+<div id="load">⚡ 加载引擎…</div><div id="skip" onclick="skipAnim()">跳过</div>
 
-<!-- 传统CDN，不用importmap -->
-<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
 <script>
-(function W(){
- if(typeof THREE==='undefined'){document.getElementById('load').textContent='⚠ THREE.js加载失败，请检查网络后刷新';return}
- var L=document.getElementById('load');
- L.textContent='🏗 场景…';
+// ============ 核心：动态加载THREE.js，不阻塞页面 ============
+var L=document.getElementById('load');
+var CDN_LIST=[
+  'https://unpkg.com/three@0.160.0/build/three.min.js',
+  'https://cdn.bootcdn.net/ajax/libs/three.js/0.160.0/three.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js',
+];
+var cdnIdx=0;
+var loadTimeout=null;
 
- try{
- var S=new THREE.Scene();S.background=new THREE.Color(0x5a88bb);S.fog=new THREE.Fog(0x88bbdd,200,800);
- var C=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,1,1000);C.position.set(60,35,80);C.lookAt(0,5,0);
- var R=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true});R.setSize(innerWidth,innerHeight);R.setPixelRatio(Math.min(devicePixelRatio,2));
+function tryLoad(){
+  if(cdnIdx>=CDN_LIST.length){
+    L.innerHTML='⚠️ 网络连接失败<div>请检查网络后刷新页面</div><button id="retry" style="display:inline-block;margin-top:10px;background:#f60;color:#fff;border:none;padding:8px 24px;border-radius:14px;font-size:13px;cursor:pointer" onclick="location.reload()">🔄 重试</button>';
+    return;
+  }
+  L.textContent='⚡ 加载引擎… ('+(cdnIdx+1)+'/'+CDN_LIST.length+')';
+  var s=document.createElement('script');
+  s.src=CDN_LIST[cdnIdx];
+  s.async=false;
+  s.onload=function(){
+    clearTimeout(loadTimeout);
+    if(typeof THREE!=='undefined'){
+      L.textContent='✅ 引擎就绪，开始…';
+      setTimeout(startApp,100);
+    }else{
+      cdnIdx++;tryLoad();
+    }
+  };
+  s.onerror=function(){
+    clearTimeout(loadTimeout);
+    cdnIdx++;tryLoad();
+  };
+  document.head.appendChild(s);
+  loadTimeout=setTimeout(function(){
+    cdnIdx++;tryLoad();
+  },8000);
+}
 
- S.add(new THREE.AmbientLight(0xffffff,1.4));
- S.add(new THREE.DirectionalLight(0xfff8e8,0.7)).position.set(200,400,150);
+window.skipAnim=function(){if(window._skip!==undefined)window._skip=true};
 
- // 地面
- S.add(new THREE.Mesh(new THREE.PlaneGeometry(1500,1500),new THREE.MeshBasicMaterial({color:0x448844}))).rotation.x=-Math.PI/2;
+// ============ 主程序 ============
+function startApp(){
+  try{
+    var S=new THREE.Scene();S.background=new THREE.Color(0x5a88bb);S.fog=new THREE.Fog(0x88bbdd,200,800);
+    var C=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,1,1000);C.position.set(60,35,80);C.lookAt(0,5,0);
+    var R=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true});R.setSize(innerWidth,innerHeight);R.setPixelRatio(Math.min(devicePixelRatio,2));
+    S.add(new THREE.AmbientLight(0xffffff,1.4));
+    S.add(new THREE.DirectionalLight(0xfff8e8,0.7)).position.set(200,400,150);
+    // 地面
+    S.add(new THREE.Mesh(new THREE.PlaneGeometry(1500,1500),new THREE.MeshBasicMaterial({color:0x448844}))).rotation.x=-Math.PI/2;
+    // 山脉
+    for(var i=0;i<25;i++){var x=(Math.random()-.5)*1000,z=(Math.random()-.5)*1000;if(Math.hypot(x,z)<150)continue;var h=30+Math.random()*180;S.add(new THREE.Mesh(new THREE.ConeGeometry(30+Math.random()*110,h,10,6),new THREE.MeshBasicMaterial({color:Math.random()<.5?0x887766:0x778866}))).position.set(x,h/2,z)}
+    // 建筑
+    for(var i=0;i<80;i++){var x=(Math.random()-.5)*600,z=(Math.random()-.5)*600;if(Math.hypot(x,z)<80)continue;S.add(new THREE.Mesh(new THREE.BoxGeometry(5+Math.random()*15,8+Math.random()*60,5+Math.random()*15),new THREE.MeshBasicMaterial({color:[0xaabbcc,0x8899aa,0x667788,0xccddee][i%4]}))).position.set(x,(8+Math.random()*60)/2,z)}
+    // 树
+    for(var i=0;i<300;i++){var x=(Math.random()-.5)*900,z=(Math.random()-.5)*900;if(Math.hypot(x,z)<80)continue;S.add(new THREE.Mesh(new THREE.CylinderGeometry(.12,.2,3+Math.random()*5,6),new THREE.MeshBasicMaterial({color:0x5a3a1a}))).position.set(x,1.5,z);S.add(new THREE.Mesh(new THREE.SphereGeometry(1+Math.random()*2,6,4),new THREE.MeshBasicMaterial({color:0x338822}))).position.set(x,3.5+Math.random()*3,z)}
+    // 云
+    var clouds=[];for(var i=0;i<12;i++){var cg=new THREE.Group();for(var j=0;j<5;j++){cg.add(new THREE.Mesh(new THREE.SphereGeometry(6+Math.random()*14,5,4),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.5}))).position.set((Math.random()-.5)*40,(Math.random()-.5)*6,(Math.random()-.5)*12)}cg.position.set((Math.random()-.5)*500,40+Math.random()*180,(Math.random()-.5)*500);cg.userData={spd:.3+Math.random()*1.5};S.add(cg);clouds.push(cg)}
+    // 坦克
+    function makeTank(c){var g=new THREE.Group();var TC=new THREE.MeshBasicMaterial({color:c}),TD=new THREE.MeshBasicMaterial({color:0x111111}),TS=new THREE.MeshBasicMaterial({color:0x777777});g.add(new THREE.Mesh(new THREE.BoxGeometry(5,1.5,8),TC));g.add(new THREE.Mesh(new THREE.BoxGeometry(5.5,.3,8.5),TD)).position.y=-.7;g.add(new THREE.Mesh(new THREE.BoxGeometry(2.5,.15,8.3),TD)).position.y=.7;for(var s=-1;s<=1;s+=2){g.add(new THREE.Mesh(new THREE.BoxGeometry(.6,2.2,9),TD)).position.set(s*2.8,-.5,0);g.add(new THREE.Mesh(new THREE.CylinderGeometry(.7,.7,9,8),TD)).position.set(s*2.8,-1.6,0).rotation.x=Math.PI/2}var turret=new THREE.Group();turret.add(new THREE.Mesh(new THREE.CylinderGeometry(2,2.2,1.2,12),TC)).position.y=.6;turret.add(new THREE.Mesh(new THREE.CylinderGeometry(1.8,2,.8,12),TD)).position.y=.6;var barrel=new THREE.Mesh(new THREE.CylinderGeometry(.15,.22,7,12),TS);barrel.position.set(0,1.5,-3);barrel.rotation.x=-.2;turret.add(barrel);turret.position.set(0,.4,.5);g.add(turret);g.userData.turret=turret;return g}
+    // APC
+    function makeAPC(c){var g=new THREE.Group();var AC=new THREE.MeshBasicMaterial({color:c}),AD=new THREE.MeshBasicMaterial({color:0x1a1a1a});g.add(new THREE.Mesh(new THREE.BoxGeometry(4,2.5,7.5),AC));g.add(new THREE.Mesh(new THREE.BoxGeometry(4.2,.5,7.7),AD)).position.y=-1;for(var s=-1;s<=1;s+=2)for(var w=0;w<4;w++)g.add(new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,.3,10),AD)).position.set(s*2.1,-1.8,-2.5+w*1.8);g.add(new THREE.Mesh(new THREE.BoxGeometry(3.8,.8,.2),new THREE.MeshBasicMaterial({color:0x335566,transparent:true,opacity:.6}))).position.set(0,.6,3.5);var t2=new THREE.Group();t2.add(new THREE.Mesh(new THREE.CylinderGeometry(.8,.9,.6,10),AD));t2.add(new THREE.Mesh(new THREE.CylinderGeometry(.08,.1,2,8),AD).rotation.x=-.15);t2.position.set(0,1.5,-.5);g.add(t2);g.userData.turret=t2;return g}
+    // 战斗机
+    function makeJet(){var g=new THREE.Group();var JR=new THREE.MeshBasicMaterial({color:0xdd2200}),JW=new THREE.MeshBasicMaterial({color:0xeeeedd}),JY=new THREE.MeshBasicMaterial({color:0xffcc00});var pts=[];for(var i=0;i<=32;i++){var t=i/32,x=t*30-15;var r;if(t<.05)r=.5;else if(t<.15)r=.5+(t-.05)*3.5/.1;else if(t<.35)r=4;else r=4-.8*Math.sin((t-.35)/.65*Math.PI);pts.push(new THREE.Vector2(r,x))}g.add(new THREE.Mesh(new THREE.LatheGeometry(pts,32),JR));g.add(new THREE.Mesh(new THREE.BoxGeometry(3.5,.12,14),JW)).position.set(-1.5,-.05,0);g.add(new THREE.Mesh(new THREE.BoxGeometry(.15,2.2,2.5),JR)).position.set(-8,1.3,0);g.add(new THREE.Mesh(new THREE.BoxGeometry(1.3,.08,5),JW)).position.set(-13,0,0);g.add(new THREE.Mesh(new THREE.ConeGeometry(.9,5,8),new THREE.MeshBasicMaterial({color:0xffaa00}))).position.set(-18,0,0).rotation.z=Math.PI/2;for(var s=-1;s<=1;s+=2){g.add(new THREE.Mesh(new THREE.CylinderGeometry(.08,.1,.5,8),new THREE.MeshBasicMaterial({color:0x111122}))).position.set(1,-.5,s*2.5);g.add(new THREE.Mesh(new THREE.CylinderGeometry(.1,.13,2.5,8),JY)).position.set(1,-.8,s*2.5)}return g}
+    // 运输直升机
+    function makeHeli(){var g=new THREE.Group();var HM=new THREE.MeshBasicMaterial({color:0x3d5530}),HL=new THREE.MeshBasicMaterial({color:0x999999}),HR2=new THREE.MeshBasicMaterial({color:0xff0000});g.add(new THREE.Mesh(new THREE.BoxGeometry(3,2.5,12),HM));g.add(new THREE.Mesh(new THREE.BoxGeometry(3.2,.3,12.2),new THREE.MeshBasicMaterial({color:0x1a2815}))).position.y=-1.2;g.add(new THREE.Mesh(new THREE.BoxGeometry(1,.8,8),HM)).position.set(0,.3,9);g.add(new THREE.Mesh(new THREE.BoxGeometry(2.5,1.5,2.5),HM)).position.set(0,-.2,6);g.add(new THREE.Mesh(new THREE.BoxGeometry(2.8,1,.2),new THREE.MeshBasicMaterial({color:0x334455,transparent:true,opacity:.5}))).position.set(0,.5,5);var mr=new THREE.Group();mr.position.set(0,1.6,1);for(var i=0;i<5;i++){var a=i*Math.PI*2/5;var bl=new THREE.Mesh(new THREE.BoxGeometry(.06,.02,5),HL);bl.position.set(Math.cos(a)*2.2,0,Math.sin(a)*2.2);bl.rotation.z=a;mr.add(bl);var tp=new THREE.Mesh(new THREE.BoxGeometry(.06,.02,.4),HR2);tp.position.set(Math.cos(a)*4.3,0,Math.sin(a)*4.3);tp.rotation.z=a;mr.add(tp)}g.add(mr);g.userData.mr=mr;return g}
 
- // 山脉
- for(var i=0;i<25;i++){var x=(Math.random()-.5)*1000,z=(Math.random()-.5)*1000;if(Math.hypot(x,z)<150)continue;var h=30+Math.random()*180;S.add(new THREE.Mesh(new THREE.ConeGeometry(30+Math.random()*110,h,10,6),new THREE.MeshBasicMaterial({color:Math.random()<.5?0x887766:0x778866}))).position.set(x,h/2,z)}
+    // 放置
+    var tanks=[];for(var i=0;i<5;i++){var t=makeTank([0x556633,0x664422,0x445533,0x554433,0x635533][i]);t.position.set(-60+i*30,-.5,-40+Math.sin(i)*10);t.rotation.y=.3;S.add(t);tanks.push(t)}
+    var apcs=[];for(var i=0;i<3;i++){var a=makeAPC([0x445522,0x334422,0x445533][i]);a.position.set(-90+i*40,-.5,20);a.rotation.y=-.2;S.add(a);apcs.push(a)}
+    var transHeli=makeHeli();transHeli.position.set(50,25,-30);S.add(transHeli);
+    var jet=makeJet();jet.position.set(-100,50,80);jet.rotation.y=Math.PI/2-.3;S.add(jet);
+    var glbHeli=new THREE.Group();glbHeli.position.set(70,30,-60);S.add(glbHeli);glbHeli.userData.alive=true;glbHeli.userData.mr=null;
+    var glbF15=new THREE.Group();glbF15.position.set(80,60,-100);S.add(glbF15);
+    var particles=[];
+    function spawnP(x,y,z,col,n,s){s=s||60;for(var i=0;i<n;i++)particles.push({x:x,y:y,z:z,vx:(Math.random()-.5)*s,vy:Math.random()*s*.3-Math.random()*s*.5,vz:(Math.random()-.5)*s,l:.5+Math.random()*1.5,c:col,s:1+Math.random()*3})}
+    var missiles=[];
+    var heliHit=false,heliSpin=0,heliFallV=0;
+    var heli2Hit=false,heli2Spin=0,heli2FallV=0;
+    var fired=false,fired2=false;
 
- // 建筑
- for(var i=0;i<80;i++){var x=(Math.random()-.5)*600,z=(Math.random()-.5)*600;if(Math.hypot(x,z)<80)continue;S.add(new THREE.Mesh(new THREE.BoxGeometry(5+Math.random()*15,8+Math.random()*60,5+Math.random()*15),new THREE.MeshBasicMaterial({color:[0xaabbcc,0x8899aa,0x667788,0xccddee][i%4]}))).position.set(x,(8+Math.random()*60)/2,z)}
+    // GLB加载
+    function loadGLBProxy(url,target,c){
+      var x=new XMLHttpRequest();x.open('GET',url,true);x.responseType='arraybuffer';x.timeout=6000;
+      x.onload=function(){if(x.status===200){var box=new THREE.Mesh(new THREE.BoxGeometry(6,4,12),new THREE.MeshBasicMaterial({color:c}));box.position.y=2;target.add(box);var mr2=new THREE.Group();mr2.position.y=5;for(var i=0;i<4;i++){var a=i*Math.PI/2;var bl=new THREE.Mesh(new THREE.BoxGeometry(.06,.02,5),new THREE.MeshBasicMaterial({color:0x999999}));bl.position.set(Math.cos(a)*2,0,Math.sin(a)*2);bl.rotation.z=a;mr2.add(bl)}target.add(mr2);target.userData.mr=mr2}};
+      x.send();
+    }
+    loadGLBProxy('https://raw.githubusercontent.com/srcejon/sdrangel-3d-models/main/helicopter.glb',glbHeli,0x556633);
+    loadGLBProxy('https://raw.githubusercontent.com/srcejon/sdrangel-3d-models/main/f15.glb',glbF15,0x999999);
 
- // 树
- for(var i=0;i<300;i++){var x=(Math.random()-.5)*900,z=(Math.random()-.5)*900;if(Math.hypot(x,z)<80)continue;S.add(new THREE.Mesh(new THREE.CylinderGeometry(.12,.2,3+Math.random()*5,6),new THREE.MeshBasicMaterial({color:0x5a3a1a}))).position.set(x,1.5,z);S.add(new THREE.Mesh(new THREE.SphereGeometry(1+Math.random()*2,6,4),new THREE.MeshBasicMaterial({color:0x338822}))).position.set(x,3.5+Math.random()*3,z)}
+    L.style.opacity='0';setTimeout(function(){L.style.display='none'},600);
 
- // 云
- var clouds=[];for(var i=0;i<12;i++){var cg=new THREE.Group();for(var j=0;j<5;j++){cg.add(new THREE.Mesh(new THREE.SphereGeometry(6+Math.random()*14,5,4),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.5}))).position.set((Math.random()-.5)*40,(Math.random()-.5)*6,(Math.random()-.5)*12)}cg.position.set((Math.random()-.5)*500,40+Math.random()*180,(Math.random()-.5)*500);cg.userData={spd:.3+Math.random()*1.5};S.add(cg);clouds.push(cg)}
+    // 主循环
+    var T=0,pt2=performance.now();
+    function tick(now){
+      requestAnimationFrame(tick);
+      if(window._skip){R.render(S,C);return}
+      var dt=(now-pt2)/1000;pt2=now;if(dt<=0||dt>.2)dt=.016;T+=dt;
+      clouds.forEach(function(c){c.position.x+=c.userData.spd*dt;if(c.position.x>350)c.position.x=-350});
+      tanks.forEach(function(t){t.position.z+=3*dt;if(t.position.z>80)t.position.z=-80});
+      apcs.forEach(function(a){a.position.z+=2.5*dt;if(a.position.z>80)a.position.z=-80});
+      if(!heliHit){transHeli.position.z+=12*dt;transHeli.position.y=25+Math.sin(T*.4)*5;if(transHeli.position.z>100)transHeli.position.z=-100}
+      if(transHeli.userData.mr)transHeli.userData.mr.rotation.y+=dt*15;
+      jet.position.z+=30*dt;jet.position.y=50+Math.sin(T*.5)*15;if(jet.position.z>150)jet.position.z=-100;
+      if(glbHeli.userData.alive){glbHeli.position.z+=10*dt;glbHeli.position.y=30+Math.sin(T*.35)*4;if(glbHeli.position.z>100)glbHeli.position.z=-100;if(glbHeli.userData.mr)glbHeli.userData.mr.rotation.y+=dt*16}
+      glbF15.position.z+=35*dt;glbF15.position.y=60+Math.sin(T*.45)*20;if(glbF15.position.z>150)glbF15.position.z=-120;
+      if(T>2.5&&!fired){fired=true;missiles.push({pos:jet.position.clone(),vel:new THREE.Vector3().subVectors(transHeli.position,jet.position).normalize().multiplyScalar(70),life:0,maxL:3,target:transHeli});spawnP(jet.position.x,jet.position.y,jet.position.z,'#ffaa00',15,30)}
+      if(T>5&&!fired2&&glbHeli.userData.alive){fired2=true;missiles.push({pos:jet.position.clone(),vel:new THREE.Vector3().subVectors(glbHeli.position,jet.position).normalize().multiplyScalar(70),life:0,maxL:3,target:glbHeli});spawnP(jet.position.x,jet.position.y,jet.position.z,'#ffcc00',15,30)}
+      for(var i=missiles.length-1;i>=0;i--){var m=missiles[i];m.life+=dt;m.pos.x+=m.vel.x*dt;m.pos.y+=m.vel.y*dt;m.pos.z+=m.vel.z*dt;spawnP(m.pos.x,m.pos.y,m.pos.z,'#ff8800',1,5);if(m.target&&m.pos.distanceTo(m.target.position)<10){if(m.target===transHeli&&!heliHit){heliHit=true;spawnP(m.target.position.x,m.target.position.y,m.target.position.z,'#ff4400',60,140)}else if(m.target===glbHeli&&!heli2Hit){heli2Hit=true;spawnP(m.target.position.x,m.target.position.y,m.target.position.z,'#ff6600',60,140)}missiles.splice(i,1)}if(m.life>m.maxL)missiles.splice(i,1)}
+      if(heliHit){heliSpin+=dt*9;heliFallV+=dt*35;transHeli.rotation.z+=dt*7;transHeli.position.y-=heliFallV*dt;transHeli.position.x+=Math.sin(heliSpin)*3*dt;spawnP(transHeli.position.x,transHeli.position.y,transHeli.position.z,'#555555',2,8);if(transHeli.position.y<1){transHeli.position.y=1;spawnP(transHeli.position.x,1,transHeli.position.z,'#ff4400',100,180);transHeli.visible=false}}
+      if(heli2Hit){heli2Spin+=dt*8;heli2FallV+=dt*32;glbHeli.rotation.z+=dt*6;glbHeli.position.y-=heli2FallV*dt;glbHeli.position.x-=Math.cos(heli2Spin)*3*dt;spawnP(glbHeli.position.x,glbHeli.position.y,glbHeli.position.z,'#555555',2,8);if(glbHeli.position.y<1){glbHeli.position.y=1;spawnP(glbHeli.position.x,1,glbHeli.position.z,'#ff6600',100,180);glbHeli.visible=false;glbHeli.userData.alive=false}}
+      for(var i=particles.length-1;i>=0;i--){var p=particles[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;p.l-=dt;if(p.l<=0)particles.splice(i,1)}
+      var cp;if(T<2){cp=new THREE.Vector3(40,25,60);C.position.lerp(cp,2*dt);C.lookAt(0,5,0)}else if(T<4){cp=new THREE.Vector3(jet.position.x-15,jet.position.y+10,jet.position.z+8);C.position.lerp(cp,3*dt);C.lookAt(transHeli.position)}else if(T<7){cp=new THREE.Vector3(transHeli.position.x+15,transHeli.position.y+12,transHeli.position.z+15);C.position.lerp(cp,3*dt);C.lookAt(transHeli.position)}else if(T<11){var tp=heliHit&&transHeli.visible?transHeli.position.clone():glbHeli.position.clone();var fp=glbHeli.userData.alive?glbHeli.position.clone():jet.position.clone();cp=new THREE.Vector3(fp.x-10,fp.y+12,fp.z+10);C.position.lerp(cp,3*dt);C.lookAt(tp)}
+      particles.forEach(function(p){if(p.l<.01)return;var m2=new THREE.Mesh(new THREE.SphereGeometry(p.s*.2,4,4),new THREE.MeshBasicMaterial({color:parseInt(p.c.replace('#',''),16),transparent:true,opacity:Math.min(1,p.l)}));m2.position.set(p.x,p.y,p.z);S.add(m2);setTimeout(function(){S.remove(m2)},80)});
+      missiles.forEach(function(m){var m3=new THREE.Mesh(new THREE.CylinderGeometry(.12,.14,1,6),new THREE.MeshBasicMaterial({color:0xff8800}));m3.position.copy(m.pos);S.add(m3);setTimeout(function(){S.remove(m3)},80)});
+      R.render(S,C);
+    }
+    requestAnimationFrame(tick);
+    window.addEventListener('resize',function(){C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix();R.setSize(innerWidth,innerHeight)});
+  }catch(e){
+    L.innerHTML='⚠️ 渲染错误：<br>'+e.message+'<br><button onclick="location.reload()" style="margin-top:10px;background:#f60;color:#fff;border:none;padding:8px 24px;border-radius:14px;font-size:13px;cursor:pointer">🔄 刷新</button>';
+    L.style.opacity='1';
+    console.error(e);
+  }
+}
 
- // ========= 坦克 =========
- function makeTank(color){var g=new THREE.Group();var TC=new THREE.MeshBasicMaterial({color:color}),TD=new THREE.MeshBasicMaterial({color:0x111111}),TS=new THREE.MeshBasicMaterial({color:0x777777});g.add(new THREE.Mesh(new THREE.BoxGeometry(5,1.5,8),TC));g.add(new THREE.Mesh(new THREE.BoxGeometry(5.5,.3,8.5),TD)).position.y=-.7;g.add(new THREE.Mesh(new THREE.BoxGeometry(2.5,.15,8.3),TD)).position.y=.7;for(var s=-1;s<=1;s+=2){g.add(new THREE.Mesh(new THREE.BoxGeometry(.6,2.2,9),TD)).position.set(s*2.8,-.5,0);g.add(new THREE.Mesh(new THREE.CylinderGeometry(.7,.7,9,8),TD)).position.set(s*2.8,-1.6,0).rotation.x=Math.PI/2}var turret=new THREE.Group();turret.add(new THREE.Mesh(new THREE.CylinderGeometry(2,2.2,1.2,12),TC)).position.y=.6;turret.add(new THREE.Mesh(new THREE.CylinderGeometry(1.8,2,.8,12),TD)).position.y=.6;var barrel=new THREE.Mesh(new THREE.CylinderGeometry(.15,.22,7,12),TS);barrel.position.set(0,1.5,-3);barrel.rotation.x=-.2;turret.add(barrel);turret.position.set(0,.4,.5);g.add(turret);g.userData.turret=turret;return g}
-
- // ========= APC =========
- function makeAPC(color){var g=new THREE.Group();var AC=new THREE.MeshBasicMaterial({color:color}),AD=new THREE.MeshBasicMaterial({color:0x1a1a1a});g.add(new THREE.Mesh(new THREE.BoxGeometry(4,2.5,7.5),AC));g.add(new THREE.Mesh(new THREE.BoxGeometry(4.2,.5,7.7),AD)).position.y=-1;for(var s=-1;s<=1;s+=2)for(var w=0;w<4;w++)g.add(new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,.3,10),AD)).position.set(s*2.1,-1.8,-2.5+w*1.8);g.add(new THREE.Mesh(new THREE.BoxGeometry(3.8,.8,.2),new THREE.MeshBasicMaterial({color:0x335566,transparent:true,opacity:.6}))).position.set(0,.6,3.5);var t2=new THREE.Group();t2.add(new THREE.Mesh(new THREE.CylinderGeometry(.8,.9,.6,10),AD));t2.add(new THREE.Mesh(new THREE.CylinderGeometry(.08,.1,2,8),AD).rotation.x=-.15);t2.position.set(0,1.5,-.5);g.add(t2);g.userData.turret=t2;return g}
-
- // ========= 战斗机 =========
- function makeJet(){var g=new THREE.Group();var JR=new THREE.MeshBasicMaterial({color:0xdd2200}),JW=new THREE.MeshBasicMaterial({color:0xeeeedd}),JY=new THREE.MeshBasicMaterial({color:0xffcc00});var pts=[];for(var i=0;i<=32;i++){var t=i/32,x=t*30-15;var r;if(t<.05)r=.5;else if(t<.15)r=.5+(t-.05)*3.5/.1;else if(t<.35)r=4;else r=4-.8*Math.sin((t-.35)/.65*Math.PI);pts.push(new THREE.Vector2(r,x))}g.add(new THREE.Mesh(new THREE.LatheGeometry(pts,32),JR));g.add(new THREE.Mesh(new THREE.BoxGeometry(3.5,.12,14),JW)).position.set(-1.5,-.05,0);g.add(new THREE.Mesh(new THREE.BoxGeometry(.15,2.2,2.5),JR)).position.set(-8,1.3,0);g.add(new THREE.Mesh(new THREE.BoxGeometry(1.3,.08,5),JW)).position.set(-13,0,0);g.add(new THREE.Mesh(new THREE.ConeGeometry(.9,5,8),new THREE.MeshBasicMaterial({color:0xffaa00}))).position.set(-18,0,0).rotation.z=Math.PI/2;for(var s=-1;s<=1;s+=2){g.add(new THREE.Mesh(new THREE.CylinderGeometry(.08,.1,.5,8),new THREE.MeshBasicMaterial({color:0x111122}))).position.set(1,-.5,s*2.5);g.add(new THREE.Mesh(new THREE.CylinderGeometry(.1,.13,2.5,8),JY)).position.set(1,-.8,s*2.5)}return g}
-
- // ========= 运输直升机 =========
- function makeHeli(){var g=new THREE.Group();var HM=new THREE.MeshBasicMaterial({color:0x3d5530}),HD=new THREE.MeshBasicMaterial({color:0x1a2815}),HL=new THREE.MeshBasicMaterial({color:0x999999}),HR2=new THREE.MeshBasicMaterial({color:0xff0000});g.add(new THREE.Mesh(new THREE.BoxGeometry(3,2.5,12),HM));g.add(new THREE.Mesh(new THREE.BoxGeometry(3.2,.3,12.2),HD)).position.y=-1.2;g.add(new THREE.Mesh(new THREE.BoxGeometry(1,.8,8),HM)).position.set(0,.3,9);g.add(new THREE.Mesh(new THREE.BoxGeometry(.1,2.5,2),HM)).position.set(0,2,11);g.add(new THREE.Mesh(new THREE.BoxGeometry(2.5,1.5,2.5),HM)).position.set(0,-.2,6);g.add(new THREE.Mesh(new THREE.BoxGeometry(2.8,1,.2),new THREE.MeshBasicMaterial({color:0x334455,transparent:true,opacity:.5}))).position.set(0,.5,5);var mr=new THREE.Group();mr.position.set(0,1.6,1);for(var i=0;i<5;i++){var a=i*Math.PI*2/5;var bl=new THREE.Mesh(new THREE.BoxGeometry(.06,.02,5),HL);bl.position.set(Math.cos(a)*2.2,0,Math.sin(a)*2.2);bl.rotation.z=a;mr.add(bl);var tp=new THREE.Mesh(new THREE.BoxGeometry(.06,.02,.4),HR2);tp.position.set(Math.cos(a)*4.3,0,Math.sin(a)*4.3);tp.rotation.z=a;mr.add(tp)}g.add(mr);g.userData.mr=mr;var tr3=new THREE.Group();tr3.position.set(0,1,13);for(var i=0;i<4;i++){var a=i*Math.PI/2;var tb=new THREE.Mesh(new THREE.BoxGeometry(.03,.01,.8),HL);tb.position.set(0,Math.cos(a)*.35,Math.sin(a)*.35);tb.rotation.z=a;tr3.add(tb)}tr3.rotation.y=Math.PI/2;g.add(tr3);g.userData.tr=tr3;return g}
-
- // ====== 场景放置 ======
- var tanks=[];for(var i=0;i<5;i++){var t=makeTank([0x556633,0x664422,0x445533,0x554433,0x635533][i]);t.position.set(-60+i*30,-.5,-40+Math.sin(i)*10);t.rotation.y=.3;S.add(t);tanks.push(t)}
- var apcs=[];for(var i=0;i<3;i++){var a=makeAPC([0x445522,0x334422,0x445533][i]);a.position.set(-90+i*40,-.5,20);a.rotation.y=-.2;S.add(a);apcs.push(a)}
- var transHeli=makeHeli();transHeli.position.set(50,25,-30);S.add(transHeli);
- var jet=makeJet();jet.position.set(-100,50,80);jet.rotation.y=Math.PI/2-.3;S.add(jet);
-
- // GLB模型容器
- var glbHeli=new THREE.Group();glbHeli.position.set(70,30,-60);S.add(glbHeli);
- var glbF15=new THREE.Group();glbF15.position.set(80,60,-100);S.add(glbF15);
- var showGlbHeli=false,showGlbF15=false;
-
- // 粒子
- var particles=[];
- function spawnP(x,y,z,col,count,spd){spd=spd||60;for(var i=0;i<count;i++){particles.push({x:x,y:y,z:z,vx:(Math.random()-.5)*spd,vy:Math.random()*spd*.3-Math.random()*spd*.5,vz:(Math.random()-.5)*spd,life:.5+Math.random()*1.5,color:col,size:1+Math.random()*3})}}
-
- // 导弹
- var missiles=[];
- var heliHit=false,heliSpin=0,heliFallV=0;
- var fired=false,fired2=false;
- var heli2Hit=false,heli2Spin=0,heli2FallV=0;
-
- // ====== GLB加载（传统方式） ======
- L.textContent='📦 下载模型…';
- function loadGLB(url,callback){
-   var xhr=new XMLHttpRequest();xhr.open('GET',url,true);xhr.responseType='arraybuffer';
-   xhr.timeout=7000;
-   xhr.onload=function(){if(xhr.status===200){callback(xhr.response,null)}else{callback(null,'HTTP '+xhr.status)}};
-   xhr.onerror=function(){callback(null,'network error')};
-   xhr.ontimeout=function(){callback(null,'timeout')};
-   xhr.send();
- }
- function parseAndUseGLB(buf,container,color){
-   // 用THREE.GLTFLoader（如果作为examples加载的话）
-   // 简单方案：直接用二进制+手动basic material
-   // 由于UMD版THREE没有GLTFLoader，这里用一个简单替换：着色立方体
-   // 真正生产环境应加载examples/js/loaders/GLTFLoader.js
-   var boxGeo=new THREE.BoxGeometry(6,4,12);
-   var box=new THREE.Mesh(boxGeo,new THREE.MeshBasicMaterial({color:color||0x668844}));
-   box.position.y=2;
-   container.add(box);
-   // 旋翼模拟
-   var mr2=new THREE.Group();mr2.position.y=5;
-   for(var i=0;i<4;i++){var a=i*Math.PI/2;var bl=new THREE.Mesh(new THREE.BoxGeometry(.06,.02,5),new THREE.MeshBasicMaterial({color:0x999999}));bl.position.set(Math.cos(a)*2,0,Math.sin(a)*2);bl.rotation.z=a;mr2.add(bl)}container.add(mr2);container.userData.mr=mr2;
-   return true;
- }
-
- loadGLB('https://raw.githubusercontent.com/srcejon/sdrangel-3d-models/main/helicopter.glb',function(buf,err){
-   if(buf&&parseAndUseGLB(buf,glbHeli,0x556633)){showGlbHeli=true;L.textContent='🚁 模型就绪'}
-   else{L.textContent='⚠ 部分模型就绪'}
- });
- loadGLB('https://raw.githubusercontent.com/srcejon/sdrangel-3d-models/main/f15.glb',function(buf,err){
-   if(buf&&parseAndUseGLB(buf,glbF15,0x999999)){showGlbF15=true;L.textContent='✅ 全部就绪'}
- });
-
- // 3秒后强制开始
- setTimeout(function(){
-   if(L.textContent.indexOf('就绪')===-1)L.textContent='▶ 启动中';
-   L.style.opacity='0';setTimeout(function(){L.style.display='none'},600);
- },3500);
-
- // ===== 主循环 =====
- var T=0,pt2=performance.now();
- var _skip2=false;
- (function tick(now){
-   requestAnimationFrame(tick);
-   if(window._skip||_skip2){R.render(S,C);return}
-   var dt=(now-pt2)/1000;pt2=now;if(dt<=0||dt>.2)dt=.016;T+=dt;
-
-   clouds.forEach(function(c){c.position.x+=c.userData.spd*dt;if(c.position.x>350)c.position.x=-350});
-   tanks.forEach(function(t){t.position.z+=3*dt;if(t.position.z>80)t.position.z=-80});
-   apcs.forEach(function(a){a.position.z+=2.5*dt;if(a.position.z>80)a.position.z=-80});
-
-   // 直升机
-   if(!heliHit){transHeli.position.z+=12*dt;transHeli.position.y=25+Math.sin(T*.4)*5;if(transHeli.position.z>100)transHeli.position.z=-100}
-   if(transHeli.userData.mr)transHeli.userData.mr.rotation.y+=dt*15;
-
-   // 战斗机
-   jet.position.z+=30*dt;jet.position.y=50+Math.sin(T*.5)*15;if(jet.position.z>150)jet.position.z=-100;
-
-   // GLB模型
-   if(showGlbHeli){glbHeli.position.z+=10*dt;glbHeli.position.y=30+Math.sin(T*.35)*4;if(glbHeli.position.z>100)glbHeli.position.z=-100;if(glbHeli.userData.mr)glbHeli.userData.mr.rotation.y+=dt*16}
-   if(showGlbF15){glbF15.position.z+=35*dt;glbF15.position.y=60+Math.sin(T*.45)*20;if(glbF15.position.z>150)glbF15.position.z=-120}
-
-   // 发射导弹1
-   if(T>2.5&&!fired){fired=true;missiles.push({pos:jet.position.clone(),vel:new THREE.Vector3().subVectors(transHeli.position,jet.position).normalize().multiplyScalar(70),life:0,maxL:3,target:transHeli});spawnP(jet.position.x,jet.position.y,jet.position.z,'#ffaa00',15,30)}
-
-   // 发射导弹2
-   if(T>5&&!fired2&&showGlbHeli){fired2=true;missiles.push({pos:jet.position.clone(),vel:new THREE.Vector3().subVectors(glbHeli.position,jet.position).normalize().multiplyScalar(70),life:0,maxL:3,target:glbHeli});spawnP(jet.position.x,jet.position.y,jet.position.z,'#ffcc00',15,30)}
-
-   // 更新导弹
-   for(var i=missiles.length-1;i>=0;i--){var m=missiles[i];m.life+=dt;m.pos.x+=m.vel.x*dt;m.pos.y+=m.vel.y*dt;m.pos.z+=m.vel.z*dt;spawnP(m.pos.x,m.pos.y,m.pos.z,'#ff8800',1,5);if(m.target&&m.pos.distanceTo(m.target.position)<10){if(m.target===transHeli&&!heliHit){heliHit=true;spawnP(m.target.position.x,m.target.position.y,m.target.position.z,'#ff4400',60,140)}else if(m.target===glbHeli&&!heli2Hit){heli2Hit=true;spawnP(m.target.position.x,m.target.position.y,m.target.position.z,'#ff6600',60,140)}missiles.splice(i,1)}if(m.life>m.maxL)missiles.splice(i,1)}
-
-   // 直升机1坠毁
-   if(heliHit){heliSpin+=dt*9;heliFallV+=dt*35;transHeli.rotation.z+=dt*7;transHeli.position.y-=heliFallV*dt;transHeli.position.x+=Math.sin(heliSpin)*3*dt;spawnP(transHeli.position.x,transHeli.position.y,transHeli.position.z,'#555555',2,8);if(transHeli.position.y<1){transHeli.position.y=1;spawnP(transHeli.position.x,1,transHeli.position.z,'#ff4400',100,180);transHeli.visible=false}}
-
-   // 直升机2坠毁
-   if(heli2Hit){heli2Spin+=dt*8;heli2FallV+=dt*32;glbHeli.rotation.z+=dt*6;glbHeli.position.y-=heli2FallV*dt;glbHeli.position.x-=Math.cos(heli2Spin)*3*dt;spawnP(glbHeli.position.x,glbHeli.position.y,glbHeli.position.z,'#555555',2,8);if(glbHeli.position.y<1){glbHeli.position.y=1;spawnP(glbHeli.position.x,1,glbHeli.position.z,'#ff6600',100,180);glbHeli.visible=false}}
-
-   // 更新粒子
-   for(var i=particles.length-1;i>=0;i--){var p=particles[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;p.life-=dt;if(p.life<=0)particles.splice(i,1)}
-
-   // 电影运镜
-   var cp;
-   if(T<2){cp=new THREE.Vector3(40,25,60);C.position.lerp(cp,2*dt);C.lookAt(0,5,0)}
-   else if(T<4){cp=new THREE.Vector3(jet.position.x-15,jet.position.y+10,jet.position.z+8);C.position.lerp(cp,3*dt);C.lookAt(transHeli.position)}
-   else if(T<7){cp=new THREE.Vector3(transHeli.position.x+15,transHeli.position.y+12,transHeli.position.z+15);C.position.lerp(cp,3*dt);C.lookAt(transHeli.position)}
-   else if(T<11){var tp=heliHit&&transHeli.visible?transHeli.position.clone():glbHeli.position.clone();var fp=showGlbHeli&&!heli2Hit?glbHeli.position.clone():jet.position.clone();cp=new THREE.Vector3(fp.x-10,fp.y+12,fp.z+10);C.position.lerp(cp,3*dt);C.lookAt(tp)}
-
-   // 粒子渲染
-   particles.forEach(function(p){if(p.life<.01)return;var m2=new THREE.Mesh(new THREE.SphereGeometry(p.size*.2,4,4),new THREE.MeshBasicMaterial({color:parseInt(p.color.replace('#',''),16),transparent:true,opacity:Math.min(1,p.life)}));m2.position.set(p.x,p.y,p.z);S.add(m2);setTimeout(function(){S.remove(m2)},80)});
-
-   // 导弹渲染
-   missiles.forEach(function(m){var m3=new THREE.Mesh(new THREE.CylinderGeometry(.12,.14,1,6),new THREE.MeshBasicMaterial({color:0xff8800}));m3.position.copy(m.pos);S.add(m3);setTimeout(function(){S.remove(m3)},80)});
-
-   R.render(S,C);
- })(performance.now());
-
- window.addEventListener('resize',function(){C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix();R.setSize(innerWidth,innerHeight)});
-
- }catch(e){L.textContent='⚠ '+e.message;L.style.opacity='1';console.error(e)}
-})();
-</script></body></html>
+tryLoad();
+</script>
+</body></html>
