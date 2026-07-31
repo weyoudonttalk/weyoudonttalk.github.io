@@ -55,7 +55,7 @@ function drawHelicopter(ctx,x,y,scale,rotorA){
  // Shadow
  ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(0,8,22,3,0,0,Math.PI*2);ctx.fill();
  // Body
- ctx.fillStyle='#2a2a2a';ctx.beginPath();ctx.roundRect(-18,-5,36,10,4);ctx.fill();
+ ctx.fillStyle='#2a2a2a';ctx.beginPath();ctx.rect(-18,-5,36,10,4);ctx.fill();
  ctx.strokeStyle='#555';ctx.lineWidth=1.2;ctx.stroke();
  // Cockpit
  ctx.fillStyle='#111';ctx.beginPath();ctx.moveTo(-18,-3);ctx.lineTo(-24,0);ctx.lineTo(-18,3);ctx.closePath();ctx.fill();
@@ -89,12 +89,12 @@ function drawDam(ctx,x,y,exploded){
  // Main wall
  var wallGr=ctx.createLinearGradient(0,top,0,y);
  wallGr.addColorStop(0,'#667788');wallGr.addColorStop(.5,'#556677');wallGr.addColorStop(1,'#445566');
- ctx.fillStyle=wallGr;ctx.beginPath();ctx.roundRect(-dw/2,-dh,dw,dh,6);ctx.fill();
+ ctx.fillStyle=wallGr;ctx.beginPath();ctx.rect(-dw/2,-dh,dw,dh,6);ctx.fill();
  ctx.strokeStyle='#778899';ctx.lineWidth=2;ctx.stroke();
  // Concrete texture lines
  for(var i=0;i<8;i++){ctx.strokeStyle='rgba(255,255,255,.05)';ctx.beginPath();ctx.moveTo(-dw/2+20,-dh+i*dh/7);ctx.lineTo(dw/2-20,-dh+i*dh/7);ctx.stroke()}
  // Gate (central)
- ctx.fillStyle='#3a3a3a';ctx.beginPath();ctx.roundRect(-30,-dh*.7,60,dh*.7,4);ctx.fill();
+ ctx.fillStyle='#3a3a3a';ctx.beginPath();ctx.rect(-30,-dh*.7,60,dh*.7,4);ctx.fill();
  ctx.strokeStyle='#555';ctx.lineWidth=2;ctx.stroke();
  // Gate details
  ctx.fillStyle='#444';ctx.fillRect(-30,-dh*.35,60,2);
@@ -112,7 +112,7 @@ function drawDam(ctx,x,y,exploded){
  
  // Explosion effect on gate
  if(exploded){
-  ctx.fillStyle='rgba(0,0,0,.4)';ctx.beginPath();ctx.roundRect(-35,-dh*.8,70,dh*.8,4);ctx.fill();
+  ctx.fillStyle='rgba(0,0,0,.4)';ctx.beginPath();ctx.rect(-35,-dh*.8,70,dh*.8,4);ctx.fill();
   // Rubble
   ctx.fillStyle='#444';ctx.fillRect(-25,y-20,50,15);
   ctx.fillStyle='#333';ctx.beginPath();ctx.moveTo(-20,y-5);ctx.lineTo(-25,y-20);ctx.lineTo(25,y-20);ctx.lineTo(20,y-5);ctx.closePath();ctx.fill();
@@ -158,7 +158,7 @@ function drawSpaceBase(ctx,x,y,exploded){
  // Rocket on tower
  if(!exploded){
   var rkGr=ctx.createLinearGradient(-6,-th,6,-th);rkGr.addColorStop(0,'#ddd');rkGr.addColorStop(.3,'#fff');rkGr.addColorStop(.7,'#ccc');rkGr.addColorStop(1,'#aaa');
-  ctx.fillStyle=rkGr;ctx.beginPath();ctx.roundRect(-6,-th+10,12,th-10,3);ctx.fill();
+  ctx.fillStyle=rkGr;ctx.beginPath();ctx.rect(-6,-th+10,12,th-10,3);ctx.fill();
   ctx.strokeStyle='#999';ctx.lineWidth=1;ctx.stroke();
   // Nose cone
   ctx.fillStyle='#dd2200';ctx.beginPath();ctx.moveTo(0,-th-5);ctx.lineTo(-6,-th+10);ctx.lineTo(6,-th+10);ctx.closePath();ctx.fill();
@@ -174,7 +174,7 @@ function drawSpaceBase(ctx,x,y,exploded){
   smokeClouds.push({x:-15,y:-th-15,vx:-2,vy:-3.5,life:4.5,ml:4.5,size:38,alpha:.65});
   smokeClouds.push({x:0,y:-th+20,vx:.5,vy:-2,life:3,ml:3,size:25,alpha:.5});
   // Burning debris falling
-  for(var d=0;d<30;d++){rocketDebris.push({x:Math.random()*40-20,y:-th-20-Math.random()*f60,vx:Math.random()*80-40,vy:Math.random()*30,life:2+Math.random()*3,ml:2+Math.random()*3,color:'#ff4400',size:2+Math.random()*4})}
+  for(var d=0;d<30;d++){rocketDebris.push({x:Math.random()*40-20,y:-th-20-Math.random()*60,vx:Math.random()*80-40,vy:Math.random()*30,life:2+Math.random()*3,ml:2+Math.random()*3,color:'#ff4400',size:2+Math.random()*4})}
   // Spark shower
   for(var s2=0;s2<40;s2++){emit(Math.random()*60-30,-th-20,Math.random()*120-60,20-Math.random()*80,.4+Math.random(),'#ffaa00',1+Math.random()*2)}
  }
