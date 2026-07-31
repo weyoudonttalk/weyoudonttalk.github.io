@@ -1,412 +1,324 @@
-<!DOCTYPE html><html lang="zh"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>烈火苍穹 · 空地大战</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none;font-family:'PingFang SC','Microsoft YaHei',sans-serif}
-
-#stage{width:100%;height:100%;position:relative;overflow:hidden}
-#stage canvas{position:absolute;top:0;left:0;width:100%;height:100%}
-#stage .layer{position:absolute;inset:0;pointer-events:none}
-#stage .vehicle{position:absolute;pointer-events:none}
-#stage .hud{position:absolute;inset:0;pointer-events:none;z-index:90}
-
-/* title cards */
-.title-card{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;text-align:center;z-index:100;text-shadow:0 0 60px rgba(255,120,0,.8),0 0 120px rgba(255,60,0,.5)}
-.title-card h1{font-size:clamp(24px,8vw,60px);font-weight:900;letter-spacing:4px;margin:0}
-.title-card p{font-size:clamp(10px,3vw,16px);color:rgba(255,255,255,.5);letter-spacing:6px;margin-top:8px}
-
-/* skip */
-#skip{position:fixed;bottom:30px;right:20px;z-index:999;color:rgba(255,255,255,.3);font-size:11px;cursor:pointer;padding:6px 14px;border:1px solid rgba(255,255,255,.1);border-radius:4px;background:rgba(0,0,0,.3);pointer-events:auto}
-#skip:active{color:#f60}
-
-/* explosion */
-@keyframes expl{0%{transform:scale(0);opacity:1}50%{opacity:1}100%{transform:scale(3);opacity:0}}
-@keyframes flash{0%,100%{opacity:0}50%{opacity:.4}}
-@keyframes smoke{0%{transform:translateY(0) scale(1);opacity:.6}100%{transform:translateY(-200px) scale(3);opacity:0}}
-</style></head><body>
-<div id="stage">
- <canvas id="sky"></canvas>
- <canvas id="ground"></canvas>
- <canvas id="fx"></canvas>
- <div class="layer" id="vehicles"></div>
- <div class="hud" id="hud"></div>
-</div>
-<div id="skip" onclick="window._skip=true;this.style.display='none'">跳过</div>
-
+<!DOCTYPE html>
+<html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>钢铁风暴</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none}#c{display:block;width:100%;height:100%}#info{position:fixed;top:10px;left:10px;color:#fff;font-size:11px;z-index:99;text-shadow:0 0 6px #000;line-height:1.6}</style></head><body>
+<canvas id="c"></canvas><div id="info">加载中…</div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script>
 (function(){
-var _skip=false,stage=document.getElementById('stage'),_v=document.getElementById('vehicles');
-var _f=document.getElementById('fx'),_g=document.getElementById('ground'),_s=document.getElementById('sky');
-var W=innerWidth,H=innerHeight;
-var ctxS=_s.getContext('2d'),ctxG=_g.getContext('2d'),ctxF=_f.getContext('2d');
-var T=0,startT=0;
-_s.width=_f.width=_g.width=W;_s.height=_f.height=_g.height=H;
+var I=document.getElementById('info');
+if(typeof THREE==='undefined'){I.textContent='THREE加载失败,请刷新';return}
+I.textContent='THREE v'+THREE.REVISION+' OK, 场景建造中…';
 
-// resize
-window.addEventListener('resize',function(){W=innerWidth;H=innerHeight;_s.width=_f.width=_g.width=W;_s.height=_f.height=_g.height=H});
+var S=new THREE.Scene();S.background=new THREE.Color(0x1a2f44);S.fog=new THREE.Fog(0x4a7899,150,600);
+var C=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,1,800);
+C.position.set(30,20,80);C.lookAt(0,8,0);
+var R=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true});
+R.setSize(innerWidth,innerHeight);R.setPixelRatio(Math.min(devicePixelRatio,1.5));
+S.add(new THREE.AmbientLight(0x8899cc,1.0));
+S.add(new THREE.DirectionalLight(0xfff0dd,0.8)).position.set(150,200,100);
 
-// ======================== SCENE TIMELINE (900 seconds = 15 minutes) ========================
-var scenes=[
- {start:0, end:30, name:'LOGOS', desc:'片头'},
- {start:30, end:120, name:'DAWN', desc:'黎明集结'},
- {start:120, end:300, name:'GROUND', desc:'地面装甲推进'},
- {start:300, end:480, name:'AIR', desc:'制空权争夺'},
- {start:480, end:660, name:'COMBINED', desc:'空地协同作战'}, 
- {start:660, end:810, name:'CLIMAX', desc:'最终决战'},
- {start:810, end:900, name:'CREDITS', desc:'终章'},
-];
+// ===== GROUND =====
+var gnd=new THREE.Mesh(new THREE.PlaneGeometry(1000,1000),new THREE.MeshBasicMaterial({color:0x336633}));
+gnd.rotation.x=-Math.PI/2;S.add(gnd);
 
-// ======================== PARTICLES ========================
-var particles=[];
-function spawn(x,y,color,count,spd,life,size){
- spd=spd||30;life=life||1;size=size||1;
- for(var i=0;i<count;i++){particles.push({x:x,y:y,vx:(Math.random()-.5)*spd,vy:-Math.random()*spd,l:life,c:color,s:size})}
-}
-function spawnExplosion(x,y,big){
- var c=big?'#ff4400':'#ff8800',n=big?80:30,l=big?2:1,s=big?2.5:1.5;
- spawn(x,y,c,n,80,l,s);spawn(x,y,'#ffaa00',n/2,60,l,s*.8);spawn(x,y,'#ffcc00',n/4,40,l*1.5,s*.5);
- if(big){spawn(x,y,'#222222',30,50,2.5,2);document.getElementById('stage').style.background=big?'rgba(255,200,100,.15)':'';setTimeout(function(){document.getElementById('stage').style.background=''},200)}
+// Road
+for(var i=0;i<15;i++){
+ var rd=new THREE.Mesh(new THREE.PlaneGeometry(6,1000),new THREE.MeshBasicMaterial({color:0x333333}));
+ rd.rotation.x=-Math.PI/2;rd.rotation.z=(i/15)*Math.PI*2;rd.position.y=0.02;S.add(rd);
 }
 
-// ======================== VEHICLE CLASS ========================
-function Vehicle(tag,emoji,x,y,speed,dir,spriteFn){
- this.tag=tag;this.emoji=emoji;this.x=x;this.y=y;this.speed=speed;this.dir=dir||1;
- this.el=null;this.alive=true;this.sprite=spriteFn;
- this.init=function(){var d=document.createElement('div');d.className='vehicle';d.innerHTML='<span style="font-size:40px;position:absolute;transform:translate(-50%,-50%)">'+this.emoji+'</span>';d.style.left=this.x+'px';d.style.top=this.y+'px';d.style.zIndex='10';_v.appendChild(d);this.el=d}
- this.update=function(dt){if(!this.alive||!this.el)return;this.x+=this.speed*this.dir*dt;if(this.el){this.el.style.left=this.x+'px';this.el.style.top=this.y+'px'}}
- this.remove=function(){if(this.el){_v.removeChild(this.el);this.el=null}}
+// Mountains backdrop
+for(var i=0;i<30;i++){
+ var mx=(Math.random()-.5)*800,mz=(Math.random()-.5)*800;if(mx*mx+mz*mz<10000)continue;
+ var mh=20+Math.random()*150;
+ S.add(new THREE.Mesh(new THREE.ConeGeometry(25+Math.random()*100,mh,8,6),new THREE.MeshBasicMaterial({color:Math.random()<.5?0x664433:0x556644}))).position.set(mx,mh/2,mz);
 }
 
-// Spawn ground vehicle sprite (CSS tank/APC)
-function spawnTankSprite(x,y,type){
- var d=document.createElement('div');d.className='vehicle';d.style.left=x+'px';d.style.top=y+'px';d.style.zIndex='10';
- if(type==='tank'){
-  d.innerHTML='<div style="position:relative;width:70px;height:35px"><div style="position:absolute;bottom:6px;left:8px;width:50px;height:18px;background:linear-gradient(180deg,#4a5a2a,#2d3a18);border-radius:3px 3px 1px 1px;border:1px solid #1a2510"></div><div style="position:absolute;bottom:0;left:2px;width:14px;height:10px;background:#111;border-radius:50%;border:2px solid #333"></div><div style="position:absolute;bottom:0;left:20px;width:14px;height:10px;background:#111;border-radius:50%;border:2px solid #333"></div><div style="position:absolute;bottom:0;left:38px;width:14px;height:10px;background:#111;border-radius:50%;border:2px solid #333"></div><div style="position:absolute;bottom:0;left:54px;width:14px;height:10px;background:#111;border-radius:50%;border:2px solid #333"></div><div style="position:absolute;bottom:22px;left:22px;width:22px;height:16px;background:linear-gradient(180deg,#5a6a3a,#3a4a22);border-radius:6px 6px 2px 2px;border:1px solid #2a3a15"></div><div style="position:absolute;bottom:36px;left:28px;width:6px;height:20px;background:#333;border-radius:2px;transform:rotate(-5deg);transform-origin:bottom center"></div></div>';
- }else if(type==='apc'){
-  d.innerHTML='<div style="position:relative;width:60px;height:30px"><div style="position:absolute;bottom:5px;left:6px;width:44px;height:20px;background:linear-gradient(180deg,#556633,#334422);border-radius:4px 4px 2px 2px"></div><div style="position:absolute;bottom:0;left:2px;width:10px;height:8px;background:#111;border-radius:50%"></div><div style="position:absolute;bottom:0;left:15px;width:10px;height:8px;background:#111;border-radius:50%"></div><div style="position:absolute;bottom:0;left:28px;width:10px;height:8px;background:#111;border-radius:50%"></div><div style="position:absolute;bottom:0;left:41px;width:10px;height:8px;background:#111;border-radius:50%"></div><div style="position:absolute;bottom:20px;left:20px;width:12px;height:10px;background:#445533;border-radius:50%"></div><div style="position:absolute;bottom:28px;left:22px;width:4px;height:8px;background:#333"></div></div>';
- }else if(type==='jet'){
-  d.innerHTML='<div style="position:relative;width:80px;height:20px;transform:rotate(-10deg)"><div style="position:absolute;left:0;top:6px;width:65px;height:8px;background:linear-gradient(90deg,#ddd,#999);clip-path:polygon(0% 30%,90% 0%,100% 50%,90% 100%,0% 70%)"></div><div style="position:absolute;left:10px;top:2px;width:40px;height:16px;background:linear-gradient(90deg,#eee,#ccc);clip-path:polygon(0% 40%,85% 0%,100% 50%,85% 100%,0% 60%)"></div><div style="position:absolute;left:60px;top:6px;width:8px;height:6px;background:#ff4400;border-radius:0 2px 2px 0"></div></div>';
- }else if(type==='heli'){
-  d.innerHTML='<div style="position:relative;width:60px;height:25px"><div style="position:absolute;bottom:2px;left:8px;width:40px;height:14px;background:linear-gradient(180deg,#5a7a3a,#3a5522);border-radius:4px 4px 2px 2px"></div><div style="position:absolute;bottom:12px;left:18px;width:20px;height:6px;background:#222"></div><div style="position:absolute;bottom:14px;left:24px;width:8px;height:14px;background:linear-gradient(180deg,#5a7a3a,#3a5522);border-radius:2px"></div><div style="position:absolute;top:0;left:16px;width:24px;height:3px;background:#888;border-radius:10px;transform-origin:12px 1.5px;animation:heliRotor .3s linear infinite"></div></div>';
-  var st=document.createElement('style');st.textContent='@keyframes heliRotor{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}';document.head.appendChild(st);
+// Buildings
+for(var i=0;i<60;i++){
+ var bx=(Math.random()-.5)*500,bz=(Math.random()-.5)*500;if(bx*bx+bz*bz<4000)continue;
+ S.add(new THREE.Mesh(new THREE.BoxGeometry(4+Math.random()*12,6+Math.random()*50,4+Math.random()*12),new THREE.MeshBasicMaterial({color:[0x778899,0x667788,0x8899aa,0x998877][i%4]}))).position.set(bx,(6+Math.random()*50)/2,bz);
+}
+
+// Trees
+for(var i=0;i<200;i++){
+ var tx=(Math.random()-.5)*700,tz=(Math.random()-.5)*700;if(tx*tx+tz*tz<4000)continue;
+ S.add(new THREE.Mesh(new THREE.CylinderGeometry(.1,.18,3+Math.random()*4,6),new THREE.MeshBasicMaterial({color:0x4a2a10}))).position.set(tx,1.5,tz);
+ S.add(new THREE.Mesh(new THREE.SphereGeometry(1+Math.random()*2,5,4),new THREE.MeshBasicMaterial({color:0x226622}))).position.set(tx,4+Math.random()*3,tz);
+}
+
+// ===== DETAILED 3D TANK =====
+function buildTank(color){
+ var g=new THREE.Group();
+ var C1=new THREE.MeshBasicMaterial({color:color});
+ var DK=new THREE.MeshBasicMaterial({color:0x111111});
+ var GR=new THREE.MeshBasicMaterial({color:0x666666});
+ // Hull
+ g.add(new THREE.Mesh(new THREE.BoxGeometry(4,1.2,7),C1));
+ // Armor plates
+ g.add(new THREE.Mesh(new THREE.BoxGeometry(4.4,.2,7.2),DK)).position.y=-.6;
+ g.add(new THREE.Mesh(new THREE.BoxGeometry(2,.1,7),DK)).position.y=.55;
+ // Tracks
+ for(var s=-1;s<=1;s+=2){
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(.5,1.8,8),DK)).position.set(s*2.2,-.4,0);
+  for(var w=0;w<5;w++){g.add(new THREE.Mesh(new THREE.CylinderGeometry(.55,.55,8,8),DK)).position.set(s*2.2,-1.3,-3+w*1.5).rotation.x=Math.PI/2}
  }
- _v.appendChild(d);return {el:d,x:x,y:y,alive:true};
+ // Turret
+ var turret=new THREE.Group();
+ turret.add(new THREE.Mesh(new THREE.CylinderGeometry(1.6,1.8,.9,14),C1)).position.y=.55;
+ turret.add(new THREE.Mesh(new THREE.CylinderGeometry(1.4,1.6,.5,14),DK)).position.y=.45;
+ // Barrel
+ var barrel=new THREE.Mesh(new THREE.CylinderGeometry(.12,.18,6,10),GR);
+ barrel.position.set(0,1.2,-3);barrel.rotation.x=-.25;turret.add(barrel);
+ // Barrel tip
+ turret.add(new THREE.Mesh(new THREE.CylinderGeometry(.16,.2,.8,10),DK)).position.set(0,1.2,-5.8).rotation.x=-.25;
+ turret.position.set(0,.3,1);g.add(turret);
+ g.userData={turret:turret};
+ return g;
 }
 
-// ======================== SKY RENDERING ========================
-var stars=[],cloudsR=[];
-for(var i=0;i<100;i++){stars.push({x:Math.random()*W,y:Math.random()*H*.6,r:.3+Math.random()*1.2,b:Math.random()})}
-for(var i=0;i<20;i++){cloudsR.push({x:Math.random()*W,y:Math.random()*H*.7,r:30+Math.random()*80,spd:.2+Math.random()*.5})}
+// ===== DETAILED 3D APC =====
+function buildAPC(color){
+ var g=new THREE.Group();
+ var C2=new THREE.MeshBasicMaterial({color:color});
+ var DK2=new THREE.MeshBasicMaterial({color:0x111111});
+ g.add(new THREE.Mesh(new THREE.BoxGeometry(3.5,2,7),C2));
+ for(var s=-1;s<=1;s+=2)for(var w=0;w<4;w++){g.add(new THREE.Mesh(new THREE.CylinderGeometry(.4,.4,.25,8),DK2)).position.set(s*1.8,-1.4,-2.3+w*1.6)}
+ g.add(new THREE.Mesh(new THREE.BoxGeometry(3,.7,.15),new THREE.MeshBasicMaterial({color:0x334455,transparent:true,opacity:.6}))).position.set(0,.5,3.3);
+ var t2=new THREE.Group();t2.add(new THREE.Mesh(new THREE.CylinderGeometry(.6,.7,.5,10),DK2));t2.position.set(0,1.3,-.8);g.add(t2);
+ return g;
+}
 
-function drawSky(t,scene){
- var sn=scenes[scene];
- ctxS.clearRect(0,0,W,H);
-
- // Sky gradient based on scene
- var topC,botC;
- if(sn.name==='DAWN'||sn.name==='LOGOS'){
-  topC='#0a0a1a';botC='#1a2a44';
- }else if(sn.name==='NIGHT'){
-  topC='#050510';botC='#0a1525';
- }else{
-  topC='#1a3a5c';botC='#5a88bb';
+// ===== DETAILED 3D FIGHTER JET =====
+function buildJet(){
+ var g=new THREE.Group();
+ var JR=new THREE.MeshBasicMaterial({color:0xdd2200});
+ var JW2=new THREE.MeshBasicMaterial({color:0xddddcc});
+ var JY=new THREE.MeshBasicMaterial({color:0xffaa00});
+ var JD=new THREE.MeshBasicMaterial({color:0x111122});
+ // Fuselage - built from cylinders
+ g.add(new THREE.Mesh(new THREE.ConeGeometry(.8,4,10),JR)).position.set(3,0,0).rotation.z=Math.PI/2;
+ g.add(new THREE.Mesh(new THREE.CylinderGeometry(.8,2.2,8,12),JR)).position.set(-2,0,0).rotation.z=Math.PI/2;
+ g.add(new THREE.Mesh(new THREE.CylinderGeometry(2.2,2.8,10,12),JR)).position.set(-11,0,0).rotation.z=Math.PI/2;
+ g.add(new THREE.Mesh(new THREE.CylinderGeometry(2.8,1.8,8,12),JR)).position.set(-20,0,0).rotation.z=Math.PI/2;
+ g.add(new THREE.Mesh(new THREE.CylinderGeometry(1.8,1,5,12),JR)).position.set(-26,0,0).rotation.z=Math.PI/2;
+ // Wings
+ g.add(new THREE.Mesh(new THREE.BoxGeometry(2.5,.08,12),JW2)).position.set(-9,0,0);
+ // Red wing edges
+ g.add(new THREE.Mesh(new THREE.BoxGeometry(2.6,.09,.4),JR)).position.set(-9,0,5.6);
+ g.add(new THREE.Mesh(new THREE.BoxGeometry(2.6,.09,.4),JR)).position.set(-9,0,-5.6);
+ // Vertical stabilizer
+ g.add(new THREE.Mesh(new THREE.BoxGeometry(.1,2,2.5),JR)).position.set(-24,1.3,0);
+ // Horizontal stabilizers
+ g.add(new THREE.Mesh(new THREE.BoxGeometry(1,.06,4.5),JW2)).position.set(-28,0,0);
+ // Engine nozzle
+ g.add(new THREE.Mesh(new THREE.CylinderGeometry(.8,1,2.5,10),JD)).position.set(-29,0,0).rotation.z=Math.PI/2;
+ // Afterburner flame
+ g.add(new THREE.Mesh(new THREE.ConeGeometry(.6,4,8),JY)).position.set(-31,0,0).rotation.z=Math.PI/2;
+ // Missiles
+ for(var s=-1;s<=1;s+=2){
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(.06,.08,.6,6),JD)).position.set(-2,-.5,s*1.8);
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(.08,.11,2.5,8),new THREE.MeshBasicMaterial({color:0xffcc00}))).position.set(-2,-.9,s*1.8);
+  g.add(new THREE.Mesh(new THREE.ConeGeometry(.1,.3,6),JR)).position.set(-.2,-.9,s*1.8);
  }
- var grd=ctxS.createLinearGradient(0,0,0,H);
- grd.addColorStop(0,topC);grd.addColorStop(1,botC);
- ctxS.fillStyle=grd;ctxS.fillRect(0,0,W,H);
+ return g;
+}
 
- // Stars (only in dawn/logos scenes)
- if(sn.name==='DAWN'||sn.name==='LOGOS'){
-  stars.forEach(function(s){
-   ctxS.fillStyle='rgba(255,255,255,'+(.3+s.b*.5*Math.sin(t*2+s.x)*.5+.5)+')';
-   ctxS.beginPath();ctxS.arc(s.x,s.y,s.r,0,Math.PI*2);ctxS.fill();
-  });
+// ===== DETAILED 3D ATTACK HELICOPTER =====
+function buildHeli(){
+ var g=new THREE.Group();
+ var HM=new THREE.MeshBasicMaterial({color:0x3d5528});
+ var HD=new THREE.MeshBasicMaterial({color:0x162010});
+ var HS=new THREE.MeshBasicMaterial({color:0x888888});
+ var HR2=new THREE.MeshBasicMaterial({color:0xff0000});
+ var HW=new THREE.MeshBasicMaterial({color:0x334455,transparent:true,opacity:.55});
+ // Fuselage
+ g.add(new THREE.Mesh(new THREE.BoxGeometry(2.2,1.8,10),HM));
+ g.add(new THREE.Mesh(new THREE.BoxGeometry(2.3,.2,10.2),HD)).position.y=-.9;
+ // Nose
+ g.add(new THREE.Mesh(new THREE.BoxGeometry(1.8,1.2,2),HM)).position.set(0,-.1,5.5);
+ // Tail boom
+ g.add(new THREE.Mesh(new THREE.BoxGeometry(.8,.6,7),HM)).position.set(0,.2,8.5);
+ // Tail fin
+ g.add(new THREE.Mesh(new THREE.BoxGeometry(.06,2,1.5),HM)).position.set(0,1.4,11.5);
+ // Cockpit glass
+ g.add(new THREE.Mesh(new THREE.BoxGeometry(2,1,.1),HW)).position.set(0,.4,5.5);
+ // Main rotor mast
+ var mastPole=new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,1,6),HS);
+ mastPole.position.set(0,1.4,1);g.add(mastPole);
+ // Main rotor
+ var mr=new THREE.Group();mr.position.set(0,2,1);
+ for(var i=0;i<5;i++){
+  var a=i*Math.PI*2/5;
+  var bl=new THREE.Mesh(new THREE.BoxGeometry(.04,.015,4.5),HS);
+  bl.position.set(Math.cos(a)*2,0,Math.sin(a)*2);bl.rotation.z=a;mr.add(bl);
+  var tp=new THREE.Mesh(new THREE.BoxGeometry(.04,.015,.35),HR2);
+  tp.position.set(Math.cos(a)*3.8,0,Math.sin(a)*3.8);tp.rotation.z=a;mr.add(tp);
  }
-
- // Sun/moon
- if(sn.name!=='LOGOS'){
-  var sunY=H*.3+Math.sin(t*.1)*20;
-  var sunGr=ctxS.createRadialGradient(W*.7,sunY,0,W*.7,sunY,120);
-  sunGr.addColorStop(0,'rgba(255,240,200,.8)');sunGr.addColorStop(.3,'rgba(255,200,100,.3)');sunGr.addColorStop(1,'rgba(255,150,50,0)');
-  ctxS.fillStyle=sunGr;ctxS.beginPath();ctxS.arc(W*.7,sunY,120,0,Math.PI*2);ctxS.fill();
+ g.add(mr);
+ // Tail rotor
+ var tr=new THREE.Group();tr.position.set(0,.8,12);
+ for(var i=0;i<4;i++){var a2=i*Math.PI/2;var tb2=new THREE.Mesh(new THREE.BoxGeometry(.02,.006,.6),HS);tb2.position.set(0,Math.cos(a2)*.25,Math.sin(a2)*.25);tb2.rotation.z=a2;tr.add(tb2)}
+ tr.rotation.y=Math.PI/2;g.add(tr);
+ // Weapon pylons
+ for(var s=-1;s<=1;s+=2){
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(.06,.08,1.2,6),HD)).position.set(s*1.2,-.6,1.5);
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,2,6),new THREE.MeshBasicMaterial({color:0xddbb00}))).position.set(s*1.2,-1.2,1.5);
  }
-
- // Clouds
- cloudsR.forEach(function(c){
-  c.x-=c.spd;if(c.x<-100)c.x=W+100;
-  ctxS.fillStyle='rgba(255,255,255,'+(.15+.1*Math.sin(t+c.x*.01))+.1+')';
-  ctxS.beginPath();ctxS.arc(c.x,c.y,c.r,0,Math.PI*2);ctxS.fill();
-  ctxS.beginPath();ctxS.arc(c.x-c.r*.6,c.y+c.r*.1,c.r*.7,0,Math.PI*2);ctxS.fill();
- });
+ g.userData={mr:mr,tr:tr};
+ return g;
 }
 
-// ======================== GROUND RENDERING ========================
-function drawGround(t,scene){
- ctxG.clearRect(0,0,W,H);
- var grH=H*.55;
- // ground
- var grd=ctxG.createLinearGradient(0,grH,0,H);
- grd.addColorStop(0,'#3a5a28');grd.addColorStop(.5,'#2a4a18');grd.addColorStop(1,'#1a3010');
- ctxG.fillStyle=grd;ctxG.fillRect(0,grH,W,H-grH);
- // road
- ctxG.fillStyle='#333';ctxG.fillRect(0,grH+50,W,16);
- ctxG.strokeStyle='rgba(255,255,255,.15)';ctxG.setLineDash([20,15]);ctxG.beginPath();
- ctxG.moveTo(0,grH+58);ctxG.lineTo(W,grH+58);ctxG.stroke();ctxG.setLineDash([]);
+// ===== PLACE VEHICLES =====
+I.textContent='放置部队…';
+
+// Tank column (8 tanks)
+var tanks=[];
+for(var i=0;i<8;i++){
+ var t=buildTank([0x4a5a2a,0x5a6a30,0x3a4a20,0x4a5a28,0x554428,0x4a5028,0x5a4a28,0x4a5528][i]);
+ t.position.set(-30+i*18,-.5,-10+(i%2)*8);t.rotation.y=.2+i*.05;S.add(t);tanks.push(t);
 }
 
-// ======================== FX RENDERING ========================
-function drawFX(t){
- ctxF.clearRect(0,0,W,H);
- // particles
- for(var i=particles.length-1;i>=0;i--){
-  var p=particles[i];p.x+=p.vx*0.016;p.y+=p.vy*0.016;p.l-=.016;
-  if(p.l<=0){particles.splice(i,1);continue}
-  var a=Math.min(1,p.l);ctxF.fillStyle=p.c.replace(')',','+a+')').replace('rgb','rgba');
-  if(p.c.startsWith('#')){
-   var hx=p.c;ctxF.fillStyle='rgba('+parseInt(hx.substr(1,2),16)+','+parseInt(hx.substr(3,2),16)+','+parseInt(hx.substr(5,2),16)+','+a+')';
-  }
-  ctxF.beginPath();ctxF.arc(p.x,p.y,p.s*a,0,Math.PI*2);ctxF.fill();
- }
+// APC column (5 vehicles)
+var apcs=[];
+for(var i=0;i<5;i++){
+ var a=buildAPC([0x445522,0x3a5020,0x4a5a25,0x3a4a20,0x4a5525][i]);
+ a.position.set(-30+i*20,-.5,15+(i%2)*6);a.rotation.y=-.15;S.add(a);apcs.push(a);
 }
 
-// ======================== VEHICLE MANAGEMENT ========================
-var groundVehicles=[],airVehicles=[],explosionTimers=[];
-
-function clearAllVehicles(){
- groundVehicles.forEach(function(v){if(v.el)_v.removeChild(v.el)});
- airVehicles.forEach(function(v){if(v.el)_v.removeChild(v.el)});
- groundVehicles=[];airVehicles=[];
- // also clear leftover child divs
- var ch=_v.children;for(var i=ch.length-1;i>=0;i--){if(ch[i].className==='vehicle')_v.removeChild(ch[i])}
+// Fighter jets (4)
+var jets=[];
+for(var i=0;i<4;i++){
+ var j=buildJet();j.position.set(-60+i*35,25+Math.sin(i)*20,-50-i*10);j.rotation.y=Math.PI/2-.2;S.add(j);jets.push(j);
 }
 
-// ======================== SCENE 0: LOGOS (0-30s) ========================
-function sceneLogos(t,ts){
- if(ts<1){drawTitle('烈火苍穹','Fire & Steel',ts/1)}else if(ts<3){drawTitle('','',1-(ts-1)/2)}
- if(ts>3&&ts<10){drawSubtitle('导演: 小Q AI Studio','',ts-3)}
- if(ts>10)drawSubtitle('','',1-(ts-10)/3);
+// Attack helicopters (3)
+var helis=[];
+for(var i=0;i<3;i++){
+ var h=buildHeli();h.position.set(30+i*40,18+(i%2)*5,-40-i*15);h.rotation.y=-.3;S.add(h);helis.push(h);
 }
 
-// ======================== SCENE 1: DAWN (30-120s) ========================
-function sceneDawn(t,ts){
- if(ts<2){
-  drawSubtitle('第一章','黎明集结',ts/2);
- }else{drawSubtitle('','',1-(ts-2)/3)}
+I.textContent='钢铁风暴 · 空地一体战';
 
- if(ts>5&&groundVehicles.length===0){
-  // spawn initial forces
-  for(var i=0;i<5;i++){var s=spawnTankSprite(W*.1+i*160,H*.58,'tank');s.x=W*.1+i*160;s.y=H*.58;groundVehicles.push(s)}
-  for(var i=0;i<3;i++){var s2=spawnTankSprite(W*.05+i*180,H*.58+40,'apc');s2.x=W*.05+i*180;s2.y=H*.58+40;groundVehicles.push(s2)}
- }
-
- // Move ground forces slowly
- groundVehicles.forEach(function(v,i){
-  if(!v.alive)return;v.x+=.3;if(v.x>W+80)v.x=-80;v.el.style.left=v.x+'px';
-  // terrain bounce
-  v.el.style.top=(v.y+Math.sin(t*2+i)*3)+'px';
- });
+// ===== PARTICLES =====
+var P=[];
+function sp(x,y,z,col,n,spd,life,size){
+ spd=spd||40;life=life||1;size=size||1;
+ for(var i=0;i<n;i++){P.push({x:x,y:y,z:z,vx:(Math.random()-.5)*spd,vy:Math.random()*spd*.4-Math.random()*spd*.5,vz:(Math.random()-.5)*spd,l:life,c:col,s:size})}
+}
+function bigExplosion(x,y,z){
+ sp(x,y,z,'#ff4400',80,100,2.5,2.5);sp(x,y,z,'#ff8800',60,80,2,2);
+ sp(x,y,z,'#ffcc00',40,60,2.5,1.5);sp(x,y,z,'#ffdd88',30,50,3,1);
+ sp(x,y,z,'#333333',50,40,3,2);sp(x,y,z,'#555555',30,30,4,1.5);
 }
 
-// ======================== SCENE 2: GROUND ASSAULT (120-300s) ========================
-var groundPhase2=false;
-function sceneGround(t,ts){
- if(ts<2){drawSubtitle('第二章','装甲洪流',ts/2)}
- else if(ts<5){drawSubtitle('','',1)}
+// ===== MISSILES =====
+var missiles=[];
+var missileTimer=0;
 
- if(ts>3&&!groundPhase2){
-  groundPhase2=true;
-  clearAllVehicles();
-  // Massive ground force
-  for(var i=0;i<8;i++){var s=spawnTankSprite(-80-i*60,H*.58-i*2,'tank');s.x=-80-i*60;s.y=H*.58-i*2;groundVehicles.push(s)}
-  for(var i=0;i<5;i++){var s2=spawnTankSprite(-50-i*70,H*.58+40-i*2,'apc');s2.x=-50-i*70;s2.y=H*.58+40-i*2;groundVehicles.push(s2)}
-  // Air support
-  for(var i=0;i<3;i++){var j=spawnTankSprite(W*.3+i*200,H*.2+i*30,'jet');j.x=W*.3+i*200;j.y=H*.2+i*30;airVehicles.push(j)}
-  for(var i=0;i<2;i++){var h=spawnTankSprite(W*.5+i*180,H*.3+i*20,'heli');h.x=W*.5+i*180;h.y=H*.3+i*20;airVehicles.push(h)}
- }
-
- // Move forces faster
- groundVehicles.forEach(function(v,i){if(v.alive){v.x+=.8;if(v.x>W+80)v.x=-80;v.el.style.left=v.x+'px';v.el.style.top=(v.y+Math.sin(t*1.5+i)*2)+'px'}});
- airVehicles.forEach(function(v,i){
-  if(!v.alive)return;
-  if(v.el.innerHTML.indexOf('jet')!==-1||JSON.stringify(v.el.innerHTML).indexOf('dddd')!==-1||v.el.innerHTML.indexOf('80px')!==-1){
-   // jet
-   v.x+=2;v.y=H*.2+Math.sin(t+i)*40;if(v.x>W+100){v.x=-100}
-  }else{
-   // heli
-   v.x+=.6;v.y=H*.3+Math.cos(t*.8+i)*20;if(v.x>W+80){v.x=-80}
-  }
-  v.el.style.left=v.x+'px';v.el.style.top=v.y+'px';
- });
-
- // Explosions every 30 seconds
- if(Math.floor(ts)%30===0&&Math.floor(ts)>0&&!explosionTimers[Math.floor(ts)]){
-  explosionTimers[Math.floor(ts)]=true;
-  spawnExplosion(W*.4+Math.random()*W*.3,H*.5+Math.random()*H*.2,Math.random()>.5);
- }
-}
-
-// ======================== SCENE 3: AIR BATTLE (300-480s) ========================
-var airPhase3=false;
-function sceneAir(t,ts){
- if(ts<2){drawSubtitle('第三章','制空权',ts/2)}else if(ts<5){drawSubtitle('','',1)}
- if(ts>3&&!airPhase3){
-  airPhase3=true;clearAllVehicles();
-  for(var i=0;i<6;i++){var j=spawnTankSprite(-60-i*80,H*.15+i*25,'jet');j.x=-60-i*80;j.y=H*.15+i*25;airVehicles.push(j)}
-  for(var i=0;i<4;i++){var h=spawnTankSprite(W+60+i*70,H*.25+i*30,'heli');h.x=W+60+i*70;h.y=H*.25+i*30;airVehicles.push(h)}
-  for(var i=0;i<3;i++){var s=spawnTankSprite(W*.2+i*200,H*.58,'tank');s.x=W*.2+i*200;s.y=H*.58;groundVehicles.push(s)}
- }
- airVehicles.forEach(function(v,i){
-  if(!v.alive)return;
-  v.x+=1.5+Math.sin(t*.5+i)*.5;v.y+=Math.sin(t*.3+i*.7)*30;if(v.x>W+100)v.x=-100;if(v.x<-100)v.x=W+100;
-  v.el.style.left=v.x+'px';v.el.style.top=v.y+'px';
- });
- groundVehicles.forEach(function(v,i){if(v.alive){v.x+=.4;if(v.x>W+80)v.x=-80;v.el.style.left=v.x+'px';v.el.style.top=(v.y+Math.sin(t+1)*2)+'px'}});
-
- if(Math.floor(ts)%15===0&&ts>0&&!explosionTimers['air'+Math.floor(ts)]){
-  explosionTimers['air'+Math.floor(ts)]=true;
-  spawnExplosion(W*.2+Math.random()*W*.6,H*.2+Math.random()*H*.3,true);
-  // flash screen
-  document.getElementById('stage').style.background='rgba(255,150,50,.08)';
-  setTimeout(function(){document.getElementById('stage').style.background=''},150);
- }
-}
-
-// ======================== SCENE 4: COMBINED ARMS (480-660s) ========================
-var combinedPhase4=false;
-function sceneCombined(t,ts){
- if(ts<2){drawSubtitle('第四章','空地协同',ts/2)}else if(ts<5){drawSubtitle('','',1)}
- if(ts>3&&!combinedPhase4){combinedPhase4=true;clearAllVehicles();
-  for(var i=0;i<6;i++){var s=spawnTankSprite(-80-i*50,H*.58-i*3,'tank');s.x=-80-i*50;s.y=H*.58-i*3;groundVehicles.push(s)}
-  for(var i=0;i<4;i++){var s2=spawnTankSprite(-50-i*60,H*.58+40-i*2,'apc');s2.x=-50-i*60;s2.y=H*.58+40-i*2;groundVehicles.push(s2)}
-  for(var i=0;i<4;i++){var j=spawnTankSprite(W*.1+i*220,H*.18+i*20,'jet');j.x=W*.1+i*220;j.y=H*.18+i*20;airVehicles.push(j)}
-  for(var i=0;i<3;i++){var h=spawnTankSprite(W*.3+i*200,H*.28+i*15,'heli');h.x=W*.3+i*200;h.y=H*.28+i*15;airVehicles.push(h)}
- }
- // intense movement
- groundVehicles.forEach(function(v,i){if(v.alive){v.x+=1.2;if(v.x>W+80)v.x=-80;v.el.style.left=v.x+'px';v.el.style.top=(v.y+Math.sin(t*2+i)*3)+'px'}});
- airVehicles.forEach(function(v,i){if(!v.alive)return;v.x+=2+Math.sin(t+i)*.6;v.y+=Math.sin(t*.4+i*.5)*35;if(v.x>W+100)v.x=-100;if(v.x<-100)v.x=W+100;v.el.style.left=v.x+'px';v.el.style.top=v.y+'px'});
-
- if(Math.floor(ts)%10===0&&ts>0&&!explosionTimers['comb'+Math.floor(ts)]){
-  explosionTimers['comb'+Math.floor(ts)]=true;
-  var bx=W*.2+Math.random()*W*.6,by=H*.3+Math.random()*H*.4;
-  spawnExplosion(bx,by,Math.random()>.4);
-  document.getElementById('stage').style.background='rgba(255,180,60,'+(.05+Math.random()*.08)+')';
-  setTimeout(function(){document.getElementById('stage').style.background=''},200);
- }
-}
-
-// ======================== SCENE 5: CLIMAX (660-810s) ========================
-var climaxPhase5=false;
-function sceneClimax(t,ts){
- if(ts<2){drawSubtitle('第五章','最终决战',ts/2)}else if(ts<5){drawSubtitle('','',1)}
- if(ts>3&&!climaxPhase5){climaxPhase5=true;clearAllVehicles();
-  for(var i=0;i<10;i++){var s=spawnTankSprite(-80-i*45,H*.58-(i%3)*4,'tank');s.x=-80-i*45;s.y=H*.58-(i%3)*4;groundVehicles.push(s)}
-  for(var i=0;i<6;i++){var s2=spawnTankSprite(-50-i*55,H*.58+40-(i%3)*3,'apc');s2.x=-50-i*55;s2.y=H*.58+40-(i%3)*3;groundVehicles.push(s2)}
-  for(var i=0;i<8;i++){var j=spawnTankSprite(W*.05+i*120,H*.12+i*18,'jet');j.x=W*.05+i*120;j.y=H*.12+i*18;airVehicles.push(j)}
-  for(var i=0;i<5;i++){var h=spawnTankSprite(W*.2+i*160,H*.22+i*14,'heli');h.x=W*.2+i*160;h.y=H*.22+i*14;airVehicles.push(h)}
- }
-
- groundVehicles.forEach(function(v,i){if(v.alive){v.x+=1.8;if(v.x>W+80)v.x=-80;v.el.style.left=v.x+'px';v.el.style.top=(v.y+Math.sin(t*3+i)*4)+'px'}});
- airVehicles.forEach(function(v,i){if(!v.alive)return;v.x+=3+Math.sin(t*.8+i)*.7;v.y+=Math.sin(t*.5+i*.6)*40;if(v.x>W+120)v.x=-120;if(v.x<-120)v.x=W+120;v.el.style.left=v.x+'px';v.el.style.top=v.y+'px'});
-
- // Constant explosions
- if(Math.floor(ts)%4===0&&!explosionTimers['clx'+Math.floor(ts)]){
-  explosionTimers['clx'+Math.floor(ts)]=true;
-  var bx=W*.15+Math.random()*W*.7,by=H*.25+Math.random()*H*.45;
-  spawnExplosion(bx,by,true);
-  document.getElementById('stage').style.background='rgba(255,200,80,'+(.08+Math.random()*.12)+')';
-  setTimeout(function(){document.getElementById('stage').style.background=''},300);
-  // occasional screen shake
-  var oX=Math.random()*10-5,oY=Math.random()*10-5;
-  document.getElementById('stage').style.transform='translate('+oX+'px,'+oY+'px)';
-  setTimeout(function(){document.getElementById('stage').style.transform=''},100);
- }
-}
-
-// ======================== SCENE 6: CREDITS (810-900s) ========================
-var creditsPhase6=false;
-function sceneCredits(t,ts){
- if(!creditsPhase6){creditsPhase6=true;clearAllVehicles()}
- if(ts<3){drawTitle('','',ts/3)}else if(ts<20){drawCredits(ts)}else{drawTitle('烈火苍穹','感谢观看',(ts-20)/10)}
-}
-
-// ======================== TITLE/SUBTITLE HELPERS ========================
-var titleDiv=null,subDiv=null;
-function drawTitle(main,sub,a){
- if(!titleDiv){titleDiv=document.createElement('div');titleDiv.className='title-card';titleDiv.innerHTML='<h1></h1><p></p>';_v.appendChild(titleDiv)}
- titleDiv.style.opacity=a;titleDiv.querySelector('h1').textContent=main;titleDiv.querySelector('p').textContent=sub;
-}
-function drawSubtitle(main,sub,a){
- if(!subDiv){subDiv=document.createElement('div');subDiv.style.cssText='position:absolute;bottom:20%;left:50%;transform:translateX(-50%);color:#fff;font-size:clamp(14px,4vw,22px);font-weight:700;z-index:110;text-shadow:0 0 20px rgba(255,100,0,.6);text-align:center';subDiv.innerHTML='<div></div><div style="font-size:60%;opacity:.5;margin-top:4px"></div>';_v.appendChild(subDiv)}
- subDiv.style.opacity=a;subDiv.children[0].textContent=main;subDiv.children[1].textContent=sub;
-}
-function drawCredits(ts){
- if(subDiv)subDiv.style.opacity=0;
- if(!titleDiv){titleDiv=document.createElement('div');titleDiv.className='title-card';titleDiv.innerHTML='<h1></h1><p></p>';_v.appendChild(titleDiv)}
- titleDiv.style.opacity=1;
- titleDiv.querySelector('h1').style.fontSize='clamp(16px,5vw,36px)';
- var credits=[
-  '','总导演: 小Q AI Studio','','视觉效果: Three.js/CSS','','音效设计: 粒子系统','','军事顾问: 三角洲行动','','特别鸣谢: 所有热爱军事的你','','','烈火苍穹 · 空地大战','© 2026 Q-Studio',
- ];
- var idx=Math.floor(ts/2);
- var txt=credits.slice(Math.max(0,idx-3),idx+3).join('<br>');
- titleDiv.querySelector('h1').innerHTML=txt;
- var fadeProgress=Math.min(1,ts/15);
- titleDiv.style.opacity=fadeProgress;
-}
-
-// ======================== MAIN LOOP ========================
-var lastT=0,sceneIdx=0,sceneTime=0;
-function clearTitle(){
- if(titleDiv){titleDiv.style.opacity=0}
- if(subDiv){subDiv.style.opacity=0}
-}
+// ===== ANIMATION =====
+var startT=0,lastT=0,explosionT=0;
 
 function loop(now){
  requestAnimationFrame(loop);
- if(!startT){startT=now;lastT=now;return}
- var dt=(now-lastT)/1000;lastT=now;
- if(dt<=0||dt>1)dt=.016;
- if(_skip){drawFX(0);return}
+ if(!startT){startT=now;lastT=now;R.render(S,C);return}
 
- T=(now-startT)/1000;
+ var dt=Math.min(.1,(now-lastT)/1000);lastT=now;
+ if(dt<=0||dt>.1)dt=.016;
+ var T=(now-startT)/1000;
+ explosionT+=dt;
 
- // Find current scene
- for(var i=scenes.length-1;i>=0;i--){if(T>=scenes[i].start){sceneIdx=i;break}}
- var sc=scenes[sceneIdx];sceneTime=T-sc.start;
+ // === TANK MOVEMENT ===
+ tanks.forEach(function(t,i){if(!t||!t.position)return;
+  t.position.z+=2.5*dt;
+  if(t.position.z>60)t.position.z=-60;
+  t.position.y=-.5+Math.sin(T*2+i)*.3;
+ });
 
- // Clear titles between scenes
- if(sceneIdx!==(sceneIdx||0))clearTitle();
+ // === APC MOVEMENT ===
+ apcs.forEach(function(a,i){if(!a||!a.position)return;
+  a.position.z+=2*dt;
+  if(a.position.z>60)a.position.z=-60;
+  a.position.y=-.5+Math.sin(T*2.5+i+.5)*.25;
+ });
 
- // Draw layers
- drawSky(T,sceneIdx);
- drawGround(T,sceneIdx);
- drawFX(T);
+ // === JET FLIGHT ===
+ jets.forEach(function(j,i){if(!j||!j.position)return;
+  j.position.z+=15*dt;
+  j.position.y=25+Math.sin(T*1+i*.8)*15;
+  if(j.position.z>100){j.position.z=-80;j.position.x=-60+Math.random()*50}
+  // Bank
+  j.rotation.z=Math.sin(T+i)*.2;
+ });
 
- // Scene logic
- switch(sc.name){
-  case 'LOGOS':sceneLogos(T,sceneTime);break;
-  case 'DAWN':sceneDawn(T,sceneTime);break;
-  case 'GROUND':sceneGround(T,sceneTime);break;
-  case 'AIR':sceneAir(T,sceneTime);break;
-  case 'COMBINED':sceneCombined(T,sceneTime);break;
-  case 'CLIMAX':sceneClimax(T,sceneTime);break;
-  case 'CREDITS':sceneCredits(T,sceneTime);break;
+ // === HELI FLIGHT ===
+ helis.forEach(function(h,i){if(!h||!h.position)return;
+  h.position.z+=8*dt;
+  h.position.y=18+Math.sin(T*.8+i*.7)*8;
+  if(h.position.z>80)h.position.z=-60;
+  // Rotor spin
+  if(h.userData&&h.userData.mr)h.userData.mr.rotation.y+=dt*18;
+  if(h.userData&&h.userData.tr)h.userData.tr.rotation.z+=dt*20;
+ });
+
+ // === MISSILE LAUNCH every 2 seconds ===
+ if(explosionT>2){
+  explosionT=0;
+  // Random target
+  if(helis.length>0&&tanks.length>0){
+   var tgt=tanks[Math.floor(Math.random()*tanks.length)];
+   var src=jets[Math.floor(Math.random()*jets.length)];
+   if(tgt&&src&&tgt.position&&src.position){
+    var dx=tgt.position.x-src.position.x,dy=tgt.position.y-src.position.y,dz=tgt.position.z-src.position.z;
+    var d=Math.sqrt(dx*dx+dy*dy+dz*dz);
+    missiles.push({x:src.position.x,y:src.position.y,z:src.position.z,vx:dx/d*70,vy:dy/d*70,vz:dz/d*70,life:0,maxL:3,target:tgt});
+   }
+  }
+  // Also random air-to-air
+  if(helis.length>1&&jets.length>1){
+   var hT=helis[Math.floor(Math.random()*helis.length)];
+   var jS=jets[Math.floor(Math.random()*jets.length)];
+   if(hT&&jS&&hT.position&&jS.position){
+    var dx2=hT.position.x-jS.position.x,dy2=hT.position.y-jS.position.y,dz2=hT.position.z-jS.position.z;
+    var d2=Math.sqrt(dx2*dx2+dy2*dy2+dz2*dz2);
+    missiles.push({x:jS.position.x,y:jS.position.y,z:jS.position.z,vx:dx2/d2*80,vy:dy2/d2*80,vz:dz2/d2*80,life:0,maxL:2.5,target:hT});
+   }
+  }
  }
 
- // HUD timer
- var totalS=Math.floor(T);
- var m=Math.floor(totalS/60),s=totalS%60;
- document.getElementById('hud').innerHTML='<div style="position:absolute;top:10px;right:14px;color:rgba(255,255,255,.4);font-size:11px">'+
-  (m<10?'0'+m:m)+':'+(s<10?'0'+s:s)+' / 15:00</div>'+
-  '<div style="position:absolute;top:10px;left:14px;color:rgba(255,255,255,.3);font-size:10px">'+sc.desc+'</div>';
+ // === UPDATE MISSILES ===
+ for(var i=missiles.length-1;i>=0;i--){
+  var m=missiles[i];
+  m.x+=m.vx*dt;m.y+=m.vy*dt;m.z+=m.vz*dt;m.life+=dt;
+  sp(m.x,m.y,m.z,'#ffaa00',2,15,.8,.8);
+  var tgt=m.target;
+  if(tgt&&tgt.position){
+   var dd=Math.sqrt((m.x-tgt.position.x)*(m.x-tgt.position.x)+(m.y-tgt.position.y)*(m.y-tgt.position.y)+(m.z-tgt.position.z)*(m.z-tgt.position.z));
+   if(dd<8){bigExplosion(tgt.position.x,tgt.position.y,tgt.position.z);missiles.splice(i,1);continue}
+  }
+  if(m.life>m.maxL){missiles.splice(i,1);continue}
+ }
 
- if(T>900){return}
+ // === UPDATE PARTICLES ===
+ for(var i=P.length-1;i>=0;i--){var p=P[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;p.l-=dt;if(p.l<=0){P.splice(i,1);continue}try{var pm=new THREE.Mesh(new THREE.SphereGeometry(p.s*.15,4,4),new THREE.MeshBasicMaterial({color:parseInt(p.c.replace('#',''),16),transparent:true,opacity:Math.min(1,p.l)}));pm.position.set(p.x,p.y,p.z);S.add(pm);setTimeout(function(){try{S.remove(pm)}catch(e){}},70)}catch(e){}}
+
+ // === RENDER MISSILES ===
+ for(var i=missiles.length-1;i>=0;i--){var ms=missiles[i];if(isNaN(ms.x))continue;try{var mm=new THREE.Mesh(new THREE.SphereGeometry(.25,6,6),new THREE.MeshBasicMaterial({color:0xff6600}));mm.position.set(ms.x,ms.y,ms.z);S.add(mm);setTimeout(function(){try{S.remove(mm)}catch(e){}},60);var trail=new THREE.Mesh(new THREE.SphereGeometry(.12,4,4),new THREE.MeshBasicMaterial({color:0xffaa00,transparent:true,opacity:.5}));trail.position.set(ms.x,ms.y,ms.z);S.add(trail);setTimeout(function(){try{S.remove(trail)}catch(e){}},100)}catch(e){}}
+
+ // === CINEMATIC CAMERA - aggressive pans ===
+ var t=T%15;
+ if(t<3){C.position.lerp(new THREE.Vector3(10+Math.sin(T)*15,15,50),3*dt);C.lookAt(-20+Math.sin(T)*10,3,-20)}
+ else if(t<6){C.position.lerp(new THREE.Vector3(jets[0]?jets[0].position.x+15:30,jets[0]?jets[0].position.y+8:35,jets[0]?jets[0].position.z+10:60),3*dt);C.lookAt(tanks[3]?tanks[3].position:new THREE.Vector3(-10,2,-10))}
+ else if(t<9){C.position.lerp(new THREE.Vector3(-10,25,40+Math.sin(T)*15),3*dt);C.lookAt(helis[1]?helis[1].position:new THREE.Vector3(40,15,-20))}
+ else if(t<12){C.position.lerp(new THREE.Vector3(tanks[0]?tanks[0].position.x+20:10,tanks[0]?tanks[0].position.y+12:15,tanks[0]?tanks[0].position.z+25:30),3*dt);C.lookAt(tanks[0]?tanks[0].position:new THREE.Vector3(-20,2,-20))}
+ else{C.position.lerp(new THREE.Vector3(0,30,70),2*dt);C.lookAt(0,5,-10)}
+
+ R.render(S,C);
 }
+R.render(S,C);
 requestAnimationFrame(loop);
 
-document.getElementById('stage').style.transformOrigin='center center';
-
+window.addEventListener('resize',function(){C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix();R.setSize(innerWidth,innerHeight)});
 })();
-</script>
-</body></html>
+</script></body></html>
