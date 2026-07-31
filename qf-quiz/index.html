@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>烽火地带 · 生死时刻</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none;font-family:'PingFang SC','Microsoft YaHei',sans-serif}
+#c{display:block;width:100%;height:100%}
+#ui{position:fixed;top:10px;left:10px;z-index:10;pointer-events:none}
+#ui span{display:block;color:#fff;font-size:11px;text-shadow:0 0 8px rgba(0,0,0,.8);margin:2px 0}
+#dead{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;flex-direction:column;background:rgba(0,0,0,.75)}
+#dead h2{color:#ff4400;font-size:32px;font-weight:900;text-shadow:0 0 30px rgba(255,50,0,.8)}
+#dead p{color:rgba(255,255,255,.6);font-size:13px;margin-top:6px}
+#dead button{background:#f60;color:#fff;border:none;padding:10px 30px;border-radius:20px;font-size:14px;margin-top:16px;cursor:pointer;font-weight:700}
+#win{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;flex-direction:column;background:rgba(0,0,0,.75)}
+#win h2{color:#00ff66;font-size:32px;font-weight:900;text-shadow:0 0 30px rgba(0,255,100,.6)}
+#win p{color:rgba(255,255,255,.6);font-size:13px;margin-top:6px}
+#win button{background:#0c6;color:#fff;border:none;padding:10px 30px;border-radius:20px;font-size:14px;margin-top:16px;cursor:pointer;font-weight:700}
+</style></head><body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <span id="hp">❤️ 100</span>
+  <span id="score">⭐ 0</span>
+  <span id="dist">🏃 撤离点: 100m</span>
+</div>
+<div id="dead">
+  <h2>💀 你死了</h2>
+  <p id="deadMsg">被桥上的乌鲁鲁巡飞弹炸死</p>
+  <button onclick="restart()">🔄 再来一局</button>
+</div>
+<div id="win">
+  <h2>✅ 撤离成功!</h2>
+  <p id="winMsg">带出了 0 件物资</p>
+  <button onclick="restart()">🔄 再搜一局</button>
+</div>
+<script>
+var C=document.getElementById('c'),ctx=C.getContext('2d'),W,H;
+function R(){C.width=W=innerWidth;C.height=H=innerHeight}R();window.addEventListener('resize',R);
+
+// 玩家
+var player={x:0,y:0,vx:0,vy:0,r:12,hp:100,score:0,alive:true,items:0};
+
+// 地图元素
+var extract={x:0,y:0,r:28};       // 撤离点
+var bridgeY=0;                      // 桥的Y坐标
+var enemies=[];
+var bullets=[];
+var particles=[];
+var loots=[];
+var time=0,shake=0;
+var keys={};
+var touchLeft=false,touchRight=false,touchUp=false,touchDown=false,touchFire=false;
+var joystick={active:false,id:null,sx:0,sy:0,dx:0,dy:0};
+var fired=false;
+
+// 敌人类型与对话
+var enemyTypes=[
+  {name:'乌鲁鲁',icon:'🏗',color:'#ff8800',skill:'巡飞弹',hp:2,fireRate:80},
+  {name:'露娜',icon:'🏹',color:'#ff44cc',skill:'侦察箭',hp:1,fireRate:60},
+  {name:'比特',icon:'🕷',color:'#66ff44',skill:'蜘蛛雷',hp:2,fireRate:90},
+  {name:'深蓝',icon:'🪝',color:'#4488ff',skill:'钩爪',hp:3,fireRate:70},
+  {name:'威龙',icon:'🐉',color:'#ff4400',skill:'虎蹲炮',hp:3,fireRate:100},
+  {name:'蜂医',icon:'💉',color:'#00ff88',skill:'激素枪',hp:2,fireRate:50},
+  {name:'红狼',icon:'🐺',color:'#ff2200',skill:'手炮',hp:2,fireRate:65},
+];
+
+var deathMsgs=[
+  '被桥上的乌鲁鲁巡飞弹炸死',
+  '被露娜侦察箭标记后集火',
+  '踩到了比特的蜘蛛雷',
+  '被水鬼深蓝从背后钩走',
+  '被威龙的虎蹲炮轰趴',
+  '被魔了的蜂医激素枪扫死',
+  '被红狼花来卸了腿',
+  '在撤离点被三把枪同时架住',
+  '跳河逃跑被深蓝拖入水底',
+  '好不容易摸到保险箱被蹲了十分钟的威龙一发送走',
+];
+
+function init(){
+  player.x=W*.15;player.y=H*.75;player.vx=0;player.vy=0;player.hp=100;player.score=0;player.alive=true;player.items=0;
+  bridgeY=H*.4;
+  extract.x=W*.88;extract.y=H*.22;
+  enemies=[];bullets=[];particles=[];loots=[];time=0;shake=0;fired=false;
+  touchLeft=touchRight=touchUp=touchDown=touchFire=false;
+
+  // === 按照用户描述的布局生成敌人 ===
+
+  // 桥上: 2个乌鲁鲁 + 1个露娜
+  for(var i=0;i<2;i++){
+    var e=makeEnemy('乌鲁鲁');
+    e.x=W*.35+i*W*.12;e.y=bridgeY-10;
+    e.patrolX=e.x;e.patrolR=30;
+    enemies.push(e);
+  }
+  var lunaE=makeEnemy('露娜');
+  lunaE.x=W*.55;lunaE.y=bridgeY-8;
+  enemies.push(lunaE);
+
+  // 浮力大门: 3个比特
+  for(var i=0;i<3;i++){
+    var e2=makeEnemy('比特');
+    e2.x=W*.5+i*W*.1;e2.y=H*.25;
+    e2.patrolX=e2.x;e2.patrolR=40;
+    enemies.push(e2);
+  }
+
+  // 水里: 3个深蓝
+  for(var i=0;i<3;i++){
+    var e3=makeEnemy('深蓝');
+    e3.x=W*.6+i*W*.08;e3.y=bridgeY+40;
+    e3.inWater=true;
+    enemies.push(e3);
+  }
+
+  // 保险箱附近: 1个威龙
+  var wyvern=makeEnemy('威龙');
+  var safeX=W*.35,safeY=H*.55;
+  wyvern.x=safeX;wyvern.y=safeY;
+  wyvern.patrolX=safeX;wyvern.patrolR=50;
+  enemies.push(wyvern);
+  // 保险箱(物资点)就在威龙旁边
+  loots.push({x:safeX,y:safeY-30,type:'safe'});
+
+  // 蜂医(已魔)
+  var medic=makeEnemy('蜂医');
+  medic.x=W*.45;medic.y=H*.5;
+  medic.berserk=true;
+  enemies.push(medic);
+
+  // 红狼
+  var wolf=makeEnemy('红狼');
+  wolf.x=W*.7;wolf.y=H*.6;
+  enemies.push(wolf);
+
+  // 其他物资散落
+  for(var i=0;i<5;i++){
+    loots.push({x:W*.2+Math.random()*W*.5,y:H*.3+Math.random()*H*.45,type:'box'});
+  }
+
+  // 安全屋
+  loots.push({x:W*.2,y:H*.28,type:'safe'});
+  loots.push({x:W*.75,y:H*.7,type:'box'});
+}
+
+function makeEnemy(name){
+  var t=enemyTypes.find(function(e){return e.name===name});
+  return {x:0,y:0,vx:0,vy:0,r:12,name:t.name,icon:t.icon,color:t.color,skill:t.skill,hp:t.hp,maxHp:t.hp,fireRate:t.fireRate,fireCd:0,alive:true,inWater:false,berserk:false,patrolX:0,patrolR:40,patrolDir:1};
+}
+
+// ===== 输入 =====
+document.addEventListener('keydown',function(e){keys[e.key.toLowerCase()]=true;e.key===' '&&e.preventDefault()});
+document.addEventListener('keyup',function(e){keys[e.key.toLowerCase()]=false});
+
+C.addEventListener('touchstart',function(e){
+  e.preventDefault();
+  for(var i=0;i<e.touches.length;i++){
+    var t=e.touches[i];
+    if(t.clientX<C.width*.5&&t.clientY>C.height*.4){
+      joystick.active=true;joystick.id=t.identifier;joystick.sx=t.clientX;joystick.sy=t.clientY;
+      joystick.dx=0;joystick.dy=0;
+    }else{
+      touchFire=true;
+    }
+  }
+},{passive:false});
+C.addEventListener('touchmove',function(e){
+  e.preventDefault();
+  for(var i=0;i<e.touches.length;i++){
+    var t=e.touches[i];
+    if(t.identifier===joystick.id){
+      joystick.dx=t.clientX-joystick.sx;joystick.dy=t.clientY-joystick.sy;
+      var mag=Math.hypot(joystick.dx,joystick.dy);if(mag>50){joystick.dx=joystick.dx/mag*50;joystick.dy=joystick.dy/mag*50}
+    }
+  }
+},{passive:false});
+C.addEventListener('touchend',function(e){
+  e.preventDefault();
+  var found=false;
+  for(var i=0;i<e.touches.length;i++)if(e.touches[i].identifier===joystick.id)found=true;
+  if(!found){joystick.active=false;joystick.dx=0;joystick.dy=0}  touchFire=false;
+},{passive:false});
+
+C.addEventListener('mousedown',function(e){touchFire=true});
+C.addEventListener('mouseup',function(){touchFire=false});
+
+// ===== 主循环 =====
+var prevT=performance.now();
+function tick(now){
+  requestAnimationFrame(tick);
+  var dt=Math.min(0.1,(now-prevT)/1000);prevT=now;
+  if(!player.alive){draw(now);return}
+  time+=dt;
+
+  // 输入 → 移动
+  var mx=0,my=0,spd=120;
+  if(keys['w']||keys['arrowup'])my=-1;if(keys['s']||keys['arrowdown'])my=1;
+  if(keys['a']||keys['arrowleft'])mx=-1;if(keys['d']||keys['arrowright'])mx=1;
+  if(joystick.active){mx=joystick.dx/50;my=joystick.dy/50}
+
+  // ============ 桥上的乌鲁鲁和露娜 ============
+  enemies.forEach(function(e){
+    var dx=player.x-e.x,dy=player.y-e.y,dist=Math.hypot(dx,dy);
+    if(e.name==='乌鲁鲁'||e.name==='露娜'){
+      // 桥上巡逻
+      e.x+=e.patrolDir*25*dt;
+      if(Math.abs(e.x-e.patrolX)>e.patrolR)e.patrolDir*=-1;
+    }
+    if(e.name==='比特'){
+      e.x+=e.patrolDir*30*dt;
+      if(Math.abs(e.x-e.patrolX)>e.patrolR)e.patrolDir*=-1;
+    }
+    if(e.name==='深蓝'){
+      // 水里晃
+      e.x+=Math.sin(time*2+e.x)*30*dt;
+    }
+    if(e.name==='威龙'){
+      e.x=e.patrolX+Math.sin(time*1.5)*40;
+    }
+    if(e.name==='蜂医'){
+      // 魔了的蜂医冲过来
+      var ed=Math.hypot(player.x-e.x,player.y-e.y);
+      if(ed<200){
+        var ang2=Math.atan2(player.y-e.y,player.x-e.x);
+        e.x+=Math.cos(ang2)*80*dt;e.y+=Math.sin(ang2)*80*dt;
+      }
+    }
+    if(e.name==='红狼'){
+      var ed2=Math.hypot(player.x-e.x,player.y-e.y);
+      if(ed2<180){
+        var ang3=Math.atan2(player.y-e.y,player.x-e.x);
+        e.x+=Math.cos(ang3)*65*dt;e.y+=Math.sin(ang3)*65*dt;
+      }
+    }
+  });
+
+  player.vx+=(mx*spd-player.vx)*Math.min(dt*8,1);
+  player.vy+=(my*spd-player.vy)*Math.min(dt*8,1);
+  player.x+=player.vx*dt;player.y+=player.vy*dt;
+  player.x=Math.max(12,Math.min(W-12,player.x));player.y=Math.max(12,Math.min(H-12,player.y));
+
+  // 过桥警告
+  if(Math.abs(player.y-bridgeY)<30&&player.x>W*.3&&player.x<W*.7){
+    // 桥上的敌人射击概率提高
+  }
+
+  // 物资拾取
+  for(var i=loots.length-1;i>=0;i--){
+    var l=loots[i];
+    if(Math.hypot(player.x-l.x,player.y-l.y)<20){
+      player.score+=l.type==='safe'?500:100;
+      player.items++;
+      spawnP(l.x,l.y,'#ffcc00',15);
+      loots.splice(i,1);
+      if(l.type==='safe')shake=15;
+    }
+  }
+
+  // 撤离点
+  var edist=Math.hypot(player.x-extract.x,player.y-extract.y);
+  if(edist<extract.r&&player.items>=2){
+    win();
+    return;
+  }
+
+  // 射击
+  if((touchFire||keys[' ']||keys['j'])&&!fired){
+    fired=true;
+    var bx=player.x,by=player.y;
+    var nearest=null,nd=Infinity;
+    enemies.forEach(function(e){
+      var d=Math.hypot(player.x-e.x,player.y-e.y);
+      if(d<nd&&d<150){nd=d;nearest=e}
+    });
+    if(nearest){
+      var ang=Math.atan2(nearest.y-player.y,nearest.x-player.x);
+      bullets.push({x:bx,y:by,vx:Math.cos(ang)*400,vy:Math.sin(ang)*400,life:0.6});
+      spawnP(bx,by,'#ffcc00',5);
+    }else{
+      bullets.push({x:bx,y:by,vx:player.vx+Mx()*300,vy:player.vy+My()*300,life:0.6});
+    }
+    setTimeout(function(){fired=false},200);
+  }
+
+  // 子弹移动 & 命中
+  for(var i=bullets.length-1;i>=0;i--){
+    var b=bullets[i];b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;
+    if(b.life<=0||b.x<0||b.x>W||b.y<0||b.y>H){bullets.splice(i,1);continue}
+    for(var j=enemies.length-1;j>=0;j--){
+      var e2=enemies[j];
+      if(!e2.alive)continue;
+      if(Math.hypot(b.x-e2.x,b.y-e2.y)<e2.r+4){
+        e2.hp--;
+        spawnP(e2.x,e2.y,'#ff4400',8);
+        bullets.splice(i,1);
+        if(e2.hp<=0){
+          e2.alive=false;player.score+=200;
+          spawnP(e2.x,e2.y,'#ff8800',20);
+          if(Math.random()<.3)loots.push({x:e2.x,y:e2.y,type:'box'});
+        }
+        break;
+      }
+    }
+  }
+
+  // 敌人射击
+  enemies.forEach(function(e){
+    if(!e.alive)return;
+    e.fireCd-=dt;
+    var ed=Math.hypot(player.x-e.x,player.y-e.y);
+    if(ed<200&&e.fireCd<=0){
+      e.fireCd=e.fireRate/1000;
+      var ang2=Math.atan2(player.y-e.y,player.x-e.x);
+      bullets.push({x:e.x,y:e.y,vx:Math.cos(ang2)*250+(Math.random()-.5)*80,vy:Math.sin(ang2)*250+(Math.random()-.5)*80,life:1.0,enemy:true,color:e.color});
+    }
+  });
+
+  // 敌方子弹击中玩家
+  for(var i=bullets.length-1;i>=0;i--){
+    var b2=bullets[i];
+    if(!b2.enemy)continue;
+    if(Math.hypot(b2.x-player.x,b2.y-player.y)<player.r+3){
+      player.hp-=15;
+      spawnP(player.x,player.y,'#ff0000',10);
+      shake=10;
+      bullets.splice(i,1);
+      if(player.hp<=0){die();return}
+    }
+  }
+
+  // 接触敌人
+  enemies.forEach(function(e){
+    if(!e.alive)return;
+    if(Math.hypot(player.x-e.x,player.y-e.y)<player.r+e.r-4){
+      player.hp-=25*dt;
+      shake=5;
+    }
+  });
+
+  // 粒子衰减
+  particles.forEach(function(p){p.life-=dt});
+  particles=particles.filter(function(p){return p.life>0});
+  if(shake>0)shake-=dt*40;
+
+  draw(now);
+}
+
+function spawnP(x,y,c,n){for(var i=0;i<n;i++){particles.push({x:x,y:y,vx:(Math.random()-.5)*120,vy:(Math.random()-.5)*120,life:.4+Math.random()*.4,color:c})}}
+function Mx(){return(Math.random()-.5)*200}
+function My(){return(Math.random()-.5)*200}
+
+function die(){
+  player.alive=false;
+  document.getElementById('dead').style.display='flex';
+  document.getElementById('deadMsg').textContent=deathMsgs[Math.floor(Math.random()*deathMsgs.length)];
+}
+function win(){
+  player.alive=false;
+  document.getElementById('win').style.display='flex';
+  document.getElementById('winMsg').textContent='带出了 '+player.items+' 件物资 · 得分 '+player.score;
+}
+window.restart=function(){document.getElementById('dead').style.display='none';document.getElementById('win').style.display='none';init()};
+
+// ===== 渲染 =====
+function draw(now){
+  ctx.save();ctx.clearRect(0,0,W,H);
+  if(shake>0){ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake)}
+
+  // 背景
+  var bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#0a0f18');bg.addColorStop(.3,'#0d1420');bg.addColorStop(.7,'#111824');bg.addColorStop(1,'#0c1016');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+  // 星星
+  for(var s=0;s<50;s++){ctx.fillStyle='rgba(255,255,255,'+(.3+Math.sin(time*2+s)*.2)+')';ctx.fillRect((s*137+50)%W,(s*89+30)%Math.floor(H*.4),1+Math.random(),1+Math.random())}
+
+  // 地面
+  ctx.fillStyle='#0b1018';ctx.fillRect(0,H*.42,W,H*.58);
+  // 地面纹理线
+  for(var g=0;g<15;g++){ctx.strokeStyle='rgba(255,255,255,.02)';ctx.beginPath();ctx.moveTo(g*W/12,Math.floor(H*.42));ctx.lineTo(g*W/12+Math.sin(g)*30,Math.floor(H));ctx.stroke()}
+
+  // 桥
+  ctx.fillStyle='#1a2230';ctx.fillRect(0,bridgeY-12,W,24);
+  ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;ctx.strokeRect(0,bridgeY-12,W,24);
+  // 桥面条纹
+  for(var b3=0;b3<Math.floor(W/30);b3++){ctx.strokeStyle='rgba(255,255,255,.03)';ctx.beginPath();ctx.moveTo(b3*30,bridgeY-12);ctx.lineTo(b3*30,bridgeY+12);ctx.stroke()}
+  // 桥名字
+  ctx.fillStyle='rgba(255,255,255,.12)';ctx.font='10px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('零号大坝',W/2,bridgeY-16);
+
+  // 浮力大门(标记)
+  ctx.fillStyle='rgba(100,150,200,.15)';ctx.fillRect(W*.4,H*.2,W*.3,H*.12);
+  ctx.strokeStyle='rgba(100,150,200,.3)';ctx.lineWidth=2;ctx.strokeRect(W*.4,H*.2,W*.3,H*.12);
+  ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='10px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('浮力大门',W*.55,Math.floor(H*.25));
+
+  // 保险箱标记
+  var safeL=loots.filter(function(l){return l.type==='safe'});
+  safeL.forEach(function(sl){
+    var pulse=Math.sin(time*3)*3;
+    ctx.fillStyle='rgba(255,200,0,.2)';ctx.beginPath();ctx.arc(sl.x,sl.y,18+pulse,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ffcc00';ctx.font='bold 14px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText('🔒',sl.x,sl.y+5);
+  });
+
+  // 物资箱
+  loots.filter(function(l){return l.type==='box'}).forEach(function(l){
+    ctx.fillStyle='rgba(0,200,100,.15)';ctx.fillRect(l.x-8,l.y-8,16,16);
+    ctx.fillStyle='#00cc44';ctx.font='12px sans-serif';ctx.textAlign='center';ctx.fillText('📦',l.x,l.y+4);
+  });
+
+  // 敌人
+  enemies.forEach(function(e){
+    if(!e.alive)return;
+    // 水下效果(深蓝)
+    if(e.inWater){
+      ctx.fillStyle='rgba(30,60,180,.1)';ctx.fillRect(e.x-20,bridgeY+12,40,30);
+    }
+    // 身体
+    ctx.fillStyle=e.color;ctx.beginPath();ctx.arc(e.x,e.y,e.r,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=2;ctx.stroke();
+    // 图标
+    ctx.fillStyle='#fff';ctx.font=Math.floor(e.r*1.2)+'px sans-serif';ctx.textAlign='center';ctx.fillText(e.icon,e.x,e.y+4);
+    // 名字
+    ctx.fillStyle='rgba(255,255,255,.6)';ctx.font='9px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText(e.name,e.x,e.y+e.r+10);
+    // 血条
+    var hpW=e.r*2;ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(e.x-hpW/2,e.y-e.r-10,hpW,4);
+    ctx.fillStyle=e.hp/e.maxHp>.5?'#0f0':'#f60';ctx.fillRect(e.x-hpW/2,e.y-e.r-10,hpW*(e.hp/e.maxHp),4);
+    // 疯了的蜂医特效
+    if(e.berserk){ctx.fillStyle='rgba(255,0,0,'+(.3+Math.sin(time*10)*.3)+')';ctx.beginPath();ctx.arc(e.x,e.y,e.r+6,0,Math.PI*2);ctx.fill()}
+  });
+
+  // 玩家
+  if(player.alive){
+    var pulse2=Math.sin(time*4)*2;
+    ctx.fillStyle='rgba(255,255,100,.3)';ctx.beginPath();ctx.arc(player.x,player.y,player.r+8+pulse2,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ffcc00';ctx.beginPath();ctx.arc(player.x,player.y,player.r,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle='#fff';ctx.font='14px sans-serif';ctx.textAlign='center';ctx.fillText('👤',player.x,player.y+5);
+    // 方向指示
+    var dirAng=Math.atan2(player.vy||0.01,player.vx||0.01);
+    ctx.strokeStyle='#ffcc00';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(player.x,player.y);ctx.lineTo(player.x+Math.cos(dirAng)*(player.r+6),player.y+Math.sin(dirAng)*(player.r+6));ctx.stroke();
+  }
+
+  // 子弹
+  bullets.forEach(function(b){
+    ctx.fillStyle=b.enemy?(b.color||'#ff4444'):'#ffcc00';
+    ctx.beginPath();ctx.arc(b.x,b.y,b.enemy?3:2,0,Math.PI*2);ctx.fill();
+  });
+
+  // 粒子
+  particles.forEach(function(p){
+    ctx.fillStyle=p.color.replace(')','').replace('rgb','rgba');
+    if(p.color.startsWith('#')){ctx.fillStyle=p.color+Math.floor(p.life*255).toString(16).padStart(2,'0')}
+    ctx.beginPath();ctx.arc(p.x,p.y,1.5+Math.random()*2,0,Math.PI*2);ctx.fill();
+  });
+
+  // 撤离点
+  var epulse=Math.sin(time*3)*4;
+  ctx.fillStyle='rgba(0,255,100,'+(.3+Math.sin(time*2)*.2)+')';ctx.beginPath();ctx.arc(extract.x,extract.y,extract.r+epulse,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(0,255,100,.8)';ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.beginPath();ctx.arc(extract.x,extract.y,extract.r,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#fff';ctx.font='bold 12px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';
+  if(player.items>=2){
+    ctx.fillText('✅ 撤离',extract.x,extract.y-20);
+  }else{
+    ctx.fillText('🔒 需物资('+player.items+'/2)',extract.x,extract.y-20);
+  }
+
+  // 摇杆
+  if(joystick.active){
+    var jsx=joystick.sx|0,jsy=joystick.sy|0;
+    ctx.strokeStyle='rgba(255,255,255,.2)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(jsx,jsy,50,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.15)';ctx.beginPath();ctx.arc(jsx+joystick.dx,jsy+joystick.dy,22,0,Math.PI*2);ctx.fill();
+  }
+
+  // UI
+  document.getElementById('hp').textContent='❤️ '+Math.max(0,Math.floor(player.hp));
+  document.getElementById('score').textContent='⭐ '+player.score;
+  var ed=Math.hypot(player.x-extract.x,player.y-extract.y);
+  document.getElementById('dist').textContent='🏃 撤离点: '+Math.floor(ed)+'m';
+
+  // 提示文字
+  ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='10px "PingFang SC","Microsoft YaHei",sans-serif';ctx.textAlign='center';
+  if(Math.abs(player.y-bridgeY)<40&&player.x>W*.3&&player.x<W*.7){
+    ctx.fillText('⚠ 危险区域! 桥上有乌鲁鲁和露娜',W/2,Math.floor(bridgeY-30));
+  }
+  if(ed<50&&player.items<2){
+    ctx.fillText('💡 至少需要2件物资才能撤离!',W/2,Math.floor(H*.1));
+  }
+
+  ctx.restore();
+}
+init();requestAnimationFrame(tick);
+</script>
+</body></html>
