@@ -1,173 +1,171 @@
-<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"><meta name="apple-mobile-web-app-capable" content="yes"><title>大型搜打撤 · 三角洲</title>
-<style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none;user-select:none;-webkit-user-select:none}#c{display:block;width:100%;height:100%}#over{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99;display:flex;align-items:center;justify-content:center;color:#fff;text-align:center;cursor:pointer;flex-direction:column;font-family:sans-serif}#over h1{font-size:26px;margin-bottom:6px;font-weight:900}#over p{font-size:12px;color:rgba(255,255,255,.4);margin:2px 0}.k{display:inline-block;padding:3px 8px;border-radius:4px;background:rgba(255,255,255,.1);font-size:10px;margin:2px}#js{position:fixed;bottom:80px;left:30px;width:100px;height:100px;background:rgba(255,255,255,.04);border-radius:50%;border:2px solid rgba(255,255,255,.1);z-index:100}#js div{position:absolute;width:36px;height:36px;background:rgba(255,255,255,.14);border-radius:50%;top:32px;left:32px}#f{position:fixed;bottom:90px;right:30px;width:62px;height:62px;background:rgba(255,30,10,.1);border-radius:50%;border:2px solid rgba(255,60,30,.22);z-index:100;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;font-weight:900}#r2{position:fixed;bottom:64px;right:106px;width:42px;height:42px;background:rgba(255,255,255,.04);border-radius:50%;border:1px solid rgba(255,255,255,.08);z-index:100;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px}.h{position:fixed;inset:0;pointer-events:none;z-index:10;font-family:sans-serif}.cs{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:12px;height:12px;border:2px solid rgba(255,255,255,.3);border-radius:50%}.am{position:absolute;bottom:24px;right:16px;color:#fff;font-size:18px;font-weight:900}.hp{position:absolute;bottom:24px;left:16px;color:#f44;font-size:10px}.fp{position:absolute;top:6px;left:10px;color:rgba(255,255,255,.18);font-size:8px}.sc{position:absolute;top:6px;right:10px;color:#ff0;font-size:11px;font-weight:700}.mi{position:absolute;top:28px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.5);font-size:10px;text-align:center;width:200px}</style></head><body>
+<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"><meta name="apple-mobile-web-app-capable" content="yes"><title>三角洲行动 · 零号大坝</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none;user-select:none;-webkit-user-select:none}#c{display:block;width:100%;height:100%}#s{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99;display:flex;align-items:center;justify-content:center;color:#fff;text-align:center;cursor:pointer;flex-direction:column;font-family:sans-serif}#s h2{font-size:24px;margin-bottom:4px;font-weight:900}#s p{font-size:11px;color:rgba(255,255,255,.35);margin:2px 0}#s .k2{display:inline-block;padding:2px 7px;border-radius:3px;background:rgba(255,255,255,.08);font-size:10px;margin:1px;color:rgba(255,255,255,.6)}
+#js2{position:fixed;bottom:70px;left:26px;width:100px;height:100px;background:rgba(255,255,255,.03);border-radius:50%;border:2px solid rgba(255,255,255,.08);z-index:100}#js2 div{position:absolute;width:36px;height:36px;background:rgba(255,255,255,.12);border-radius:50%;top:32px;left:32px}
+#f2{position:fixed;bottom:82px;right:26px;width:62px;height:62px;background:rgba(220,40,20,.1);border-radius:50%;border:2px solid rgba(255,80,40,.2);z-index:100;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;font-weight:900}
+#r3{position:fixed;bottom:58px;right:100px;width:40px;height:40px;background:rgba(255,255,255,.04);border-radius:50%;border:1px solid rgba(255,255,255,.06);z-index:100;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px}
+.h{position:fixed;inset:0;pointer-events:none;z-index:10;font-family:sans-serif}.hcs{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:12px;height:12px;border:2px solid rgba(255,255,255,.3);border-radius:50%}
+.ham{position:absolute;bottom:20px;right:14px;color:#fff;font-size:18px;font-weight:900;text-shadow:0 0 6px rgba(0,0,0,.5)}
+.hhp{position:absolute;bottom:20px;left:14px;color:#f44;font-size:10px;font-weight:700}
+.hfp{position:absolute;top:4px;left:8px;color:rgba(255,255,255,.15);font-size:8px}
+.hsc{position:absolute;top:4px;right:8px;color:#ff0;font-size:11px;font-weight:700}
+.hmi{position:absolute;top:24px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.4);font-size:9px;white-space:nowrap}
+.minimap{position:fixed;top:8px;right:8px;width:70px;height:70px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1);border-radius:8px;z-index:10;pointer-events:none}
+</style></head><body>
 <canvas id="c"></canvas>
-<div id="over"><h1>🔫 大型搜打撤</h1><p>三角洲行动 · 离线作战</p><p style="opacity:.2;font-size:9px">触屏摇杆+射击 • 击倒20敌人</p></div>
-<div id="js"><div></div></div><div id="f">🔫</div><div id="r2">R</div>
-<div class="h"><div class="cs"></div><div class="am" id="am">30</div><div class="hp" id="hp">HP100</div><div class="fp" id="fp">--</div><div class="sc" id="sc">0/20</div><div class="mi" id="mi"></div></div>
+<div id="s"><h2>🔫 三角洲行动</h2><p>零号大坝 · 搜打撤</p><p style="opacity:.2;font-size:9px">触屏 | 20敌人 | 虚实弹匣</p></div>
+<div id="js2"><div></div></div><div id="f2">🔫</div><div id="r3">R</div>
+<div class="h"><div class="hcs"></div><div class="ham" id="ham">30/30</div><div class="hhp" id="hhp">♥100</div><div class="hfp" id="hfp">--</div><div class="hsc" id="hsc">0/20</div><div class="hmi" id="hmi">零号大坝</div></div>
+<canvas class="minimap" id="mm" width="70" height="70"></canvas>
 <script src="https://cdn.babylonjs.com/babylon.js"></script>
 <script>
 (function(){
-if(typeof BABYLON==="undefined"){document.getElementById("over").innerHTML="<h1>加载失败</h1>";return};
+if(typeof BABYLON==="undefined"){document.getElementById("s").innerHTML="<h2>引擎失败</h2>";return}
 // ===== INIT =====
 var E=new BABYLON.Engine(document.getElementById("c"),!0,{preserveDrawingBuffer:!0});
-var S=new BABYLON.Scene(E);S.clearColor=new BABYLON.Color4(.53,.8,.94,1);S.fogMode=BABYLON.Scene.FOGMODE_LINEAR;S.fogStart=80;S.fogEnd=260;S.collisionsEnabled=!0;S.gravity=new BABYLON.Vector3(0,-9.81,0);
-var C=new BABYLON.UniversalCamera("C",new BABYLON.Vector3(0,14,0),S);C.fov=1.2;C.minZ=.3;C.maxZ=400;C.speed=8;C.angularSensibility=2500;C.ellipsoid=new BABYLON.Vector3(.5,1.7,.5);C.checkCollisions=!0;C.applyGravity=!0;S.activeCamera=C;
-var H=new BABYLON.HemisphericLight("H",new BABYLON.Vector3(.5,1,.3),S);H.intensity=.7;
-var DL=new BABYLON.DirectionalLight("DL",new BABYLON.Vector3(-.5,-.7,-.3),S);DL.intensity=1;DL.diffuse=new BABYLON.Color3(1,.95,.82);
-var SG=new BABYLON.ShadowGenerator(1024,DL);SG.useBlurExponentialShadowMap=!0;SG.blurKernel=32;
-
+var S=new BABYLON.Scene(E);S.clearColor=new BABYLON.Color4(.53,.8,.94,1);S.fogMode=BABYLON.Scene.FOGMODE_LINEAR;S.fogStart=100;S.fogEnd=280;S.collisionsEnabled=!0;S.gravity=new BABYLON.Vector3(0,-12,0);
+var cam=new BABYLON.UniversalCamera("cam",new BABYLON.Vector3(0,0,0),S);cam.fov=1.2;cam.minZ=.2;cam.maxZ=400;cam.speed=8;cam.angularSensibility=2000;cam.ellipsoid=new BABYLON.Vector3(.45,1.6,.45);cam.checkCollisions=!0;cam.applyGravity=!0;S.activeCamera=cam;
+new BABYLON.HemisphericLight("H",new BABYLON.Vector3(.6,.8,.3),S).intensity=.65;
+var sun2=new BABYLON.DirectionalLight("L",new BABYLON.Vector3(-.4,-.7,-.3),S);sun2.intensity=1.1;sun2.diffuse=new BABYLON.Color3(1,.94,.8);
+var sg2=new BABYLON.ShadowGenerator(1024,sun2);sg2.useBlurExponentialShadowMap=!0;sg2.blurKernel=32;
 // ===== TERRAIN =====
-function genH(){var d=[];for(var i=0;i<256;i++)for(var j=0;j<256;j++){var h=Math.sin(i*.015)*Math.cos(j*.01)*45+Math.sin(i*.03+1.3)*Math.sin(j*.025)*35+Math.cos(i*.012-j*.015)*25+100;d.push(Math.floor(Math.max(0,Math.min(255,h))))}return btoa(String.fromCharCode.apply(null,new Uint8Array(d)))}
-var TN=BABYLON.MeshBuilder.CreateGroundFromHeightMap("TN","data:image/png;base64,"+genH(),{width:240,height:240,subdivisions:100,maxHeight:18,minHeight:-2},S);TN.position.y=-2;TN.checkCollisions=!0;TN.receiveShadows=!0;SG.addShadowCaster(TN);
-function th(x,z){return TN.getHeightAtCoordinates(x,z)||-2}
+function genH2(){var d=[],c1=.015,c2=.01,c3=.03,c4=.025,c5=.012,c6=.015;for(var i=0;i<256;i++)for(var j=0;j<256;j++){var n=Math.sin(i*c1)*Math.cos(j*c2)*48+Math.sin(i*c3+1.3)*Math.sin(j*c4)*38+Math.cos(i*c5-j*c6)*28+90;d.push(Math.floor(Math.max(0,Math.min(255,n))))}return btoa(String.fromCharCode.apply(null,new Uint8Array(d)))}
+var T2=BABYLON.MeshBuilder.CreateGroundFromHeightMap("T","data:image/png;base64,"+genH2(),{width:260,height:260,subdivisions:100,maxHeight:20,minHeight:-2},S);T2.position.y=-2;T2.checkCollisions=!0;T2.receiveShadows=!0;sg2.addShadowCaster(T2);
+function th2(x,z){return T2.getHeightAtCoordinates(x,z)||-2}
 
-// ===== MATERIAL HELPERS =====
-function mat(r,g,b){var m=new BABYLON.StandardMaterial("m"+Math.random(),S);m.diffuseColor=new BABYLON.Color3(r,g,b);m.specularColor=new BABYLON.Color3(0,0,0);return m}
-var wm=mat(.55,.62,.68),rm=mat(.35,.4,.43),wnm=mat(.15,.24,.38),dm=mat(.18,.2,.22),sm=mat(.58,.58,.58),bm=mat(.45,.5,.55);
-var tnk=mat(.38,.26,.16),etm=mat(.82,.12,.12),ehm=mat(.78,.1,.1),elm=mat(.18,.18,.22),ctm=mat(.72,.34,.24),bgm=mat(.58,.48,.32),gnm=mat(.14,.14,.14);
-var lf=[mat(.18,.42,.15),mat(.22,.48,.18),mat(.15,.38,.12)];
+// ===== SPAWN ON GROUND =====
+var spawnH=th2(0,0)+1.7;cam.position.set(0,spawnH,0);
+
+// ===== MATS =====
+function mkM2(r,g,b){var m=new BABYLON.StandardMaterial("",S);m.diffuseColor=new BABYLON.Color3(r,g,b);m.specularColor=new BABYLON.Color3(0,0,0);return m}
+var wm2=mkM2(.52,.58,.64),rm2=mkM2(.33,.38,.41),wnm2=mkM2(.13,.22,.36),dm2=mkM2(.16,.18,.2),sm2=mkM2(.56,.56,.56),bm2=mkM2(.42,.47,.52),ctm2=mkM2(.7,.32,.23),bgm2=mkM2(.56,.46,.3);
+var tkm2=mkM2(.36,.25,.15),lfmk=[mkM2(.17,.4,.14),mkM2(.2,.45,.17),mkM2(.14,.36,.11)];
+var ebm=mkM2(.78,.11,.11),ehm2=mkM2(.74,.1,.1),elm2=mkM2(.16,.16,.2),gnm2=mkM2(.13,.13,.13),gdm=mkM2(.06,.06,.06);
 
 // ===== MESH BUILDERS =====
-function bBox(n,w,h,d,mt,parent,px,py,pz,ry){var o=BABYLON.MeshBuilder.CreateBox(n,{width:w,height:h,depth:d},S);o.material=mt;o.checkCollisions=!0;o.receiveShadows=!0;SG.addShadowCaster(o);if(parent){o.parent=parent;o.position.set(px||0,py||0,pz||0);if(ry)o.rotation.y=ry}else{o.position.set(px||0,py||0,pz||0);if(ry)o.rotation.y=ry}return o}
-function bCyl(n,r1,r2,h,mt,parent,px,py,pz,rx,rz){var o=BABYLON.MeshBuilder.CreateCylinder(n,{height:h,diameterTop:r2*2,diameterBottom:r1*2,tessellation:8},S);o.material=mt;o.checkCollisions=!0;o.receiveShadows=!0;SG.addShadowCaster(o);if(parent){o.parent=parent;o.position.set(px||0,py||0,pz||0);if(rx)o.rotation.x=rx;if(rz)o.rotation.z=rz}else{o.position.set(px||0,py||0,pz||0);if(rx)o.rotation.x=rx;if(rz)o.rotation.z=rz}return o}
+function B2(n,w,h,d,mt,p,px,py,pz,ry){var o=BABYLON.MeshBuilder.CreateBox(n,{width:w,height:h,depth:d},S);o.material=mt;o.checkCollisions=!0;o.receiveShadows=!0;sg2.addShadowCaster(o);if(p){o.parent=p;o.position.set(px||0,py||0,pz||0);if(ry)o.rotation.y=ry}else{o.position.set(px||0,py||0,pz||0);if(ry)o.rotation.y=ry}return o}
+function Y2(n,r1,r2,h,mt,p,px,py,pz,rx,rz){var o=BABYLON.MeshBuilder.CreateCylinder(n,{height:h,diameterTop:r2*2,diameterBottom:r1*2,tessellation:8},S);o.material=mt;o.checkCollisions=!0;o.receiveShadows=!0;sg2.addShadowCaster(o);if(p){o.parent=p;o.position.set(px||0,py||0,pz||0);if(rx)o.rotation.x=rx;if(rz)o.rotation.z=rz}else{o.position.set(px||0,py||0,pz||0);if(rx)o.rotation.x=rx;if(rz)o.rotation.z=rz}return o}
 
-// ===== BUILDINGS (hand-modeled, individually placed) =====
-var blist=[];
-function bld(x,z,ro,w,d,h,fl){
- var bh=th(x,z);
- var g=new BABYLON.TransformNode("bldg",S);g.position.set(x,bh,z);g.rotation.y=ro;
- blist.push({x:x,z:z,w:w,d:d,h:h,rot:ro,top:bh+h});
- bBox("bw",w,h,d,wm,g,0,h/2,0); // walls
- bBox("br",w+.3,.15,d+.3,rm,g,0,h+.08,0); // roof
- var fh=h/fl;
- for(var f=0;f<fl;f++){
-  for(var s=-1;s<=1;s+=2)for(var wi=-1;wi<=1;wi+=2)bBox("w",.08,fh*.45,1.5,wnm,g,s*w*.35,fh*(f+.5),wi*d*.35); // windows
-  bBox("fb",w+.1,.08,d+.1,bm,g,0,fh*(f+1),0); // floor bands
- }
- bBox("dr",1.5,fh*.6,.12,dm,g,0,fh*.3,d/2); // door
- for(var st=0;st<3;st++)bBox("st",.8,.08,.2-st*.05,sm,g,0,.02+st*.08,d/2+.2-st*.05); // steps
+// ===== BUILDINGS (industrial complex like 零号大坝) =====
+var blist2=[];
+function bld2(x,z,ro,w,d,h,fl){
+ var bh2=th2(x,z),g2=new BABYLON.TransformNode("",S);g2.position.set(x,bh2,z);g2.rotation.y=ro;
+ blist2.push({x:x,z:z,w:w,d:d,h:h,rot:ro,top:bh2+h});
+ B2("W",w,h,d,wm2,g2,0,h/2,0);B2("R",w+.4,.15,d+.4,rm2,g2,0,h+.1,0);
+ var fh2=h/fl;
+ for(var f=0;f<fl;f++){for(var s=-1;s<=1;s+=2)for(var wi=-1;wi<=1;wi+=2)B2("w",.08,fh2*.4,1.4,wnm2,g2,s*w*.35,fh2*(f+.5),wi*d*.35);B2("b",w+.12,.08,d+.12,bm2,g2,0,fh2*(f+1),0)}
+ B2("d",1.5,fh2*.55,.12,dm2,g2,0,fh2*.3,d/2);
+ for(var st=0;st<3;st++)B2("s",.8,.08,.18-st*.04,sm2,g2,0,.01+st*.07,d/2+.16-st*.04);
 }
+// Main industrial complex (center)
+bld2(-30,5,0,16,12,20,6);bld2(-10,8,.05,12,10,16,5);bld2(10,-5,.1,18,14,14,4);
+bld2(-45,-8,.12,20,10,10,3);bld2(-50,18,-.05,10,8,12,4);bld2(15,-25,.08,14,10,14,4);
+bld2(-20,-30,-.1,16,12,12,3);bld2(30,-20,.15,12,8,16,5);bld2(-40,-40,0,22,16,18,6);
+bld2(45,-15,-.08,16,10,12,3);bld2(-15,-55,.2,14,8,10,3);bld2(55,35,-.05,12,10,14,4);
+bld2(-55,45,.12,16,8,12,3);bld2(5,45,.03,10,12,10,3);bld2(65,-45,.08,14,10,16,5);
+bld2(-65,-25,0,18,14,14,4);bld2(40,25,.04,20,12,12,4);bld2(-40,30,-.06,14,10,16,5);
+// Small guard posts
+for(var gp=0;gp<6;gp++){var gx=-50+Math.random()*100,gz=-60+Math.random()*100;bld2(gx,gz,Math.random()*.3,6,6,8,2)}
 
-// ===== PLACE 16 BUILDINGS ACROSS THE MAP =====
-bld(-35,10,0,14,10,18,5);bld(-18,15,.08,10,8,12,4);bld(-50,-5,.12,20,8,8,3);
-bld(-55,22,-.05,8,6,10,3);bld(15,-30,.15,16,12,14,4);bld(0,-35,-.08,18,10,10,3);
-bld(30,-25,.2,12,8,12,4);bld(45,-15,-.1,16,10,10,3);bld(-40,-40,0,22,14,16,5);
-bld(50,20,.05,10,8,8,3);bld(-20,-60,.2,14,6,8,3);bld(60,40,-.08,12,10,12,4);
-bld(-60,50,.15,16,8,10,3);bld(10,50,.03,10,12,8,3);bld(70,-50,.08,14,10,14,5);
-bld(-70,-30,0,18,12,12,4);
+// ===== TREES =====
+for(var tt=0;tt<60;tt++){var tx2=(Math.random()-.5)*240,tz2=(Math.random()-.5)*240;if(Math.abs(tx2)<25&&Math.abs(tz2)<25)continue;var h2h=th2(tx2,tz2);if(h2h<-1)continue;var tH3=2+Math.random()*4;Y2("tk",.1,.16,tH3,tkm2,null,tx2,h2h+tH3/2,tz2);for(var b=0;b<2+Math.floor(Math.random()*3);b++){var a=Math.random()*6.28,bl=.7+Math.random()*1.3;Y2("br",.03,.06,bl,new BABYLON.StandardMaterial("",S),null,tx2,h2h+tH3*.4+b*.25,tz2,Math.cos(a)*.5,Math.sin(a)*.5)}for(var l2=0;l2<3;l2++){var r=.9+Math.random()*.7;B2("lf",r,r*.65,r,lfmk[l2],null,tx2+Math.sin(l2)*.15,h2h+tH3*.4+l2*.8,tz2+Math.cos(l2)*.15)}}
 
-// ===== TREES (70 trees, each trunk+3-5 branches+3 leaf layers) =====
-for(var tt=0;tt<70;tt++){
- var tx=(Math.random()-.5)*210,tz=(Math.random()-.5)*210;
- if(Math.abs(tx)<22&&Math.abs(tz)<22)continue;
- var h2=th(tx,tz);if(h2<-1)continue;
- var tH=2+Math.random()*3.5;
- bCyl("tk",.12,.18,tH,tnk,null,tx,h2+tH/2,tz);
- for(var b=0;b<3+Math.floor(Math.random()*3);b++){
-  var a=Math.random()*6.28,bl=.8+Math.random()*1.5;
-  bCyl("tb",.04,.07,bl,new BABYLON.StandardMaterial("tb"+b,S),null,tx,h2+tH*.4+b*.25,tz,Math.cos(a)*.6,Math.sin(a)*.6);
- }
- for(var l2=0;l2<3;l2++){var r=1+Math.random()*.8;bBox("lf",r,r*.7,r,lf[l2],null,tx+Math.sin(l2)*.2,h2+tH*.4+l2*.8,tz+Math.cos(l2)*.2)}
-}
+// ===== CONTAINERS + BAGS + DEBRIS =====
+for(var ct=0;ct<16;ct++){var cx2=-35+Math.random()*90,cz2=-50+Math.random()*80;B2("ct",2.2,2.5,6,ctm2,null,cx2,th2(cx2,cz2)+1.25,cz2,Math.random()*6.28)}
+for(var sb=0;sb<20;sb++){var sx2=-40+Math.random()*100,sz2=-60+Math.random()*90;B2("bg",.45,.28,.7,bgm2,null,sx2,th2(sx2,sz2)+.14,sz2,Math.random()*6.28)}
 
-// ===== CONTAINERS & SAND BAGS =====
-for(var ct=0;ct<12;ct++){var cx=-35+Math.random()*90,cz=-50+Math.random()*80;bBox("ct",2.2,2.5,6,ctm,null,cx,th(cx,cz)+1.25,cz,Math.random()*6.28)}
-for(var sb=0;sb<15;sb++){var sx=-40+Math.random()*100,sz=-60+Math.random()*90;bBox("bg",.5,.3,.8,bgm,null,sx,th(sx,sz)+.15,sz,Math.random()*6.28)}
-
-// ===== ENEMIES (20 soldiers placed ON TERRAIN not in sky) =====
-var enemies=[],kills=0,totalE=20;
-function mkEnemy(x,z){
- var h=th(x,z);
- var g=new BABYLON.TransformNode("eny",S);g.position.set(x,h,z);
- // body
- bCyl("el",.07,.09,1.4,elm,g,-.18,-.6,0);bCyl("er",.07,.09,1.4,elm,g,.18,-.6,0);
- bBox("eb",.55,.75,.3,etm,g,0,.7,0);
- bBox("eh",.32,.32,.32,ehm,g,0,1.25,0);
- bCyl("ea",.04,.05,.8,mat(.7,.1,.1),g,-.35,.95,0,0,.3);bCyl("ea2",.04,.05,.8,mat(.7,.1,.1),g,.35,.95,0,0,-.3);
+// ===== ENEMIES (20, ground-spawned, no flying) =====
+var enemies2=[],kills2=0,totalE2=20;
+function mkE2(x,z){
+ var h=th2(x,z),g=new BABYLON.TransformNode("E",S);g.position.set(x,h,z);
+ Y2("L",.06,.08,1.3,elm2,g,-.16,-.55,0);Y2("R",.06,.08,1.3,elm2,g,.16,-.55,0);
+ B2("B",.5,.7,.28,ebm,g,0,.65,0);B2("H",.3,.3,.3,ehm2,g,0,1.2,0);
+ Y2("A",.035,.045,.75,mkM2(.68,.09,.09),g,-.32,.9,0,0,.3);Y2("A2",.035,.045,.75,mkM2(.68,.09,.09),g,.32,.9,0,0,-.3);
  return{node:g,alive:!0,x:x,z:z};
 }
-for(var e=0;e<totalE;e++){
- var ex=-60+Math.random()*130,ez=-70+Math.random()*120;
- if(Math.abs(ex)<5&&Math.abs(ez)<5){ex+=12;ez+=12}
- enemies.push(mkEnemy(ex,ez));
-}
+for(var e=0;e<totalE2;e++){var ex2=-65+Math.random()*140,ez2=-65+Math.random()*120;if(Math.abs(ex2)<6&&Math.abs(ez2)<6){ex2+=15;ez2+=15}enemies2.push(mkE2(ex2,ez2))}
 
-// ===== FPS GUN MODEL =====
-var gun=new BABYLON.TransformNode("gun",S);gun.parent=C;gun.position.set(.22,-.28,-.48);
-bCyl("gB",.022,.028,.9,gnm,gun,0,.02,-.38,Math.PI/2);bBox("gR",.09,.16,.35,gnm,gun,0,-.02,0);bBox("gS",.05,.1,.3,gnm,gun,0,0,.22);bCyl("gG",.025,.035,.22,gnm,gun,0,-.16,.03);bBox("gM",.035,.18,.05,mat(.07,.07,.07),gun,0,-.18,.08);
-var mzL=new BABYLON.PointLight("mz",new BABYLON.Vector3(0,0,0),S);mzL.diffuse=new BABYLON.Color3(1,.5,.1);mzL.intensity=0;mzL.parent=gun;mzL.position.set(0,.01,-.9);
+// ===== GUN =====
+var gun2=new BABYLON.TransformNode("G",S);gun2.parent=cam;gun2.position.set(.2,-.26,-.45);
+Y2("b",.02,.026,.85,gnm2,gun2,0,.02,-.35,Math.PI/2);B2("r",.085,.15,.33,gnm2,gun2,0,-.01,0);B2("s",.045,.09,.28,gnm2,gun2,0,0,.2);Y2("g",.022,.032,.2,gnm2,gun2,0,-.15,.03);B2("m",.03,.17,.045,gdm,gun2,0,-.16,.07);
+var mz2=new BABYLON.PointLight("MZ",new BABYLON.Vector3(0,0,0),S);mz2.diffuse=new BABYLON.Color3(1,.5,.1);mz2.intensity=0;mz2.parent=gun2;mz2.position.set(0,.01,-.85);
 
-// ===== COLLISION: keep player above buildings =====
+// ===== COLLISION =====
 S.registerBeforeRender(function(){
- var h=th(C.position.x,C.position.z);
- for(var i=0;i<blist.length;i++){
-  var bb=blist[i],dx=C.position.x-bb.x,dz=C.position.z-bb.z;
-  var lx=Math.cos(-bb.rot)*dx-Math.sin(-bb.rot)*dz,lz=Math.sin(-bb.rot)*dx+Math.cos(-bb.rot)*dz;
-  if(Math.abs(lx)<bb.w/2+.7&&Math.abs(lz)<bb.d/2+.7)h=Math.max(h,bb.top);
- }
- if(C.position.y<h+1.7)C.position.y=h+1.7;
+ var h3=th2(cam.position.x,cam.position.z);
+ for(var i=0;i<blist2.length;i++){var bb=blist2[i],dx=cam.position.x-bb.x,dz=cam.position.z-bb.z;var lx=Math.cos(-bb.rot)*dx-Math.sin(-bb.rot)*dz,lz=Math.sin(-bb.rot)*dx+Math.cos(-bb.rot)*dz;if(Math.abs(lx)<bb.w/2+.7&&Math.abs(lz)<bb.d/2+.7)h3=Math.max(h3,bb.top)}
+ if(cam.position.y<h3+1.7)cam.position.y=h3+1.7;
 });
 
 // ===== CONTROLS =====
-var mv2={x:0,z:0},jsA=!1,jsB={x:0,y:0};
-var jsEl=document.getElementById("js"),jsK=jsEl.querySelector("div"),isM=/Android|iPhone|iPad/i.test(navigator.userAgent);
-jsEl.addEventListener("pointerdown",function(e){jsA=!0;jsB={x:e.clientX,y:e.clientY};jsEl.setPointerCapture(e.pointerId);e.preventDefault()});
-jsEl.addEventListener("pointermove",function(e){if(!jsA)return;var dx=e.clientX-jsB.x,dy=e.clientY-jsB.y,d=Math.sqrt(dx*dx+dy*dy);if(d>38){dx=dx/d*38;dy=dy/d*38}jsK.style.transform="translate("+dx+"px,"+dy+"px)";mv2.x=dx/38;mv2.z=dy/38;e.preventDefault()});
-jsEl.addEventListener("pointerup",function(){jsA=!1;jsK.style.transform="translate(0,0)";mv2.x=0;mv2.z=0});
-jsEl.addEventListener("pointerleave",function(){jsA=!1;jsK.style.transform="translate(0,0)";mv2.x=0;mv2.z=0});
-var fA=!1,ammo=30,maxA=30,relT=0;
-document.getElementById("f").addEventListener("pointerdown",function(e){fA=!0;e.preventDefault();e.stopPropagation()});
-document.getElementById("f").addEventListener("pointerup",function(){fA=!1});
-document.getElementById("f").addEventListener("pointerleave",function(){fA=!1});
-document.getElementById("r2").addEventListener("pointerdown",function(e){if(ammo<maxA&&relT<=0){relT=1.5;ammo=0;document.getElementById("am").textContent="R.."}e.preventDefault();e.stopPropagation()});
-var keys={};
-document.addEventListener("keydown",function(e){keys[e.code]=!0;if(e.code==="KeyR"&&ammo<maxA&&relT<=0){relT=1.5;ammo=0;document.getElementById("am").textContent="R.."}});
-document.addEventListener("keyup",function(e){keys[e.code]=!1});
-document.addEventListener("click",function(){if(!isM)E.enterPointerlock()});
-E.onPointerLockChange=function(){document.getElementById("over").style.display=E.isPointerLock?"none":"flex"};
+var mv3={x:0,z:0},jsA2=!1,jsB2={x:0,y:0};
+var jsE=document.getElementById("js2"),jsK2=jsE.querySelector("div"),isM2=/Android|iPhone|iPad/i.test(navigator.userAgent);
+jsE.addEventListener("pointerdown",function(e){jsA2=!0;jsB2={x:e.clientX,y:e.clientY};jsE.setPointerCapture(e.pointerId);e.preventDefault()});
+jsE.addEventListener("pointermove",function(e){if(!jsA2)return;var dx=e.clientX-jsB2.x,dy=e.clientY-jsB2.y,d=Math.sqrt(dx*dx+dy*dy);if(d>38){dx=dx/d*38;dy=dy/d*38}jsK2.style.transform="translate("+dx+"px,"+dy+"px)";mv3.x=dx/38;mv3.z=dy/38;e.preventDefault()});
+jsE.addEventListener("pointerup",function(){jsA2=!1;jsK2.style.transform="translate(0,0)";mv3.x=0;mv3.z=0});
+jsE.addEventListener("pointerleave",function(){jsA2=!1;jsK2.style.transform="translate(0,0)";mv3.x=0;mv3.z=0});
+var fA2=!1,ammo2=30,maxA2=30,relT2=0,hp2=100;
+document.getElementById("f2").addEventListener("pointerdown",function(e){fA2=!0;e.preventDefault();e.stopPropagation()});
+document.getElementById("f2").addEventListener("pointerup",function(){fA2=!1});
+document.getElementById("f2").addEventListener("pointerleave",function(){fA2=!1});
+document.getElementById("r3").addEventListener("pointerdown",function(e){if(ammo2<maxA2&&relT2<=0){relT2=1.8;ammo2=0;document.getElementById("ham").textContent="0/30"}e.preventDefault();e.stopPropagation()});
+var keys2={};
+document.addEventListener("keydown",function(e){keys2[e.code]=!0;if(e.code==="KeyR"&&ammo2<maxA2&&relT2<=0){relT2=1.8;ammo2=0;document.getElementById("ham").textContent="0/30"}});
+document.addEventListener("keyup",function(e){keys2[e.code]=!1});
+document.addEventListener("click",function(){if(!isM2)E.enterPointerlock()});
+E.onPointerLockChange=function(){document.getElementById("s").style.display=E.isPointerLock?"none":"flex"};
 
-// ===== SHOOT =====
-function shoot(){
- if(ammo<=0||relT>0)return;ammo--;document.getElementById("am").textContent=ammo;
- mzL.intensity=12;setTimeout(function(){mzL.intensity=0},60);
- var ray=new BABYLON.Ray(C.position,C.getDirection(BABYLON.Axis.Z));
- // pick anything that is NOT a gun part
+// ===== SHOOT + enemy attacks player =====
+var eAttacks=0;
+function shoot2(){
+ if(ammo2<=0||relT2>0)return;ammo2--;document.getElementById("ham").textContent=ammo2+"/30";
+ mz2.intensity=14;setTimeout(function(){mz2.intensity=0},50);
+ var ray=new BABYLON.Ray(cam.position,cam.getDirection(BABYLON.Axis.Z));
  var hit=S.pickWithRay(ray,function(m){return m.name.indexOf("g")!==0});
  if(!hit||!hit.pickedMesh)return;
- var s2=BABYLON.MeshBuilder.CreateSphere("hit_"+Date.now(),{diameter:.12},S);s2.position=hit.pickedPoint;setTimeout(function(){s2.dispose()},200);
- for(var e2=0;e2<enemies.length;e2++){
-  var en=enemies[e2];if(!en.alive)continue;
-  if(BABYLON.Vector3.Distance(hit.pickedPoint,en.node.position)<2.8){
-   en.alive=!1;en.node.dispose();kills++;document.getElementById("sc").textContent=kills+"/"+totalE;
-   if(kills>=totalE)document.getElementById("sc").textContent="🏆 任务完成";
-  }
- }
- if(ammo<=0){relT=2;document.getElementById("am").textContent="R.."}
+ var s3=BABYLON.MeshBuilder.CreateSphere("h"+Date.now(),{diameter:.1},S);s3.position=hit.pickedPoint;setTimeout(function(){s3.dispose()},200);
+ for(var e=0;e<enemies2.length;e++){var en=enemies2[e];if(!en.alive)continue;if(BABYLON.Vector3.Distance(hit.pickedPoint,en.node.position)<2.5){en.alive=!1;en.node.dispose();kills2++;document.getElementById("hsc").textContent=kills2+"/"+totalE2;if(kills2>=totalE2)document.getElementById("hsc").textContent="🏆 胜利"}}
+ if(ammo2<=0){relT2=2;document.getElementById("ham").textContent="0/30"}
 }
 
-// ===== ENEMY AI: look at player when close =====
-var aiTick=0;
+// ===== ENEMY AI: patrol + chase + attack =====
+var ePhase=[];for(var e=0;e<totalE2;e++)ePhase.push({patrol:Math.random()*6.28,chase:!1,timer:Math.random()*3});
 S.registerBeforeRender(function(){
- aiTick++;
- for(var e=0;e<enemies.length;e++){var en=enemies[e];if(!en.alive)continue;var d=BABYLON.Vector3.Distance(C.position,en.node.position);if(d<28&&d>2)en.node.lookAt(C.position)}
+ for(var e=0;e<enemies2.length;e++){
+  var en=enemies2[e];if(!en.alive)continue;
+  var d2=BABYLON.Vector3.Distance(cam.position,en.node.position);
+  if(d2<30&&d2>1.5){en.node.lookAt(cam.position);ePhase[e].chase=!0}
+  else ePhase[e].chase=!1;
+  // Attack player when close
+  if(d2<3&&eAttacks<=0){hp2-=8;document.getElementById("hhp").textContent="♥"+Math.max(0,hp2);eAttacks=40;if(hp2<=0){document.getElementById("s").style.display="flex";document.getElementById("s").innerHTML="<h2>💀 阵亡</h2><p>点击重新开始</p>";setTimeout(function(){location.reload()},2000)}}
+ }
+ if(eAttacks>0)eAttacks--;
 });
 
+// ===== MINIMAP =====
+var mmC=document.getElementById("mm"),mmCtx=mmC.getContext("2d");
+
 // ===== MAIN LOOP =====
-var lt=0,ft=0,fpsArr=[];
+var lt2=0,ft2=0,fpsA=[];
 E.runRenderLoop(function(){
- var n=performance.now(),dt=Math.min(.15,(n-(lt||n))/1000);lt=n;if(dt<.001)dt=.016;
- fpsArr.push(1/dt);if(fpsArr.length>30)fpsArr.shift();if(fpsArr.length===30)document.getElementById("fp").textContent=Math.round(fpsArr.reduce(function(a,b){return a+b})/30)+" FPS";
- if(relT>0){relT-=dt;if(relT<=0){ammo=maxA;document.getElementById("am").textContent=ammo}}
+ var n=performance.now(),dt=Math.min(.15,(n-(lt2||n))/1000);lt2=n;if(dt<.001)dt=.016;
+ fpsA.push(1/dt);if(fpsA.length>30)fpsA.shift();if(fpsA.length===30)document.getElementById("hfp").textContent=Math.round(fpsA.reduce(function(a,b){return a+b})/30)+" FPS";
+ if(relT2>0){relT2-=dt;if(relT2<=0){ammo2=maxA2;document.getElementById("ham").textContent=ammo2+"/30"}}
  var mv=new BABYLON.Vector3(0,0,0);
- if(isM){mv.x=mv2.x;mv.z=mv2.z}else{var fwd=C.getDirection(BABYLON.Axis.Z);fwd.y=0;fwd.normalize();var rig=BABYLON.Vector3.Cross(fwd,BABYLON.Axis.Y);if(keys["KeyW"]){mv.x+=fwd.x;mv.z+=fwd.z}if(keys["KeyS"]){mv.x-=fwd.x;mv.z-=fwd.z}if(keys["KeyA"]){mv.x+=rig.x;mv.z+=rig.z}if(keys["KeyD"]){mv.x-=rig.x;mv.z-=rig.z}}
- var sp=keys["ShiftLeft"]?14:8;if(mv.length()>.01){mv.normalize().scaleInPlace(sp*dt);C.position.addInPlace(mv)}
- var hh=th(C.position.x,C.position.z);if(keys["Space"]&&Math.abs(hh+1.7-C.position.y)<.2)C.position.y+=.5;
- if(fA||keys["Mouse0"]){ft-=dt;if(ft<=0){ft=.12;shoot()}}else ft=0;
- if(mv.length()>.01&&Math.abs(hh+1.7-C.position.y)<.4){gun.position.y=-.28+Math.sin(n*.012)*.012;gun.position.x=.22+Math.cos(n*.009)*.006}else{gun.position.y=-.28;gun.position.x=.22}
- var alive=enemies.filter(function(e2){return e2.alive}).length;
- document.getElementById("mi").textContent=alive+" 敌人存活";
+ if(isM2){mv.x=mv3.x;mv.z=mv3.z}else{var fwd=cam.getDirection(BABYLON.Axis.Z);fwd.y=0;fwd.normalize();var rig=BABYLON.Vector3.Cross(fwd,BABYLON.Axis.Y);if(keys2["KeyW"]){mv.x+=fwd.x;mv.z+=fwd.z}if(keys2["KeyS"]){mv.x-=fwd.x;mv.z-=fwd.z}if(keys2["KeyA"]){mv.x+=rig.x;mv.z+=rig.z}if(keys2["KeyD"]){mv.x-=rig.x;mv.z-=rig.z}}
+ var sp=keys2["ShiftLeft"]?14:8;if(mv.length()>.01){mv.normalize().scaleInPlace(sp*dt);cam.position.addInPlace(mv)}
+ var hh2=th2(cam.position.x,cam.position.z);if(keys2["Space"]&&Math.abs(hh2+1.7-cam.position.y)<.2)cam.position.y+=.5;
+ if(fA2||keys2["Mouse0"]){ft2-=dt;if(ft2<=0){ft2=.1;shoot2()}}else ft2=0;
+ if(mv.length()>.01&&Math.abs(hh2+1.7-cam.position.y)<.4){gun2.position.y=-.26+Math.sin(n*.012)*.01;gun2.position.x=.2+Math.cos(n*.009)*.005}else{gun2.position.y=-.26;gun2.position.x=.2}
+ // Minimap
+ mmCtx.clearRect(0,0,70,70);mmCtx.fillStyle="rgba(0,0,0,.5)";mmCtx.fillRect(0,0,70,70);
+ var psx=(cam.position.x+130)/260*70,psy=70-(cam.position.z+130)/260*70;
+ mmCtx.fillStyle="#0f0";mmCtx.beginPath();mmCtx.arc(psx,psy,2,0,6.28);mmCtx.fill();
+ enemies2.forEach(function(e2){if(!e2.alive)return;var ex3=(e2.x+130)/260*70,ey3=70-(e2.z+130)/260*70;mmCtx.fillStyle="#f00";mmCtx.fillRect(ex3-1,ey3-1,2,2)});
+ blist2.forEach(function(b3){var bx=(b3.x+130)/260*70,by=70-(b3.z+130)/260*70;mmCtx.fillStyle="rgba(255,255,255,.2)";mmCtx.fillRect(bx-1,by-1,3,3)});
+ var alive=enemies2.filter(function(e){return e.alive}).length;
+ document.getElementById("hmi").textContent="零号大坝 · "+alive+"敌存活";
  S.render();
 });
-if(isM)document.getElementById("over").style.display="none";
+if(isM2)document.getElementById("s").style.display="none";
 window.addEventListener("resize",function(){E.resize()});
 })();</script></body></html>
