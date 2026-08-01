@@ -2,30 +2,21 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>MIUI STUDIO · 独立游戏工作室</title>
 <style>
-:root{--bg:#06080c;--card:#0d1114;--border:rgba(255,255,255,.06);--text:#8899aa;--hl:#f50;--hl2:#06f;--gold:#da0}
+:root{--bg:#06080c;--card:#0d1114;--border:rgba(255,255,255,.06);--text:#8899aa;--hl:#f50;--hl2:#9000ff;--gold:#da0}
 *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
 body{font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;line-height:1.6}
-
-/* === CURSOR GLOW === */
 .cursor-glow{position:fixed;width:600px;height:600px;border-radius:50%;pointer-events:none;z-index:0;background:radial-gradient(circle,rgba(255,85,0,.04),transparent 60%);transform:translate(-50%,-50%);transition:opacity .3s}
-
-/* === TOPBAR === */
 .topbar{position:fixed;top:0;left:0;right:0;z-index:1000;height:64px;display:flex;align-items:center;padding:0 48px;background:rgba(6,8,12,.85);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--border);justify-content:space-between}
 .topbar .logo{display:flex;align-items:center;gap:12px}
 .topbar .logo svg{width:32px;height:32px}
 .topbar .logo-text{font-size:18px;font-weight:900;color:#fff;letter-spacing:-.5px}
 .topbar .logo-text span{color:var(--hl)}
 .topbar nav{display:flex;gap:32px}
-.topbar nav a{font-size:13px;color:rgba(255,255,255,.55);transition:.2s;font-weight:500;letter-spacing:.3px}
+.topbar nav a{font-size:13px;color:rgba(255,255,255,.55);transition:.2s;font-weight:500;letter-spacing:.3px;text-decoration:none}
 .topbar nav a:hover,.topbar nav a.active{color:#fff}
-.topbar .cta{padding:8px 22px;border-radius:20px;background:linear-gradient(135deg,var(--hl),#e40);color:#fff;font-size:13px;font-weight:700;border:none;cursor:pointer;transition:.2s}
+.topbar .cta{padding:8px 22px;border-radius:20px;background:linear-gradient(135deg,var(--hl),#e40);color:#fff;font-size:13px;font-weight:700;border:none;cursor:pointer;transition:.2s;text-decoration:none;display:inline-flex;align-items:center}
 .topbar .cta:hover{transform:scale(1.03);box-shadow:0 0 24px rgba(255,85,0,.25)}
-.topbar .cta:active{transform:scale(.97)}
-
-/* === PARTICLE CANVAS === */
 #bg-canvas{position:fixed;inset:0;z-index:-1;pointer-events:none}
-
-/* === HERO === */
 .hero{position:relative;min-height:100vh;display:flex;align-items:center;padding:120px 48px 80px;overflow:hidden}
 .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 40%,rgba(255,85,0,.06),transparent),radial-gradient(ellipse 40% 40% at 80% 20%,rgba(0,102,255,.04),transparent)}
 .hero .grid-overlay{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.01) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.01) 1px,transparent 1px);background-size:50px 50px;mask-image:radial-gradient(ellipse 60% 60% at 50% 40%,black,transparent)}
@@ -42,7 +33,7 @@ body{font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;bac
 .hero-text .btn-primary{background:linear-gradient(135deg,#f50,#e40);color:#fff;box-shadow:0 8px 32px rgba(255,85,0,.2)}
 .hero-text .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(255,85,0,.3)}
 .hero-text .btn-outline{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.2)}
-.hero-text .btn-outline:hover{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,..03)}
+.hero-text .btn-outline:hover{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.03)}
 .hero-visual{position:relative;display:flex;align-items:center;justify-content:center}
 .hero-visual .main-card{width:380px;aspect-ratio:4/3;border-radius:24px;background:linear-gradient(135deg,rgba(255,85,0,.1),rgba(0,102,255,.05));border:1px solid var(--border);position:relative;overflow:hidden;backdrop-filter:blur(10px)}
 .hero-visual .main-card .glow-orb{position:absolute;width:180px;height:180px;border-radius:50%;filter:blur(60px)}
@@ -57,25 +48,21 @@ body{font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;bac
 .hero-visual .stat-box{flex:1;background:rgba(13,17,20,.8);border:1px solid var(--border);border-radius:12px;padding:14px 12px;text-align:center;backdrop-filter:blur(10px)}
 .hero-visual .stat-box .num{font-size:24px;font-weight:900;color:#fff}
 .hero-visual .stat-box .lbl{font-size:10px;color:rgba(255,255,255,.3);margin-top:4px}
-
-/* === SECTION === */
 .section{padding:80px 48px;max-width:1300px;margin:0 auto;position:relative;z-index:1}
 .section-header{margin-bottom:48px;display:flex;align-items:flex-end;justify-content:space-between}
 .section-header .label{font-size:11px;color:var(--hl);font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
 .section-header h2{font-size:32px;color:#fff;font-weight:900;letter-spacing:-.5px}
 .section-header .view-all{font-size:13px;color:rgba(255,255,255,.3);cursor:pointer;transition:.2s}
 .section-header .view-all:hover{color:var(--hl)}
-
-/* === GAME CARDS === */
 .game-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
-.game-card{position:relative;border-radius:18px;background:var(--card);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:.3s}
+.game-card{position:relative;border-radius:18px;background:var(--card);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:.3s;text-decoration:none;display:block}
 .game-card:hover{transform:translateY(-6px);border-color:rgba(255,85,0,.15);box-shadow:0 20px 60px rgba(0,0,0,.4)}
 .game-card .cover{height:200px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.game-card .cover .art{position:absolute;inset:0}
 .game-card .cover .icon{position:relative;z-index:1;font-size:72px;filter:drop-shadow(0 8px 16px rgba(0,0,0,.3))}
 .game-card .cover .badge{position:absolute;top:12px;left:12px;padding:3px 10px;border-radius:10px;font-size:10px;font-weight:700;z-index:2}
 .game-card .cover .badge.new{background:rgba(255,85,0,.15);color:var(--hl)}
 .game-card .cover .badge.hot{background:rgba(255,30,50,.15);color:#f33}
+.game-card .cover .badge.music{background:rgba(144,0,255,.15);color:#c084fc}
 .game-card .info{padding:18px}
 .game-card .info .tags{margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap}
 .game-card .info .tags span{padding:3px 10px;border-radius:6px;font-size:10px;font-weight:600;background:rgba(255,255,255,.04);color:rgba(255,255,255,.4)}
@@ -83,14 +70,12 @@ body{font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;bac
 .game-card .info .desc{font-size:12px;color:rgba(255,255,255,.35);line-height:1.6;margin-bottom:12px}
 .game-card .info .meta{display:flex;align-items:center;gap:10px;font-size:10px;color:rgba(255,255,255,.2)}
 .game-card .info .meta .rating{color:var(--gold)}
-
-/* === NEWS === */
 .news-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 .news-featured{grid-row:span 2;background:linear-gradient(135deg,#0d1117,#111820);border:1px solid var(--border);border-radius:18px;padding:36px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden;min-height:320px;cursor:pointer;transition:.3s}
 .news-featured:hover{border-color:rgba(255,85,0,.15)}
-.news-featured .nf-glow{position:absolute;width:300px;height:300px;border-radius:50%;filter:blur(80px);top:-80px;right:-60px;background:rgba(255,85,0,.1)}
+.news-featured .nf-glow{position:absolute;width:300px;height:300px;border-radius:50%;filter:blur(80px);top:-80px;right:-60px}
 .news-featured .nf-icon{font-size:56px;margin-bottom:16px;position:relative;z-index:1}
-.news-featured .nf-tag{display:inline-block;padding:4px 12px;border-radius:10px;background:rgba(255,85,0,.1);color:var(--hl);font-size:10px;font-weight:700;margin-bottom:12px;position:relative;z-index:1}
+.news-featured .nf-tag{display:inline-block;padding:4px 12px;border-radius:10px;font-size:10px;font-weight:700;margin-bottom:12px;position:relative;z-index:1}
 .news-featured h3{font-size:22px;color:#fff;font-weight:800;margin-bottom:8px;position:relative;z-index:1}
 .news-featured .nf-desc{font-size:13px;color:rgba(255,255,255,.35);position:relative;z-index:1}
 .news-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 24px;cursor:pointer;transition:.25s;display:flex;align-items:center;gap:18px}
@@ -99,8 +84,6 @@ body{font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;bac
 .news-item .ni-content{flex:1}
 .news-item .ni-date{font-size:10px;color:rgba(255,255,255,.2);margin-bottom:4px}
 .news-item .ni-title{font-size:13px;color:#fff;font-weight:600}
-
-/* === TEAM === */
 .team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 .team-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 22px;text-align:center;transition:.3s}
 .team-card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.1)}
@@ -110,24 +93,18 @@ body{font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;bac
 .team-card .role{font-size:11px;color:rgba(255,255,255,.3);margin:4px 0 10px}
 .team-card .skills{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
 .team-card .skills span{padding:3px 8px;border-radius:6px;font-size:10px;background:rgba(255,255,255,.03);color:rgba(255,255,255,.35)}
-
-/* === TIMELINE === */
 .timeline{position:relative;padding-left:30px}
 .timeline::before{content:'';position:absolute;left:0;top:0;bottom:0;width:1px;background:rgba(255,255,255,.06)}
 .timeline .tl-item{position:relative;padding:0 0 32px 24px}
 .timeline .tl-item::before{content:'';position:absolute;left:-4px;top:6px;width:9px;height:9px;border-radius:50%;background:var(--hl);box-shadow:0 0 8px rgba(255,85,0,.3)}
 .timeline .tl-date{font-size:11px;color:rgba(255,255,255,.2);margin-bottom:4px}
 .timeline .tl-text{font-size:14px;color:rgba(255,255,255,.55)}
-
-/* === CTA SECTION === */
 .cta-section{text-align:center;padding:100px 48px;position:relative}
 .cta-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(255,85,0,.04),transparent)}
 .cta-section h2{font-size:clamp(28px,5vw,44px);color:#fff;font-weight:900;margin-bottom:16px;position:relative}
 .cta-section .cta-desc{font-size:16px;color:rgba(255,255,255,.3);margin-bottom:32px;position:relative}
-.cta-section .btn-large{padding:18px 48px;border-radius:30px;font-size:17px;font-weight:800;background:linear-gradient(135deg,#f50,#e40);color:#fff;border:none;cursor:pointer;transition:.3s;box-shadow:0 8px 40px rgba(255,85,0,.2);position:relative}
+.cta-section .btn-large{padding:18px 48px;border-radius:30px;font-size:17px;font-weight:800;background:linear-gradient(135deg,#f50,#e40);color:#fff;border:none;cursor:pointer;transition:.3s;box-shadow:0 8px 40px rgba(255,85,0,.2);position:relative;text-decoration:none;display:inline-block}
 .cta-section .btn-large:hover{transform:translateY(-2px);box-shadow:0 16px 50px rgba(255,85,0,.35)}
-
-/* === FOOTER === */
 .footer{border-top:1px solid var(--border);padding:48px;position:relative;z-index:1}
 .footer .f-grid{max-width:1300px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px}
 .footer .f-brand{font-size:22px;font-weight:900;color:#fff;margin-bottom:12px}
@@ -137,19 +114,13 @@ body{font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;bac
 .footer .f-col a{display:block;font-size:12px;color:rgba(255,255,255,.25);text-decoration:none;margin-bottom:8px;transition:.2s}
 .footer .f-col a:hover{color:var(--hl)}
 .footer .f-bottom{max-width:1300px;margin:32px auto 0;padding-top:24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:11px;color:rgba(255,255,255,.15)}
-
-/* === RESPONSIVE === */
+.music-section .section-header .label{color:var(--hl2)}
+.music-section .game-card:hover{border-color:rgba(144,0,255,.2);box-shadow:0 20px 60px rgba(144,0,255,.1)}
 @media(max-width:1024px){.hero-content{grid-template-columns:1fr;gap:40px}.game-grid{grid-template-columns:repeat(2,1fr)}.team-grid{grid-template-columns:repeat(2,1fr)}.footer .f-grid{grid-template-columns:1fr 1fr}.news-grid{grid-template-columns:1fr}}
 @media(max-width:640px){.game-grid{grid-template-columns:1fr}.section{padding:60px 20px}.hero{padding:100px 20px 40px}.topbar{padding:0 20px}.topbar nav{display:none}}
 </style></head><body>
-
-<!-- GLOW FOLLOWER -->
 <div class="cursor-glow" id="glow"></div>
-
-<!-- PARTICLE CANVAS -->
 <canvas id="bg-canvas"></canvas>
-
-<!-- TOPBAR -->
 <header class="topbar">
  <div class="logo">
   <svg viewBox="0 0 32 32"><defs><linearGradient id="lg" x1="0" y1="0" x2="32" y2="32"><stop offset="0%" stop-color="#f50"/><stop offset="100%" stop-color="#e40"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#lg)"/><text x="16" y="22" text-anchor="middle" fill="#fff" font-size="16" font-weight="900">M</text></svg>
@@ -157,36 +128,31 @@ body{font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;bac
  </div>
  <nav>
   <a href="#games" class="active">游戏</a>
+  <a href="#music">音乐</a>
   <a href="#news">动态</a>
   <a href="#team">团队</a>
-  <a href="#about">关于</a>
  </nav>
- <button class="cta">🎮 进入游戏中心</button>
+ <a class="cta" href="https://weyoudonttalk.github.io/game-center/">🎮 游戏中心</a>
 </header>
-
-<!-- HERO -->
 <section class="hero" id="hero">
  <div class="grid-overlay"></div>
  <div class="hero-content">
   <div class="hero-text">
    <div class="eyebrow">INDIE GAME STUDIO · EST 2026</div>
    <h1>用代码<span class="gradient">创造世界</span></h1>
-   <p class="desc">我们是一个充满激情的独立游戏研发团队。从3D地牢到吃鸡战场，从体素沙盒到互动叙事——每一个项目都是一次对创意边界的探索。</p>
+   <p class="desc">游戏 + AI音乐双引擎。从3D地牢到AI音乐创作，每个项目都是对创意边界的探索。</p>
    <div class="btn-group">
-    <button class="btn btn-primary">🎯 探索游戏 →</button>
-    <button class="btn btn-outline">📖 了解工作室</button>
+    <button class="btn btn-primary" onclick="document.querySelector('#games').scrollIntoView({behavior:'smooth'})">🎯 探索游戏</button>
+    <button class="btn btn-outline" onclick="document.querySelector('#music').scrollIntoView({behavior:'smooth'})">🎵 AI音乐工坊</button>
    </div>
   </div>
   <div class="hero-visual">
-   <div class="main-card">
-    <div class="glow-orb"></div><div class="glow-orb"></div>
-    <div class="icon-display">🎮</div>
-   </div>
+   <div class="main-card"><div class="glow-orb"></div><div class="glow-orb"></div><div class="icon-display">🎮</div></div>
    <div class="float-card">🔥 暗影地牢3D · 今日更新</div>
-   <div class="float-card">🆕 吃鸡战场 · 正式公测</div>
+   <div class="float-card">🎵 AI音乐工坊 · 全新上线</div>
    <div class="stats-row">
-    <div class="stat-box"><div class="num">6+</div><div class="lbl">已发布游戏</div></div>
-    <div class="stat-box"><div class="num">3D</div><div class="lbl">自研引擎</div></div>
+    <div class="stat-box"><div class="num">7+</div><div class="lbl">上线作品</div></div>
+    <div class="stat-box"><div class="num">AI</div><div class="lbl">音乐引擎</div></div>
     <div class="stat-box"><div class="num">50K+</div><div class="lbl">月活玩家</div></div>
    </div>
   </div>
@@ -195,205 +161,101 @@ body{font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;bac
 
 <!-- GAMES -->
 <section class="section" id="games">
+ <div class="section-header"><div><div class="label">我们的作品</div><h2>精选游戏</h2></div></div>
+ <div class="game-grid">
+  <a class="game-card" href="https://weyoudonttalk.github.io/dungeon/" target="_blank">
+   <div class="cover" style="background:linear-gradient(135deg,#1a0a20,#0d0518)"><span class="badge new">NEW</span><div class="icon">🔮</div></div>
+   <div class="info"><div class="tags"><span>RPG</span><span>3D</span><span>肉鸽</span></div><h3>暗影地牢 3D</h3><div class="desc">第一人称3D地牢肉鸽RPG · 10种敌人+5大BOSS</div><div class="meta"><span class="rating">★★★★★</span><span>2026.07</span></div></div>
+  </a>
+  <a class="game-card" href="https://weyoudonttalk.github.io/pubg/" target="_blank">
+   <div class="cover" style="background:linear-gradient(135deg,#0a1518,#051015)"><span class="badge hot">HOT</span><div class="icon">🔫</div></div>
+   <div class="info"><div class="tags"><span>射击</span><span>大逃杀</span></div><h3>吃鸡战场</h3><div class="desc">25人大逃杀 · 跳伞毒圈 · 双武器 · AI敌人</div><div class="meta"><span class="rating">★★★★☆</span><span>2026.07</span></div></div>
+  </a>
+  <a class="game-card" href="https://weyoudonttalk.github.io/memory/" target="_blank">
+   <div class="cover" style="background:linear-gradient(135deg,#181010,#100a08)"><span class="badge hot">HOT</span><div class="icon">🥀</div></div>
+   <div class="info"><div class="tags"><span>互动叙事</span><span>回忆</span></div><h3>三年回忆</h3><div class="desc">PUBGM地铁圈回忆录 · 9页互动故事</div><div class="meta"><span class="rating">★★★★★</span><span>2026.07</span></div></div>
+  </a>
+  <a class="game-card" href="https://weyoudonttalk.github.io/minecraft/" target="_blank">
+   <div class="cover" style="background:linear-gradient(135deg,#101810,#081008)"><div class="icon">⛏️</div></div>
+   <div class="info"><div class="tags"><span>沙盒</span><span>3D</span><span>体素</span></div><h3>我的世界 · 手机版</h3><div class="desc">3D体素沙盒 · 程序化地形 · 6种方块</div><div class="meta"><span class="rating">★★★★☆</span><span>2026.07</span></div></div>
+  </a>
+ </div>
+</section>
+
+<!-- MUSIC (NEW!) -->
+<section class="section music-section" id="music">
  <div class="section-header">
-  <div><div class="label">我们的作品</div><h2>精选游戏</h2></div>
-  <span class="view-all">全部作品 →</span>
+  <div><div class="label">AI 音乐引擎</div><h2>🎵 AI音乐工坊</h2></div>
+  <span class="view-all" onclick="window.open('https://suno.com','_blank')">更多 →</span>
  </div>
  <div class="game-grid">
-  <div class="game-card" onclick="location.href='https://weyoudonttalk.github.io/dungeon/'">
-   <div class="cover" style="background:linear-gradient(135deg,#1a0a20,#0d0518)">
-    <span class="badge new">NEW</span>
-    <div class="icon">🔮</div>
-   </div>
-   <div class="info">
-    <div class="tags"><span>RPG</span><span>3D</span><span>肉鸽</span></div>
-    <h3>暗影地牢 3D</h3>
-    <div class="desc">第一人称3D地牢肉鸽RPG · 10种敌人+5大BOSS+程序化房间</div>
-    <div class="meta"><span class="rating">★★★★★</span><span>2026.07</span></div>
-   </div>
-  </div>
-  <div class="game-card" onclick="location.href='https://weyoudonttalk.github.io/pubg/'">
-   <div class="cover" style="background:linear-gradient(135deg,#0a1518,#051015)">
-    <span class="badge hot">HOT</span>
-    <div class="icon">🔫</div>
-   </div>
-   <div class="info">
-    <div class="tags"><span>射击</span><span>大逃杀</span><span>2D</span></div>
-    <h3>吃鸡战场</h3>
-    <div class="desc">25人大逃杀 · 跳伞毒圈 · 双武器 · AI敌人 · 小地图</div>
-    <div class="meta"><span class="rating">★★★★☆</span><span>2026.07</span></div>
-   </div>
-  </div>
-  <div class="game-card" onclick="location.href='https://weyoudonttalk.github.io/memory/'">
-   <div class="cover" style="background:linear-gradient(135deg,#181010,#100a08)">
-    <span class="badge hot">HOT</span>
-    <div class="icon">🥀</div>
-   </div>
-   <div class="info">
-    <div class="tags"><span>互动叙事</span><span>回忆</span></div>
-    <h3>三年回忆</h3>
-    <div class="desc">PUBGM地铁圈回忆录 · 9页互动故事 · 名人堂 · 经典语录</div>
-    <div class="meta"><span class="rating">★★★★★</span><span>2026.07</span></div>
-   </div>
-  </div>
-  <div class="game-card" onclick="location.href='https://weyoudonttalk.github.io/minecraft/'">
-   <div class="cover" style="background:linear-gradient(135deg,#101810,#081008)">
-    <div class="icon">⛏️</div>
-   </div>
-   <div class="info">
-    <div class="tags"><span>沙盒</span><span>3D</span><span>体素</span></div>
-    <h3>我的世界 · 手机版</h3>
-    <div class="desc">3D体素沙盒 · 程序化地形 · 碰撞检测 · 6种方块 · 触屏</div>
-    <div class="meta"><span class="rating">★★★★☆</span><span>2026.07</span></div>
-   </div>
-  </div>
+  <a class="game-card" href="https://suno.com" target="_blank">
+   <div class="cover" style="background:linear-gradient(135deg,#1a0a30,#0d0525)"><span class="badge music">灵感创作</span><div class="icon">💡</div></div>
+   <div class="info"><div class="tags"><span>AI作曲</span><span>人声</span><span>免费</span></div><h3>Suno AI · 灵感写歌</h3><div class="desc">输入一句灵感 → AI自动作词+作曲+演唱。免费额度每天都能生成</div><div class="meta"><span class="rating">★★★★★</span><span>全球最火</span></div></div>
+  </a>
+  <a class="game-card" href="https://songgenerator.io" target="_blank">
+   <div class="cover" style="background:linear-gradient(135deg,#0a1520,#050d15)"><span class="badge hot">无需注册</span><div class="icon">🎧</div></div>
+   <div class="info"><div class="tags"><span>AI作曲</span><span>免登录</span><span>免费</span></div><h3>SongGenerator</h3><div class="desc">不用注册直接写歌！输歌词+曲风 → 60秒出成品，完整带人声</div><div class="meta"><span class="rating">★★★★☆</span><span>零门槛</span></div></div>
+  </a>
+  <a class="game-card" href="https://vocalremover.com/ai-cover-voice" target="_blank">
+   <div class="cover" style="background:linear-gradient(135deg,#200008,#150005)"><span class="badge music">换歌手</span><div class="icon">🎤</div></div>
+   <div class="info"><div class="tags"><span>AI换声</span><span>翻唱</span><span>免费</span></div><h3>AI歌手替换</h3><div class="desc">上传歌曲 → 换成任意歌手声音。歌词和旋律完全不变！</div><div class="meta"><span class="rating">★★★★★</span><span>改歌手神器</span></div></div>
+  </a>
+  <a class="game-card" href="https://insmelo.com" target="_blank">
+   <div class="cover" style="background:linear-gradient(135deg,#0a2010,#051008)"><span class="badge new">全能</span><div class="icon">🎼</div></div>
+   <div class="info"><div class="tags"><span>AI作曲</span><span>AI翻唱</span><span>6000+声线</span></div><h3>InsMelo · 全能工坊</h3><div class="desc">写歌+换声二合一。400种曲风，6000个歌手声音可选</div><div class="meta"><span class="rating">★★★★☆</span><span>新上线</span></div></div>
+  </a>
  </div>
 </section>
 
 <!-- NEWS -->
 <section class="section" id="news">
- <div class="section-header">
-  <div><div class="label">工作室动态</div><h2>最新消息</h2></div>
-  <span class="view-all">更多动态 →</span>
- </div>
+ <div class="section-header"><div><div class="label">工作室动态</div><h2>最新消息</h2></div></div>
  <div class="news-grid">
-  <div class="news-featured">
-   <div class="nf-glow"></div>
-   <div class="nf-icon">🎉</div>
-   <span class="nf-tag">重磅</span>
-   <h3>MIUI工作室官网正式上线！</h3>
-   <div class="nf-desc">四款自研游戏同步发布，3D引擎持续迭代中。这只是开始。</div>
+  <div class="news-featured" onclick="document.querySelector('#music').scrollIntoView({behavior:'smooth'})">
+   <div class="nf-glow" style="background:rgba(144,0,255,.08)"></div>
+   <div class="nf-icon">🎵</div>
+   <span class="nf-tag" style="background:rgba(144,0,255,.1);color:#c084fc">全新</span>
+   <h3>AI音乐工坊上线！</h3>
+   <div class="nf-desc">灵感变歌曲 · 一秒钟换歌手 —— 四个免费AI音乐工具已接入。</div>
   </div>
-  <div class="news-item">
-   <div class="ni-icon">🏰</div>
-   <div class="ni-content"><div class="ni-date">07-29</div><div class="ni-title">暗影地牢 3D重制版上线 — Three.js引擎+Capsule角色</div></div>
-  </div>
-  <div class="news-item">
-   <div class="ni-icon">🎯</div>
-   <div class="ni-content"><div class="ni-date">07-29</div><div class="ni-title">吃鸡战场正式公测 — 25人大逃杀+毒圈系统</div></div>
-  </div>
-  <div class="news-item">
-   <div class="ni-icon">🧱</div>
-   <div class="ni-content"><div class="ni-date">07-28</div><div class="ni-title">我的世界手机版更新 — 新增树木生成+区块加载</div></div>
-  </div>
-  <div class="news-item">
-   <div class="ni-icon">📖</div>
-   <div class="ni-content"><div class="ni-date">07-28</div><div class="ni-title">三年回忆轻应用发布 — PUBGM圈最火回忆杀</div></div>
-  </div>
+  <div class="news-item"><div class="ni-icon">🏰</div><div class="ni-content"><div class="ni-date">07-29</div><div class="ni-title">暗影地牢 3D重制版上线 — Three.js引擎</div></div></div>
+  <div class="news-item"><div class="ni-icon">🎯</div><div class="ni-content"><div class="ni-date">07-29</div><div class="ni-title">吃鸡战场正式公测 — 25人大逃杀</div></div></div>
+  <div class="news-item"><div class="ni-icon">🎵</div><div class="ni-content"><div class="ni-date">08-01</div><div class="ni-title">AI音乐工坊上线 · Suno + 歌手替换全部免费</div></div></div>
+  <div class="news-item"><div class="ni-icon">🧱</div><div class="ni-content"><div class="ni-date">07-28</div><div class="ni-title">我的世界手机版更新 — 新增树木生成</div></div></div>
  </div>
 </section>
 
 <!-- TEAM -->
 <section class="section" id="team">
- <div class="section-header">
-  <div><div class="label">核心团队</div><h2>我们是谁</h2></div>
- </div>
+ <div class="section-header"><div><div class="label">核心团队</div><h2>我们是谁</h2></div></div>
  <div class="team-grid">
-  <div class="team-card">
-   <div class="avatar" style="background:linear-gradient(135deg,rgba(255,85,0,.15),rgba(255,85,0,.05))">👑</div>
-   <div class="name">小Q</div>
-   <div class="role">创始人 / 全栈开发</div>
-   <div class="skills"><span>Three.js</span><span>WebGL</span><span>AI</span></div>
-  </div>
-  <div class="team-card">
-   <div class="avatar" style="background:linear-gradient(135deg,rgba(0,102,255,.15),rgba(0,102,255,.05))">🎨</div>
-   <div class="name">3D引擎组</div>
-   <div class="role">场景 · 渲染 · 光影</div>
-   <div class="skills"><span>Shader</span><span>Particles</span><span>PostFX</span></div>
-  </div>
-  <div class="team-card">
-   <div class="avatar" style="background:linear-gradient(135deg,rgba(0,200,100,.15),rgba(0,200,100,.05))">⚔️</div>
-   <div class="name">游戏设计组</div>
-   <div class="role">玩法 · 数值 · AI</div>
-   <div class="skills"><span>Roguelike</span><span>FPS</span><span>沙盒</span></div>
-  </div>
-  <div class="team-card">
-   <div class="avatar" style="background:linear-gradient(135deg,rgba(200,50,255,.15),rgba(200,50,255,.05))">📱</div>
-   <div class="name">前端工程组</div>
-   <div class="role">UI · 交互 · 适配</div>
-   <div class="skills"><span>响应式</span><span>触屏</span><span>性能</span></div>
-  </div>
+  <div class="team-card"><div class="avatar" style="background:linear-gradient(135deg,rgba(255,85,0,.15),rgba(255,85,0,.05))">👑</div><div class="name">小Q</div><div class="role">创始人 / 全栈开发</div><div class="skills"><span>Three.js</span><span>WebGL</span><span>AI</span></div></div>
+  <div class="team-card"><div class="avatar" style="background:linear-gradient(135deg,rgba(144,0,255,.15),rgba(144,0,255,.05))">🎵</div><div class="name">AI音乐组</div><div class="role">音乐生成 · 音频AI</div><div class="skills"><span>Suno</span><span>MusicGen</span><span>Cover AI</span></div></div>
+  <div class="team-card"><div class="avatar" style="background:linear-gradient(135deg,rgba(0,200,100,.15),rgba(0,200,100,.05))">⚔️</div><div class="name">游戏设计组</div><div class="role">玩法 · 数值 · AI</div><div class="skills"><span>Roguelike</span><span>FPS</span><span>沙盒</span></div></div>
+  <div class="team-card"><div class="avatar" style="background:linear-gradient(135deg,rgba(0,102,255,.15),rgba(0,102,255,.05))">📱</div><div class="name">前端工程组</div><div class="role">UI · 交互 · 适配</div><div class="skills"><span>响应式</span><span>触屏</span><span>性能</span></div></div>
  </div>
 </section>
 
-<!-- TIMELINE -->
-<section class="section" id="about">
- <div class="section-header">
-  <div><div class="label">发展历程</div><h2>工作室历程</h2></div>
- </div>
- <div class="timeline">
-  <div class="tl-item"><div class="tl-date">2026.07.29</div><div class="tl-text">暗影地牢3D重制版发布 · Three.js第一人称RPG</div></div>
-  <div class="tl-item"><div class="tl-date">2026.07.29</div><div class="tl-text">吃鸡战场正式公测 · 2D大逃杀完整玩法</div></div>
-  <div class="tl-item"><div class="tl-date">2026.07.28</div><div class="tl-text">我的世界手机版发布 · 3D体素沙盒支持手机</div></div>
-  <div class="tl-item"><div class="tl-date">2026.07.28</div><div class="tl-text">三年回忆轻应用上线 · PUBGM圈互动回忆录</div></div>
-  <div class="tl-item"><div class="tl-date">2026.07.27</div><div class="tl-text">MIUI工作室正式成立 · 账号中心+个人工作台上线</div></div>
- </div>
-</section>
-
-<!-- CTA -->
 <section class="cta-section">
- <h2>准备好开始冒险了吗？</h2>
- <p class="cta-desc">立即体验我们的游戏，或者加入我们，一起创造下一款大作。</p>
- <button class="btn-large" onclick="location.href='https://weyoudonttalk.github.io/game-center/'">🚀 进入游戏中心</button>
+ <h2>灵感来了，立刻创作</h2>
+ <p class="cta-desc">游戏和音乐，都在这里。</p>
+ <a class="btn-large" href="#music">🎵 进入 AI 音乐工坊</a>
 </section>
 
-<!-- FOOTER -->
 <footer class="footer">
  <div class="f-grid">
-  <div>
-   <div class="f-brand">MIUI<span>STUDIO</span></div>
-   <p class="f-tagline">专注独立游戏研发<br>用代码创造世界</p>
-  </div>
-  <div class="f-col">
-   <h4>游戏</h4>
-   <a href="https://weyoudonttalk.github.io/dungeon/">暗影地牢3D</a>
-   <a href="https://weyoudonttalk.github.io/pubg/">吃鸡战场</a>
-   <a href="https://weyoudonttalk.github.io/memory/">三年回忆</a>
-   <a href="https://weyoudonttalk.github.io/minecraft/">我的世界</a>
-  </div>
-  <div class="f-col">
-   <h4>链接</h4>
-   <a href="https://weyoudonttalk.github.io/auth/">账号中心</a>
-   <a href="https://weyoudonttalk.github.io/heping/">和平精英官网</a>
-   <a href="https://weyoudonttalk.github.io/game-center/">游戏中心</a>
-  </div>
-  <div class="f-col">
-   <h4>联系</h4>
-   <a href="#">GitHub</a>
-   <a href="#">反馈建议</a>
-   <a href="#">加入我们</a>
-  </div>
+  <div><div class="f-brand">MIUI<span>STUDIO</span></div><p class="f-tagline">专注独立游戏研发 · AI音乐创作<br>用代码创造世界</p></div>
+  <div class="f-col"><h4>游戏</h4><a href="https://weyoudonttalk.github.io/dungeon/">暗影地牢3D</a><a href="https://weyoudonttalk.github.io/pubg/">吃鸡战场</a><a href="https://weyoudonttalk.github.io/memory/">三年回忆</a><a href="https://weyoudonttalk.github.io/minecraft/">我的世界</a></div>
+  <div class="f-col"><h4>音乐</h4><a href="https://suno.com" target="_blank">Suno AI 写歌</a><a href="https://vocalremover.com/ai-cover-voice" target="_blank">AI歌手替换</a><a href="https://songgenerator.io" target="_blank">SongGenerator</a><a href="https://insmelo.com" target="_blank">InsMelo</a></div>
+  <div class="f-col"><h4>联系</h4><a href="#">GitHub</a><a href="#">反馈建议</a><a href="#">加入我们</a></div>
  </div>
- <div class="f-bottom">
-  <span>© 2026 MIUI STUDIO. ALL RIGHTS RESERVED.</span>
-  <span>Made with ❤️ by 小Q</span>
- </div>
+ <div class="f-bottom"><span>© 2026 MIUI STUDIO</span><span>Made with ❤️ by 小Q</span></div>
 </footer>
 
 <script>
-// === PARTICLE BACKGROUND ===
-(function(){
-var c=document.getElementById('bg-canvas'),ctx=c.getContext('2d');
-var W,H,particles=[];
-function resize(){W=c.width=innerWidth;H=c.height=innerHeight}
-resize();window.addEventListener('resize',resize);
-for(var i=0;i<80;i++){particles.push({x:Math.random()*W,y:Math.random()*H,r:.3+Math.random()*1.2,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,a:.15+Math.random()*.35})}
-function draw(){ctx.clearRect(0,0,W,H);particles.forEach(function(p){p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;ctx.fillStyle='rgba(255,255,255,'+p.a+')';ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill()});requestAnimationFrame(draw)}
-draw();
-
-// Draw gradient lines connecting nearby particles
-var connCtx=ctx;
-function drawConnections(){return} // skip for perf
-})();
-
-// === CURSOR GLOW ===
-var glow=document.getElementById('glow'),mx=0,my=0,tx=0,ty=0;
-document.addEventListener('mousemove',function(e){tx=e.clientX;ty=e.clientY});
-(function animateGlow(){mx+=(tx-mx)*.05;my+=(ty-my)*.05;glow.style.left=mx+'px';glow.style.top=my+'px';requestAnimationFrame(animateGlow)})();
-
-// === SMOOTH SCROLL FOR NAV ===
+(function(){var c=document.getElementById('bg-canvas'),ctx=c.getContext('2d');var W,H,ps=[];function rs(){W=c.width=innerWidth;H=c.height=innerHeight}rs();window.addEventListener('resize',rs);for(var i=0;i<80;i++)ps.push({x:Math.random()*W,y:Math.random()*H,r:.3+Math.random()*1.2,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,a:.15+Math.random()*.35});function dr(){ctx.clearRect(0,0,W,H);ps.forEach(function(p){p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;ctx.fillStyle='rgba(255,255,255,'+p.a+')';ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill()});requestAnimationFrame(dr)}dr()})();
+var gl=document.getElementById('glow'),mx=0,my=0,tx=0,ty=0;document.addEventListener('mousemove',function(e){tx=e.clientX;ty=e.clientY});(function ag(){mx+=(tx-mx)*.05;my+=(ty-my)*.05;gl.style.left=mx+'px';gl.style.top=my+'px';requestAnimationFrame(ag)})();
 document.querySelectorAll('nav a').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var t=document.querySelector(this.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth'});document.querySelectorAll('nav a').forEach(function(s){s.classList.remove('active')});this.classList.add('active')})});
-
-// === PARALLAX ON SCROLL ===
-window.addEventListener('scroll',function(){var s=window.scrollY;var h=document.querySelector('.hero');if(h){var v=h.querySelector('.hero-visual');if(v)v.style.transform='translateY('+s*.08+'px)';var t=h.querySelector('.hero-text');if(t)t.style.transform='translateY('+-s*.03+'px)'}});
+window.addEventListener('scroll',function(){var h=document.querySelector('.hero');if(h){var v=h.querySelector('.hero-visual');if(v)v.style.transform='translateY('+scrollY*.06+'px)';var t=h.querySelector('.hero-text');if(t)t.style.transform='translateY('+-scrollY*.02+'px)'}});
 </script></body></html>
