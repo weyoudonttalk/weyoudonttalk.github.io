@@ -1,107 +1,103 @@
 <!DOCTYPE html><html lang="zh"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>三角洲行动</title>
-<style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none;user-select:none}
+<title>Delta Force</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none;user-select:none;-webkit-user-select:none}
 #c{display:block;width:100%;height:100%}
-#s{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:99;display:flex;align-items:center;justify-content:center;color:#fff;text-align:center;cursor:pointer;flex-direction:column}
-#s h2{font-size:22px;margin-bottom:6px;font-weight:900}#s p{font-size:12px;color:rgba(255,255,255,.4);margin:3px 0}
-#s .k{display:inline-block;padding:3px 8px;border-radius:4px;background:rgba(255,255,255,.1);font-size:11px;margin:2px}
-#joystick{position:fixed;bottom:70px;left:28px;width:110px;height:110px;background:rgba(255,255,255,.05);border-radius:50%;border:2px solid rgba(255,255,255,.12);z-index:100;pointer-events:auto}
-#joystick .knob{position:absolute;width:40px;height:40px;background:rgba(255,255,255,.18);border-radius:50%;top:35px;left:35px}
-#fire{position:fixed;bottom:85px;right:28px;width:65px;height:65px;background:rgba(255,40,20,.15);border-radius:50%;border:2px solid rgba(255,80,40,.35);z-index:100;pointer-events:auto;display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;font-weight:900}
-#reload{position:fixed;bottom:58px;right:108px;width:44px;height:44px;background:rgba(255,255,255,.06);border-radius:50%;border:1px solid rgba(255,255,255,.12);z-index:100;pointer-events:auto;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
-#hud2{position:fixed;inset:0;pointer-events:none;z-index:10}
-#hud2 .cs2{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-radius:50%}
-#hud2 .amm2{position:absolute;bottom:24px;right:18px;color:#fff;font-size:20px;font-weight:900}
-#hud2 .hp2{position:absolute;bottom:24px;left:18px;color:#f44;font-size:11px}
-#hud2 .fps2{position:absolute;top:6px;left:10px;color:rgba(255,255,255,.2);font-size:9px}
-#hud2 .sc2{position:absolute;top:6px;right:10px;color:#ff0;font-size:12px;font-weight:700}
+#s{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99;display:flex;align-items:center;justify-content:center;color:#fff;text-align:center;cursor:pointer;flex-direction:column;font-family:sans-serif}
+#s h2{font-size:24px;margin-bottom:8px;font-weight:900}#s p{font-size:13px;color:rgba(255,255,255,.4);margin:3px 0}
+#s .k{display:inline-block;padding:3px 8px;border-radius:4px;background:rgba(255,255,255,.12);font-size:11px;margin:2px;color:#fff}
+#js{position:fixed;bottom:60px;left:24px;width:110px;height:110px;background:rgba(255,255,255,.04);border-radius:50%;border:2px solid rgba(255,255,255,.1);z-index:100;pointer-events:auto}
+#js .kn{position:absolute;width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:50%;top:35px;left:35px}
+#f{position:fixed;bottom:80px;right:24px;width:68px;height:68px;background:rgba(255,30,10,.15);border-radius:50%;border:2px solid rgba(255,60,30,.3);z-index:100;pointer-events:auto;display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;font-weight:900}
+#r{position:fixed;bottom:54px;right:108px;width:44px;height:44px;background:rgba(255,255,255,.05);border-radius:50%;border:1px solid rgba(255,255,255,.1);z-index:100;pointer-events:auto;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px}
+#h{position:fixed;inset:0;pointer-events:none;z-index:10;font-family:sans-serif}
+.cs{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-radius:50%}
+.a2{position:absolute;bottom:22px;right:16px;color:#fff;font-size:20px;font-weight:900}
+.p2{position:absolute;bottom:22px;left:16px;color:#f44;font-size:11px}
+.f2{position:absolute;top:6px;left:10px;color:rgba(255,255,255,.2);font-size:9px}
+.k2{position:absolute;top:6px;right:10px;color:#ff0;font-size:12px;font-weight:700}
 </style></head><body>
 <canvas id="c"></canvas>
-<div id="s"><h2>🔫 三角洲行动 3D</h2><p>左手摇杆 | 右手射击 | R换弹</p><p style="opacity:.25;font-size:9px">手绘3D建模 · Babylon.js</p></div>
-<div id="joystick"><div class="knob"></div></div>
-<div id="fire">🔫</div><div id="reload">R</div>
-<div id="hud2"><div class="cs2"></div><div class="amm2" id="amm2">30</div><div class="hp2" id="hp2">HP 100</div><div class="fps2" id="fps2">--</div><div class="sc2" id="sc2">0 kills</div></div>
+<div id="s"><h2>🔫 三角洲行动</h2><p>左手摇杆 ｜ 右手射击 ｜ R换弹</p><p style="opacity:.25;font-size:10px">Babylon.js · 手机优化 · 手绘建模</p></div>
+<div id="js"><div class="kn"></div></div><div id="f">🔫</div><div id="r">R</div>
+<div id="h"><div class="cs"></div><div class="a2" id="a2">30</div><div class="p2" id="p2">HP 100</div><div class="f2" id="f2">--</div><div class="k2" id="k2">0 KILLS</div></div>
 <script src="https://cdn.babylonjs.com/babylon.js"></script>
 <script>
 (function(){
 if(typeof BABYLON==="undefined"){document.getElementById("s").innerHTML="<h2>加载失败</h2><p>请刷新</p>";return}
+
 var c=document.getElementById("c");
-var engine=new BABYLON.Engine(c,true,{preserveDrawingBuffer:true});
+var engine=new BABYLON.Engine(c,true,{preserveDrawingBuffer:true,stencil:true});
 var scene=new BABYLON.Scene(engine);
-scene.clearColor=new BABYLON.Color4(.53,.8,.94,1);
-scene.fogMode=BABYLON.Scene.FOGMODE_EXP;scene.fogDensity=.0006;
+scene.clearColor=new BABYLON.Color4(.53,.80,.94,1);
+scene.fogMode=BABYLON.Scene.FOGMODE_EXP;scene.fogDensity=.0005;
 
-var cam=new BABYLON.UniversalCamera("cam",new BABYLON.Vector3(0,15,-5),scene);
-cam.fov=1.2;cam.minZ=.3;cam.maxZ=500;cam.speed=8;cam.angularSensibility=3000;
-cam.ellipsoid=new BABYLON.Vector3(.6,1.8,.6);cam.checkCollisions=true;
+var cam=new BABYLON.UniversalCamera("cam",new BABYLON.Vector3(0,16,0),scene);
+cam.fov=1.15;cam.minZ=.3;cam.maxZ=600;cam.speed=8;cam.angularSensibility=3000;
+cam.ellipsoid=new BABYLON.Vector3(.6,1.7,.6);
+cam.checkCollisions=true;
+cam.applyGravity=true;
 scene.activeCamera=cam;
+scene.gravity=new BABYLON.Vector3(0,-9.81,0);
+scene.collisionsEnabled=true;
 
+// Lighting
 var hemi=new BABYLON.HemisphericLight("hemi",new BABYLON.Vector3(.5,1,.3),scene);
-hemi.intensity=.7;hemi.diffuse=new BABYLON.Color3(.9,.95,1);hemi.groundColor=new BABYLON.Color3(.3,.35,.25);
-var sun2=new BABYLON.DirectionalLight("sun",new BABYLON.Vector3(-.5,-.8,-.3),scene);
-sun2.intensity=1;sun2.diffuse=new BABYLON.Color3(1,.95,.85);
-var sg=new BABYLON.ShadowGenerator(1024,sun2);sg.useBlurExponentialShadowMap=true;sg.blurKernel=32;
+hemi.intensity=.75;hemi.diffuse=new BABYLON.Color3(.92,.96,1);hemi.groundColor=new BABYLON.Color3(.28,.32,.22);
+var sun2=new BABYLON.DirectionalLight("sun",new BABYLON.Vector3(-.5,-.7,-.3),scene);
+sun2.intensity=1.1;sun2.diffuse=new BABYLON.Color3(1,.95,.82);
+var sg=new BABYLON.ShadowGenerator(1024,sun2);
+sg.useBlurExponentialShadowMap=true;sg.blurKernel=32;
+sg.setDarkness(.3);
 
-// Generate heightmap data for terrain
+// Terrain
 function genHM(){
  var d=[];for(var i=0;i<256;i++)for(var j=0;j<256;j++){var n=Math.sin(i*.015)*Math.cos(j*.01)*.4+Math.sin(i*.03+1.3)*Math.sin(j*.025)*.3+Math.cos(i*.012-j*.015)*.2+.5;d.push(Math.floor(n*255))}
- return String.fromCharCode.apply(null,new Uint8Array(d));
+ return btoa(String.fromCharCode.apply(null,new Uint8Array(d)));
 }
-var hmData="data:image/png;base64,"+btoa(genHM());
-var tMat=new BABYLON.StandardMaterial("tMat",scene);
-tMat.diffuseColor=new BABYLON.Color3(.35,.5,.3);tMat.specularColor=new BABYLON.Color3(0,0,0);
-var terrain=BABYLON.MeshBuilder.CreateGroundFromHeightMap("t",hmData,{width:200,height:200,subdivisions:100,maxHeight:18,minHeight:-2},scene);
-terrain.position.y=-2;terrain.receiveShadows=true;sg.addShadowCaster(terrain);
-
-// Generate concrete texture via canvas
-function genTex(w,h,bg,noiseAlpha,noiseW,noiseH,noiseCount){
- var cv=document.createElement("canvas");cv.width=w;cv.height=h;var ctx=cv.getContext("2d");
- ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
- for(var i=0;i<noiseCount;i++){ctx.fillStyle="rgba(0,0,0,"+noiseAlpha+")";ctx.fillRect(Math.random()*w,Math.random()*h,noiseW+Math.random()*noiseW,noiseH+Math.random()*noiseH)}
- return new BABYLON.Texture(cv.toDataURL(),scene);
-}
-var wTex=genTex(128,128,"#8899a5",.04,4,1,200);
+var terrain=BABYLON.MeshBuilder.CreateGroundFromHeightMap("t","data:image/png;base64,"+genHM(),{width:220,height:220,subdivisions:120,maxHeight:20,minHeight:-2},scene);
+terrain.position.y=-2;terrain.receiveShadows=true;terrain.checkCollisions=true;
+sg.addShadowCaster(terrain);
 
 // Materials
-function mkM(name,diff,spec){var m=new BABYLON.StandardMaterial(name,scene);m.diffuseColor=diff;m.specularColor=spec||new BABYLON.Color3(0,0,0);return m}
-function mkBox(name,w,h,d,mat,parent,px,py,pz,ry){var b=BABYLON.MeshBuilder.CreateBox(name,{width:w,height:h,depth:d},scene);b.material=mat;b.receiveShadows=true;sg.addShadowCaster(b);if(parent){b.parent=parent;if(px!==undefined)b.position.set(px,py,pz);if(ry)b.rotation.y=ry}else{if(px!==undefined)b.position.set(px,py,pz);if(ry)b.rotation.y=ry}return b}
-function mkCyl(name,r1,r2,h,mat,parent,px,py,pz,rx,rz){var c2=BABYLON.MeshBuilder.CreateCylinder(name,{height:h,diameterTop:r2*2,diameterBottom:r1*2,tessellation:10},scene);c2.material=mat;c2.receiveShadows=true;sg.addShadowCaster(c2);if(parent){c2.parent=parent;if(px!==undefined)c2.position.set(px,py,pz);if(rx)c2.rotation.x=rx;if(rz)c2.rotation.z=rz}else{if(px!==undefined)c2.position.set(px,py,pz);if(rx)c2.rotation.x=rx;if(rz)c2.rotation.z=rz}return c2}
+function mkM(name,r,g,b){var m=new BABYLON.StandardMaterial(name,scene);m.diffuseColor=new BABYLON.Color3(r,g,b);m.specularColor=new BABYLON.Color3(0,0,0);return m}
+var wallM=mkM("W",.55,.62,.68),roofM=mkM("R",.35,.40,.43),winM=mkM("WN",.15,.24,.38),doorM=mkM("D",.18,.20,.22),stepM=mkM("S",.58,.58,.58),bandM=mkM("B",.45,.50,.55);
+var trunkM=mkM("T",.38,.26,.16),leafM=[mkM("L0",.18,.42,.15),mkM("L1",.22,.48,.18),mkM("L2",.15,.38,.12)];
+var enemyM=mkM("E",.82,.12,.12),enemyH=mkM("EH",.78,.10,.10),enemyL=mkM("EL",.18,.18,.22);
+var contM=mkM("C",.72,.34,.24),bagM=mkM("BG",.58,.48,.32),gunM=mkM("G",.14,.14,.14);
 
-// ===== HAND-MODELED DETAILED BUILDINGS =====
-var wallMat=mkM("wM",new BABYLON.Color3(.55,.62,.68));
-var roofMat=mkM("rM",new BABYLON.Color3(.35,.4,.43));
-var winMat=mkM("wnM",new BABYLON.Color3(.15,.25,.4));
-var darkMat=mkM("dM",new BABYLON.Color3(.2,.2,.22));
-var stepMat=mkM("sM",new BABYLON.Color3(.6,.6,.6));
-
+// Height helper
 function th(x,z){return (terrain.getHeightAtCoordinates(x,z)||-2)}
 
-var BLDSTORE=[];
+// ===== BUILDINGS (all hand-placed, not procedural) =====
+var BLD=[];
+function box(n,w,h,d,mat,parent,px,py,pz,ry){
+ var b=BABYLON.MeshBuilder.CreateBox(n,{width:w,height:h,depth:d},scene);
+ b.material=mat;b.receiveShadows=true;sg.addShadowCaster(b);b.checkCollisions=true;
+ if(parent){b.parent=parent;b.position.set(px||0,py||0,pz||0);if(ry)b.rotation.y=ry}else{b.position.set(px||0,py||0,pz||0);if(ry)b.rotation.y=ry}
+ return b;
+}
+function cyl(n,r1,r2,h,mat,parent,px,py,pz,rx,rz){
+ var c2=BABYLON.MeshBuilder.CreateCylinder(n,{height:h,diameterTop:r2*2,diameterBottom:r1*2,tessellation:10},scene);
+ c2.material=mat;c2.receiveShadows=true;sg.addShadowCaster(c2);c2.checkCollisions=true;
+ if(parent){c2.parent=parent;c2.position.set(px||0,py||0,pz||0);if(rx)c2.rotation.x=rx;if(rz)c2.rotation.z=rz}else{c2.position.set(px||0,py||0,pz||0);if(rx)c2.rotation.x=rx;if(rz)c2.rotation.z=rz}
+ return c2;
+}
 function addBld(x,z,rot,w,d,h,floors){
  var bh=th(x,z);
- var grp=new BABYLON.TransformNode("bld"+x+"_"+z,scene);
- grp.position=new BABYLON.Vector3(x,bh,z);grp.rotation.y=rot;
- BLDSTORE.push({x:x,z:z,w:w,d:d,h:h,rot:rot,top:bh+h,grp:grp});
- // Main body
- mkBox("bw_"+x+"_"+z,w,h,d,wallMat,grp,0,h/2,0);
- // Roof
- mkBox("br_"+x+"_"+z,w+.3,.15,d+.3,roofMat,grp,0,h+.08,0);
- // Windows
+ var g=new BABYLON.TransformNode("bld",scene);g.position.set(x,bh,z);g.rotation.y=rot;
+ BLD.push({x:x,z:z,w:w,d:d,h:h,rot:rot,top:bh+h});
+ box("bw",w,h,d,wallM,g,0,h/2,0);
+ box("br",w+.3,.15,d+.3,roofM,g,0,h+.08,0);
  var fh=h/floors;
  for(var f=0;f<floors;f++){
-  for(var s=-1;s<=1;s+=2)for(var wi=-1;wi<=1;wi+=2){
-   mkBox("w"+f+"_"+s+"_"+wi+"_"+x+"_"+z,.08,fh*.45,1.5,winMat,grp,s*w*.35,fh*(f+.5),wi*d*.35);
-  }
-  // Floor band
-  mkBox("fb"+f+"_"+x+"_"+z,w+.1,.08,d+.1,new BABYLON.StandardMaterial("bm",scene),grp,0,fh*(f+1),0);
-  grp.getChildMeshes()[grp.getChildMeshes().length-1].material.diffuseColor=new BABYLON.Color3(.45,.5,.55);
+  for(var s=-1;s<=1;s+=2)for(var wi=-1;wi<=1;wi+=2)box("w"+f+"_"+s+"_"+wi,.08,fh*.45,1.5,winM,g,s*w*.35,fh*(f+.5),wi*d*.35);
+  box("fb"+f,w+.1,.08,d+.1,bandM,g,0,fh*(f+1),0);
  }
- // Door
- mkBox("dr_"+x+"_"+z,1.5,fh*.6,.12,darkMat,grp,0,fh*.3,d/2);
- // Steps
- for(var st=0;st<3;st++)mkBox("st"+st+"_"+x+"_"+z,.8,.08,.2-st*.05,stepMat,grp,0,.02+st*.08,d/2+.2-st*.05);
+ box("dr",1.5,fh*.6,.12,doorM,g,0,fh*.3,d/2);
+ for(var st=0;st<3;st++)box("st"+st,.8,.08,.2-st*.05,stepM,g,0,.02+st*.08,d/2+.2-st*.05);
 }
 
 addBld(-35,10,0,14,10,18,5);addBld(-18,15,.1,10,8,14,4);addBld(-50,-5,.15,20,8,10,3);
@@ -111,135 +107,125 @@ addBld(50,20,.1,10,8,10,3);addBld(-20,-60,.3,14,6,10,3);addBld(60,40,-.1,12,10,1
 addBld(-60,50,.2,16,8,12,3);addBld(10,50,.05,10,12,10,3);addBld(70,-50,.1,14,10,16,5);
 addBld(-70,-30,0,18,12,14,4);
 
-// ===== HAND-MODELED TREES (trunk+3 branches+3 foliage layers) =====
-var trunkMat=mkM("tM",new BABYLON.Color3(.4,.28,.18));
-var leafColors=[new BABYLON.Color3(.18,.42,.15),new BABYLON.Color3(.22,.48,.18),new BABYLON.Color3(.15,.38,.12)];
-
-function mkTree(x,z){
- var h=th(x,z);if(h<-1)return;
+// ===== TREES =====
+for(var tt=0;tt<80;tt++){
+ var tx=(Math.random()-.5)*200,tz=(Math.random()-.5)*200;
+ if(Math.abs(tx)<20&&Math.abs(tz)<20)continue;
+ var h=th(tx,tz);if(h<-1)continue;
  var th2=2+Math.random()*4;
- mkCyl("tr_"+x+"_"+z,.12,.18,th2,trunkMat,null,x,h+th2/2,z);
- // Branches
+ cyl("tr",.12,.18,th2,trunkM,null,tx,h+th2/2,tz);
  for(var b=0;b<3+Math.floor(Math.random()*3);b++){
   var a=Math.random()*6.28,bl=.8+Math.random()*1.5;
-  mkCyl("br_"+b+"_"+x+"_"+z,.04,.07,bl,trunkMat,null,x,h+th2*.5+b*.3,z,Math.cos(a)*.6,Math.sin(a)*.6);
+  cyl("br_"+b,.04,.07,bl,new BABYLON.StandardMaterial("tm",scene),null,tx,h+th2*.5+b*.3,tz,Math.cos(a)*.6,Math.sin(a)*.6);
  }
- // Foliage
  for(var l=0;l<3;l++){
-  var r=1.2+Math.random()*.8;
-  var lf=mkBox("lf_"+l+"_"+x+"_"+z,r,r*.7,r,mkM("lfM"+l,leafColors[l]),null,x+Math.sin(l)*.2,h+th2*.5+l*.8,z+Math.cos(l)*.2);
+  var r=1+Math.random()*.8;
+  box("lf_"+l,r,r*.7,r,leafM[l],null,tx+Math.sin(l)*.2,h+th2*.5+l*.8,tz+Math.cos(l)*.2);
  }
 }
-for(var tt=0;tt<100;tt++){var tx=(Math.random()-.5)*180,tz=(Math.random()-.5)*180;if(Math.abs(tx)<18&&Math.abs(tz)<18)continue;mkTree(tx,tz)}
 
 // ===== CONTAINERS =====
-var ctMat=mkM("ctM",new BABYLON.Color3(.75,.35,.25));
 for(var ct=0;ct<18;ct++){
- var cx=-30+Math.random()*80,cz=-45+Math.random()*70,ch=th(cx,cz);
- var ctr=mkBox("ct_"+ct,2.2,2.5,6,ctMat,null,cx,ch+1.25,cz,Math.random()*6.28);
- for(var r=0;r<5;r++){mkBox("ctr_"+ct+"_"+r,2.3,.05,.08,mkM("cm",new BABYLON.Color3(.55,.25,.15)),ctr,0,-1.2+r*.5,0)}
+ var cx=-35+Math.random()*90,cz=-50+Math.random()*80,ch=th(cx,cz),ry=Math.random()*6.28;
+ box("ct",2.2,2.5,6,contM,null,cx,ch+1.25,cz,ry);
 }
 
 // ===== SAND BAGS =====
-var bagMat=mkM("bgM",new BABYLON.Color3(.6,.5,.35));
-for(var sb=0;sb<25;sb++){var sx=-40+Math.random()*100,sz=-60+Math.random()*90;mkBox("bag_"+sb,.5,.3,.8,bagMat,null,sx,th(sx,sz)+.15,sz,Math.random()*6.28)}
+for(var sb=0;sb<20;sb++){var sx=-40+Math.random()*100,sz=-60+Math.random()*90;box("bg",.5,.3,.8,bagM,null,sx,th(sx,sz)+.15,sz,Math.random()*6.28)}
 
-// ===== ENEMIES (15 detailed soldier models) =====
-var enemies=[],killCount=0;
-var bodyMat=mkM("bdM",new BABYLON.Color3(.85,.13,.13));
-var headMat=mkM("hdM",new BABYLON.Color3(.8,.1,.1));
-var legMat=mkM("lgM",new BABYLON.Color3(.2,.2,.25));
-
+// ===== ENEMIES =====
+var enemies=[],kills=0;
 function mkEnemy(x,z){
- var h=th(x,z);
- var g=new BABYLON.TransformNode("en_"+x+"_"+z,scene);g.position.set(x,h,z);
- mkCyl("el_"+x+"_"+z,.08,.1,1.5,legMat,g,-.2,-.6,0);
- mkCyl("er_"+x+"_"+z,.08,.1,1.5,legMat,g,.2,-.6,0);
- mkBox("eb_"+x+"_"+z,.6,.8,.3,bodyMat,g,0,.7,0);
- mkBox("eh_"+x+"_"+z,.35,.35,.35,headMat,g,0,1.3,0);
- var am=mkCyl("ea_"+x+"_"+z,.05,.06,.9,mkM("amM",new BABYLON.Color3(.75,.1,.1)),g,-.4,1,0,0,.3);
- var am2=mkCyl("ea2_"+x+"_"+z,.05,.06,.9,mkM("amM",new BABYLON.Color3(.75,.1,.1)),g,.4,1,0,0,-.3);
+ var h=th(x,z),g=new BABYLON.TransformNode("en",scene);g.position.set(x,h,z);
+ cyl("el",.08,.1,1.5,enemyL,g,-.2,-.6,0);cyl("er",.08,.1,1.5,enemyL,g,.2,-.6,0);
+ box("eb",.6,.8,.3,enemyM,g,0,.7,0);
+ box("eh",.35,.35,.35,enemyH,g,0,1.3,0);
+ cyl("ea",.05,.06,.9,mkM("am",.72,.1,.1),g,-.4,1,0,0,.3);
+ cyl("ea2",.05,.06,.9,mkM("am2",.72,.1,.1),g,.4,1,0,0,-.3);
  return g;
 }
-for(var e=0;e<15;e++){var ex=-50+Math.random()*120,ez=-60+Math.random()*100;if(Math.abs(ex)<5&&Math.abs(ez)<5){ex+=8;ez+=8}var en=mkEnemy(ex,ez);enemies.push({node:en,alive:true,x:ex,z:ez})}
+for(var e=0;e<15;e++){var ex=-55+Math.random()*130,ez=-65+Math.random()*110;if(Math.abs(ex)<5&&Math.abs(ez)<5){ex+=10;ez+=10}enemies.push({node:mkEnemy(ex,ez),alive:true,x:ex,z:ez})}
 
-// ===== FPS GUN MODEL =====
-var gun=new BABYLON.TransformNode("gun",scene);gun.parent=cam;gun.position=new BABYLON.Vector3(.25,-.3,-.5);
-var gnM=mkM("gnM",new BABYLON.Color3(.15,.15,.15));
-mkCyl("gnBr",.025,.03,1,gnM,gun,0,.02,-.4,Math.PI/2);
-mkBox("gnRc",.1,.18,.4,gnM,gun,0,-.03,0);
-mkBox("gnSt",.06,.12,.35,gnM,gun,0,-.01,.25);
-mkCyl("gnGp",.03,.04,.25,gnM,gun,0,-.18,.03);
-mkBox("gnMg",.04,.2,.06,mkM("mgM",new BABYLON.Color3(.08,.08,.08)),gun,0,-.2,.1);
+// ===== FPS GUN =====
+var gun=new BABYLON.TransformNode("gun",scene);gun.parent=cam;gun.position.set(.25,-.3,-.5);
+cyl("gB",.025,.03,1,gunM,gun,0,.02,-.4,Math.PI/2);
+box("gR",.1,.18,.4,gunM,gun,0,-.03,0);
+box("gS",.06,.12,.35,gunM,gun,0,-.01,.25);
+cyl("gG",.03,.04,.25,gunM,gun,0,-.18,.03);
+box("gM",.04,.2,.06,mkM("gD",.08,.08,.08),gun,0,-.2,.1);
+var mz=new BABYLON.PointLight("mz",new BABYLON.Vector3(0,0,0),scene);
+mz.diffuse=new BABYLON.Color3(1,.55,.1);mz.intensity=0;mz.parent=gun;mz.position.set(0,.02,-1);
 
-var mzFlash=new BABYLON.PointLight("mz",new BABYLON.Vector3(0,0,0),scene);
-mzFlash.diffuse=new BABYLON.Color3(1,.6,.1);mzFlash.intensity=0;mzFlash.parent=gun;mzFlash.position.set(0,.02,-1);
-
-// ===== COLLISION =====
+// ===== COLLISION LOOP =====
 scene.registerBeforeRender(function(){
  var h=th(cam.position.x,cam.position.z);
- for(var b=0;b<BLDSTORE.length;b++){
-  var bb=BLDSTORE[b];var dx=cam.position.x-bb.x,dz=cam.position.z-bb.z;
+ for(var b=0;b<BLD.length;b++){
+  var bb=BLD[b],dx=cam.position.x-bb.x,dz=cam.position.z-bb.z;
   var lx=Math.cos(-bb.rot)*dx-Math.sin(-bb.rot)*dz,lz=Math.sin(-bb.rot)*dx+Math.cos(-bb.rot)*dz;
-  if(Math.abs(lx)<bb.w/2+.6&&Math.abs(lz)<bb.d/2+.6)h=Math.max(h,bb.top);
+  if(Math.abs(lx)<bb.w/2+.7&&Math.abs(lz)<bb.d/2+.7)h=Math.max(h,bb.top);
  }
- if(cam.position.y<h+1.8)cam.position.y=h+1.8;
+ if(cam.position.y<h+1.7)cam.position.y=h+1.7;
 });
 
 // ===== CONTROLS =====
 var mv={x:0,z:0},jsA=false,jsB={x:0,y:0};
-var js=document.getElementById("joystick"),jsK=js.querySelector(".knob");
+var js=document.getElementById("js"),jsK=js.querySelector(".kn");
 var isM=/Android|iPhone|iPad/i.test(navigator.userAgent);
 
-js.addEventListener("pointerdown",function(e){jsA=true;jsB={x:e.clientX,y:e.clientY};js.setPointerCapture(e.pointerId);e.preventDefault()});
-js.addEventListener("pointermove",function(e){if(!jsA)return;var dx=e.clientX-jsB.x,dy=e.clientY-jsB.y,d=Math.sqrt(dx*dx+dy*dy);if(d>42){dx=dx/d*42;dy=dy/d*42}jsK.style.transform="translate("+dx+"px,"+dy+"px)";mv.x=dx/42;mv.z=dy/42;e.preventDefault()});
-js.addEventListener("pointerup",function(e){jsA=false;jsK.style.transform="translate(0,0)";mv.x=0;mv.z=0;e.preventDefault()});
+function jsD(e){jsA=true;jsB={x:e.clientX,y:e.clientY};js.setPointerCapture(e.pointerId);e.preventDefault()}
+function jsM(e){if(!jsA)return;var dx=e.clientX-jsB.x,dy=e.clientY-jsB.y,d=Math.sqrt(dx*dx+dy*dy);if(d>42){dx=dx/d*42;dy=dy/d*42}jsK.style.transform="translate("+dx+"px,"+dy+"px)";mv.x=dx/42;mv.z=dy/42;e.preventDefault()}
+function jsU(e){jsA=false;jsK.style.transform="translate(0,0)";mv.x=0;mv.z=0;e.preventDefault()}
+js.addEventListener("pointerdown",jsD);js.addEventListener("pointermove",jsM);js.addEventListener("pointerup",jsU);js.addEventListener("pointerleave",jsU);
 
 var fA=false,ammo=30,maxA=30,relT=0;
-document.getElementById("fire").addEventListener("pointerdown",function(e){fA=true;e.preventDefault()});
-document.getElementById("fire").addEventListener("pointerup",function(e){fA=false});
-document.getElementById("reload").addEventListener("pointerdown",function(e){if(ammo<maxA){relT=1.5;ammo=0;document.getElementById("amm2").textContent="R.."}e.preventDefault()});
+document.getElementById("f").addEventListener("pointerdown",function(e){fA=true;e.preventDefault();e.stopPropagation()});
+document.getElementById("f").addEventListener("pointerup",function(e){fA=false;e.preventDefault()});
+document.getElementById("f").addEventListener("pointerleave",function(e){fA=false});
+document.getElementById("r").addEventListener("pointerdown",function(e){if(ammo<maxA&&relT<=0){relT=1.5;ammo=0;document.getElementById("a2").textContent="R.."}e.preventDefault();e.stopPropagation()});
+
 var keys={};
-document.addEventListener("keydown",function(e){keys[e.code]=true;if(e.code==="KeyR"&&ammo<maxA){relT=1.5;ammo=0;document.getElementById("amm2").textContent="R.."}});
+document.addEventListener("keydown",function(e){keys[e.code]=true;if(e.code==="KeyR"&&ammo<maxA&&relT<=0){relT=1.5;ammo=0;document.getElementById("a2").textContent="R.."}});
 document.addEventListener("keyup",function(e){keys[e.code]=false});
-document.addEventListener("click",function(e){if(!isM&&e.target===c)engine.enterPointerlock()});
+document.addEventListener("click",function(e){if(!isM)engine.enterPointerlock()});
 engine.onPointerLockChange=function(){document.getElementById("s").style.display=engine.isPointerLock?"none":"flex"};
 
-// ===== SHOOTING =====
+// ===== SHOOT =====
 function shoot(){
- if(ammo<=0||relT>0)return;ammo--;document.getElementById("amm2").textContent=ammo;
- mzFlash.intensity=8;setTimeout(function(){mzFlash.intensity=0},50);
+ if(ammo<=0||relT>0)return;ammo--;document.getElementById("a2").textContent=ammo;
+ mz.intensity=10;setTimeout(function(){mz.intensity=0},50);
  var ray=new BABYLON.Ray(cam.position,cam.getDirection(BABYLON.Axis.Z));
- var hit=scene.pickWithRay(ray,function(m){return m.name.indexOf("gn")!==0&&m.name.indexOf("ctr")!==0&&m.name.indexOf("bag")!==0});
+ var hit=scene.pickWithRay(ray,function(m){return !m.name.indexOf("g")===0});
  if(!hit||!hit.pickedMesh)return;
- var s2=BABYLON.MeshBuilder.CreateSphere("hit",{diameter:.15},scene);s2.position=hit.pickedPoint;setTimeout(function(){s2.dispose()},200);
- for(var e2=0;e2<enemies.length;e2++){
-  var en=enemies[e2];if(!en.alive)continue;
-  if(BABYLON.Vector3.Distance(hit.pickedPoint,en.node.position)<2.5){en.alive=false;en.node.dispose();killCount++;document.getElementById("sc2").textContent=killCount+" kills"}
+ var s=BABYLON.MeshBuilder.CreateSphere("hit",{diameter:.15},scene);s.position=hit.pickedPoint;setTimeout(function(){s.dispose()},200);
+ for(var e=0;e<enemies.length;e++){
+  var en=enemies[e];if(!en.alive)continue;
+  if(BABYLON.Vector3.Distance(hit.pickedPoint,en.node.position)<2.5){
+   en.alive=false;en.node.dispose();kills++;document.getElementById("k2").textContent=kills+" KILLS";
+   if(kills>=15)document.getElementById("k2").textContent="🏆 胜利!";
+  }
  }
- if(ammo<=0){relT=2;document.getElementById("amm2").textContent="R.."}
+ if(ammo<=0){relT=2;document.getElementById("a2").textContent="R.."}
 }
 
-// ===== MAIN LOOP =====
+// ===== LOOP =====
 var lt=0,ft=0;
 engine.runRenderLoop(function(){
  var n=performance.now(),dt=Math.min(.15,(n-(lt||n))/1000);lt=n;if(dt<.001)dt=.016;
- if(relT>0){relT-=dt;if(relT<=0){ammo=maxA;document.getElementById("amm2").textContent=ammo}}
+ if(relT>0){relT-=dt;if(relT<=0){ammo=maxA;document.getElementById("a2").textContent=ammo}}
  var mv2=new BABYLON.Vector3(0,0,0);
- if(isM){
-  mv2.x=mv.x;mv2.z=mv.z;
- }else{
+ if(isM){mv2.x=mv.x;mv2.z=mv.z}else{
   var fwd=cam.getDirection(BABYLON.Axis.Z);fwd.y=0;fwd.normalize();
   var rig=BABYLON.Vector3.Cross(fwd,BABYLON.Axis.Y);
   if(keys["KeyW"]){mv2.x+=fwd.x;mv2.z+=fwd.z}if(keys["KeyS"]){mv2.x-=fwd.x;mv2.z-=fwd.z}
   if(keys["KeyA"]){mv2.x+=rig.x;mv2.z+=rig.z}if(keys["KeyD"]){mv2.x-=rig.x;mv2.z-=rig.z}
  }
- var sp2=keys["ShiftLeft"]?14:8;if(mv2.length()>.01){mv2.normalize().scaleInPlace(sp2*dt);cam.position.addInPlace(mv2)}
- if(keys["Space"]){var hh=th(cam.position.x,cam.position.z);if(Math.abs(hh+1.8-cam.position.y)<.2)cam.position.y+=.5}
+ var sp=keys["ShiftLeft"]?14:8;if(mv2.length()>.01){mv2.normalize().scaleInPlace(sp*dt);cam.position.addInPlace(mv2)}
+ var hh=th(cam.position.x,cam.position.z);if(keys["Space"]&&Math.abs(hh+1.7-cam.position.y)<.2)cam.position.y+=.5;
  if(fA||keys["Mouse0"]){ft-=dt;if(ft<=0){ft=.12;shoot()}}else ft=0;
- if(mv2.length()>.01){gun.position.y=-.3+Math.sin(n*.01)*.015;gun.position.x=.25+Math.cos(n*.008)*.008}else{gun.position.y=-.3;gun.position.x=.25}
+ if(mv2.length()>.01&&Math.abs(hh+1.7-cam.position.y)<.3){gun.position.y=-.3+Math.sin(n*.012)*.015;gun.position.x=.25+Math.cos(n*.009)*.008}else{gun.position.y=-.3;gun.position.x=.25}
  scene.render();
 });
+
 if(isM)document.getElementById("s").style.display="none";
 window.addEventListener("resize",function(){engine.resize()});
 })();</script></body></html>
