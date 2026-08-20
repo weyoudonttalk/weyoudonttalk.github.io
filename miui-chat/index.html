@@ -1,669 +1,165 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>MIUI聊天室</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIUI STUDIO 官方聊天室 - MIUI共同研发团队实时交流</title>
+<meta name="description" content="MIUI STUDIO 官方聊天室，MIUI共同研发团队实时交流平台。加入我们，与团队在线聊天、分享灵感、参与游戏研发讨论。">
+<meta name="keywords" content="MIUI,MIUI共同研发,MIUI STUDIO,聊天室,游戏研发,QQ轻应用,实时聊天">
+<meta name="robots" content="index, follow">
+<meta name="author" content="MIUI STUDIO">
+<meta property="og:title" content="MIUI STUDIO 官方聊天室">
+<meta property="og:description" content="MIUI共同研发团队实时交流平台，加入我们一起聊天。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://weyoudonttalk.github.io/miui-chat/">
+<link rel="canonical" href="https://weyoudonttalk.github.io/miui-chat/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "MIUI STUDIO",
+  "url": "https://weyoudonttalk.github.io/miui-chat/",
+  "description": "MIUI共同研发团队官方官网与实时聊天室"
+}
+</script>
 <style>
-:root{--c1:#ff6900;--c2:#ff4400;--bg:#f5f6f7}
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue',system-ui,-apple-system,sans-serif;background:var(--bg);color:#333;display:flex;flex-direction:column}
-
-.topbar{background:linear-gradient(135deg,#ff6900,#ff4400);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;z-index:10;box-shadow:0 2px 10px rgba(255,105,0,0.3)}
-.topbar .room-icon{font-size:26px;flex-shrink:0}
-.topbar .room-info{flex:1;min-width:0}
-.topbar .room-name{font-size:15px;font-weight:700}
-.topbar .room-status{font-size:10px;opacity:.85}
-.topbar .room-status .dot{width:6px;height:6px;border-radius:50%;background:#0f8;display:inline-block;margin-right:4px;animation:blink 1.5s ease infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.topbar .actions{display:flex;gap:4px;align-items:center;flex-shrink:0}
-.badge-mini{font-size:9px;padding:2px 6px;border-radius:6px;font-weight:700}
-.badge-admin{background:rgba(255,215,0,0.3);color:#fff}
-.badge-user{background:rgba(255,255,255,0.2);color:#fff}
-.tabs-row{display:flex;background:#fff;border-bottom:1px solid #e8e8e8;flex-shrink:0}
-.tabs-row button{flex:1;padding:10px;border:none;background:transparent;font-size:13px;font-weight:600;color:#999;cursor:pointer;border-bottom:2px solid transparent;transition:.2s}
-.tabs-row button.active{color:#ff6900;border-bottom-color:#ff6900}
-
-.admin-bar{display:none;padding:6px 10px;background:rgba(255,215,0,0.08);border-bottom:1px solid rgba(255,105,0,0.1);gap:4px;overflow-x:auto;flex-shrink:0}
-.admin-bar.show{display:flex}
-.admin-bar button{padding:5px 10px;border-radius:10px;border:1px solid rgba(255,105,0,0.25);background:rgba(255,105,0,0.08);color:#ff6900;font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0}
-.admin-bar button:active{background:rgba(255,105,0,0.2)}
-
-/* ===== INNER CONTAINER ===== */
-.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
-.panel{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column}
-.panel[hidden]{display:none}
-
-.msgs{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:#f0f0f2;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;min-height:0}
-.msgs::-webkit-scrollbar{width:3px}
-.msgs::-webkit-scrollbar-thumb{background:rgba(255,105,0,0.15);border-radius:3px}
-.msg{max-width:78%;padding:9px 12px;border-radius:14px;font-size:14px;line-height:1.55;word-break:break-word;position:relative;animation:msgIn .25s ease}
-@keyframes msgIn{from{opacity:0;transform:translateY(8px)}}
-.msg.left{align-self:flex-start;background:#fff;color:#333;border-bottom-left-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
-.msg.right{align-self:flex-end;background:#ff6900;color:#fff;border-bottom-right-radius:3px}
-.msg.admin-msg{box-shadow:0 0 10px rgba(255,215,0,0.15)}
-.msg.admin-msg.right{background:linear-gradient(135deg,#b8860b,#e8a020);border:1.5px solid rgba(255,215,0,0.3)}
-.msg.admin-msg.left{background:#fffbe6;border:1.5px solid rgba(255,215,0,0.2)}
-.msg.admin-msg::after{content:'👑';position:absolute;top:-8px;right:-6px;font-size:11px;filter:drop-shadow(0 0 3px rgba(255,215,0,0.5))}
-.msg .nick{font-size:10px;margin-bottom:2px;display:flex;align-items:center;gap:3px;opacity:.8}
-.msg.left .nick{color:#ff6900}
-.msg .nick .badge{display:inline-block;padding:1px 5px;border-radius:4px;font-size:8px;font-weight:700}
-.badge-bot{background:rgba(0,180,255,0.12);color:#00a0e0;border:1px solid rgba(0,180,255,0.25)}
-.badge-admin{background:rgba(255,180,0,0.15);color:#8b7300;border:1px solid rgba(255,180,0,0.3)}
-.msg .time{font-size:9px;opacity:.5;margin-top:3px;text-align:right}
-.msg .msg-img{max-width:100%;max-height:200px;border-radius:8px;margin-top:4px;cursor:pointer;display:block}
-.msg .msg-video{max-width:100%;max-height:200px;border-radius:8px;margin-top:4px}
-.msg.system{align-self:center;background:transparent;color:#aaa;font-size:11px;text-align:center;padding:4px 14px;max-width:92%}
-
-/* ===== FORUM PANEL ===== */
-.forum-panel{flex:1;overflow-y:auto;padding:12px;background:#f5f6f7;-webkit-overflow-scrolling:touch}
-.forum-cat{font-size:12px;color:#999;font-weight:700;padding:8px 0 4px}
-.forum-post{display:flex;gap:10px;padding:12px;margin-bottom:8px;border-radius:12px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.04);cursor:pointer;transition:.15s}
-.forum-post:active{background:#fff5f0}
-.forum-post .fp-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:rgba(255,105,0,0.08)}
-.forum-post .fp-body{flex:1;min-width:0}
-.forum-post .fp-title{font-size:13px;font-weight:600;color:#333;margin-bottom:3px}
-.forum-post .fp-meta{font-size:10px;color:#999;display:flex;gap:10px}
-.forum-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
-.forum-tag{padding:2px 8px;border-radius:6px;font-size:9px;font-weight:700;background:rgba(255,105,0,0.08);color:#ff6900;border:1px solid rgba(255,105,0,0.15)}
-
-/* ===== MUSIC BAR (between msgs and input) ===== */
-.music-bar{flex-shrink:0;background:#1a1a1a;color:#fff;padding:6px 12px;display:flex;align-items:center;gap:8px;border-top:1px solid #333;min-height:44px;transition:.3s}
-.music-bar.hidden{display:none}
-.music-bar .music-icon{font-size:18px;animation:spin 3s linear infinite paused}
-.music-bar.playing .music-icon{animation-play-state:running}
-@keyframes spin{to{transform:rotate(360deg)}}
-.music-bar .music-info{flex:1;min-width:0}
-.music-bar .music-title{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.music-bar .music-artist{font-size:10px;color:#888}
-.music-bar .music-ctrl{display:flex;gap:6px}
-.music-bar .music-ctrl button{width:28px;height:28px;border-radius:50%;border:none;background:rgba(255,255,255,0.1);color:#fff;font-size:12px;cursor:pointer;flex-shrink:0}
-.music-bar .music-ctrl button:active{background:rgba(255,105,0,0.4)}
-
-/* ===== INPUT (always at bottom) ===== */
-.input-area{flex-shrink:0;background:#fff;border-top:1px solid #e8e8e8;padding:6px 8px}
-.tools-row{display:flex;gap:2px;overflow-x:auto;padding:2px 0}
-.tools-row::-webkit-scrollbar{display:none}
-.tool-btn{width:30px;height:30px;border-radius:6px;border:none;background:#f0f0f2;font-size:15px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.tool-btn:active{background:#e8e8e8;transform:scale(0.9)}
-.tool-btn.music-on{background:rgba(255,105,0,0.15);color:#ff6900}
-.input-row{display:flex;gap:6px;align-items:center}
-.input-row input{flex:1;padding:10px 14px;border-radius:20px;border:1px solid #e0e0e0;background:#f8f8f8;font-size:14px;outline:none}
-.input-row input:focus{border-color:#ff6900;background:#fff}
-.input-row input::placeholder{color:#bbb}
-.send-btn{width:36px;height:36px;border-radius:50%;border:none;background:linear-gradient(135deg,#ff6900,#ff4400);color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 8px rgba(255,105,0,0.3)}
-.send-btn:active{transform:scale(0.9)}
-
-.emoji-panel{display:none;background:#fff;border-top:1px solid #e8e8e8;padding:8px;max-height:200px;overflow-y:auto;flex-shrink:0}
-.emoji-panel.show{display:block}
-.emoji-tabs{display:flex;gap:2px;margin-bottom:6px;overflow-x:auto}
-.emoji-tab{padding:5px 10px;border-radius:8px;border:1px solid transparent;background:transparent;font-size:11px;cursor:pointer;color:#999;font-weight:600;white-space:nowrap;flex-shrink:0}
-.emoji-tab.active{background:#fff0e6;color:#ff6900;border-color:rgba(255,105,0,0.2)}
-.emoji-grid{display:flex;flex-wrap:wrap;gap:3px}
-.emoji-item{width:37px;height:37px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;border-radius:6px;border:none;background:transparent;line-height:1}
-.emoji-item:active{background:#fff0e6;transform:scale(1.3)}
-
-.login-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:1000}
-.login-box{width:88vw;max-width:320px;background:#fff;border-radius:18px;padding:28px 22px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,0.3)}
-.login-box .icon{font-size:50px;margin-bottom:8px}
-.login-box h2{font-size:18px;font-weight:800;margin-bottom:6px}
-.login-box .sub{font-size:11px;color:#999;margin-bottom:16px}
-.login-box input{width:100%;padding:12px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:14px;text-align:center;outline:none;background:#fafafa;margin-bottom:8px}
-.login-box input:focus{border-color:#ff6900}
-.login-box .login-btn{width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,#ff6900,#ff4400);color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px}
-.login-box .login-btn:active{transform:scale(0.97)}
-.login-box .hint{font-size:10px;color:#bbb;margin-top:10px;line-height:1.6}
-#loginError{color:#ff4444;font-size:11px;margin-bottom:4px;display:none}
-
-.media-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);display:none;align-items:center;justify-content:center;z-index:9999}
-.media-modal.show{display:flex}
-.media-modal img,.media-modal video{max-width:95vw;max-height:85vh;border-radius:8px}
-.media-modal .close{position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.2);color:#fff;border:none;font-size:18px;cursor:pointer}
-
-.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);padding:8px 20px;border-radius:18px;font-size:12px;font-weight:600;z-index:10000;opacity:0;transition:.3s;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,0.15)}
-.toast.show{opacity:1}
-.toast.info{background:#333;color:#fff}
-.toast.success{background:#ff6900;color:#fff}
-.toast.error{background:#ff4444;color:#fff}
-
-/* forum detail */
-.forum-detail{position:fixed;top:0;left:0;right:0;bottom:0;background:#f5f6f7;z-index:500;overflow-y:auto;display:none;flex-direction:column}
-.forum-detail.show{display:flex}
-.forum-detail .fd-header{padding:12px 14px;background:#fff;display:flex;align-items:center;gap:10px;border-bottom:1px solid #e8e8e8;flex-shrink:0}
-.forum-detail .fd-header .back{font-size:18px;cursor:pointer;color:#ff6900}
-.forum-detail .fd-header .fd-title{font-size:15px;font-weight:700;flex:1}
-.forum-detail .fd-body{flex:1;padding:16px;overflow-y:auto}
-.forum-detail .fd-body h3{font-size:16px;margin-bottom:10px}
-.forum-detail .fd-body p{font-size:13px;color:#555;line-height:1.8}
-.fd-comments{margin-top:16px}
-.fd-comment{padding:10px 12px;background:#fff;border-radius:10px;margin-bottom:8px;font-size:12px;line-height:1.6}
-.fd-comment .fc-author{font-weight:700;color:#ff6900;font-size:11px;margin-bottom:2px}
-.fd-comment .fc-text{color:#555}
+  :root{
+    --bg:#0a0e1a; --card:#131a2e; --line:#22304d;
+    --txt:#e6ecff; --sub:#8a94b8; --acc:#4d7cff; --acc2:#22d3ee;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--txt);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;min-height:100vh}
+  .wrap{max-width:820px;margin:0 auto;padding:24px 16px 60px}
+  header{text-align:center;padding:32px 0 20px}
+  header h1{font-size:28px;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  header p{color:var(--sub);margin-top:8px;font-size:14px}
+  .chat{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .msg-box{height:56vh;overflow-y:auto;padding:16px}
+  .msg{display:flex;margin-bottom:14px;animation:pop .2s ease}
+  .msg .ava{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0}
+  .msg .body{margin-left:10px;max-width:78%}
+  .msg .name{font-size:12px;color:var(--acc2);margin-bottom:3px}
+  .msg .txt{background:#1b2440;padding:9px 13px;border-radius:4px 12px 12px 12px;font-size:15px;line-height:1.5;word-break:break-word}
+  .msg.me{flex-direction:row-reverse}
+  .msg.me .body{margin-left:0;margin-right:10px;display:flex;flex-direction:column;align-items:flex-end}
+  .msg.me .txt{background:var(--acc);border-radius:12px 4px 12px 12px}
+  .msg.me .name{color:#c3d3ff}
+  .input-bar{display:flex;gap:10px;padding:12px;border-top:1px solid var(--line);background:#0f1526}
+  .input-bar input{flex:1;background:#1b2440;border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--txt);font-size:15px;outline:none}
+  .input-bar input:focus{border-color:var(--acc)}
+  .input-bar button{background:linear-gradient(90deg,var(--acc),var(--acc2));border:none;border-radius:10px;padding:0 22px;color:#fff;font-weight:700;font-size:15px;cursor:pointer}
+  .input-bar button:active{opacity:.85}
+  .status{text-align:center;font-size:12px;color:var(--sub);padding:8px 0}
+  .status.on{color:#35d07f}
+  @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  footer{text-align:center;color:var(--sub);font-size:12px;margin-top:24px;line-height:1.8}
+  footer a{color:var(--acc2)}
 </style>
 </head>
 <body>
+<div class="wrap">
+  <header>
+    <h1>MIUI STUDIO 聊天室</h1>
+    <p>MIUI共同研发团队 · 实时交流</p>
+  </header>
 
-<div class="topbar">
-  <span class="room-icon">⚙️</span>
-  <div class="room-info"><div class="room-name">MIUI聊天室</div><div class="room-status"><span class="dot"></span><span id="onlineCount">群主+23成员+🤖小Q = 25人在线</span></div></div>
-  <div class="actions">
-    <span id="adminBadgeEl" style="display:none" class="badge-mini badge-admin">👑群主</span>
-    <span id="userBadgeEl" style="display:none" class="badge-mini badge-user"></span>
-    <span onclick="showLogin()" id="loginIcon" style="font-size:18px;cursor:pointer">🔑</span>
-    <span onclick="doLogout()" id="logoutIcon" style="display:none;font-size:18px;cursor:pointer">🔓</span>
-  </div>
-</div>
-
-<div class="tabs-row">
-  <button class="active" onclick="switchPanel('chat',this)">💬 聊天</button>
-  <button onclick="switchPanel('forum',this)">📋 技术论坛</button>
-</div>
-
-<div class="admin-bar" id="adminBar">
-  <button onclick="adminAnnounce()">📢公告</button>
-  <button onclick="adminClear()">🗑️清屏</button>
-  <button onclick="adminMute()">🔇禁言</button>
-  <button onclick="adminKickNotice()">⚠️移出</button>
-  <button onclick="adminWelcome()">🎉迎新</button>
-  <button class="danger" onclick="adminDeleteLast()">❌删最后</button>
-</div>
-
-<div class="main-area">
-  <!-- CHAT PANEL -->
-  <div class="panel" id="chatPanel">
-    <div class="msgs" id="msgs">
-      <div class="msg system">⚙️ 欢迎来到 MIUI聊天室！</div>
-      <div class="msg system">👋 群主+23成员+🤖小Q = 25人在线</div>
-      <div class="msg system">🔑 右上角登录 · 😊 表情包 · 📷发图 · 🎬发视频 · 🎵听歌</div>
-      <div class="msg system">🤖 @小Q 召唤AI · 每5分钟小Q自动巡检</div>
-    </div>
-    <div class="music-bar hidden" id="musicBar">
-      <span class="music-icon" id="musicIcon">🎵</span>
-      <div class="music-info"><div class="music-title" id="musicTitle">未播放</div><div class="music-artist" id="musicArtist">-</div></div>
-      <div class="music-ctrl">
-        <button onclick="prevMusic()">⏮</button>
-        <button onclick="toggleMusic()" id="musicPlayBtn">▶️</button>
-        <button onclick="nextMusic()">⏭</button>
-      </div>
-    </div>
-    <div class="emoji-panel" id="emojiPanel">
-      <div class="emoji-tabs" id="emojiTabs"></div>
-      <div class="emoji-grid" id="emojiGrid"></div>
-    </div>
-    <div class="input-area">
-      <div class="tools-row">
-        <button class="tool-btn" onclick="toggleEmoji()" title="表情">😊</button>
-        <button class="tool-btn" onclick="document.getElementById('imgInput').click()" title="图片">📷</button>
-        <button class="tool-btn" onclick="sendVideoDialog()" title="视频">🎬</button>
-        <button class="tool-btn" id="musicToggleBtn" onclick="toggleMusicPanel()" title="音乐">🎵</button>
-        <span style="flex:1"></span>
-        <span style="font-size:9px;color:#bbb;align-self:center;white-space:nowrap" id="inputHint">🔑先登录</span>
-      </div>
-      <div class="input-row">
-        <input type="text" id="chatInput" placeholder="说点什么... @小Q召唤AI" maxlength="500" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}" oninput="handleInput()">
-        <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="sendImage(this)">
-        <button class="send-btn" onclick="sendMsg()">➤</button>
-      </div>
+  <div class="chat">
+    <div class="status" id="status">连接中...</div>
+    <div class="msg-box" id="box"></div>
+    <div class="input-bar">
+      <input id="nameInput" placeholder="你的昵称" maxlength="12">
+      <input id="msgInput" placeholder="说点什么..." maxlength="300">
+      <button id="send">发送</button>
     </div>
   </div>
 
-  <!-- FORUM PANEL -->
-  <div class="panel" id="forumPanel" hidden>
-    <div class="forum-panel" id="forumList">
-      <!-- Categories will be rendered by JS -->
-    </div>
-  </div>
+  <footer>
+    MIUI STUDIO 官方聊天室 · 一起搞游戏研发 🎮<br>
+    <a href="https://weyoudonttalk.github.io/miui-studio/">返回官网首页</a>
+  </footer>
 </div>
 
-<div class="login-overlay" id="loginOverlay" style="display:none" onclick="if(event.target===this)this.style.display='none'">
-  <div class="login-box" onclick="event.stopPropagation()">
-    <div class="icon">⚙️</div><h2>加入 MIUI聊天室</h2><div class="sub">输入昵称和密码进入</div>
-    <input type="text" id="loginNick" placeholder="👤 你的昵称" maxlength="16" autocomplete="off">
-    <input type="password" id="loginPw" placeholder="🔑 密码（群主输入）" maxlength="20" autocomplete="off">
-    <p id="loginError"></p>
-    <button class="login-btn" onclick="doLogin()">🚀 进入聊天室</button>
-    <div class="hint">⚙️ MIUI技术交流群专用 · 25名成员<br>👑 群主登录后可管理聊天室</div>
-  </div>
-</div>
-
-<div class="media-modal" id="mediaModal" onclick="closeMedia()">
-  <button class="close" onclick="closeMedia()">✕</button>
-  <div id="mediaContent"></div>
-</div>
-
-<div class="forum-detail" id="forumDetail">
-  <div class="fd-header">
-    <span class="back" onclick="closeForumDetail()">←</span>
-    <div class="fd-title" id="fdTitle"></div>
-  </div>
-  <div class="fd-body" id="fdBody"></div>
-</div>
-
-<div class="toast" id="toast"></div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ====== CONFIG ======
-const ADMIN_PW='870529';
-const CHAT_API='https://jsonblob.com/api/jsonBlob/019fa387-ce7a-7764-81c0-fbf7b93e931b';
-const AI_URL='https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions';
+  const SUPABASE_URL = "https://paovashswyzcunthhkvt.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_-yxNhPM-yJC5YX0TwgpKrQ_dsQ3N3LI";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ====== STATE ======
-let user=null,isAdmin=false,lastMsgId=0,pollTimer=null,autoTimer=null,muteUntil=0,lastAICall=0;
-let musicAudio=null,musicPlaying=false,musicIdx=-1;
-const MUSIC_LIST=[
-  {t:'晴天',a:'周杰伦',u:'https://music.163.com/song/media/outer/url?id=186016.mp3'},
-  {t:'夜曲',a:'周杰伦',u:'https://music.163.com/song/media/outer/url?id=186031.mp3'},
-  {t:'不为谁而作的歌',a:'林俊杰',u:'https://music.163.com/song/media/outer/url?id=36848168.mp3'},
-  {t:'告白气球',a:'周杰伦',u:'https://music.163.com/song/media/outer/url?id=418603077.mp3'}
-];
+  const box = document.getElementById("box");
+  const status = document.getElementById("status");
+  const nameInput = document.getElementById("nameInput");
+  const msgInput = document.getElementById("msgInput");
+  const send = document.getElementById("send");
 
-// ====== EMOJI DATA (safe, widely supported) ======
-const EMOJI_CATEGORIES={
-  '😊表情':'😀😃😄😁😆😅🤣😂🙂🙃😉😊😇🥰😍🤩😘😗😚😋😛😜🤪😝🤑🤗🤭🤫🤔🤐🤨😐😑😶😏😒🙄😬🤥😌😔😪🤤😴😷🤒🤕🤢🤮🤧🥵🥶🥴😵🤯🤠🥳🥸😎🤓🧐😕😟🙁😮😯😲😳🥺😦😧😨😰😥😢😭😱😖😣😞😓😩😫🥱😤😡😠🤬',
-  '👋手势':'👋🤚✋🖐️🖖👌🤏✌️🤞🤟🤘🤙👈👉👆🖕👇👍👎✊👊🤛🤜🙌👏🤝🙏✍️💪🦶🦵💄💋👄🦷👅👂🦻👃👣👀👁️🧠🫀🫁🦴👶🧒👦👧🧑👱👨🧔👩🧓👴👵🙍🙎🙅🙆💁🙋🧏🙇🤦🤷',
-  '🐱动物':'🐶🐱🐭🐹🐰🦊🐻🐼🐨🐯🦁🐮🐷🐸🐵🙈🙉🙊🐒🐔🐧🐦🐤🐣🐥🦆🦅🦉🦇🐺🐗🐴🦄🐝🪱🐛🦋🐌🐞🐜🦟🦗🕷️🦂🐢🐍🦎🦖🦕🐙🦑🦐🦞🦀🐡🐠🐟🐬🐳🐋🦈🐊🐅🐆🦓🦍🦧🐘🦛🦏🐪🐫🦒🦘🐃🐂🐄🐎🐖🐏🐑🦙🐐🦌🐕🐩🦮🐈🐓🦃🦚🦜🦢🦩🕊️🐇🦝🦨🦡🦦🦥🐁🐀🐿️🦔',
-  '😂常用':'😂🤣😅😭🥺😡🤬👍❤️🔥💯🙏🎉👀🤔😱🫡💪🤝👋🙄😴🥰😎🫠🤯💀🤡👻🤖🎪🍉🌚🤺🤤🫣🤗🤭😏🥳',
-  '😊颜文字':'(◕‿◕) (^_^) (•‿•) (≧▽≦) (≧ω≦) (๑˃̵ᴗ˂̵)و (◍•ᴗ•◍) (✿◠‿◠) (◕ᴗ◕✿) (｡♥‿♥｡) (づ｡◕‿‿◕｡)づ (╥﹏╥) (╯°□°）╯︵┻━┻ (☞ﾟヮﾟ)☞ (ง •̀_•́)ง (⁄ ⁄•⁄ω⁄•⁄ ⁄) ( ͡° ͜ʖ ͡°) (¬‿¬) (ʘ‿ʘ) ┬┴┬┴┤(･_├┬┴┬┴ (╬ Ò﹏Ó) (ノಠ益ಠ)ノ'
-};
+  // 记住昵称
+  const savedName = localStorage.getItem("miui_nick");
+  if (savedName) nameInput.value = savedName;
 
-// ====== FORUM DATA ======
-const FORUM_POSTS=[
-  {id:1,cat:'MIUI刷机',title:'【教程】MIUI系统精简与优化完整指南',author:'系统玩家',time:'2天前',replies:42,tags:['MIUI','教程','优化'],content:'<h3>MIUI系统精简与优化指南</h3><p>一、开发者选项开启方法：设置→关于手机→连续点击MIUI版本7次</p><p>二、性能优化：</p><p>1. 关闭系统动画：开发者选项→窗口动画缩放/过渡动画缩放/动画程序时长缩放→全部改为0.5x</p><p>2. 强制GPU渲染：可提升界面流畅度</p><p>三、电池优化：</p><p>1. 关闭不必要的自启动应用</p><p>2. 使用省电模式可延长续航2-3小时</p><p><b>⚠️ 注意：不要随意卸载系统应用，可能导致无法开机！</b></p>',comments:[{a:'刷机达人',t:'感谢分享！关了动画确实流畅了好多 👍'},{a:'MIUI玩家',t:'补充：ADB卸载系统应用更安全，推荐搞机工具箱'}]},
-  {id:2,cat:'MIUI刷机',title:'【求助】红米手机刷机后卡在开机界面怎么办',author:'小白求助',time:'1天前',replies:56,tags:['求助','刷机','救砖'],content:'<h3>刷机卡开机界面解决方案</h3><p>常见原因：</p><p>1. ROM包不匹配机型</p><p>2. 刷机过程中断</p><p>3. 未清除数据</p><p><b>解决方法：</b></p><p>① 长按电源键+音量减键10秒强制重启</p><p>② 进入Fastboot模式，重新线刷官方包</p><p>③ 进入Recovery模式，清除全部数据后重启</p><p>④ 如仍无法解决，建议售后检测</p>',comments:[{a:'技术大佬',t:'先确认是不是国际版刷国行的问题，跨版本容易出现'},{a:'刷机爱好者',t:'用小米助手线刷最稳，建议下载官方完整包'}]},
-  {id:3,cat:'数码评测',title:'【测评】2026年千元机性能排行榜',author:'数码控',time:'3天前',replies:128,tags:['评测','性能','推荐'],content:'<h3>2026千元机性能排行</h3><p>🥇 红米Note 14 Pro：天玑8400，跑分85万，性价比之王</p><p>🥈 realme GT Neo7：骁龙8s Gen3，跑分90万</p><p>🥉 iQOO Z10 Turbo：天玑8400-Ultra，跑分88万</p><p>总结：千元机性能已超越两年前的旗舰机，日常使用完全够用。</p>',comments:[{a:'手机玩家',t:'红米真的香，性价比没得说'},{a:'等等党',t:'建议等618，应该还能降200'}]},
-  {id:4,cat:'数码评测',title:'【分享】MIUI主题破解与美化工具合集',author:'主题大师',time:'4天前',replies:211,tags:['资源','主题','工具'],content:'<h3>MIUI主题美化工具推荐</h3><p>🔧 MIUI主题编辑器：官方工具，可自定义锁屏/图标/状态栏</p><p>🎨 个性主题：应用商店可下载第三方主题</p><p>📱 桌面美化：搭配第三方桌面应用实现更多效果</p><p><b>声明：本贴仅分享美化经验，请尊重版权！</b></p>',comments:[{a:'美化控',t:'MIUI的主题自由度确实很高 👍'},{a:'设计师',t:'分享一个技巧：长按桌面空白处可以快速切换主题'}]},
-  {id:5,cat:'技术讨论','title:'【讨论】AI技术在手机上的应用前景',author:'极客玩家','time':'5天前',replies:89,tags:['AI','技术','讨论'],content:'<h3>AI技术在手机上的应用</h3><p>1. 智能助手：语音交互、智能回复</p><p>2. 影像优化：AI美颜、夜景增强、物体识别</p><p>3. 电池管理：AI调度延长续航</p><p>4. 个性化推荐：根据使用习惯优化体验</p><p>MIUI的AI应用已经非常成熟，期待更多创新功能！</p>',comments:[{a:'AI爱好者',t:'现在手机AI越来越强了，拍照和续航确实提升明显'},{a:'开发者',t:'希望能开放更多AI接口给开发者'}]},
-  {id:6,cat:'技术讨论','title':'【分享】群聊大厅源码已开源，欢迎pr！',author:'MIUI轻应用创始人',time:'7天前',replies:56,tags:['开源','前端','HTML'],content:'<h3>群聊大厅项目开源</h3><p>GitHub地址：weyoudonttalk.github.io</p><p>技术栈：纯HTML+CSS+JS，零依赖，轻量级</p><p>欢迎大家Fork和提交PR！</p><p>功能包括：QQ聊天室、技术论坛、音乐播放器、表情包系统等</p>',comments:[{a:'前端萌新',t:'纯前端不用框架，大佬牛逼！'},{a:'贡献者',t:'已Fork，准备加个主题切换功能'}]},
-  {id:7,cat:'资源分享','title:'【资源】MIUI 15 所有机型刷机包下载汇总',author:'刷机狂魔',time:'2天前',replies:345,tags:['资源','刷机包','下载'],content:'<h3>MIUI 15 刷机包下载</h3><p>⚠️ 刷机有风险，操作需谨慎！</p><p>📱 小米14系列：miui.com/download</p><p>📱 红米K系列：miui.com/download</p><p>📱 小米Pad系列：miui.com/download</p><p>建议使用官方渠道下载，确保安全。</p>',comments:[{a:'小白',t:'求红米K70的包，在线等！'},{a:'大神',t:'官网就有，别从第三方下载，容易中毒'}]},
-  {id:8,cat:'资源分享','title:'【工具】搞机工具箱v6.0 - MIUI最强辅助工具',author:'工具达人',time:'6天前',replies:167,tags:['工具','ADB','辅助'],content:'<h3>搞机工具箱 v6.0</h3><p>功能：</p><p>1. 一键解锁Bootloader</p><p>2. ADB命令快捷执行</p><p>3. 应用管理/冻结/卸载</p><p>4. 系统参数修改</p><p>5. 刷机辅助</p><p><b>下载方式：群文件或GitHub</b></p>',comments:[{a:'工具控',t:'太好用了，强烈推荐！'},{a:'新人',t:'教程能再详细一点吗？不太会用ADB'}]}
-];
+  function scrollBottom() { box.scrollTop = box.scrollHeight; }
 
-// ====== INIT ======
-(function(){
-  var s=localStorage.getItem('miui_chat_v22');
-  if(s){try{var u=JSON.parse(s);user=u;isAdmin=u.isAdmin;updateUI();startPolling();startAutoMod()}catch(e){}}
-  renderEmojiTabs();
-  switchEmojiTab(Object.keys(EMOJI_CATEGORIES)[0],null);
-  renderForum();
-})();
+  function renderMsg(m, isMe) {
+    const div = document.createElement("div");
+    div.className = "msg" + (isMe ? " me" : "");
+    const initial = (m.username || "客").slice(0, 1);
+    div.innerHTML =
+      '<div class="ava">' + initial + '</div>' +
+      '<div class="body">' +
+        '<div class="name">' + (m.username || "游客") + '</div>' +
+        '<div class="txt"></div>' +
+      '</div>';
+    div.querySelector(".txt").textContent = m.content;
+    box.appendChild(div);
+    scrollBottom();
+  }
 
-// ====== PANEL SWITCH ======
-function switchPanel(panel,btn){
-  document.querySelectorAll('.tabs-row button').forEach(function(b){b.classList.remove('active')});
-  btn.classList.add('active');
-  document.getElementById('chatPanel').hidden=(panel!=='chat');
-  document.getElementById('forumPanel').hidden=(panel!=='forum');
-  if(panel==='forum')renderForum();
-  if(panel==='chat'){var m=document.getElementById('msgs');m.scrollTop=m.scrollHeight}
-}
+  // 拉取历史消息
+  async function loadHistory() {
+    const { data, error } = await supabase
+      .from("messages")
+      .select("*")
+      .order("id", { ascending: false })
+      .limit(50);
+    if (error) { console.error(error); return; }
+    const me = nameInput.value.trim();
+    [...data].reverse().forEach(m => renderMsg(m, m.username === me));
+  }
 
-// ====== FORUM ======
-function renderForum(){
-  var cats={};
-  FORUM_POSTS.forEach(function(p){
-    if(!cats[p.cat])cats[p.cat]=[];
-    cats[p.cat].push(p);
-  });
-  var html='',hotPosts='';
-  // Hot posts
-  var sorted=FORUM_POSTS.slice().sort(function(a,b){return b.replies-a.replies}).slice(0,3);
-  html+='<div class="forum-cat">🔥 热门帖子</div>';
-  sorted.forEach(function(p){
-    html+=renderFP(p);
-  });
-  // Categories
-  Object.keys(cats).forEach(function(cat){
-    html+='<div class="forum-cat">⚙️ '+cat+'</div>';
-    cats[cat].forEach(function(p){html+=renderFP(p)});
-  });
-  document.getElementById('forumList').innerHTML=html;
-}
-function renderFP(p){
-  var avatarEmojis={'MIUI刷机':'📱','数码评测':'💻','技术讨论':'🔧','资源分享':'📦'};
-  var av=avatarEmojis[p.cat]||'📋';
-  return '<div class="forum-post" onclick="openForumPost('+p.id+')"><div class="fp-avatar">'+av+'</div><div class="fp-body"><div class="fp-title">'+p.title+'</div><div class="fp-meta"><span>👤 '+p.author+'</span><span>📅 '+p.time+'</span><span>💬 '+p.replies+'回复</span></div><div class="forum-tags">'+p.tags.map(function(t){return '<span class="forum-tag">'+t+'</span>'}).join('')+'</div></div></div>';
-}
-function openForumPost(id){
-  var p=FORUM_POSTS.find(function(x){return x.id===id});
-  if(!p)return;
-  document.getElementById('fdTitle').textContent=p.title;
-  var body='<h3>'+p.title+'</h3><p style="color:#999;font-size:11px">👤 '+p.author+' · 📅 '+p.time+' · 💬 '+p.replies+'回复</p><div style="margin-top:12px">'+p.content+'</div>';
-  body+='<div class="fd-comments"><h4 style="margin-bottom:8px">💬 评论 ('+p.comments.length+')</h4>';
-  p.comments.forEach(function(c){body+='<div class="fd-comment"><div class="fc-author">'+c.a+'</div><div class="fc-text">'+c.text+'</div></div>'});
-  body+='</div>';
-  document.getElementById('fdBody').innerHTML=body;
-  document.getElementById('forumDetail').classList.add('show');
-}
-function closeForumDetail(){document.getElementById('forumDetail').classList.remove('show')}
-
-// ====== LOGIN ======
-function showLogin(){document.getElementById('loginOverlay').style.display='flex';document.getElementById('loginNick').focus()}
-function doLogin(){
-  var nick=document.getElementById('loginNick').value.trim();
-  var pw=document.getElementById('loginPw').value.trim();
-  var err=document.getElementById('loginError');
-  if(!nick){err.style.display='block';err.textContent='请输入昵称';return}
-  err.style.display='none';
-  var admin=(pw===ADMIN_PW);
-  user={nick:nick,isAdmin:admin,time:new Date().toISOString()};
-  isAdmin=admin;
-  localStorage.setItem('miui_chat_v22',JSON.stringify(user));
-  document.getElementById('loginOverlay').style.display='none';
-  updateUI();startPolling();startAutoMod();
-  toast(admin?'👑 群主 '+nick+' 上线！':'✅ '+nick+' 加入了聊天室',admin?'success':'info');
-  saveMsg({nick:nick,text:'',type:'join'});
-}
-function doLogout(){
-  if(user)saveMsg({nick:user.nick,text:'',type:'leave'});
-  user=null;isAdmin=false;localStorage.removeItem('miui_chat_v22');
-  updateUI();if(pollTimer){clearInterval(pollTimer);pollTimer=null}if(autoTimer){clearInterval(autoTimer);autoTimer=null}
-  toast('👋 已退出','info');
-}
-function updateUI(){
-  if(user){
-    document.getElementById('loginIcon').style.display='none';
-    document.getElementById('logoutIcon').style.display='inline';
-    document.getElementById('userBadgeEl').style.display='inline';
-    document.getElementById('userBadgeEl').textContent=user.nick;
-    document.getElementById('inputHint').textContent='';
-    document.getElementById('chatInput').placeholder='说点什么... @小Q召唤AI';
-    var total=isAdmin?'群主+23成员+🤖小Q':'群主+23成员+🤖小Q';
-    document.getElementById('onlineCount').textContent=total+' = 25人在线';
-    if(isAdmin){
-      document.getElementById('adminBadgeEl').style.display='inline';
-      document.getElementById('adminBar').classList.add('show');
-    }else{
-      document.getElementById('adminBadgeEl').style.display='none';
-      document.getElementById('adminBar').classList.remove('show');
+  async function init() {
+    try {
+      await loadHistory();
+      status.textContent = "已连接 · 实时聊天中";
+      status.className = "status on";
+    } catch (e) {
+      status.textContent = "连接失败，请刷新重试";
     }
-  }else{
-    document.getElementById('loginIcon').style.display='inline';
-    document.getElementById('logoutIcon').style.display='none';
-    document.getElementById('userBadgeEl').style.display='none';
-    document.getElementById('adminBadgeEl').style.display='none';
-    document.getElementById('adminBar').classList.remove('show');
-    document.getElementById('inputHint').textContent='🔑先登录';
-    document.getElementById('chatInput').placeholder='请先登录...';
-    document.getElementById('onlineCount').textContent='群主+23成员+🤖小Q = 25人在线';
+    // 订阅实时消息
+    supabase
+      .channel("chat")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => {
+          const m = payload.new;
+          const me = nameInput.value.trim();
+          renderMsg(m, m.username === me);
+        })
+      .subscribe();
   }
-}
 
-// ====== SEND MSG ======
-async function sendMsg(){
-  if(!user){toast('请先登录！','error');return}
-  if(Date.now()<muteUntil){toast('⏳ 禁言中，'+Math.ceil((muteUntil-Date.now())/1000)+'秒后再试','error');return}
-  var text=document.getElementById('chatInput').value.trim();
-  if(!text)return;
-  document.getElementById('chatInput').value='';
-  await saveMsg({nick:user.nick,text:text,type:'chat',isAdmin:isAdmin});
-  if(text.includes('@小Q')||text.includes('@小q')){
-    var q=text.replace(/@小[qQ]/g,'').trim()||'你好呀';
-    setTimeout(function(){callAI(q)},600+Math.random()*500);
+  async function doSend() {
+    const name = nameInput.value.trim() || "游客";
+    const content = msgInput.value.trim();
+    if (!content) return;
+    localStorage.setItem("miui_nick", name);
+    const { error } = await supabase
+      .from("messages")
+      .insert([{ username: name, content: content }]);
+    if (error) { alert("发送失败：" + error.message); return; }
+    msgInput.value = "";
   }
-}
-async function sendImage(input){
-  if(!user){toast('请先登录！','error');input.value='';return}
-  var f=input.files[0];if(!f)return;
-  if(f.size>8*1024*1024){toast('图片不能超过8MB','error');input.value='';return}
-  var rdr=new FileReader();
-  rdr.onload=function(e){saveMsg({nick:user.nick,text:'[图片]',img:e.target.result,type:'chat',isAdmin:isAdmin})};
-  rdr.readAsDataURL(f);input.value='';
-}
-function sendVideoDialog(){
-  if(!user){toast('请先登录！','error');return}
-  var url=prompt('🎬 粘贴视频直链（如 .mp4 链接）：');
-  if(!url||!url.trim())return;
-  saveMsg({nick:user.nick,text:'',video:url.trim(),type:'chat',isAdmin:isAdmin});
-}
 
-// ====== SAVE & RENDER ======
-async function saveMsg(msg){
-  msg.id=Date.now();msg.time=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
-  lastMsgId=msg.id;renderMsgs([msg]);
-  try{
-    var r=await fetch(CHAT_API);var d=await r.json();var msgs=d.messages||[];
-    if(msg.type==='join')msg.text='加入了聊天室';
-    if(msg.type==='leave')msg.text='离开了聊天室';
-    msgs.push(msg);
-    if(msgs.length>500)msgs=msgs.slice(-300);
-    await fetch(CHAT_API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:msgs,room:'miuichatv22'})});
-  }catch(e){}
-}
-function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
-function renderMsgs(msgs){
-  var area=document.getElementById('msgs');
-  msgs.forEach(function(m){
-    if(m.type==='join'){area.innerHTML+='<div class="msg system">👋 '+esc(m.nick)+' 加入了聊天室</div>';area.scrollTop=area.scrollHeight;return}
-    if(m.type==='leave'){area.innerHTML+='<div class="msg system">🚪 '+esc(m.nick)+' 离开了聊天室</div>';area.scrollTop=area.scrollHeight;return}
-    var isMy=(user&&m.nick===user.nick);
-    var isBot=(m.type==='bot'||m.nick==='小Q'||m.botId);
-    var isAdminMsg=m.isAdmin===true;
-    var cls=isMy?'right':'left';
-    if(isAdminMsg&&!isBot)cls+=' admin-msg';
-    var nickHtml='';
-    if(m.type!=='system'){
-      var badges='';
-      if(isBot)badges='<span class="badge badge-bot">🤖AI</span>';
-      if(isAdminMsg&&!isBot)badges='<span class="badge badge-admin">👑群主</span>';
-      var prefix=isBot?'🤖 ':'';
-      nickHtml='<div class="nick">'+prefix+esc(m.nick||'匿名')+' '+badges+'</div>';
-    }
-    var timeHtml='<div class="time">'+(m.time||'')+'</div>';
-    var content='';
-    if(m.img)content+='<img class="msg-img" src="'+m.img+'" onclick="openMedia(\''+m.img+'\',\'img\')" loading="lazy">';
-    if(m.video){
-      var isV=m.video.match(/\.(mp4|webm|ogg|mov|m4v)(\?|$)/i);
-      content+=isV?'<video class="msg-video" src="'+m.video+'" controls preload="metadata" playsinline></video>':'<a href="'+m.video+'" target="_blank" style="display:block;padding:8px;background:rgba(0,0,0,0.06);border-radius:8px;color:inherit;text-decoration:none;font-size:11px;margin-top:4px">🎬 点击播放视频</a>';
-    }
-    if(m.text)content+='<div>'+esc(m.text)+'</div>';
-    area.innerHTML+='<div class="msg '+cls+'">'+nickHtml+content+timeHtml+'</div>';
-  });
-  area.scrollTop=area.scrollHeight;
-}
-async function fetchMsgs(){
-  try{
-    var r=await fetch(CHAT_API+'?t='+Date.now());if(!r.ok)return;
-    var d=await r.json();var msgs=d.messages||[];if(!msgs.length)return;
-    var newMsgs=msgs.filter(function(m){return m.id>lastMsgId});
-    if(!newMsgs.length)return;
-    lastMsgId=newMsgs[newMsgs.length-1].id;renderMsgs(newMsgs);
-  }catch(e){}
-}
-function startPolling(){if(pollTimer)return;fetchMsgs();pollTimer=setInterval(fetchMsgs,2500)}
+  send.addEventListener("click", doSend);
+  msgInput.addEventListener("keydown", e => { if (e.key === "Enter") doSend(); });
 
-// ====== EMOJI ======
-function toggleEmoji(){
-  var p=document.getElementById('emojiPanel');
-  p.classList.toggle('show');
-}
-function renderEmojiTabs(){
-  var tabs=document.getElementById('emojiTabs');
-  var html='';
-  Object.keys(EMOJI_CATEGORIES).forEach(function(k,i){
-    html+='<button class="emoji-tab'+(i===0?' active':'')+'" onclick="switchEmojiTab(\''+k+'\')">'+k+'</button>';
-  });
-  tabs.innerHTML=html;
-}
-function switchEmojiTab(cat,tabEl){
-  document.querySelectorAll('.emoji-tab').forEach(function(b){b.classList.remove('active')});
-  if(tabEl){tabEl.classList.add('active');}
-  var grid=document.getElementById('emojiGrid');
-  var chars=EMOJI_CATEGORIES[cat]||'';
-  if(cat==='😊颜文字'){
-    var items=chars.split(' ');
-    grid.innerHTML=items.map(function(s){return '<button class="emoji-item" onclick="insertAtCursor(\''+s.replace(/'/g,"\\'")+'\')" style="width:auto;padding:0 4px;font-size:13px">'+s+'</button>'}).join('');
-  }else{
-    var html='';
-    for(var i=0;i<chars.length;i++){
-      var c=chars[i];
-      if(c===' '||!c)continue;
-      html+='<button class="emoji-item" onclick="insertAtCursor(\''+c+'\')">'+c+'</button>';
-    }
-    grid.innerHTML=html;
-  }
-}
-function insertAtCursor(t){
-  var input=document.getElementById('chatInput');
-  input.focus();
-  var start=input.selectionStart,end=input.selectionEnd;
-  var v=input.value;
-  input.value=v.substring(0,start)+t+v.substring(end);
-  input.selectionStart=input.selectionEnd=start+t.length;
-}
-function handleInput(){}
-
-// ====== MUSIC (NetEase API) ======
-function toggleMusicPanel(){
-  var bar=document.getElementById('musicBar');
-  bar.classList.toggle('hidden');
-  var btn=document.getElementById('musicToggleBtn');
-  btn.classList.toggle('music-on');
-  if(!bar.classList.contains('hidden')&&musicIdx<0){
-    playMusic(0);
-  }
-}
-function playMusic(idx){
-  if(idx<0||idx>=MUSIC_LIST.length)return;
-  musicIdx=idx;
-  var s=MUSIC_LIST[idx];
-  if(musicAudio){musicAudio.pause();musicAudio=null}
-  musicAudio=new Audio();
-  musicAudio.src=s.u;
-  musicAudio.volume=0.7;
-  musicAudio.preload='auto';
-  document.getElementById('musicTitle').textContent=s.t;
-  document.getElementById('musicArtist').textContent=s.a;
-  document.getElementById('musicBar').classList.remove('playing');
-  document.getElementById('musicPlayBtn').textContent='▶️';
-  musicPlaying=false;
-  // auto play
-  musicAudio.play().then(function(){
-    musicPlaying=true;
-    document.getElementById('musicBar').classList.add('playing');
-    document.getElementById('musicPlayBtn').textContent='⏸️';
-  }).catch(function(e){
-    toast('🎵 点击▶️播放，部分网络可能需要稍等','info');
-    document.getElementById('musicPlayBtn').textContent='▶️';
-  });
-  musicAudio.addEventListener('ended',function(){nextMusic()});
-  musicAudio.addEventListener('error',function(){
-    toast('🎵 歌曲加载失败，尝试下一首','error');
-    document.getElementById('musicBar').classList.remove('playing');
-    document.getElementById('musicPlayBtn').textContent='▶️';
-    musicPlaying=false;
-  });
-}
-function toggleMusic(){
-  if(!musicAudio){playMusic(0);return}
-  if(musicPlaying){
-    musicAudio.pause();musicPlaying=false;
-    document.getElementById('musicBar').classList.remove('playing');
-    document.getElementById('musicPlayBtn').textContent='▶️';
-  }else{
-    musicAudio.play().then(function(){
-      musicPlaying=true;
-      document.getElementById('musicBar').classList.add('playing');
-      document.getElementById('musicPlayBtn').textContent='⏸️';
-    }).catch(function(){
-      toast('🎵 播放失败，请稍后再试','error');
-    });
-  }
-}
-function nextMusic(){playMusic((musicIdx+1)%MUSIC_LIST.length)}
-function prevMusic(){playMusic((musicIdx-1+MUSIC_LIST.length)%MUSIC_LIST.length)}
-
-// ====== AI ======
-async function callAI(question){
-  var area=document.getElementById('msgs');
-  var tid='typing_'+Date.now();
-  area.innerHTML+='<div class="msg left" id="'+tid+'"><div class="nick">🤖 小Q <span class="badge badge-bot">🤖AI</span></div><div>思考中...</div></div>';
-  area.scrollTop=area.scrollHeight;
-  var now=Date.now();
-  if(now-lastAICall<25000){
-    var w=Math.ceil((25000-(now-lastAICall))/1000);
-    document.getElementById(tid)&&(document.getElementById(tid).querySelector('div:last-child').textContent='⏳ 冷却中...'+w+'秒');
-    return;
-  }
-  try{
-    lastAICall=Date.now();
-    var resp=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'Meta-Llama-3_3-70B-Instruct',messages:[{role:'system',content:'你是小Q，MIUI聊天室的AI管理员。活泼可爱直接简短，回复2-4句不超过120字。爱用emoji。群主是输入正确密码登录的人。聊天室有24名成员+你=25人。'},{role:'user',content:question}],max_tokens:200,temperature:0.85})});
-    document.getElementById(tid)&&document.getElementById(tid).remove();
-    if(!resp.ok||resp.status===429){saveMsg({nick:'小Q',text:'AI有点忙 😅 25秒后再找我吧~',type:'bot'});return}
-    var data=await resp.json();
-    if(data.message&&data.message.includes('rate')){saveMsg({nick:'小Q',text:'太快啦~ 让我喘口气 😅',type:'bot'});return}
-    var reply=data.choices&&data.choices[0]?data.choices[0].message.content.trim():'这个问题把我难住了 😅 换个问题试试吧~';
-    saveMsg({nick:'小Q',text:reply,type:'bot'});
-  }catch(e){document.getElementById(tid)&&document.getElementById(tid).remove();saveMsg({nick:'小Q',text:'网络不太好 😅 等一下再试试~',type:'bot'})}
-}
-
-// ====== AUTO MOD (5分钟) ======
-function startAutoMod(){
-  if(autoTimer)clearInterval(autoTimer);
-  autoTimer=setInterval(function(){
-    var msgs=['🛡️ 小Q巡检中...一切正常！大家开心聊天~ 😊','📋 小Q提醒：文明交流，禁止广告哦 🫡','🌟 大家好呀~小Q又来看大家了！有什么需要帮助的吗？','🎵 休息一下，听听歌再聊吧~','💬 24位成员在线中！欢迎新朋友加入 👋','⚙️ MIUI聊天室·和谐社区·一起搞机！','😊 小Q温馨提示：发图选📷 发视频选🎬 听歌选🎵','🔥 天热注意防暑！多喝水~','👑 群主和管理组在守护着大家！','🎉 新的一天，新的快乐！MIUI聊天室欢迎你！'];
-    var pick=msgs[Math.floor(Math.random()*msgs.length)];
-    saveMsg({nick:'小Q',text:pick,type:'bot'});
-  },300000);
-}
-
-// ====== ADMIN ======
-async function adminAnnounce(){
-  if(!isAdmin){toast('无权限','error');return}
-  var t=prompt('📢 公告内容：');if(!t||!t.trim())return;
-  await saveMsg({nick:user.nick,text:'📢 群公告：'+t.trim(),type:'chat',isAdmin:true});
-  toast('✅ 已发布','success');
-}
-async function adminClear(){
-  if(!isAdmin){toast('无权限','error');return}
-  if(!confirm('确定清空所有聊天记录？'))return;
-  try{
-    await fetch(CHAT_API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[],room:'miuichatv22'})});
-    document.getElementById('msgs').innerHTML='<div class="msg system">🗑️ 聊天记录已被群主清空</div><div class="msg system">👋 群主+23成员+🤖小Q = 25人在线</div>';
-    lastMsgId=0;toast('✅ 已清屏','success');
-  }catch(e){toast('清屏失败','error')}
-}
-function adminMute(){
-  if(!isAdmin){toast('无权限','error');return}
-  var secs=parseInt(prompt('🔇 禁言秒数（默认60）：')||'60');
-  if(isNaN(secs)||secs<1)secs=60;
-  muteUntil=Date.now()+secs*1000;
-  saveMsg({nick:user.nick,text:'🔇 群主开启了全体禁言，'+secs+'秒内不能发言',type:'chat',isAdmin:true});
-  toast('✅ 已禁言'+secs+'秒','success');
-}
-function adminKickNotice(){
-  if(!isAdmin){toast('无权限','error');return}
-  var who=prompt('⚠️ 被移出成员昵称：');if(!who||!who.trim())return;
-  saveMsg({nick:user.nick,text:'⚠️ '+who.trim()+' 已被群主移出聊天室',type:'chat',isAdmin:true});
-  toast('✅ 已通知','success');
-}
-async function adminDeleteLast(){
-  if(!isAdmin){toast('无权限','error');return}
-  try{
-    var r=await fetch(CHAT_API);var d=await r.json();var msgs=d.messages||[];
-    if(msgs.length>0)msgs.pop();
-    await fetch(CHAT_API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:msgs,room:'miuichatv22'})});
-    toast('✅ 已删除','success');
-  }catch(e){toast('删除失败','error')}
-}
-function adminWelcome(){
-  if(!isAdmin){toast('无权限','error');return}
-  saveMsg({nick:user.nick,text:'🎉 欢迎新人！MIUI聊天室欢迎你 👋\n⚙️ 一起搞机 · 技术交流 · 友好社区',type:'chat',isAdmin:true});
-  toast('✅ 已发送','success');
-}
-
-// ====== MEDIA ======
-function openMedia(src,type){
-  document.getElementById('mediaContent').innerHTML=type==='img'?'<img src="'+src+'" onclick="event.stopPropagation()">':'<video src="'+src+'" controls autoplay playsinline></video>';
-  document.getElementById('mediaModal').classList.add('show');
-}
-function closeMedia(){document.getElementById('mediaModal').classList.remove('show');document.getElementById('mediaContent').innerHTML=''}
-
-// ====== TOAST ======
-var tt;
-function toast(m,type){
-  var t=document.getElementById('toast');t.textContent=m;t.className='toast show '+(type||'info');
-  clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show')},2000);
-}
+  init();
 </script>
 </body>
 </html>
