@@ -134,6 +134,18 @@ footer .soc a:hover{color:var(--p)}
 /* ====== ANIMATIONS ====== */
 .rv{opacity:0;transform:translateY(28px);transition:.7s cubic-bezier(.22,.61,.36,1)}
 .rv.vis{opacity:1;transform:translateY(0)}
+/* ====== CHAT MODAL ====== */
+.chat-mask{position:fixed;inset:0;background:rgba(10,12,25,.66);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:9990;display:none;align-items:center;justify-content:center;padding:20px}
+.chat-mask.open{display:flex}
+.chat-modal{width:min(880px,100%);height:min(86vh,760px);background:var(--bg);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.45);animation:cmIn .3s cubic-bezier(.22,.61,.36,1)}
+@keyframes cmIn{from{opacity:0;transform:translateY(26px) scale(.97)}to{opacity:1;transform:none}}
+.chat-head{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--b);background:var(--bg2)}
+.chat-head .ch-title{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px}
+.chat-head .ch-title .ch-sub{font-size:11px;color:var(--t3);font-weight:500}
+.chat-head .ch-x{width:32px;height:32px;border-radius:50%;border:1px solid var(--b);background:#fff;cursor:pointer;font-size:16px;line-height:1;color:var(--t2);display:flex;align-items:center;justify-content:center;transition:.2s}
+.chat-head .ch-x:hover{background:var(--p);color:#fff;border-color:var(--p)}
+.chat-modal iframe{flex:1;border:0;width:100%;display:block}
+
 </style>
 </head>
 <body>
@@ -141,7 +153,7 @@ footer .soc a:hover{color:var(--p)}
 <nav id="nav">
   <a href="#" class="logo"><span>🎮</span>MIUI Studio</a>
   <div class="nl">
-    <a href="#about">关于</a><a href="#works">作品</a><a href="#team">团队</a><a href="#story">历程</a><a href="#join" class="cta-n">加入我们</a>
+    <a href="#about">关于</a><a href="#works">作品</a><a href="#team">团队</a><a href="#story">历程</a><a href="#" onclick="openChat();return false">聊天室</a><a href="#join" class="cta-n">加入我们</a>
   </div>
 </nav>
 
@@ -153,6 +165,7 @@ footer .soc a:hover{color:var(--p)}
     <div class="hbtns rv">
       <a href="#works" class="btn btn-p">探索作品</a>
       <a href="#about" class="btn btn-o">了解更多</a>
+      <a href="#" class="btn btn-o" onclick="openChat();return false">💬 进入聊天室</a>
     </div>
     <div class="hstats">
       <div class="st rv"><span class="sn">7+</span><span class="sl">线上产品</span></div>
@@ -193,7 +206,7 @@ footer .soc a:hover{color:var(--p)}
   <h2 class="sec-title rv">旗舰产品矩阵</h2>
   <p class="sec-sub rv">从群聊到社交，从游戏到工具，持续拓展边界</p>
   <div class="pgrid">
-    <a class="pcard rv" href="https://weyoudonttalk.github.io/miui-chat/" target="_blank">
+    <a class="pcard rv" href="#" onclick="openChat();return false">
       <span class="pi">💬</span><div class="pn">MIUI聊天室</div><div class="pd">25人在线群聊，AI小Q管理，音乐·表情包·图片视频</div><div class="ptags"><span class="pt pt1">🔥热门</span><span class="pt pt3">AI</span></div>
     </a>
     <a class="pcard rv" href="https://weyoudonttalk.github.io/qqapp/" target="_blank">
@@ -249,7 +262,7 @@ footer .soc a:hover{color:var(--p)}
   <div class="cta-inner rv">
     <h2>准备好加入我们了吗？</h2>
     <p>无论你是开发者、设计师，还是对AI与游戏怀抱热情的创造者——MIUI工作室的大门随时为你敞开</p>
-    <a href="https://weyoudonttalk.github.io/miui-chat/" target="_blank" class="cta-btn">🚀 进入 MIUI聊天室</a>
+    <a href="#" onclick="openChat();return false" class="cta-btn">🚀 进入 MIUI聊天室</a>
   </div>
 </section>
 
@@ -271,6 +284,18 @@ footer .soc a:hover{color:var(--p)}
   </div>
 </footer>
 
+<!-- ====== 聊天室弹窗 ====== -->
+<div class="chat-mask" id="chatMask">
+  <div class="chat-modal" role="dialog" aria-label="MIUI聊天室">
+    <div class="chat-head">
+      <div class="ch-title">💬 MIUI 聊天室 <span class="ch-sub">25人在线 · AI小Q守护</span></div>
+      <button class="ch-x" onclick="closeChat()" aria-label="关闭">✕</button>
+    </div>
+    <iframe id="chatFrame" title="MIUI聊天室" src="about:blank"></iframe>
+  </div>
+</div>
+
+
 <script>
 // NAV
 window.addEventListener('scroll',function(){document.getElementById('nav').classList.toggle('scrolled',scrollY>40)});
@@ -285,6 +310,21 @@ window.addEventListener('scroll',function(){document.getElementById('nav').class
 // TOAST
 var tt;
 function T(m){var e=document.createElement('div');e.textContent=m;e.style.cssText='position:fixed;top:24px;left:50%;transform:translateX(-50%);padding:10px 22px;border-radius:18px;font-size:12px;font-weight:600;z-index:9999;background:#1a1a2e;color:#fff;pointer-events:none;opacity:0;transition:.3s';document.body.appendChild(e);requestAnimationFrame(function(){e.style.opacity='1'});setTimeout(function(){e.style.opacity='0';setTimeout(function(){e.remove()},300)},2000)}
+</script>
+<script>
+var CHAT_URL = "https://weyoudonttalk.github.io/miui-chat/";
+function openChat(){
+  var f = document.getElementById("chatFrame");
+  if (f.getAttribute("src") === "about:blank") f.setAttribute("src", CHAT_URL);
+  document.getElementById("chatMask").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+function closeChat(){
+  document.getElementById("chatMask").classList.remove("open");
+  document.body.style.overflow = "";
+}
+document.getElementById("chatMask").addEventListener("click", function(e){ if (e.target === this) closeChat(); });
+document.addEventListener("keydown", function(e){ if (e.key === "Escape") closeChat(); });
 </script>
 </body>
 </html>
