@@ -234,7 +234,7 @@ footer b{color:var(--txt2)}
   <div class="boot-sub">正在接入哈夫克频道...</div>
   <div class="boot-bar"><i id="bootBar"></i></div>
 </div>
-<div id="particles"></div>
+<canvas id="particles"></canvas>
 <div class="radar"><span class="ring"></span><span class="sweep"></span></div>
 <div class="ripple"><span></span><span></span><span></span></div>
 <div class="grid-bg"></div>
@@ -374,7 +374,9 @@ function bindNick(id){var el=document.getElementById(id);if(!el)return;el.value=
 /* ================= 粒子动画（手写 canvas，零第三方库） ================= */
 (function(){
   var cv=document.getElementById('particles');if(!cv)return;
-  var ctx=cv.getContext('2d'),w,h,ps=[],i;
+  var ctx;try{ctx=cv.getContext('2d')}catch(e){return}
+  if(!ctx)return;
+  var w,h,ps=[],i;
   var COLORS=[[255,122,26],[25,200,217],[61,220,132]];
   function resize(){w=cv.width=window.innerWidth;h=cv.height=window.innerHeight}
   resize();window.addEventListener('resize',resize);
@@ -565,6 +567,7 @@ function switchTab(t,btn){
   }
 
 /* ================= 初始化 ================= */
+setTimeout(function(){var bb=document.getElementById('boot');if(bb){bb.classList.add('done');setTimeout(function(){if(bb.parentNode)bb.parentNode.removeChild(bb)},700)}},3500);
 function bootHide(){
   var b=document.getElementById('boot');if(!b||b.classList.contains('done'))return;
   b.classList.add('done');setTimeout(function(){if(b.parentNode)b.parentNode.removeChild(b)},700);
