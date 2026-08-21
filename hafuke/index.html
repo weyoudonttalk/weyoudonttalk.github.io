@@ -352,11 +352,21 @@ footer b{color:var(--txt2)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
+/* ================= 启动动画（最先执行，不依赖任何库/网络） ================= */
+(function(){
+  var bar=document.getElementById('bootBar');
+  if(bar){
+    var p=0,t=setInterval(function(){p=Math.min(100,p+Math.random()*22+8);bar.style.width=p+'%';if(p>=100)clearInterval(t)},130);
+  }
+  setTimeout(function(){var b=document.getElementById('boot');if(b){b.classList.add('done');setTimeout(function(){if(b.parentNode)b.parentNode.removeChild(b)},700)}},4200);
+})();
+
 /* ================= 配置 ================= */
 const SUPABASE_URL='https://paovashswyzcunthhkvt.supabase.co';
 const SUPABASE_KEY='sb_publishable_-yxNhPM-yJC5YX0TwgpKrQ_dsQ3N3LI';
 const ADMIN_PW='870529';
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let sb=null;
+try{if(window.supabase){sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY)}}catch(e){sb=null}
 const TABLE='messages';
 
 /* ================= 通用 ================= */
@@ -423,7 +433,7 @@ setTimeout(typeLoop,500);
 /* ================= 在线人数（Supabase presence） ================= */
 let pc=null,myUid=localStorage.getItem('havoc_uid')||('u'+Date.now().toString(36)+Math.random().toString(36).slice(2,7));
 localStorage.setItem('havoc_uid',myUid);
-function initPresence(){pc=sb.channel('havoc-presence',{config:{presence:{key:'uid'}}});pc.on('presence',{event:'sync'},refreshOnline).subscribe(function(st){if(st==='SUBSCRIBED'&&nick)pc.track({uid:myUid,nick:nick})})}
+function initPresence(){if(!sb)return;pc=sb.channel('havoc-presence',{config:{presence:{key:'uid'}}});pc.on('presence',{event:'sync'},refreshOnline).subscribe(function(st){if(st==='SUBSCRIBED'&&nick)pc.track({uid:myUid,nick:nick})})}
 function refreshOnline(){var st=pc?pc.presenceState():{};var m={};Object.keys(st).forEach(function(k){(st[k]||[]).forEach(function(p){if(p&&p.uid)m[p.uid]=p})});
   var n=Object.keys(m).length;var el=document.getElementById('onlineCount');if(el)el.textContent=n+' 人在线';
   animateNum('statOnline',n);document.getElementById('chatOnline').textContent=n;
@@ -431,11 +441,12 @@ function refreshOnline(){var st=pc?pc.presenceState():{};var m={};Object.keys(st
 
 /* ================= 数据读写 ================= */
 async function ins(contentObj,user){
+  if(!sb)return null;
   var r=await sb.from(TABLE).insert({username:user||nick||'匿名',content:JSON.stringify(contentObj)}).select();
   if(r.error){console.error(r.error);return null}
   return r.data&&r.data[0]?r.data[0]:null;
 }
-async function getPosts(){var r=await sb.from(TABLE).select('*').order('id',{ascending:false}).limit(80);if(r.error){console.error(r.error);return[]}return r.data||[]}
+async function getPosts(){if(!sb)return[];var r=await sb.from(TABLE).select('*').order('id',{ascending:false}).limit(80);if(r.error){console.error(r.error);return[]}return r.data||[]}
 
 /* ================= 论坛 ================= */
 async function submitPost(){
@@ -522,6 +533,7 @@ async function loadChat(){
 }
 async function poll(){
   try{
+    if(!sb)return;
     var r=await sb.from(TABLE).select('*').gt('id',lastMsgId).order('id',{ascending:true}).limit(50);
     if(r.error)return;
     (r.data||[]).forEach(function(row){try{var m=JSON.parse(row.content);m._id=row.id;if(m.type==='chat'){appendMsg(m,m.user===nick);lastMsgId=row.id;document.getElementById('statChats').textContent=parseInt(document.getElementById('statChats').textContent)+1}}catch(e){}});
@@ -583,7 +595,6 @@ function init(){
   setInterval(poll,5000);
   setInterval(loadPosts,30000);
   setInterval(loadTeams,30000);
-  bootRun();
 }
 init();
 </script>
