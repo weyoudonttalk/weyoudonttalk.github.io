@@ -352,6 +352,7 @@ const ADMIN_PW='870529';
 const SUPABASE_URL='https://paovashswyzcunthhkvt.supabase.co';
 const SUPABASE_KEY='sb_publishable_-yxNhPM-yJC5YX0TwgpKrQ_dsQ3N3LI';
 const AI_URL='https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions';
+const AI_MODELS=['Mistral-Small-3.2-24B-Instruct-2506','gpt-oss-20b','Qwen3-32B'];
 const SB_HEADERS={'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'};
 
 // ====== STATE ======
@@ -558,14 +559,21 @@ async function saveMsg(msg){
     var r=await fetch(SUPABASE_URL+'/rest/v1/messages',{method:'POST',headers:Object.assign({'Prefer':'return=representation'},SB_HEADERS),body:JSON.stringify({username:payload.nick,content:JSON.stringify(payload)})});
     if(!r.ok)throw new Error('http '+r.status);
     var rows=await r.json();
-    if(rows&&rows[0]){lastMsgId=rows[0].id;renderMsgs([payload]);}
-    else{renderMsgs([payload]);}
+    var rid=rows&&rows[0]?rows[0].id:null;
+    if(rid)lastMsgId=rid;
+    var p2=Object.assign({},payload);
+    if(rid)p2._id=rid;
+    renderMsgs([p2]);
   }catch(e){toast('发送失败，请重试','error')}
 }
 function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+let renderedIds={},renderedCount=0;
 function renderMsgs(msgs){
   var area=document.getElementById('msgs');
   msgs.forEach(function(m){
+    if(m._id!=null&&renderedIds[m._id])return;
+    if(m._id!=null){renderedIds[m._id]=1;renderedCount++}
+    if(renderedCount>2000){renderedIds={};renderedCount=0}
     if(m.type==='clear'){area.innerHTML='<div class="msg system">🗑️ 聊天记录已被群主清空</div>';return}
     if(m.type==='delete_last'){
       var list=area.querySelectorAll('.msg:not(.system)');
@@ -606,6 +614,7 @@ async function fetchMsgs(){
     rows.forEach(function(row){
       try{
         var m=JSON.parse(row.content);
+        m._id=row.id;
         renderMsgs([m]);
         if(row.id>lastMsgId)lastMsgId=row.id;
       }catch(e){}
@@ -621,6 +630,7 @@ async function loadHistory(){
     rows.reverse().forEach(function(row){
       try{
         var m=JSON.parse(row.content);
+        m._id=row.id;
         renderMsgs([m]);
         if(row.id>lastMsgId)lastMsgId=row.id;
       }catch(e){}
@@ -732,22 +742,31 @@ async function callAI(question){
   area.innerHTML+='<div class="msg left" id="'+tid+'"><div class="nick">🤖 小Q <span class="badge badge-bot">🤖AI</span></div><div>思考中...</div></div>';
   area.scrollTop=area.scrollHeight;
   var now=Date.now();
-  if(now-lastAICall<25000){
+  if(now-lastAICall<8000){
     var el=document.getElementById(tid);if(el)el.remove();
     var lr0=localReply(question);
     saveMsg({nick:'小Q',text:lr0||t('ai_busy'),type:'bot'});
     return;
   }
-  try{
-    lastAICall=Date.now();
-    var resp=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'Meta-Llama-3_3-70B-Instruct',messages:[{role:'system',content:GAME_KNOWLEDGE},{role:'user',content:question}],max_tokens:200,temperature:0.85})});
-    var el=document.getElementById(tid);if(el)el.remove();
-    if(!resp.ok||resp.status===429){var lr=localReply(question);saveMsg({nick:'小Q',text:lr||t('ai_busy'),type:'bot'});return}
-    var data=await resp.json();
-    if(data.message&&data.message.includes('rate')){var lr2=localReply(question);saveMsg({nick:'小Q',text:lr2||t('ai_busy'),type:'bot'});return}
-    var reply=data.choices&&data.choices[0]?data.choices[0].message.content.trim():'这个问题把我难住了 😅 换个问题试试吧~';
-    saveMsg({nick:'小Q',text:reply,type:'bot'});
-  }catch(e){var el2=document.getElementById(tid);if(el2)el2.remove();var lr3=localReply(question);saveMsg({nick:'小Q',text:lr3||t('ai_network'),type:'bot'})}
+  lastAICall=Date.now();
+  for(var mi=0;mi<AI_MODELS.length;mi++){
+    try{
+      var resp=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:AI_MODELS[mi],messages:[{role:'system',content:GAME_KNOWLEDGE},{role:'user',content:question}],max_tokens:220,temperature:0.85})});
+      if(!resp.ok||resp.status===429)continue;
+      var data=await resp.json();
+      if(data.message&&data.message.indexOf('rate')>=0)continue;
+      var msg0=data.choices&&data.choices[0]&&data.choices[0].message;var reply=msg0?(msg0.content||msg0.reasoning||''):'';
+      if(!reply)continue;
+      reply=reply.replace(/<think>[\s\S]*?<\/think>/g,'').replace(/<think>[\s\S]*$/g,'').trim();
+      if(!reply)continue;
+      var el=document.getElementById(tid);if(el)el.remove();
+      saveMsg({nick:'小Q',text:reply,type:'bot'});
+      return;
+    }catch(e){continue}
+  }
+  var el2=document.getElementById(tid);if(el2)el2.remove();
+  var lr=localReply(question);
+  saveMsg({nick:'小Q',text:lr||t('ai_busy'),type:'bot'});
 }
 
 // ====== AUTO MOD ======
