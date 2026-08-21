@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>哈夫克社区 - HAVOC | 战术论坛 · 实时聊天 · 组队大厅</title>
+<meta name="description" content="哈夫克社区：战术爱好者聚集地。发帖交流、实时聊天、组队开黑，一站式战术社区。">
+<meta name="keywords" content="哈夫克,HAVOC,战术社区,游戏社区,组队,发帖,聊天,三角洲行动,开黑">
+<meta name="robots" content="index,follow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+:root{
+  --bg:#070b12; --bg2:#0c1320; --card:#111a2b; --card2:#16233a;
+  --line:#1e2c42; --txt:#e8eef7; --txt2:#93a3bb; --txt3:#5c6c86;
+  --orange:#ff7a1a; --cyan:#19c8d9; --green:#3ddc84; --red:#ff4d5e;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg); color:var(--txt); overflow-x:hidden; line-height:1.6;
+  min-height:100vh;
+}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--orange);color:#fff}
+
+/* 粒子背景 */
+#particles{position:fixed;inset:0;z-index:0;pointer-events:none}
+/* 扫描线/网格底 */
+.grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(25,200,217,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(25,200,217,.04) 1px,transparent 1px);
+  background-size:44px 44px;mask-image:radial-gradient(ellipse at 50% 0%,#000 30%,transparent 75%);
+  -webkit-mask-image:radial-gradient(ellipse at 50% 0%,#000 30%,transparent 75%);
+}
+
+.wrap{position:relative;z-index:2;max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* ===== 导航 ===== */
+nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  background:rgba(7,11,18,.72);border-bottom:1px solid var(--line)}
+.nav-in{display:flex;align-items:center;justify-content:space-between;height:62px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:.5px}
+.logo .emblem{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--orange),#b34d00);
+  display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 0 18px rgba(255,122,26,.5);
+  animation:pulse 2.4s ease-in-out infinite}
+.logo b{color:var(--orange)}
+.logo span{color:var(--txt3);font-weight:500;font-size:12px;margin-left:2px}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.nav-tabs{display:flex;gap:4px;background:var(--bg2);padding:4px;border-radius:12px;border:1px solid var(--line)}
+.nav-tabs button{border:0;background:transparent;color:var(--txt2);padding:8px 16px;border-radius:9px;
+  cursor:pointer;font-size:14px;font-weight:600;transition:.22s;display:flex;align-items:center;gap:6px}
+.nav-tabs button:hover{color:var(--txt)}
+.nav-tabs button.on{background:linear-gradient(135deg,var(--orange),#c25400);color:#fff;box-shadow:0 4px 16px rgba(255,122,26,.35)}
+.online-pill{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--green);background:rgba(61,220,132,.08);
+  padding:6px 12px;border-radius:20px;border:1px solid rgba(61,220,132,.25)}
+.online-pill .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:blink 1.6s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* ===== HERO ===== */
+.hero{padding:76px 0 52px;text-align:center;position:relative}
+.hero .tag{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--cyan);
+  border:1px solid rgba(25,200,217,.35);padding:6px 16px;border-radius:20px;margin-bottom:22px;background:rgba(25,200,217,.06);
+  animation:floatIn .7s ease both}
+.hero h1{font-size:clamp(34px,6vw,60px);font-weight:900;letter-spacing:1px;line-height:1.12;animation:floatIn .7s .1s ease both}
+.hero h1 .grad{background:linear-gradient(120deg,var(--orange),#ffd23d,var(--cyan));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--txt2);font-size:17px;margin:18px auto 0;max-width:620px;animation:floatIn .7s .2s ease both}
+.hero .typed-wrap{height:28px;margin-top:14px;font-size:16px;color:var(--cyan);animation:floatIn .7s .3s ease both}
+.hero .typed-wrap .cursor{animation:blink 1s infinite}
+.hero-cta{display:flex;gap:14px;justify-content:center;margin-top:30px;animation:floatIn .7s .4s ease both}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;
+  border:1px solid transparent;transition:.25s}
+.btn-solid{background:linear-gradient(135deg,var(--orange),#c25400);color:#fff;box-shadow:0 8px 26px rgba(255,122,26,.4)}
+.btn-solid:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(255,122,26,.5)}
+.btn-ghost{background:rgba(255,255,255,.03);border-color:var(--line);color:var(--txt)}
+.btn-ghost:hover{border-color:var(--cyan);color:var(--cyan);transform:translateY(-3px)}
+@keyframes floatIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+
+/* 数据条 */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:46px 0 10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;text-align:center;
+  transition:.3s;position:relative;overflow:hidden}
+.stat:hover{transform:translateY(-5px);border-color:var(--orange);box-shadow:0 10px 30px rgba(255,122,26,.15)}
+.stat .num{font-size:34px;font-weight:900;background:linear-gradient(120deg,var(--orange),var(--cyan));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.stat .lbl{color:var(--txt3);font-size:13px;margin-top:4px}
+
+/* ===== 主区 / tab ===== */
+.main{padding:30px 0 70px}
+.panel{display:none;animation:fadeIn .35s ease}
+.panel.on{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.panel-head h2{font-size:24px;font-weight:800;display:flex;align-items:center;gap:10px}
+.panel-head h2 .bar{width:5px;height:24px;border-radius:3px;background:linear-gradient(180deg,var(--orange),var(--cyan))}
+.panel-head p{color:var(--txt3);font-size:13px}
+
+/* 卡片网格 */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;transition:.3s;position:relative;overflow:hidden}
+.card:hover{transform:translateY(-6px);border-color:var(--cyan);box-shadow:0 12px 34px rgba(25,200,217,.15)}
+.card .cat{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;margin-bottom:12px}
+.cat-战术{background:rgba(255,122,26,.14);color:var(--orange)}
+.cat-攻略{background:rgba(25,200,217,.14);color:var(--cyan)}
+.cat-闲聊{background:rgba(61,220,132,.14);color:var(--green)}
+.cat-组队{background:rgba(255,77,94,.14);color:var(--red)}
+.card h3{font-size:16px;margin-bottom:8px;line-height:1.4}
+.card .body{color:var(--txt2);font-size:14px;min-height:20px}
+.card .meta{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--txt3)}
+.card .meta .who{display:flex;align-items:center;gap:6px}
+.avatar{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;color:#fff;flex:none}
+/* 组队卡按钮 */
+.team-card .join-btn{margin-top:12px;width:100%;padding:9px;border-radius:10px;border:1px solid var(--orange);background:rgba(255,122,26,.1);
+  color:var(--orange);font-weight:700;cursor:pointer;transition:.2s;font-size:13px}
+.team-card .join-btn:hover{background:var(--orange);color:#fff}
+.team-card .need{margin-top:10px;font-size:12px;color:var(--txt3)}
+.team-card .need b{color:var(--green)}
+
+/* ===== 表单 ===== */
+.composer{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:26px}
+.composer .row{display:flex;gap:12px;flex-wrap:wrap}
+.composer input,.composer textarea,.composer select{
+  background:var(--bg2);border:1px solid var(--line);border-radius:10px;color:var(--txt);
+  padding:11px 14px;font-size:14px;font-family:inherit;outline:none;transition:.2s;width:100%}
+.composer input:focus,.composer textarea:focus,.composer select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(25,200,217,.12)}
+.composer .nick{flex:1;min-width:140px}
+.composer .cat-sel{width:120px}
+.composer textarea{min-height:80px;resize:vertical;margin-top:12px}
+.composer .btns{display:flex;justify-content:space-between;align-items:center;margin-top:14px;flex-wrap:wrap;gap:10px}
+.composer .hint{font-size:12px;color:var(--txt3)}
+
+/* ===== 聊天 ===== */
+.chat-shell{display:flex;gap:18px;align-items:flex-start}
+.chat-box{flex:1;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;height:560px}
+.chat-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line);background:var(--bg2)}
+.chat-head .t{font-weight:700;font-size:15px}
+.chat-head .sub{font-size:12px;color:var(--txt3)}
+.chat-head .sub b{color:var(--green)}
+#msgs{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:10px}
+#msgs::-webkit-scrollbar{width:6px}
+#msgs::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+.msg{max-width:78%;animation:msgIn .28s ease}
+.msg .bubble{padding:10px 14px;border-radius:14px;font-size:14px;word-break:break-word}
+.msg .meta{font-size:11px;color:var(--txt3);margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.msg.own{align-self:flex-end;text-align:right}
+.msg.own .bubble{background:linear-gradient(135deg,var(--orange),#c25400);color:#fff;border-bottom-right-radius:4px}
+.msg.other{align-self:flex-start}
+.msg.other .bubble{background:var(--card2);border-bottom-left-radius:4px}
+.msg.sys{align-self:center;text-align:center;font-size:12px;color:var(--txt3);max-width:90%}
+.msg.sys .bubble{background:rgba(255,255,255,.04);border:1px dashed var(--line)}
+.msg .badge{font-size:10px;padding:1px 6px;border-radius:5px;font-weight:700}
+.badge-bot{background:rgba(25,200,217,.2);color:var(--cyan)}
+.badge-owner{background:rgba(255,122,26,.2);color:var(--orange)}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.chat-input{display:flex;gap:10px;padding:14px;border-top:1px solid var(--line);background:var(--bg2)}
+.chat-input input{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--txt);
+  padding:11px 14px;font-size:14px;outline:none;transition:.2s}
+.chat-input input:focus{border-color:var(--cyan)}
+.chat-input button{width:52px;border-radius:10px;border:0;background:linear-gradient(135deg,var(--cyan),#0e8f9c);color:#fff;
+  font-size:18px;cursor:pointer;transition:.2s}
+.chat-input button:hover{filter:brightness(1.15)}
+/* 侧栏 */
+.chat-side{width:240px;flex:none;display:flex;flex-direction:column;gap:14px}
+.side-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.side-box h4{font-size:14px;margin-bottom:10px;color:var(--txt)}
+.side-box .list{display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto}
+.side-box .list .u{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--txt2)}
+.login-mini{font-size:13px;color:var(--txt3);line-height:1.7}
+
+/* 空状态 */
+.empty{text-align:center;color:var(--txt3);padding:40px 0;font-size:14px}
+.empty .ic{font-size:40px;margin-bottom:10px;opacity:.6}
+
+footer{border-top:1px solid var(--line);padding:28px 0;text-align:center;color:var(--txt3);font-size:13px;position:relative;z-index:2}
+footer b{color:var(--txt2)}
+
+/* toast */
+#toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);background:var(--card2);
+  border:1px solid var(--line);padding:12px 22px;border-radius:12px;font-size:14px;z-index:99;opacity:0;transition:.3s;
+  box-shadow:0 10px 30px rgba(0,0,0,.5);pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:820px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .chat-shell{flex-direction:column}
+  .chat-side{width:100%;flex-direction:row;flex-wrap:wrap}
+  .side-box{flex:1;min-width:200px}
+  .nav-tabs button{padding:8px 10px;font-size:13px}
+  .nav-tabs button .lbl{display:none}
+}
+</style>
+</head>
+<body>
+<div id="particles"></div>
+<div class="grid-bg"></div>
+
+<nav>
+  <div class="wrap nav-in">
+    <div class="logo"><span class="emblem">⚔️</span>哈夫克<b>社区</b><span>HAVOC</span></div>
+    <div class="nav-tabs">
+      <button class="on" data-tab="forum" onclick="switchTab('forum',this)">📋<span class="lbl">战术论坛</span></button>
+      <button data-tab="chat" onclick="switchTab('chat',this)">💬<span class="lbl">实时聊天</span></button>
+      <button data-tab="team" onclick="switchTab('team',this)">🎯<span class="lbl">组队大厅</span></button>
+    </div>
+    <div class="online-pill"><span class="dot"></span><span id="onlineCount">连接中...</span></div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <!-- HERO -->
+  <header class="hero">
+    <div class="tag">🔰 三角洲行动 · 战术爱好者聚集地</div>
+    <h1>哈夫克<span class="grad">社区</span><br>战术玩家的<em style="font-style:normal;color:var(--cyan)">大本营</em></h1>
+    <p>发帖交流战术心得，实时聊天吹水，组队开黑上分。一个社区，全搞定。</p>
+    <div class="typed-wrap">▸ <span id="typed"></span><span class="cursor">|</span></div>
+    <div class="hero-cta">
+      <button class="btn btn-solid" onclick="switchTab('forum',document.querySelector('[data-tab=forum]'))">🚀 进入社区</button>
+      <button class="btn btn-ghost" onclick="switchTab('team',document.querySelector('[data-tab=team]'))">🎯 立即组队</button>
+    </div>
+  </header>
+
+  <!-- 数据条 -->
+  <div class="stats">
+    <div class="stat" data-aos="fade-up"><div class="num" id="statPosts">0</div><div class="lbl">战术帖子</div></div>
+    <div class="stat" data-aos="fade-up" data-aos-delay="80"><div class="num" id="statChats">0</div><div class="lbl">聊天消息</div></div>
+    <div class="stat" data-aos="fade-up" data-aos-delay="160"><div class="num" id="statTeams">0</div><div class="lbl">组队招募</div></div>
+    <div class="stat" data-aos="fade-up" data-aos-delay="240"><div class="num" id="statOnline">0</div><div class="lbl">当前在线</div></div>
+  </div>
+
+  <!-- ============ 论坛 ============ -->
+  <section class="panel on" id="panel-forum">
+    <div class="panel-head"><h2><span class="bar"></span>战术论坛</h2><p>分享攻略 · 交流心得 · 战术讨论</p></div>
+    <div class="composer" data-aos="fade-up">
+      <div class="row">
+        <input class="nick" id="postNick" placeholder="你的昵称" maxlength="12">
+        <select class="cat-sel" id="postCat">
+          <option value="战术">战术</option><option value="攻略">攻略</option><option value="闲聊">闲聊</option>
+        </select>
+      </div>
+      <input id="postTitle" placeholder="标题（一句话说清主题）" maxlength="40" style="margin-top:12px">
+      <textarea id="postBody" placeholder="正文内容... 分享你的战术心得、装备配置、打法思路"></textarea>
+      <div class="btns">
+        <span class="hint">💡 发帖会同步到全社区，文明发言</span>
+        <button class="btn btn-solid" onclick="submitPost()">📤 发布帖子</button>
+      </div>
+    </div>
+    <div class="grid" id="postList"><div class="empty"><div class="ic">📡</div>加载中...</div></div>
+  </section>
+
+  <!-- ============ 聊天 ============ -->
+  <section class="panel" id="panel-chat">
+    <div class="panel-head"><h2><span class="bar"></span>实时聊天</h2><p>@小Q 召唤AI · 全区即时同步</p></div>
+    <div class="chat-shell">
+      <div class="chat-box">
+        <div class="chat-head">
+          <span class="t">💬 哈夫克大厅</span>
+          <span class="sub"><b id="chatOnline">0</b> 人在线 · 5秒同步</span>
+        </div>
+        <div id="msgs"></div>
+        <div class="chat-input">
+          <input id="chatNick" placeholder="昵称" maxlength="12" style="max-width:110px">
+          <input id="chatText" placeholder="说点什么... @小Q 召唤AI" maxlength="300">
+          <button onclick="sendChat()" title="发送">➤</button>
+        </div>
+      </div>
+      <div class="chat-side">
+        <div class="side-box">
+          <h4>🟢 在线成员</h4>
+          <div class="list" id="memberList"><div style="color:var(--txt3);font-size:12px">连接中...</div></div>
+        </div>
+        <div class="side-box login-mini" id="loginBox">
+          <h4>🔐 群主登录</h4>
+          <input id="adminPw" type="password" placeholder="管理密码" style="width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:var(--txt);font-size:13px;margin-bottom:8px;outline:none">
+          <button class="btn btn-solid" style="width:100%;padding:9px;font-size:13px" onclick="doAdmin()">登录管理</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 组队 ============ -->
+  <section class="panel" id="panel-team">
+    <div class="panel-head"><h2><span class="bar"></span>组队大厅</h2><p>找队友 · 开黑上分 · 搜打撤</p></div>
+    <div class="composer" data-aos="fade-up">
+      <div class="row">
+        <input class="nick" id="teamNick" placeholder="你的昵称" maxlength="12">
+        <select class="cat-sel" id="teamMode">
+          <option value="搜打撤">搜打撤</option><option value="烽火地带">烽火地带</option><option value="全面战场">全面战场</option><option value="其他">其他</option>
+        </select>
+      </div>
+      <input id="teamTitle" placeholder="招募标题（如：烽火地带 求固定队 2缺2）" maxlength="40" style="margin-top:12px">
+      <textarea id="teamDesc" placeholder="要求：段位/枪法/麦克风/在线时间..."></textarea>
+      <div class="btns">
+        <span class="hint">🎯 发布后显示在组队大厅，满员请回来删除</span>
+        <button class="btn btn-solid" onclick="submitTeam()">🎯 发布招募</button>
+      </div>
+    </div>
+    <div class="grid" id="teamList"><div class="empty"><div class="ic">🎯</div>加载中...</div></div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">⚔️ <b>哈夫克社区 HAVOC</b> · 战术玩家的精神家园 · 仅供交流学习<br>© 2026 HAVOC Community</div>
+</footer>
+
+<div id="toast"></div>
+
+<!-- 动画库（网上下载的免费 CDN） -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+/* ================= 配置 ================= */
+const SUPABASE_URL='https://paovashswyzcunthhkvt.supabase.co';
+const SUPABASE_KEY='sb_publishable_-yxNhPM-yJC5YX0TwgpKrQ_dsQ3N3LI';
+const ADMIN_PW='870529';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const TABLE='messages';
+
+/* ================= 通用 ================= */
+let nick=localStorage.getItem('havoc_nick')||'';
+let isAdmin=false;
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show')},2200)}
+function randColor(s){var n=0;for(var i=0;i<s.length;i++)n=(n*31+s.charCodeAt(i))>>>0;return 'hsl('+(n%360)+',65%,55%)'}
+function ava(name,c){return '<span class="avatar" style="background:'+c+'">'+(name||'?').charAt(0).toUpperCase()+'</span>'}
+function esc(s){return String(s||'').replace(/[&<>"']/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+function timeAgo(ts){if(!ts)return'';var d=Date.now()-ts;if(d<60000)return'刚刚';if(d<3600000)return Math.floor(d/60000)+'分钟前';if(d<86400000)return Math.floor(d/3600000)+'小时前';return new Date(ts).toLocaleDateString()}
+
+/* 昵称自动记忆 */
+function bindNick(id){var el=document.getElementById(id);if(!el)return;el.value=nick;el.oninput=function(){nick=el.value;localStorage.setItem('havoc_nick',nick)}}
+
+/* ================= 粒子动画 ================= */
+if(window.particlesJS){
+  particlesJS('particles',{
+    particles:{number:{value:60,density:{enable:true,value_area:900}},
+      color:{value:['#ff7a1a','#19c8d9','#3ddc84']},
+      shape:{type:'circle'},
+      opacity:{value:0.5,random:true},size:{value:2.5,random:true},
+      line_linked:{enable:true,distance:130,color:'#1e2c42',opacity:0.5,width:1},
+      move:{enable:true,speed:1.2,random:true,out_mode:'out'}},
+    interactivity:{detect_on:'canvas',events:{onhover:{enable:true,mode:'grab'},onclick:{enable:true,mode:'push'},resize:true},
+      modes:{grab:{distance:160,line_linked:{opacity:0.7}},push:{particles_nb:4}}},
+    retina_detect:true
+  });
+}
+
+/* ================= 打字机 ================= */
+const TYPED=['搜打撤 · 烽火地带 · 全面战场','发帖聊战术，开黑上分','哈夫克永远欢迎战术玩家','组队大厅 24 小时有车'];
+let ti=0,tc=0,del=false;
+function typeLoop(){var el=document.getElementById('typed');if(!el)return;
+  var word=TYPED[ti];
+  if(!del){el.textContent=word.slice(0,++tc);if(tc===word.length){del=true;setTimeout(typeLoop,1800);return}}
+  else{el.textContent=word.slice(0,--tc);if(tc===0){del=false;ti=(ti+1)%TYPED.length}setTimeout(typeLoop,60)}
+}
+setTimeout(typeLoop,500);
+
+/* ================= 在线人数（Supabase presence） ================= */
+let pc=null,myUid=localStorage.getItem('havoc_uid')||('u'+Date.now().toString(36)+Math.random().toString(36).slice(2,7));
+localStorage.setItem('havoc_uid',myUid);
+function initPresence(){pc=sb.channel('havoc-presence',{config:{presence:{key:'uid'}}});pc.on('presence',{event:'sync'},refreshOnline).subscribe(function(st){if(st==='SUBSCRIBED'&&nick)pc.track({uid:myUid,nick:nick})})}
+function refreshOnline(){var st=pc?pc.presenceState():{};var m={};Object.keys(st).forEach(function(k){(st[k]||[]).forEach(function(p){if(p&&p.uid)m[p.uid]=p})});
+  var n=Object.keys(m).length;var el=document.getElementById('onlineCount');if(el)el.textContent=n+' 人在线';
+  document.getElementById('statOnline').textContent=n;document.getElementById('chatOnline').textContent=n;
+  var ml=document.getElementById('memberList');if(ml){var names=Object.values(m).map(function(p){return p.nick}).filter(Boolean);if(!names.length){ml.innerHTML='<div style="color:var(--txt3);font-size:12px">暂无成员</div>';return}ml.innerHTML=names.map(function(nm){return '<div class="u">'+ava(nm,randColor(nm))+' '+esc(nm)+'</div>'}).join('')}}
+
+/* ================= 数据读写 ================= */
+async function ins(contentObj,user){
+  var r=await sb.from(TABLE).insert({username:user||nick||'匿名',content:JSON.stringify(contentObj)});
+  if(r.error){console.error(r.error);return null}
+  return r.data&&r.data[0]?r.data[0]:null;
+}
+async function getPosts(){var r=await sb.from(TABLE).select('*').order('id',{ascending:false}).limit(80);if(r.error){console.error(r.error);return[]}return r.data||[]}
+
+/* ================= 论坛 ================= */
+async function submitPost(){
+  var t=document.getElementById('postTitle').value.trim();
+  var b=document.getElementById('postBody').value.trim();
+  var c=document.getElementById('postCat').value;
+  if(!nick){toast('请先填昵称');return}
+  if(!t){toast('标题不能为空');return}
+  if(!b){toast('正文不能为空');return}
+  var row=await ins({type:'post',title:t,body:b,cat:c,ts:Date.now()});
+  if(row){document.getElementById('postTitle').value='';document.getElementById('postBody').value='';toast('✅ 发布成功');loadPosts()}
+  else toast('发布失败，稍后再试');
+}
+async function loadPosts(){
+  var rows=await getPosts();
+  var posts=rows.map(function(r){try{var m=JSON.parse(r.content);m._id=r.id;return m}catch(e){return null}}).filter(function(m){return m&&m.type==='post'});
+  document.getElementById('statPosts').textContent=posts.length;
+  var el=document.getElementById('postList');
+  if(!posts.length){el.innerHTML='<div class="empty"><div class="ic">📭</div>还没有帖子，来发第一帖！</div>';return}
+  el.innerHTML=posts.map(function(p){
+    return '<div class="card" data-aos="fade-up"><span class="cat cat-'+esc(p.cat)+'">'+esc(p.cat)+'</span>'+
+      '<h3>'+esc(p.title)+'</h3><div class="body">'+esc(p.body)+'</div>'+
+      '<div class="meta"><span class="who">'+ava(p.user||p.nick||'匿',randColor(p.user||p.nick||'匿'))+esc(p.user||p.nick||'匿名')+'</span><span>'+timeAgo(p.ts)+'</span></div></div>';
+  }).join('');
+  AOS.refresh();
+}
+
+/* ================= 组队 ================= */
+async function submitTeam(){
+  var t=document.getElementById('teamTitle').value.trim();
+  var d=document.getElementById('teamDesc').value.trim();
+  var mo=document.getElementById('teamMode').value;
+  if(!nick){toast('请先填昵称');return}
+  if(!t){toast('标题不能为空');return}
+  var row=await ins({type:'team',title:t,desc:d,mode:mo,ts:Date.now(),need:3});
+  if(row){document.getElementById('teamTitle').value='';document.getElementById('teamDesc').value='';toast('✅ 招募发布成功');loadTeams()}
+  else toast('发布失败');
+}
+async function loadTeams(){
+  var rows=await getPosts();
+  var teams=rows.map(function(r){try{var m=JSON.parse(r.content);m._id=r.id;return m}catch(e){return null}}).filter(function(m){return m&&m.type==='team'});
+  document.getElementById('statTeams').textContent=teams.length;
+  var el=document.getElementById('teamList');
+  if(!teams.length){el.innerHTML='<div class="empty"><div class="ic">🎯</div>暂无招募，发布一条拉队友！</div>';return}
+  el.innerHTML=teams.map(function(p){
+    return '<div class="card team-card" data-aos="fade-up"><span class="cat cat-组队">🎯 '+esc(p.mode)+'</span>'+
+      '<h3>'+esc(p.title)+'</h3><div class="body">'+esc(p.desc||'无额外要求')+'</div>'+
+      '<div class="need">👥 还差 <b>'+(p.need||3)+'</b> 人</div>'+
+      '<button class="join-btn" onclick="toast(\'已私信队长，等待回复~ 🫡\')">⚡ 申请加入</button>'+
+      '<div class="meta"><span class="who">'+ava(p.user||p.nick||'匿',randColor(p.user||p.nick||'匿'))+esc(p.user||p.nick||'匿名')+'</span><span>'+timeAgo(p.ts)+'</span></div></div>';
+  }).join('');
+  AOS.refresh();
+}
+
+/* ================= 聊天 ================= */
+let lastMsgId=0;
+async function sendChat(){
+  var txt=document.getElementById('chatText').value.trim();
+  var nn=document.getElementById('chatNick').value.trim();
+  if(nn){nick=nn;localStorage.setItem('havoc_nick',nick)}
+  if(!nick){toast('请先填昵称');return}
+  if(!txt){toast('内容不能为空');return}
+  document.getElementById('chatText').value='';
+  var row=await ins({type:'chat',text:txt,ts:Date.now()});
+  if(row){lastMsgId=row.id;appendMsg({_id:row.id,type:'chat',user:nick,text:txt,ts:Date.now()},true);renderMsgs([{_id:row.id,type:'chat',user:nick,text:txt,ts:Date.now()}])}
+  if(txt.indexOf('@小Q')>=0||txt.indexOf('小Q')>=0)callAI(txt);
+}
+function appendMsg(m,own){
+  var el=document.getElementById('msgs');if(!el)return;
+  if(m.type==='chat'){var cls=own?'own':'other';var nm=m.user||'匿名';
+    el.insertAdjacentHTML('beforeend','<div class="msg '+cls+'"><div class="meta">'+ava(nm,randColor(nm))+' '+esc(nm)+'</div><div class="bubble">'+esc(m.text)+'</div></div>');
+  }
+  el.scrollTop=el.scrollHeight;
+}
+function renderMsgs(list){
+  list.forEach(function(m){appendMsg(m,m.user===nick)});
+}
+async function loadChat(){
+  var rows=await getPosts();
+  var chats=rows.map(function(r){try{var m=JSON.parse(r.content);m._id=r.id;return m}catch(e){return null}}).filter(function(m){return m&&m.type==='chat'});
+  document.getElementById('statChats').textContent=chats.length;
+  var el=document.getElementById('msgs');
+  el.innerHTML='<div class="msg sys"><div class="bubble">⚔️ 欢迎来到哈夫克大厅 · @小Q 召唤AI · 5秒自动同步</div></div>';
+  chats.reverse().forEach(function(m){appendMsg(m,m.user===nick)});
+  if(chats.length)lastMsgId=Math.max.apply(null,chats.map(function(c){return c._id}));
+}
+async function poll(){
+  try{
+    var r=await sb.from(TABLE).select('*').gt('id',lastMsgId).order('id',{ascending:true}).limit(50);
+    if(r.error)return;
+    (r.data||[]).forEach(function(row){try{var m=JSON.parse(row.content);m._id=row.id;if(m.type==='chat'){appendMsg(m,m.user===nick);lastMsgId=row.id;document.getElementById('statChats').textContent=parseInt(document.getElementById('statChats').textContent)+1}}catch(e){}});
+  }catch(e){}
+}
+
+/* ================= AI 小Q ================= */
+let lastAI=0;
+async function callAI(q){
+  if(Date.now()-lastAI<8000){toast('⏳ AI冷却中，稍等几秒');return}
+  lastAI=Date.now();
+  var el=document.getElementById('msgs');
+  el.insertAdjacentHTML('beforeend','<div class="msg other"><div class="meta">🤖 小Q <span class="badge badge-bot">AI</span></div><div class="bubble">思考中...</div></div>');
+  el.scrollTop=el.scrollHeight;
+  var models=['Mistral-Small-3.2-24B-Instruct-2506','gpt-oss-20b'];
+  for(var i=0;i<models.length;i++){
+    try{
+      var resp=await fetch('https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:models[i],messages:[{role:'system',content:'你是小Q，哈夫克社区的AI管理员。活泼可爱简短，回复2-4句不超过100字，爱用emoji。熟悉三角洲行动、搜打撤、烽火地带、全面战场等玩法，能聊战术和组队。'},{role:'user',content:q}],max_tokens:180,temperature:0.85})});
+      if(!resp.ok)continue;
+      var d=await resp.json();
+      var m=d.choices&&d.choices[0]&&d.choices[0].message;var reply=m?(m.content||m.reasoning||''):'';
+      reply=reply.replace(/<think>[\s\S]*?<\/think>/g,'').trim();
+      if(!reply)continue;
+      var last=el.lastChild;if(last)last.remove();
+      appendMsg({type:'chat',user:'小Q',text:reply,ts:Date.now()},false);
+      ins({type:'chat',user:'小Q',text:reply,ts:Date.now()});
+      return;
+    }catch(e){}
+  }
+  var last2=el.lastChild;if(last2)last2.remove();
+  appendMsg({type:'chat',user:'小Q',text:'网络不太好，先聊点别的~ 😅',ts:Date.now()},false);
+}
+
+/* ================= 管理 ================= */
+function doAdmin(){var pw=document.getElementById('adminPw').value;if(pw===ADMIN_PW){isAdmin=true;toast('👑 群主已登录');document.getElementById('adminPw').value=''}else toast('密码不对')}
+
+/* ================= tab 切换 ================= */
+function switchTab(t,btn){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on')});
+  document.getElementById('panel-'+t).classList.add('on');
+  document.querySelectorAll('.nav-tabs button').forEach(function(b){b.classList.remove('on')});
+  btn.classList.add('on');
+  AOS.refresh();
+}
+
+/* ================= 初始化 ================= */
+function init(){
+  AOS.init({duration:700,easing:'ease-out',once:true});
+  bindNick('postNick');bindNick('teamNick');bindNick('chatNick');
+  initPresence();refreshOnline();
+  loadPosts();loadTeams();loadChat();
+  setInterval(poll,5000);
+  setInterval(loadPosts,30000);
+  setInterval(loadTeams,30000);
+}
+init();
+</script>
+</body>
+</html>
