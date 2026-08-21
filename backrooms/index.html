@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>后室项目 · MIUI STUDIO</title>
+<style>
+  :root {
+    --bg:#1a1408; --card:#241c0d; --line:#3a2f17;
+    --yellow:#e8d9a0; --yellow-dim:#a8955c; --text:#d8cfa8;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:"Courier New", "PingFang SC", "Microsoft YaHei", monospace;
+    background:
+      radial-gradient(ellipse at 50% -10%, #2e2410 0%, transparent 55%),
+      var(--bg);
+    color:var(--text); min-height:100vh; line-height:1.7;
+    padding:48px 20px;
+  }
+  .wrap { max-width:880px; margin:0 auto; }
+  h1 {
+    color:var(--yellow); font-size:clamp(26px,5vw,40px);
+    letter-spacing:6px; text-align:center; font-weight:normal;
+    text-shadow:0 0 18px rgba(232,217,160,0.25);
+  }
+  .sub {
+    text-align:center; color:var(--yellow-dim); letter-spacing:2px;
+    margin:10px 0 40px; font-size:13px;
+  }
+  .divider {
+    height:1px; background:linear-gradient(90deg,transparent,var(--line),transparent);
+    margin:36px 0;
+  }
+  h2 {
+    color:var(--yellow); font-size:18px; letter-spacing:3px; margin-bottom:18px;
+    font-weight:normal; border-left:3px solid var(--yellow-dim); padding-left:12px;
+  }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:16px; }
+  .card {
+    background:var(--card); border:1px solid var(--line); border-radius:10px;
+    padding:20px; display:flex; flex-direction:column; gap:10px;
+    transition:transform .15s ease, border-color .15s ease;
+  }
+  .card:hover { transform:translateY(-3px); border-color:var(--yellow-dim); }
+  .tag {
+    display:inline-block; font-size:11px; letter-spacing:1px;
+    color:var(--yellow); background:rgba(232,217,160,0.08);
+    border:1px solid var(--line); padding:2px 10px; border-radius:20px;
+    align-self:flex-start;
+  }
+  .card h3 { color:var(--yellow); font-size:16px; font-weight:normal; letter-spacing:1px; }
+  .card p { font-size:13px; color:#b7ab82; flex:1; }
+  .card a {
+    color:var(--yellow); text-decoration:none; font-size:13px; letter-spacing:1px;
+    border:1px solid var(--yellow-dim); border-radius:6px; padding:9px 14px;
+    text-align:center; transition:background .15s ease, color .15s ease;
+  }
+  .card a:hover { background:var(--yellow); color:#1a1408; }
+  .note {
+    margin-top:36px; font-size:12px; color:#8f8260; text-align:center; letter-spacing:1px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>THE BACKROOMS</h1>
+  <div class="sub">后室项目 · 开源合集 · MIUI STUDIO</div>
+
+  <h2>🎮 客户端 · 虚幻引擎（画面最佳）</h2>
+  <div class="grid">
+    <div class="card">
+      <span class="tag">UE5 · 完整游戏</span>
+      <h3>Backrooms Game</h3>
+      <p>UE5 完整后室体验，程序化生成、实体遭遇、手电筒、氛围音效与碎片叙事，画面最接近原版氛围。</p>
+      <a href="https://github.com/TahaKoyuturk/Backrooms-Game" target="_blank" rel="noopener">GitHub →</a>
+    </div>
+    <div class="card">
+      <span class="tag">UE5 · 带 Windows 打包</span>
+      <h3>Backrooms Level Zero</h3>
+      <p>专注氛围与沉浸感的 UE5 第一人称探索，壁纸纹理、后处理特效齐全，已提供 Windows 打包版可直接下载。</p>
+      <a href="https://github.com/brucelevis/backrooms-level-zero-ue5-game-dev" target="_blank" rel="noopener">GitHub →</a>
+    </div>
+    <div class="card">
+      <span class="tag">UE4 · 持续更新</span>
+      <h3>Budget Backrooms</h3>
+      <p>开源单人后室游戏，890+ 次提交长期维护，关卡、AI、音效一应俱全，适合二次开发。</p>
+      <a href="https://github.com/dabardibid/Budget-Backrooms" target="_blank" rel="noopener">GitHub →</a>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <h2>🌐 网页版 · 浏览器直接玩</h2>
+  <div class="grid">
+    <div class="card">
+      <span class="tag">Web · Roguelike</span>
+      <h3>Backrooms No-Clip</h3>
+      <p>纯浏览器可玩的后室 Roguelike，忠实还原 wiki 设定，Canvas 渲染零依赖，开箱即玩。</p>
+      <a href="https://github.com/AgenteMaxo/backrooms-noclip" target="_blank" rel="noopener">GitHub →</a>
+    </div>
+    <div class="card">
+      <span class="tag">Web · 生存恐怖</span>
+      <h3>Backrooms Level 0</h3>
+      <p>浏览器内运行的生存恐怖游戏，零外部素材（贴图/音效/怪物全部程序生成），找 8 页纸逃出生天，可部署 Vercel。</p>
+      <a href="https://github.com/chetanpujari5105/backrooms-level-0" target="_blank" rel="noopener">GitHub →</a>
+    </div>
+  </div>
+
+  <div class="note">以上均为开源项目，遵循各自仓库的许可证使用 · MIUI STUDIO 整理</div>
+</div>
+</body>
+</html>
