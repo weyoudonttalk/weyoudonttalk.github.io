@@ -271,6 +271,7 @@ footer .soc a:hover{color:var(--p)}
   <h2 class="sec-title rv">联系我们</h2>
   <div class="cgrid" style="margin-top:36px">
     <a class="ccard rv" href="#" onclick="T('🐧 QQ频道：MIUI工作室');return false"><span class="cci">🐧</span><span class="ccv">QQ频道</span><span class="ccl">MIUI工作室</span></a>
+    <a class="ccard rv" href="#" onclick="copyGroup();return false"><span class="cci">👥</span><span class="ccv">QQ群</span><span class="ccl">1070470498</span></a>
     <a class="ccard rv" href="https://weyoudonttalk.github.io/" target="_blank"><span class="cci">🌐</span><span class="ccv">官方网站</span><span class="ccl">永久在线</span></a>
     <a class="ccard rv" href="#" onclick="T('📧 miui-studio@qq.com');return false"><span class="cci">📧</span><span class="ccv">电子邮箱</span><span class="ccl">联系我们</span></a>
     <a class="ccard rv" href="https://weyoudonttalk.github.io/qqapp/" target="_blank"><span class="cci">💬</span><span class="ccv">QQ完全版</span><span class="ccl">在线聊天</span></a>
@@ -309,6 +310,12 @@ window.addEventListener('scroll',function(){document.getElementById('nav').class
 
 // TOAST
 var tt;
+function copyGroup(){
+  var g="1070470498";
+  var ok=function(){T('✅ 已复制QQ群号：'+g)};
+  var no=function(){T('🐧 QQ群号：'+g)};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(g).then(ok,no)}else{no()}
+}
 function T(m){var e=document.createElement('div');e.textContent=m;e.style.cssText='position:fixed;top:24px;left:50%;transform:translateX(-50%);padding:10px 22px;border-radius:18px;font-size:12px;font-weight:600;z-index:9999;background:#1a1a2e;color:#fff;pointer-events:none;opacity:0;transition:.3s';document.body.appendChild(e);requestAnimationFrame(function(){e.style.opacity='1'});setTimeout(function(){e.style.opacity='0';setTimeout(function(){e.remove()},300)},2000)}
 </script>
 <script>
