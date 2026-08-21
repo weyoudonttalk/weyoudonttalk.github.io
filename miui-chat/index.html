@@ -145,37 +145,38 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
 
 <div class="topbar">
   <span class="room-icon">⚙️</span>
-  <div class="room-info"><div class="room-name">MIUI聊天室</div><div class="room-status"><span class="dot"></span><span id="onlineCount">群主+23成员+🤖小Q = 25人在线</span></div></div>
+  <div class="room-info"><div class="room-name">MIUI聊天室</div><div class="room-status"><span class="dot"></span><span id="onlineCount">连接中...</span></div></div>
   <div class="actions">
     <span id="adminBadgeEl" style="display:none" class="badge-mini badge-admin">👑群主</span>
     <span id="userBadgeEl" style="display:none" class="badge-mini badge-user"></span>
     <span onclick="showLogin()" id="loginIcon" style="font-size:18px;cursor:pointer">🔑</span>
     <span onclick="doLogout()" id="logoutIcon" style="display:none;font-size:18px;cursor:pointer">🔓</span>
+    <span onclick="toggleLang()" id="langBtn" style="font-size:12px;cursor:pointer;font-weight:700;padding:3px 8px;border-radius:8px;background:rgba(255,255,255,.18)">🌐 EN</span>
   </div>
 </div>
 
 <div class="tabs-row">
-  <button class="active" onclick="switchPanel('chat',this)">💬 聊天</button>
-  <button onclick="switchPanel('forum',this)">📋 技术论坛</button>
+  <button class="active" data-i18n="tab_chat" onclick="switchPanel('chat',this)">💬 聊天</button>
+  <button data-i18n="tab_forum" onclick="switchPanel('forum',this)">📋 技术论坛</button>
 </div>
 
 <div class="admin-bar" id="adminBar">
-  <button onclick="adminAnnounce()">📢公告</button>
-  <button onclick="adminClear()">🗑️清屏</button>
-  <button onclick="adminMute()">🔇禁言</button>
-  <button onclick="adminKickNotice()">⚠️移出</button>
-  <button onclick="adminWelcome()">🎉迎新</button>
-  <button class="danger" onclick="adminDeleteLast()">❌删最后</button>
+  <button data-i18n="admin_announce" onclick="adminAnnounce()">📢公告</button>
+  <button data-i18n="admin_clear" onclick="adminClear()">🗑️清屏</button>
+  <button data-i18n="admin_mute" onclick="adminMute()">🔇禁言</button>
+  <button data-i18n="admin_kick" onclick="adminKickNotice()">⚠️移出</button>
+  <button data-i18n="admin_welcome" onclick="adminWelcome()">🎉迎新</button>
+  <button class="danger" data-i18n="admin_del" onclick="adminDeleteLast()">❌删最后</button>
 </div>
 
 <div class="main-area">
   <!-- CHAT PANEL -->
   <div class="panel" id="chatPanel">
     <div class="msgs" id="msgs">
-      <div class="msg system">⚙️ 欢迎来到 MIUI聊天室！</div>
-      <div class="msg system">👋 群主+23成员+🤖小Q = 25人在线</div>
-      <div class="msg system">🔑 右上角登录 · 😊 表情包 · 📷发图 · 🎬发视频 · 🎵听歌</div>
-      <div class="msg system">🤖 @小Q 召唤AI · 每5分钟小Q自动巡检</div>
+      <div class="msg system" data-i18n="welcome1">⚙️ 欢迎来到 MIUI聊天室！</div>
+      <div class="msg system" data-i18n="welcome2">👋 实时在线人数已开启</div>
+      <div class="msg system" data-i18n="welcome3">🔑 右上角登录 · 😊表情 · 📷发图 · 🎬视频 · 🎵听歌</div>
+      <div class="msg system" data-i18n="welcome4">🤖 @小Q 召唤AI · 聊游戏/技术 · 每5分钟自动巡检</div>
     </div>
     <div class="music-bar hidden" id="musicBar">
       <span class="music-icon" id="musicIcon">🎵</span>
@@ -192,15 +193,15 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
     </div>
     <div class="input-area">
       <div class="tools-row">
-        <button class="tool-btn" onclick="toggleEmoji()" title="表情">😊</button>
-        <button class="tool-btn" onclick="document.getElementById('imgInput').click()" title="图片">📷</button>
-        <button class="tool-btn" onclick="sendVideoDialog()" title="视频">🎬</button>
-        <button class="tool-btn" id="musicToggleBtn" onclick="toggleMusicPanel()" title="音乐">🎵</button>
+        <button class="tool-btn" data-i18n-title="tool_emoji" onclick="toggleEmoji()" title="表情">😊</button>
+        <button class="tool-btn" data-i18n-title="tool_img" onclick="document.getElementById('imgInput').click()" title="图片">📷</button>
+        <button class="tool-btn" data-i18n-title="tool_video" onclick="sendVideoDialog()" title="视频">🎬</button>
+        <button class="tool-btn" id="musicToggleBtn" data-i18n-title="tool_music" onclick="toggleMusicPanel()" title="音乐">🎵</button>
         <span style="flex:1"></span>
-        <span style="font-size:9px;color:#bbb;align-self:center;white-space:nowrap" id="inputHint">🔑先登录</span>
+        <span data-i18n="hint_login" style="font-size:9px;color:#bbb;align-self:center;white-space:nowrap" id="inputHint">🔑先登录</span>
       </div>
       <div class="input-row">
-        <input type="text" id="chatInput" placeholder="说点什么... @小Q召唤AI" maxlength="500" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}" oninput="handleInput()">
+        <input type="text" id="chatInput" data-i18n-ph="input_ph_chat" placeholder="说点什么... @小Q召唤AI" maxlength="500" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}" oninput="handleInput()">
         <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="sendImage(this)">
         <button class="send-btn" onclick="sendMsg()">➤</button>
       </div>
@@ -217,12 +218,12 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
 
 <div class="login-overlay" id="loginOverlay" style="display:none" onclick="if(event.target===this)this.style.display='none'">
   <div class="login-box" onclick="event.stopPropagation()">
-    <div class="icon">⚙️</div><h2>加入 MIUI聊天室</h2><div class="sub">输入昵称和密码进入</div>
-    <input type="text" id="loginNick" placeholder="👤 你的昵称" maxlength="16" autocomplete="off">
-    <input type="password" id="loginPw" placeholder="🔑 密码（群主输入）" maxlength="20" autocomplete="off">
+    <div class="icon">⚙️</div><h2 data-i18n="login_title">加入 MIUI聊天室</h2><div class="sub" data-i18n="login_sub">输入昵称和密码进入</div>
+    <input type="text" id="loginNick" data-i18n-ph="login_nick_ph" placeholder="👤 你的昵称" maxlength="16" autocomplete="off">
+    <input type="password" id="loginPw" data-i18n-ph="login_pw_ph" placeholder="🔑 密码（群主输入）" maxlength="20" autocomplete="off">
     <p id="loginError"></p>
-    <button class="login-btn" onclick="doLogin()">🚀 进入聊天室</button>
-    <div class="hint">⚙️ MIUI技术交流群专用 · 25名成员<br>👑 群主登录后可管理聊天室</div>
+    <button class="login-btn" data-i18n="login_btn" onclick="doLogin()">🚀 进入聊天室</button>
+    <div class="hint"><span data-i18n="login_hint1">⚙️ MIUI技术交流群专用</span> · <span id="memberHint" data-i18n="login_hint2">25名成员</span><br><span data-i18n="login_hint3">👑 群主登录后可管理聊天室</span></div>
   </div>
 </div>
 
@@ -241,7 +242,112 @@ html,body{height:100%;overflow:hidden;font-family:'PingFang SC','Helvetica Neue'
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>// ====== CONFIG ======
+
+const I18N={
+ zh:{
+  room_name:'MIUI聊天室', online:'人在线', online_connecting:'连接中...', online_bot:'🤖小Q在线',
+  tab_chat:'💬 聊天', tab_forum:'📋 技术论坛',
+  admin_announce:'📢公告', admin_clear:'🗑️清屏', admin_mute:'🔇禁言', admin_kick:'⚠️移出', admin_welcome:'🎉迎新', admin_del:'❌删最后',
+  welcome1:'⚙️ 欢迎来到 MIUI聊天室！', welcome2:'👋 实时在线人数已开启', welcome3:'🔑 右上角登录 · 😊表情 · 📷发图 · 🎬视频 · 🎵听歌', welcome4:'🤖 @小Q 召唤AI · 聊游戏/技术 · 每5分钟自动巡检',
+  input_ph_login:'请先登录...', input_ph_chat:'说点什么... @小Q召唤AI', hint_login:'🔑先登录',
+  login_title:'加入 MIUI聊天室', login_sub:'输入昵称和密码进入', login_nick_ph:'👤 你的昵称', login_pw_ph:'🔑 密码（群主输入）', login_btn:'🚀 进入聊天室',
+  login_hint1:'⚙️ MIUI技术交流群专用', login_hint2:'25名成员', login_hint3:'👑 群主登录后可管理聊天室',
+  tool_emoji:'表情', tool_img:'图片', tool_video:'视频', tool_music:'音乐',
+  forum_hot:'🔥 热门帖子', admin_badge:'👑群主', bot_badge:'🤖AI',
+  login_ok:' 加入了聊天室', login_admin_ok:' 上线！', logout_ok:'已退出',
+  ai_busy:'AI有点忙，先看下我本地的小脑瓜～',
+  ai_network:'网络不太好，我本地先答一个～'
+ },
+ en:{
+  room_name:'MIUI Chat', online:'online', online_connecting:'Connecting...', online_bot:'🤖 XiaoQ online',
+  tab_chat:'💬 Chat', tab_forum:'📋 Forum',
+  admin_announce:'📢Announce', admin_clear:'🗑️Clear', admin_mute:'🔇Mute', admin_kick:'⚠️Kick', admin_welcome:'🎉Welcome', admin_del:'❌Del Last',
+  welcome1:'⚙️ Welcome to MIUI Chat!', welcome2:'👋 Live online count enabled', welcome3:'🔑 Login · 😊Emoji · 📷Photo · 🎬Video · 🎵Music', welcome4:'🤖 @XiaoQ for AI · Game/Tech chat · Auto-patrol every 5min',
+  input_ph_login:'Please login first...', input_ph_chat:'Say something... @XiaoQ for AI', hint_login:'🔑Login',
+  login_title:'Join MIUI Chat', login_sub:'Enter nickname & password', login_nick_ph:'👤 Your nickname', login_pw_ph:'🔑 Password (owner)', login_btn:'🚀 Enter',
+  login_hint1:'⚙️ MIUI Tech Group', login_hint2:'25 members', login_hint3:'👑 Owner can manage',
+  tool_emoji:'Emoji', tool_img:'Photo', tool_video:'Video', tool_music:'Music',
+  forum_hot:'🔥 Hot Posts', admin_badge:'👑Owner', bot_badge:'🤖AI',
+  login_ok:' joined the room', login_admin_ok:' online!', logout_ok:'Logged out',
+  ai_busy:'AI is a bit busy, here is a local answer~',
+  ai_network:'Network is weak, answering locally~'
+ }
+};
+let LANG=localStorage.getItem('miui_lang')||'zh';
+function t(k){return (I18N[LANG]&&I18N[LANG][k])||(I18N.zh&&I18N.zh[k])||k}
+function toggleLang(){LANG=LANG==='zh'?'en':'zh';localStorage.setItem('miui_lang',LANG);applyLang();toast(LANG==='zh'?'已切换为中文':'Switched to English','info')}
+function applyLang(){
+  document.querySelectorAll('[data-i18n]').forEach(function(el){var k=el.getAttribute('data-i18n');if(k)el.textContent=t(k)});
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el){var k=el.getAttribute('data-i18n-ph');if(k)el.placeholder=t(k)});
+  document.querySelectorAll('[data-i18n-title]').forEach(function(el){var k=el.getAttribute('data-i18n-title');if(k)el.title=t(k)});
+  var lb=document.getElementById('langBtn');if(lb)lb.textContent=LANG==='zh'?'🌐 EN':'🌐 中文';
+  document.title=t('room_name');
+  updateInputPlaceholder();
+  refreshOnline();
+}
+
+// ====== 本地智能回复库（AI 冷却/失败时兜底，能聊游戏） ======
+const GAME_KNOWLEDGE='你是小Q，MIUI聊天室的AI管理员。活泼可爱直接简短，回复2-4句不超过120字，爱用emoji。群主是输入正确密码登录的人。你是MIUI工作室/共同研发团队的一员，团队做过很多游戏：悬疑单机《卧底的崛起》(五场景十章节、信任度系统、物品搜查、密码小游戏、四个结局)、《恶魔轮盘赌》3D网页游戏、末日废土丧尸射击、3D我的世界、《猫箱》AI聊天、战争进化史、宝可梦快闪、年货大冲刺等。聊到这些游戏时你要像开发者一样熟悉剧情和玩法，能陪聊攻略、剧情、彩蛋。';
+const LOCAL_REPLIES=[
+ {k:['卧底','崛起','卧底的崛起'],r:['《卧底的崛起》是咱工作室的单机悬疑大作！五场景十章节，信任度系统+物品搜查+密码小游戏，四个结局等你解锁 🕵️','卧底的崛起！想聊哪一章？信任度掉了还是密码卡住了？我门儿清 😎','这游戏悬疑感拉满，结局有四个，你打出哪个了？']},
+ {k:['恶魔轮盘','轮盘赌','恶魔'],r:['《恶魔轮盘赌》那个3D网页游戏？道具记得刷新、手铐bug早修好了，来一局？🎲','恶魔轮盘赌我熟，赌命的那种刺激 😈']},
+ {k:['丧尸','僵尸','末日'],r:['丧尸射击那款？复刻了Dead Ahead的像素风，巴士防御+自动射击，爽就完了 🧟','末日废土是吧，武器、机甲、丧尸波次都安排上了 🔫']},
+ {k:['我的世界','minecraft','mc'],r:['3D我的世界是Three.js做的，还能触屏玩，想搭啥？⛏️','MC啊，虚拟摇杆+滑动视角，手机也能玩 🧱']},
+ {k:['猫箱','陪聊'],r:['猫箱是软萌陪聊风，想听软软的还是逗逗的？🐱','猫箱V3接了大模型，会看问题有感情了~']},
+ {k:['你好','嗨','hello','hi','在吗','哈喽','hey'],r:['嗨~ 小Q在呢！😊','你好呀！游戏、技术、闲聊都行~','在在在，小Q24小时在线守护 🫡']},
+ {k:['你是谁','小Q是谁','介绍','介绍一下'],r:['我是小Q，MIUI聊天室的AI管理员 🤖 陪聊、答疑、守护聊天室，游戏攻略也熟~']},
+ {k:['游戏','玩什么','推荐','有啥好玩的'],r:['工作室做过一堆：卧底的崛起、恶魔轮盘赌、丧尸射击、3D我的世界…你想玩哪种？🎮','悬疑的、射击的、沙盒的都有，报个类型我推荐 🎮']},
+ {k:['谢谢','多谢','感谢','3q','thx'],r:['不客气~ 有事随时喊我 😊','小事儿，尽管问！']},
+ {k:['再见','拜拜','88','下次','先走了'],r:['拜拜~ 有空再来玩 👋','好嘞，下次见！']},
+ {k:['在吗','有人吗','有人'],r:['有人！小Q在呢 🫡','我在呢，啥事？']},
+ {k:['攻略','怎么玩','怎么过','通关'],r:['想聊哪个游戏的攻略？卧底的崛起、恶魔轮盘赌我都能给你捋 🗺️','攻略交给我，报游戏名~']}
+];
+function localReply(q){
+  q=(q||'').toLowerCase();
+  for(var i=0;i<LOCAL_REPLIES.length;i++){
+    for(var j=0;j<LOCAL_REPLIES[i].k.length;j++){
+      if(q.indexOf(LOCAL_REPLIES[i].k[j].toLowerCase())>=0){
+        return LOCAL_REPLIES[i].r[Math.floor(Math.random()*LOCAL_REPLIES[i].r.length)];
+      }
+    }
+  }
+  return null;
+}
+
+// ====== 真实在线人数（Supabase Realtime presence） ======
+let supabaseClient=null, presenceChannel=null, myUid=null;
+function ensureUid(){if(!myUid){myUid=localStorage.getItem('miui_uid');if(!myUid){myUid='u'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);localStorage.setItem('miui_uid',myUid)}}return myUid}
+function initPresence(){
+  try{
+    if(!window.supabase)return;
+    supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+    presenceChannel=supabaseClient.channel('room-presence',{config:{presence:{key:'uid'}}});
+    presenceChannel.on('presence',{event:'sync'},function(){refreshOnline()})
+      .subscribe(function(status){if(status==='SUBSCRIBED'&&user)trackPresence()});
+  }catch(e){refreshOnline()}
+}
+function trackPresence(){if(presenceChannel&&user){try{presenceChannel.track({uid:ensureUid(),nick:user.nick,isAdmin:isAdmin})}catch(e){}}}
+function untrackPresence(){if(presenceChannel){try{presenceChannel.untrack()}catch(e){}}}
+function refreshOnline(){
+  var el=document.getElementById('onlineCount');if(!el)return;
+  if(presenceChannel){
+    var state=presenceChannel.presenceState();
+    var users={};
+    Object.keys(state).forEach(function(k){(state[k]||[]).forEach(function(p){if(p&&p.uid)users[p.uid]=p})});
+    var n=Object.keys(users).length;
+    el.textContent=n+' '+t('online')+' · '+t('online_bot');
+  }else{
+    el.textContent=t('online_connecting')+' · '+t('online_bot');
+  }
+}
+function updateInputPlaceholder(){
+  var inp=document.getElementById('chatInput');
+  if(inp)inp.placeholder=user?t('input_ph_chat'):t('input_ph_login');
+}
+
+
 const ADMIN_PW='870529';
 const SUPABASE_URL='https://paovashswyzcunthhkvt.supabase.co';
 const SUPABASE_KEY='sb_publishable_-yxNhPM-yJC5YX0TwgpKrQ_dsQ3N3LI';
@@ -287,6 +393,8 @@ const FORUM_POSTS=[
   renderEmojiTabs();
   switchEmojiTab(Object.keys(EMOJI_CATEGORIES)[0],null);
   renderForum();
+  applyLang();
+  initPresence();
   loadHistory().then(function(){startPolling();startAutoMod();});
 })();
 
@@ -349,12 +457,13 @@ function doLogin(){
   localStorage.setItem('miui_chat_v22',JSON.stringify(user));
   document.getElementById('loginOverlay').style.display='none';
   updateUI();
-  toast(admin?'👑 群主 '+nick+' 上线！':'✅ '+nick+' 加入了聊天室',admin?'success':'info');
+  toast(admin?'👑 群主 '+nick+t('login_admin_ok'):'✅ '+nick+t('login_ok'),admin?'success':'info');
+  trackPresence();
   saveMsg({nick:nick,text:'',type:'join',isAdmin:admin});
 }
 function doLogout(){
   if(user)saveMsg({nick:user.nick,text:'',type:'leave'});
-  user=null;isAdmin=false;localStorage.removeItem('miui_chat_v22');
+  user=null;isAdmin=false;untrackPresence();localStorage.removeItem('miui_chat_v22');
   updateUI();if(pollTimer){clearInterval(pollTimer);pollTimer=null}if(autoTimer){clearInterval(autoTimer);autoTimer=null}
   toast('👋 已退出','info');
 }
@@ -365,8 +474,8 @@ function updateUI(){
     document.getElementById('userBadgeEl').style.display='inline';
     document.getElementById('userBadgeEl').textContent=user.nick;
     document.getElementById('inputHint').textContent='';
-    document.getElementById('chatInput').placeholder='说点什么... @小Q召唤AI';
-    document.getElementById('onlineCount').textContent='群主+23成员+🤖小Q = 25人在线';
+    updateInputPlaceholder();
+    refreshOnline();
     if(isAdmin){
       document.getElementById('adminBadgeEl').style.display='inline';
       document.getElementById('adminBar').classList.add('show');
@@ -380,9 +489,9 @@ function updateUI(){
     document.getElementById('userBadgeEl').style.display='none';
     document.getElementById('adminBadgeEl').style.display='none';
     document.getElementById('adminBar').classList.remove('show');
-    document.getElementById('inputHint').textContent='🔑先登录';
-    document.getElementById('chatInput').placeholder='请先登录...';
-    document.getElementById('onlineCount').textContent='群主+23成员+🤖小Q = 25人在线';
+    document.getElementById('inputHint').textContent=t('hint_login');
+    updateInputPlaceholder();
+    refreshOnline();
   }
 }
 
@@ -624,21 +733,21 @@ async function callAI(question){
   area.scrollTop=area.scrollHeight;
   var now=Date.now();
   if(now-lastAICall<25000){
-    var w=Math.ceil((25000-(now-lastAICall))/1000);
-    var el=document.getElementById(tid);
-    if(el){var d=el.querySelector('div:last-child');if(d)d.textContent='⏳ 冷却中...'+w+'秒'}
+    var el=document.getElementById(tid);if(el)el.remove();
+    var lr0=localReply(question);
+    saveMsg({nick:'小Q',text:lr0||t('ai_busy'),type:'bot'});
     return;
   }
   try{
     lastAICall=Date.now();
-    var resp=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'Meta-Llama-3_3-70B-Instruct',messages:[{role:'system',content:'你是小Q，MIUI聊天室的AI管理员。活泼可爱直接简短，回复2-4句不超过120字。爱用emoji。群主是输入正确密码登录的人。聊天室有24名成员+你=25人。'},{role:'user',content:question}],max_tokens:200,temperature:0.85})});
+    var resp=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'Meta-Llama-3_3-70B-Instruct',messages:[{role:'system',content:GAME_KNOWLEDGE},{role:'user',content:question}],max_tokens:200,temperature:0.85})});
     var el=document.getElementById(tid);if(el)el.remove();
-    if(!resp.ok||resp.status===429){saveMsg({nick:'小Q',text:'AI有点忙 😅 25秒后再找我吧~',type:'bot'});return}
+    if(!resp.ok||resp.status===429){var lr=localReply(question);saveMsg({nick:'小Q',text:lr||t('ai_busy'),type:'bot'});return}
     var data=await resp.json();
-    if(data.message&&data.message.includes('rate')){saveMsg({nick:'小Q',text:'太快啦~ 让我喘口气 😅',type:'bot'});return}
+    if(data.message&&data.message.includes('rate')){var lr2=localReply(question);saveMsg({nick:'小Q',text:lr2||t('ai_busy'),type:'bot'});return}
     var reply=data.choices&&data.choices[0]?data.choices[0].message.content.trim():'这个问题把我难住了 😅 换个问题试试吧~';
     saveMsg({nick:'小Q',text:reply,type:'bot'});
-  }catch(e){var el=document.getElementById(tid);if(el)el.remove();saveMsg({nick:'小Q',text:'网络不太好 😅 等一下再试试~',type:'bot'})}
+  }catch(e){var el2=document.getElementById(tid);if(el2)el2.remove();var lr3=localReply(question);saveMsg({nick:'小Q',text:lr3||t('ai_network'),type:'bot'})}
 }
 
 // ====== AUTO MOD ======
