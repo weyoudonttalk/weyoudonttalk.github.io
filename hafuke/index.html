@@ -189,10 +189,34 @@ footer b{color:var(--txt2)}
   .nav-tabs button{padding:8px 10px;font-size:13px}
   .nav-tabs button .lbl{display:none}
 }
+
+/* ===== 哈夫克主题动画（纯手写，无第三方库） ===== */
+.radar{position:fixed;top:-40px;right:-40px;width:480px;height:480px;z-index:0;pointer-events:none;opacity:.45;border-radius:50%}
+.radar::before{content:'';position:absolute;inset:0;border-radius:50%;border:1px solid rgba(25,200,217,.18)}
+.radar::after{content:'';position:absolute;inset:17%;border-radius:50%;border:1px solid rgba(25,200,217,.13)}
+.radar .ring{position:absolute;inset:34%;border-radius:50%;border:1px solid rgba(25,200,217,.1)}
+.radar .sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,rgba(25,200,217,.3),transparent 70deg);animation:spin 4.5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ripple{position:fixed;bottom:-70px;left:50%;margin-left:-150px;width:300px;height:300px;z-index:0;pointer-events:none}
+.ripple span{position:absolute;inset:0;border:1px solid rgba(25,200,217,.22);border-radius:50%;animation:ripple 4.2s ease-out infinite}
+.ripple span:nth-child(2){animation-delay:1.4s}.ripple span:nth-child(3){animation-delay:2.8s}
+@keyframes ripple{0%{transform:scale(.35);opacity:.8}100%{transform:scale(1.7);opacity:0}}
+.hero{position:relative}
+.hero::after{content:'';position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,rgba(25,200,217,.6),transparent);animation:scanline 3.6s linear infinite;opacity:.7;pointer-events:none}
+@keyframes scanline{0%{top:0;opacity:.7}50%{opacity:.9}100%{top:100%;opacity:.7}}
+.card::before{content:'';position:absolute;top:0;left:0;width:0;height:0;border-top:2px solid var(--cyan);border-left:2px solid var(--cyan);border-radius:14px 0 0 0;opacity:0;transition:width .25s,height .25s,opacity .25s}
+.card::after{content:'';position:absolute;bottom:0;right:0;width:0;height:0;border-bottom:2px solid var(--cyan);border-right:2px solid var(--cyan);border-radius:0 0 14px 0;opacity:0;transition:width .25s,height .25s,opacity .25s}
+.card:hover::before,.card:hover::after{width:26px;height:26px;opacity:1}
+.logo::after{content:'';position:absolute;left:0;bottom:-2px;width:100%;height:2px;background:linear-gradient(90deg,var(--orange),var(--cyan));transform:scaleX(0);transform-origin:left;animation:logoLine 3s ease-in-out infinite}
+@keyframes logoLine{0%,100%{transform:scaleX(0)}50%{transform:scaleX(1)}}
+.panel-head h2 .bar{animation:barPulse 2s ease-in-out infinite}
+@keyframes barPulse{0%,100%{box-shadow:0 0 0 rgba(255,122,26,0)}50%{box-shadow:0 0 12px rgba(255,122,26,.8)}}
 </style>
 </head>
 <body>
-<div id="particles"></div>
+<canvas id="particles"></canvas>
+<div class="radar"><span class="ring"></span><span class="sweep"></span></div>
+<div class="ripple"><span></span><span></span><span></span></div>
 <div class="grid-bg"></div>
 
 <nav>
@@ -222,16 +246,16 @@ footer b{color:var(--txt2)}
 
   <!-- 数据条 -->
   <div class="stats">
-    <div class="stat" data-aos="fade-up"><div class="num" id="statPosts">0</div><div class="lbl">战术帖子</div></div>
-    <div class="stat" data-aos="fade-up" data-aos-delay="80"><div class="num" id="statChats">0</div><div class="lbl">聊天消息</div></div>
-    <div class="stat" data-aos="fade-up" data-aos-delay="160"><div class="num" id="statTeams">0</div><div class="lbl">组队招募</div></div>
-    <div class="stat" data-aos="fade-up" data-aos-delay="240"><div class="num" id="statOnline">0</div><div class="lbl">当前在线</div></div>
+    <div class="stat"><div class="num" id="statPosts">0</div><div class="lbl">战术帖子</div></div>
+    <div class="stat"><div class="num" id="statChats">0</div><div class="lbl">聊天消息</div></div>
+    <div class="stat"><div class="num" id="statTeams">0</div><div class="lbl">组队招募</div></div>
+    <div class="stat"><div class="num" id="statOnline">0</div><div class="lbl">当前在线</div></div>
   </div>
 
   <!-- ============ 论坛 ============ -->
   <section class="panel on" id="panel-forum">
     <div class="panel-head"><h2><span class="bar"></span>战术论坛</h2><p>分享攻略 · 交流心得 · 战术讨论</p></div>
-    <div class="composer" data-aos="fade-up">
+    <div class="composer">
       <div class="row">
         <input class="nick" id="postNick" placeholder="你的昵称" maxlength="12">
         <select class="cat-sel" id="postCat">
@@ -281,7 +305,7 @@ footer b{color:var(--txt2)}
   <!-- ============ 组队 ============ -->
   <section class="panel" id="panel-team">
     <div class="panel-head"><h2><span class="bar"></span>组队大厅</h2><p>找队友 · 开黑上分 · 搜打撤</p></div>
-    <div class="composer" data-aos="fade-up">
+    <div class="composer">
       <div class="row">
         <input class="nick" id="teamNick" placeholder="你的昵称" maxlength="12">
         <select class="cat-sel" id="teamMode">
@@ -305,10 +329,6 @@ footer b{color:var(--txt2)}
 
 <div id="toast"></div>
 
-<!-- 动画库（网上下载的免费 CDN） -->
-<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -331,19 +351,41 @@ function timeAgo(ts){if(!ts)return'';var d=Date.now()-ts;if(d<60000)return'刚�
 /* 昵称自动记忆 */
 function bindNick(id){var el=document.getElementById(id);if(!el)return;el.value=nick;el.oninput=function(){nick=el.value;localStorage.setItem('havoc_nick',nick)}}
 
-/* ================= 粒子动画 ================= */
-if(window.particlesJS){
-  particlesJS('particles',{
-    particles:{number:{value:60,density:{enable:true,value_area:900}},
-      color:{value:['#ff7a1a','#19c8d9','#3ddc84']},
-      shape:{type:'circle'},
-      opacity:{value:0.5,random:true},size:{value:2.5,random:true},
-      line_linked:{enable:true,distance:130,color:'#1e2c42',opacity:0.5,width:1},
-      move:{enable:true,speed:1.2,random:true,out_mode:'out'}},
-    interactivity:{detect_on:'canvas',events:{onhover:{enable:true,mode:'grab'},onclick:{enable:true,mode:'push'},resize:true},
-      modes:{grab:{distance:160,line_linked:{opacity:0.7}},push:{particles_nb:4}}},
-    retina_detect:true
-  });
+/* ================= 粒子动画（手写 canvas，零第三方库） ================= */
+(function(){
+  var cv=document.getElementById('particles');if(!cv)return;
+  var ctx=cv.getContext('2d'),w,h,ps=[],i;
+  var COLORS=[[255,122,26],[25,200,217],[61,220,132]];
+  function resize(){w=cv.width=window.innerWidth;h=cv.height=window.innerHeight}
+  resize();window.addEventListener('resize',resize);
+  for(i=0;i<70;i++)ps.push({x:Math.random()*w,y:Math.random()*h,r:Math.random()*2+0.5,vx:(Math.random()-0.5)*0.7,vy:(Math.random()-0.5)*0.7,c:COLORS[i%3],a:Math.random()*0.5+0.2});
+  function frame(){
+    ctx.clearRect(0,0,w,h);
+    for(i=0;i<ps.length;i++){
+      var p=ps[i];p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>w)p.vx*=-1;if(p.y<0||p.y>h)p.vy*=-1;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.2832);
+      ctx.fillStyle='rgba('+p.c[0]+','+p.c[1]+','+p.c[2]+','+p.a+')';ctx.fill();
+    }
+    for(i=0;i<ps.length;i++)for(var j=i+1;j<ps.length;j++){
+      var a=ps[i],b=ps[j],dx=a.x-b.x,dy=a.y-b.y,d=dx*dx+dy*dy;
+      if(d<16900){ctx.strokeStyle='rgba(30,44,66,'+(0.55*(1-d/16900))+')';ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke()}
+    }
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+/* ================= 数字滚动动画 ================= */
+function animateNum(id,val){
+  var el=document.getElementById(id);if(!el)return;
+  var cur=parseInt(el.textContent)||0;
+  if(cur===val){el.textContent=val;return}
+  var st=Date.now(),dur=700;
+  function step(){var p=Math.min(1,(Date.now()-st)/dur);var e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(cur+(val-cur)*e);if(p<1)requestAnimationFrame(step)}
+  step();
 }
 
 /* ================= 打字机 ================= */
@@ -362,7 +404,7 @@ localStorage.setItem('havoc_uid',myUid);
 function initPresence(){pc=sb.channel('havoc-presence',{config:{presence:{key:'uid'}}});pc.on('presence',{event:'sync'},refreshOnline).subscribe(function(st){if(st==='SUBSCRIBED'&&nick)pc.track({uid:myUid,nick:nick})})}
 function refreshOnline(){var st=pc?pc.presenceState():{};var m={};Object.keys(st).forEach(function(k){(st[k]||[]).forEach(function(p){if(p&&p.uid)m[p.uid]=p})});
   var n=Object.keys(m).length;var el=document.getElementById('onlineCount');if(el)el.textContent=n+' 人在线';
-  document.getElementById('statOnline').textContent=n;document.getElementById('chatOnline').textContent=n;
+  animateNum('statOnline',n);document.getElementById('chatOnline').textContent=n;
   var ml=document.getElementById('memberList');if(ml){var names=Object.values(m).map(function(p){return p.nick}).filter(Boolean);if(!names.length){ml.innerHTML='<div style="color:var(--txt3);font-size:12px">暂无成员</div>';return}ml.innerHTML=names.map(function(nm){return '<div class="u">'+ava(nm,randColor(nm))+' '+esc(nm)+'</div>'}).join('')}}
 
 /* ================= 数据读写 ================= */
@@ -388,16 +430,15 @@ async function submitPost(){
 async function loadPosts(){
   var rows=await getPosts();
   var posts=rows.map(function(r){try{var m=JSON.parse(r.content);m._id=r.id;return m}catch(e){return null}}).filter(function(m){return m&&m.type==='post'});
-  document.getElementById('statPosts').textContent=posts.length;
+  animateNum('statPosts',posts.length);
   var el=document.getElementById('postList');
   if(!posts.length){el.innerHTML='<div class="empty"><div class="ic">📭</div>还没有帖子，来发第一帖！</div>';return}
   el.innerHTML=posts.map(function(p){
-    return '<div class="card" data-aos="fade-up"><span class="cat cat-'+esc(p.cat)+'">'+esc(p.cat)+'</span>'+
+    return '<div class="card"><span class="cat cat-'+esc(p.cat)+'">'+esc(p.cat)+'</span>'+
       '<h3>'+esc(p.title)+'</h3><div class="body">'+esc(p.body)+'</div>'+
       '<div class="meta"><span class="who">'+ava(p.user||p.nick||'匿',randColor(p.user||p.nick||'匿'))+esc(p.user||p.nick||'匿名')+'</span><span>'+timeAgo(p.ts)+'</span></div></div>';
   }).join('');
-  AOS.refresh();
-}
+  }
 
 /* ================= 组队 ================= */
 async function submitTeam(){
@@ -413,18 +454,17 @@ async function submitTeam(){
 async function loadTeams(){
   var rows=await getPosts();
   var teams=rows.map(function(r){try{var m=JSON.parse(r.content);m._id=r.id;return m}catch(e){return null}}).filter(function(m){return m&&m.type==='team'});
-  document.getElementById('statTeams').textContent=teams.length;
+  animateNum('statTeams',teams.length);
   var el=document.getElementById('teamList');
   if(!teams.length){el.innerHTML='<div class="empty"><div class="ic">🎯</div>暂无招募，发布一条拉队友！</div>';return}
   el.innerHTML=teams.map(function(p){
-    return '<div class="card team-card" data-aos="fade-up"><span class="cat cat-组队">🎯 '+esc(p.mode)+'</span>'+
+    return '<div class="card team-card"><span class="cat cat-组队">🎯 '+esc(p.mode)+'</span>'+
       '<h3>'+esc(p.title)+'</h3><div class="body">'+esc(p.desc||'无额外要求')+'</div>'+
       '<div class="need">👥 还差 <b>'+(p.need||3)+'</b> 人</div>'+
       '<button class="join-btn" onclick="toast(\'已私信队长，等待回复~ 🫡\')">⚡ 申请加入</button>'+
       '<div class="meta"><span class="who">'+ava(p.user||p.nick||'匿',randColor(p.user||p.nick||'匿'))+esc(p.user||p.nick||'匿名')+'</span><span>'+timeAgo(p.ts)+'</span></div></div>';
   }).join('');
-  AOS.refresh();
-}
+  }
 
 /* ================= 聊天 ================= */
 let lastMsgId=0;
@@ -452,7 +492,7 @@ function renderMsgs(list){
 async function loadChat(){
   var rows=await getPosts();
   var chats=rows.map(function(r){try{var m=JSON.parse(r.content);m._id=r.id;return m}catch(e){return null}}).filter(function(m){return m&&m.type==='chat'});
-  document.getElementById('statChats').textContent=chats.length;
+  animateNum('statChats',chats.length);
   var el=document.getElementById('msgs');
   el.innerHTML='<div class="msg sys"><div class="bubble">⚔️ 欢迎来到哈夫克大厅 · @小Q 召唤AI · 5秒自动同步</div></div>';
   chats.reverse().forEach(function(m){appendMsg(m,m.user===nick)});
@@ -502,12 +542,10 @@ function switchTab(t,btn){
   document.getElementById('panel-'+t).classList.add('on');
   document.querySelectorAll('.nav-tabs button').forEach(function(b){b.classList.remove('on')});
   btn.classList.add('on');
-  AOS.refresh();
-}
+  }
 
 /* ================= 初始化 ================= */
 function init(){
-  AOS.init({duration:700,easing:'ease-out',once:true});
   bindNick('postNick');bindNick('teamNick');bindNick('chatNick');
   initPresence();refreshOnline();
   loadPosts();loadTeams();loadChat();
