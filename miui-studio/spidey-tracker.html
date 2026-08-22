@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>蜘蛛侠追踪器 · SPIDER-TRACKER</title>
+<meta name="description" content="像素风全球追踪器：追踪蜘蛛侠在世界各地的目击情报，解锁彩蛋。">
+<style>
+:root{--bg:#07070f;--bg2:#0d0d1a;--panel:#111126;--line:#1f1f3a;--red:#ff2d55;--red2:#ff5c7a;--blue:#00c3ff;--cyan:#39d5ff;--green:#2bd97c;--yellow:#ffd23f;--purple:#b16bff;--txt:#e8e8f0;--dim:#8a8aa8;--faint:#55557a}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Courier New','Lucida Console','PingFang SC','Microsoft YaHei',monospace;background:var(--bg);color:var(--txt);overflow-x:hidden;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:999;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 1px,transparent 1px 3px);mix-blend-mode:multiply;opacity:.5}
+.wrap{max-width:1080px;margin:0 auto;padding:14px 14px 70px}
+
+/* header */
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 4px 6px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .logo{width:40px;height:40px;image-rendering:pixelated;background:var(--red);box-shadow:0 0 0 3px #000,0 0 18px rgba(255,45,85,.6);display:grid;place-items:center;font-size:22px}
+.brand .tt{line-height:1.15}
+.brand .tt h1{font-size:17px;letter-spacing:2px;color:#fff;text-shadow:0 0 10px rgba(0,195,255,.7)}
+.brand .tt small{font-size:10px;color:var(--cyan);letter-spacing:1px}
+header .back{color:var(--cyan);text-decoration:none;font-size:12px;border:1px solid var(--line);padding:7px 12px;background:var(--bg2)}
+header .back:hover{border-color:var(--cyan)}
+
+/* stats */
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.stat{flex:1;min-width:120px;background:var(--bg2);border:1px solid var(--line);padding:10px 12px;text-align:center}
+.stat .n{font-size:22px;color:var(--cyan);text-shadow:0 0 12px rgba(0,195,255,.6)}
+.stat .l{font-size:10px;color:var(--dim);letter-spacing:1px;margin-top:2px}
+
+/* map */
+.mapbox{position:relative;border:2px solid var(--line);background:var(--bg2);box-shadow:0 0 30px rgba(0,0,0,.5);image-rendering:pixelated}
+.mapbox canvas{display:block;width:100%;height:auto;image-rendering:pixelated;cursor:crosshair}
+.mapbox .hud{position:absolute;top:8px;left:10px;font-size:10px;color:var(--dim);letter-spacing:1px;pointer-events:none}
+.mapbox .legend{position:absolute;bottom:8px;left:10px;display:flex;gap:12px;font-size:10px;color:var(--dim);flex-wrap:wrap}
+.legend i{display:inline-block;width:8px;height:8px;margin-right:4px;vertical-align:middle}
+.legend .red i{background:var(--red);box-shadow:0 0 8px var(--red)}
+.legend .yel i{background:var(--yellow);box-shadow:0 0 8px var(--yellow)}
+.legend .grn i{background:var(--green);box-shadow:0 0 8px var(--green)}
+
+/* search & controls */
+.toolbar{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap}
+.toolbar input{flex:1;min-width:160px;background:var(--bg2);border:1px solid var(--line);color:var(--txt);padding:10px 14px;font-family:inherit;font-size:13px;outline:none;letter-spacing:1px}
+.toolbar input:focus{border-color:var(--cyan)}
+.btn{background:var(--bg2);border:1px solid var(--line);color:var(--cyan);padding:10px 16px;font-family:inherit;font-size:13px;cursor:pointer;letter-spacing:1px;transition:.15s}
+.btn:hover{border-color:var(--cyan);background:#151531}
+.btn.r{background:var(--red);border-color:var(--red);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.btn.r:hover{background:var(--red2);border-color:var(--red2)}
+
+/* list */
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-top:6px}
+.card{background:var(--bg2);border:1px solid var(--line);padding:12px 14px;cursor:pointer;transition:.15s;position:relative}
+.card:hover{border-color:var(--cyan);transform:translateY(-2px)}
+.card .ct{font-size:13px;color:#fff;font-weight:bold;letter-spacing:1px}
+.card .cc{font-size:11px;color:var(--dim);margin:3px 0 6px}
+.card .cb{font-size:11px;color:var(--txt);opacity:.85;line-height:1.5}
+.card .tag{position:absolute;top:8px;right:10px;font-size:10px;padding:2px 8px;border:1px solid var(--red);color:var(--red)}
+.card .tag.hot{border-color:var(--yellow);color:var(--yellow)}
+.none{text-align:center;color:var(--dim);padding:40px 0;display:none;font-size:12px;letter-spacing:2px}
+.none.show{display:block}
+
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(3,3,10,.82);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.modal.show{display:flex}
+.modal .box{background:var(--panel);border:2px solid var(--line);max-width:420px;width:100%;padding:20px;position:relative;box-shadow:0 0 40px rgba(0,195,255,.15)}
+.modal .close{position:absolute;top:8px;right:12px;color:var(--dim);cursor:pointer;font-size:20px;line-height:1}
+.modal .close:hover{color:#fff}
+.modal h3{font-size:15px;color:var(--cyan);letter-spacing:1px;margin-bottom:4px}
+.modal .sub{font-size:11px;color:var(--dim);margin-bottom:12px}
+.modal p{font-size:13px;line-height:1.7;color:var(--txt)}
+.modal label{display:block;font-size:11px;color:var(--dim);margin:10px 0 4px;letter-spacing:1px}
+.modal input,.modal textarea{width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--txt);padding:9px 12px;font-family:inherit;font-size:13px;outline:none}
+.modal input:focus,.modal textarea:focus{border-color:var(--cyan)}
+.modal textarea{resize:vertical;min-height:64px}
+.modal .btn{width:100%;margin-top:14px;padding:12px}
+
+/* deep space effect */
+.deep{position:fixed;inset:0;background:#000;z-index:2000;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+.deep.show{display:flex}
+.deep .star{color:var(--red);font-size:13px;letter-spacing:2px;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.2}}
+.deep .msg{color:var(--dim);font-size:11px;letter-spacing:2px}
+
+footer{text-align:center;color:var(--faint);font-size:10px;margin-top:30px;letter-spacing:1px;line-height:2}
+footer a{color:var(--cyan);text-decoration:none}
+.disclaimer{color:#5a5a80;font-size:10px;text-align:center;margin-top:8px}
+@media(max-width:600px){.brand .tt h1{font-size:14px}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">🕷</div>
+      <div class="tt"><h1>SPIDER-TRACKER</h1><small>蜘蛛侠追踪器 · 全球目击情报</small></div>
+    </div>
+    <a class="back" href="index.html">← 返回官网</a>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="n" id="stCity">0</div><div class="l">已追踪城市</div></div>
+    <div class="stat"><div class="n" id="stReport">0</div><div class="l">目击情报</div></div>
+    <div class="stat"><div class="n" id="stEgg">0</div><div class="l">隐藏彩蛋</div></div>
+    <div class="stat"><div class="n" id="stMy">0</div><div class="l">我的上报</div></div>
+  </div>
+
+  <div class="mapbox">
+    <div class="hud">EARTH · SECTOR GRID ONLINE</div>
+    <canvas id="map" width="1080" height="500"></canvas>
+    <div class="legend">
+      <span class="red"><i></i>官方目击</span>
+      <span class="grn"><i></i>隐藏彩蛋</span>
+      <span class="yel"><i></i>玩家上报</span>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <input id="kw" type="text" placeholder="搜索城市 / 国家 / 关键词…">
+    <button class="btn" onclick="doSearch()">搜索 🔍</button>
+    <button class="btn" onclick="showReport()">上报目击 📡</button>
+    <button class="btn r" onclick="deepSpace()">深空信号 🚀</button>
+  </div>
+
+  <div class="list" id="list"></div>
+  <div class="none" id="none">😢 没有匹配的目击情报</div>
+
+  <footer>
+    蜘蛛侠追踪器 · SPIDER-TRACKER · 由 MIUI 工作室 出品<br>
+    数据为粉丝娱乐向内容，非漫威官方。<br>
+    <a href="index.html">返回官网</a>
+  </footer>
+  <div class="disclaimer">本页面为粉丝自制项目，蜘蛛侠相关角色与内容版权归漫威 / Sony 所有。</div>
+</div>
+
+<!-- 详情弹窗 -->
+<div class="modal" id="modal">
+  <div class="box">
+    <span class="close" onclick="closeModal()">×</span>
+    <h3 id="mTitle"></h3>
+    <div class="sub" id="mSub"></div>
+    <p id="mBody"></p>
+  </div>
+</div>
+
+<!-- 上报弹窗 -->
+<div class="modal" id="reportModal">
+  <div class="box">
+    <span class="close" onclick="closeReport()">×</span>
+    <h3>📡 上报目击情报</h3>
+    <div class="sub">填写你看到蜘蛛侠的地点</div>
+    <label>城市</label><input id="rCity" placeholder="例如：广州">
+    <label>国家</label><input id="rCountry" placeholder="例如：中国">
+    <label>目击描述</label><textarea id="rDesc" placeholder="描述一下你看到的情景…"></textarea>
+    <button class="btn r" onclick="submitReport()">提交情报</button>
+  </div>
+</div>
+
+<!-- 深空信号 -->
+<div class="deep" id="deep" onclick="closeDeep()">
+  <div class="star">🕷 SIGNAL LOST</div>
+  <div class="msg">蜘蛛侠信号已从地球消失…正在深空重现</div>
+  <div class="msg" style="color:var(--cyan)">「蜘蛛侠将会回归」</div>
+  <div class="msg">点击任意处关闭</div>
+</div>
+
+<script>
+/* ================= 大陆多边形（lon/lat 顶点，神似即可） ================= */
+const LANDS = [
+  [[-168,66],[-140,62],[-122,56],[-112,50],[-103,38],[-96,26],[-90,21],[-82,25],[-77,32],[-70,42],[-60,48],[-54,52],[-60,56],[-70,60],[-82,63],[-100,68],[-130,71],[-155,71]],
+  [[-52,83],[-20,83],[-18,60],[-46,60]],
+  [[-110,30],[-100,20],[-93,16],[-85,12],[-79,8],[-76,8],[-71,17],[-78,20],[-88,21],[-97,23],[-106,26]],
+  [[-78,10],[-70,6],[-60,5],[-50,1],[-36,-2],[-35,-8],[-38,-16],[-42,-24],[-50,-32],[-58,-38],[-66,-44],[-71,-52],[-69,-56],[-60,-50],[-52,-42],[-47,-34],[-44,-24],[-41,-17],[-43,-10],[-49,-5],[-58,0],[-68,2],[-75,6]],
+  [[-10,58],[-4,63],[2,57],[8,55],[15,55],[22,52],[28,55],[35,58],[41,56],[47,53],[52,49],[58,52],[68,60],[78,62],[82,62],[70,61],[60,60],[50,58],[43,55],[37,50],[30,46],[23,41],[16,43],[10,48],[4,50],[-1,48],[-6,50]],
+  [[-6,35],[0,30],[5,24],[10,16],[15,8],[22,4],[28,-4],[34,-12],[40,-19],[46,-26],[52,-31],[58,-30],[54,-24],[49,-18],[44,-13],[39,-7],[34,-2],[29,3],[24,7],[19,11],[14,14],[9,17],[3,23],[-2,30]],
+  [[30,62],[40,61],[52,55],[62,49],[72,44],[82,39],[92,34],[102,29],[112,24],[122,20],[132,15],[142,10],[152,8],[162,12],[172,16],[176,22],[170,30],[160,33],[150,38],[140,43],[130,48],[120,52],[110,56],[100,59],[90,62],[80,63],[70,62],[60,60],[50,55],[41,52],[31,55]],
+  [[35,31],[45,26],[51,21],[57,18],[61,21],[61,26],[56,29],[50,31],[45,33],[40,34]],
+  [[68,28],[75,23],[80,18],[86,15],[90,9],[92,10],[89,15],[84,20],[78,23],[72,26]],
+  [[95,20],[101,15],[106,10],[109,5],[111,0],[115,-5],[121,-8],[116,-2],[110,5],[105,9],[100,13],[97,18]],
+  [[130,32],[135,36],[140,41],[144,45],[141,43],[135,38],[130,35]],
+  [[114,-15],[125,-12],[135,-12],[146,-15],[152,-20],[152,-25],[147,-29],[140,-33],[131,-36],[124,-35],[116,-32],[113,-27],[112,-21],[113,-17]],
+  [[168,-35],[173,-38],[176,-42],[174,-45],[169,-44],[167,-40]]
+];
+
+/* ================= 目击情报数据 ================= */
+const SIGHTINGS = [
+  {city:"纽约·皇后区",country:"美国",lat:40.73,lon:-73.79,egg:1,desc:"彼得·帕克的家乡，信号最密集处。多名目击者称看到红蓝身影在高楼间荡过，消失于皇后区方向。"},
+  {city:"伦敦",country:"英国",lat:51.5,lon:-0.12,desc:"大本钟附近追捕现场，警方在钟楼外墙发现新鲜蛛丝。"},
+  {city:"巴黎",country:"法国",lat:48.86,lon:2.35,desc:"埃菲尔铁塔顶端出现贯穿塔身的蛛丝轨迹，游客拍摄到一闪而过的红影。"},
+  {city:"东京",country:"日本",lat:35.68,lon:139.69,desc:"涩谷十字路口上空，红灯间隙有人拍到疑似蜘蛛侠荡过。"},
+  {city:"首尔",country:"韩国",lat:37.57,lon:126.98,desc:"汉江大桥桥墩处残留高强度蛛丝，来源不明。"},
+  {city:"悉尼",country:"澳大利亚",lat:-33.87,lon:151.21,desc:"歌剧院贝壳屋顶附近发现移动人影与蛛丝。"},
+  {city:"上海",country:"中国",lat:31.23,lon:121.47,desc:"外滩夜景中，监控捕捉到在陆家嘴高楼间高速移动的物体。"},
+  {city:"北京",country:"中国",lat:39.9,lon:116.4,desc:"故宫上空有不明蛛丝漂浮，安保暂未回应。"},
+  {city:"香港",country:"中国",lat:22.32,lon:114.17,desc:"维多利亚港两栋摩天楼之间发现绷紧的蛛丝。"},
+  {city:"新加坡",country:"新加坡",lat:1.35,lon:103.82,desc:"滨海湾金沙酒店楼顶旁一闪而过，目击者称只看到红蓝残影。"},
+  {city:"孟买",country:"印度",lat:19.08,lon:72.88,desc:"火车站人流高峰期有人目击蜘蛛侠在月台上空掠过。"},
+  {city:"迪拜",country:"阿联酋",lat:25.2,lon:55.27,desc:"哈利法塔顶端发现蛛丝，疑似登顶后跳离。"},
+  {city:"莫斯科",country:"俄罗斯",lat:55.76,lon:37.62,desc:"红场附近雪地留下异常足迹与蛛丝。"},
+  {city:"柏林",country:"德国",lat:52.52,lon:13.4,desc:"勃兰登堡门旁有目击，随后身影跃上国会大厦穹顶。"},
+  {city:"罗马",country:"意大利",lat:41.9,lon:12.5,desc:"斗兽场顶端出现身影，停留数秒后荡离。"},
+  {city:"开罗",country:"埃及",lat:30.04,lon:31.24,egg:1,desc:"金字塔群附近，有商队拍到红蓝身影与金字塔合影——这是蜘蛛侠第一次出现在非洲大陆的目击。"},
+  {city:"圣保罗",country:"巴西",lat:-23.55,lon:-46.63,desc:"科帕卡巴纳海滩上空，冲浪者拍到高空掠过的身影。"},
+  {city:"多伦多",country:"加拿大",lat:43.65,lon:-79.38,desc:"CN塔顶端发现蛛丝，塔身玻璃有攀爬痕迹。"},
+  {city:"墨西哥城",country:"墨西哥",lat:19.43,lon:-99.13,desc:"老城中心教堂旁目击，随后消失于街巷。"},
+  {city:"奥克兰",country:"新西兰",lat:-36.85,lon:174.76,desc:"天空塔附近，有市民拍到夜间移动的光点。"}
+];
+
+/* ================= 工具函数 ================= */
+const W = 1080, H = 500;
+function px(lon){ return (lon+180)/360*W; }
+function py(lat){ return (90-lat)/180*H; }
+
+function pointInPoly(lon,lat,poly){
+  let inside=false;
+  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const xi=poly[i][0],yi=poly[i][1],xj=poly[j][0],yj=poly[j][1];
+    const intersect = ((yi>lat)!=(yj>lat)) && (lon < (xj-xi)*(lat-yi)/(yj-yi)+xi);
+    if(intersect) inside=!inside;
+  }
+  return inside;
+}
+function isLand(lon,lat){
+  return LANDS.some(p=>pointInPoly(lon,lat,p));
+}
+
+/* ================= 地图渲染 ================= */
+const canvas = document.getElementById('map');
+const ctx = canvas.getContext('2d');
+const mapOff = document.createElement('canvas');
+mapOff.width=W; mapOff.height=H;
+const mctx = mapOff.getContext('2d');
+
+function drawBaseMap(){
+  const cell=5;
+  // 海洋
+  mctx.fillStyle='#07070f'; mctx.fillRect(0,0,W,H);
+  // 陆地
+  for(let y=0;y<H;y+=cell){
+    for(let x=0;x<W;x+=cell){
+      const lon = x/W*360-180;
+      const lat = 90 - y/H*180;
+      if(isLand(lon,lat)){
+        const r=(Math.sin(x*0.7+y*0.5)*10+70)|0;
+        mctx.fillStyle=`rgb(${r},${r+8},${r+4})`;
+        mctx.fillRect(x,y,cell,cell);
+      }
+    }
+  }
+  // 网格线（像素感）
+  mctx.strokeStyle='rgba(0,195,255,.08)';
+  mctx.lineWidth=1;
+  for(let x=0;x<=W;x+=cell*4){ mctx.beginPath();mctx.moveTo(x,0);mctx.lineTo(x,H);mctx.stroke(); }
+  for(let y=0;y<=H;y+=cell*4){ mctx.beginPath();mctx.moveTo(0,y);mctx.lineTo(W,y);mctx.stroke(); }
+  // 边框
+  mctx.strokeStyle='#1f1f3a'; mctx.lineWidth=3; mctx.strokeRect(0,0,W,H);
+}
+
+let reports = JSON.parse(localStorage.getItem('spider_reports')||'[]');
+
+function drawPoint(x,y,color,size,glow){
+  ctx.save();
+  if(glow){ ctx.shadowColor=color; ctx.shadowBlur=12; }
+  ctx.fillStyle=color;
+  const s=size;
+  ctx.fillRect(x-s/2,y-s/2,s,s);
+  ctx.fillRect(x-s/2,y-s/2-1,s,s); // 像素化
+  ctx.restore();
+}
+
+let t=0;
+function render(){
+  t+=0.03;
+  ctx.clearRect(0,0,W,H);
+  ctx.drawImage(mapOff,0,0);
+  // 官方目击 + 彩蛋
+  SIGHTINGS.forEach((s,i)=>{
+    const x=px(s.lon), y=py(s.lat);
+    const blink = 0.5+0.5*Math.sin(t*3+i);
+    const color = s.egg ? '#2bd97c' : '#ff2d55';
+    drawPoint(x,y,color,s.egg?7:6,true);
+    if(blink>0.75){ drawPoint(x,y,'#fff',2,false); }
+  });
+  // 玩家上报
+  reports.forEach((r,i)=>{
+    const x=px(r.lon), y=py(r.lat);
+    drawPoint(x,y,'#ffd23f',7,true);
+    drawPoint(x,y,'#fff',2,false);
+  });
+  requestAnimationFrame(render);
+}
+
+/* ================= 列表 ================= */
+function renderList(filter){
+  const list=document.getElementById('list');
+  const none=document.getElementById('none');
+  const kw=(filter||'').trim().toLowerCase();
+  const all = SIGHTINGS.map(s=>({...s,kind:'official'})).concat(
+    reports.map(r=>({city:r.city,country:r.country,lat:r.lat,lon:r.lon,desc:r.desc,kind:'report'}))
+  );
+  const arr = all.filter(s=>{
+    if(!kw) return true;
+    return (s.city+s.country+s.desc).toLowerCase().includes(kw);
+  });
+  if(arr.length===0){ list.innerHTML=''; none.classList.add('show'); return; }
+  none.classList.remove('show');
+  list.innerHTML = arr.map((s,i)=>{
+    const isEgg = s.kind==='official' && s.egg;
+    const isRep = s.kind==='report';
+    const tag = isEgg?'<span class="tag">彩蛋</span>':isRep?'<span class="tag hot">上报</span>':'';
+    return `<div class="card" onclick='openCard(${JSON.stringify(i)},${JSON.stringify(kw||"")})'>
+      <span class="tag">${isEgg?'彩蛋':isRep?'上报':'目击'}</span>
+      <div class="ct">${s.city}</div>
+      <div class="cc">${s.country}${isRep?' · 玩家上报':''}</div>
+      <div class="cb">${s.desc}</div>
+    </div>`;
+  }).join('');
+}
+
+function openCard(idx,kw){
+  const all = SIGHTINGS.map(s=>({...s,kind:'official'})).concat(
+    reports.map(r=>({city:r.city,country:r.country,lat:r.lat,lon:r.lon,desc:r.desc,kind:'report'}))
+  );
+  const kw0=kw||'';
+  const filtered = all.filter(s=>{
+    if(!kw0) return true;
+    return (s.city+s.country+s.desc).toLowerCase().includes(kw0.toLowerCase());
+  });
+  const s = filtered[idx];
+  if(!s) return;
+  document.getElementById('mTitle').textContent = s.city;
+  document.getElementById('mSub').textContent = s.country + (s.kind==='report'?' · 玩家上报':'') + (s.egg?' · ⭐隐藏彩蛋':'');
+  document.getElementById('mBody').textContent = s.desc;
+  document.getElementById('modal').classList.add('show');
+}
+
+/* ================= 搜索 ================= */
+function doSearch(){ renderList(document.getElementById('kw').value); }
+
+/* ================= 地图点击 ================= */
+canvas.addEventListener('click',(e)=>{
+  const rect=canvas.getBoundingClientRect();
+  const mx=(e.clientX-rect.left)/rect.width*W;
+  const my=(e.clientY-rect.top)/rect.height*H;
+  let best=null,bd=1e9;
+  SIGHTINGS.forEach((s,i)=>{
+    const d=Math.hypot(px(s.lon)-mx,py(s.lat)-my);
+    if(d<bd){bd=d;best={...s,idx:i,kind:'official'};}
+  });
+  reports.forEach((r)=>{
+    const d=Math.hypot(px(r.lon)-mx,py(r.lat)-my);
+    if(d<bd){bd=d;best={...r,kind:'report'};}
+  });
+  if(best && bd<24){
+    document.getElementById('mTitle').textContent=best.city;
+    document.getElementById('mSub').textContent=best.country+(best.kind==='report'?' · 玩家上报':'')+(best.egg?' · ⭐隐藏彩蛋':'');
+    document.getElementById('mBody').textContent=best.desc;
+    document.getElementById('modal').classList.add('show');
+  }
+});
+
+/* ================= 弹窗 ================= */
+function closeModal(){ document.getElementById('modal').classList.remove('show'); }
+function closeReport(){ document.getElementById('reportModal').classList.remove('show'); }
+function showReport(){ document.getElementById('reportModal').classList.add('show'); }
+
+async function submitReport(){
+  const city=document.getElementById('rCity').value.trim();
+  const country=document.getElementById('rCountry').value.trim();
+  const desc=document.getElementById('rDesc').value.trim();
+  if(!city||!country){ alert('请填写城市和国家'); return; }
+  // 粗略 geocoding：用 Nominatim（开放接口）
+  let lat=0,lon=0;
+  try{
+    const url=`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(city+','+country)}`;
+    const res=await fetch(url);
+    const data=await res.json();
+    if(data && data[0]){ lat=parseFloat(data[0].lat); lon=parseFloat(data[0].lon); }
+  }catch(e){}
+  reports.push({city,country,lat,lon,desc:desc||'玩家上报的目击情报（暂无详情）'});
+  localStorage.setItem('spider_reports',JSON.stringify(reports));
+  document.getElementById('rCity').value='';document.getElementById('rCountry').value='';document.getElementById('rDesc').value='';
+  closeReport();
+  refreshStats();
+  renderList(document.getElementById('kw').value);
+}
+
+/* ================= 深空彩蛋 ================= */
+function deepSpace(){ document.getElementById('deep').classList.add('show'); }
+function closeDeep(){ document.getElementById('deep').classList.remove('show'); }
+
+/* ================= 统计 ================= */
+function refreshStats(){
+  document.getElementById('stCity').textContent=SIGHTINGS.length;
+  document.getElementById('stReport').textContent=SIGHTINGS.length+reports.length;
+  document.getElementById('stEgg').textContent=SIGHTINGS.filter(s=>s.egg).length;
+  document.getElementById('stMy').textContent=reports.length;
+}
+
+/* ================= 启动 ================= */
+document.getElementById('kw').addEventListener('keyup',e=>{if(e.key==='Enter')doSearch();});
+drawBaseMap();
+renderList();
+refreshStats();
+render();
+</script>
+</body>
+</html>
