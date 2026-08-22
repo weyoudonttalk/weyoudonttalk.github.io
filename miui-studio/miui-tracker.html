@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>MIUI TRACKER · 工作室追踪器</title>
+<meta name="description" content="MIUI工作室官方追踪器：实时追踪25人团队与AI小Q的全球信号，查看活动日志与产品事件。">
+<style>
+:root{
+  --bg:#08080f; --bg2:#0e0e1a; --panel:#131324; --panel2:#181831;
+  --line:#242442; --line2:#2e2e52;
+  --orange:#ff6a00; --orange2:#ff8c3a; --amber:#ffb020;
+  --cyan:#00c8ff; --green:#2bd97c; --yellow:#ffd23f; --red:#ff3b5c;
+  --txt:#eef0f6; --dim:#8a8aa8; --faint:#55557a;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+  background:var(--bg); color:var(--txt); overflow:hidden; height:100vh; width:100vw;
+  position:fixed; inset:0; user-select:none; -webkit-user-select:none;
+}
+#app{position:relative;width:100%;height:100%}
+
+/* ===== 扫描线 ===== */
+.scanlines{position:fixed;inset:0;pointer-events:none;z-index:900;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 1px,transparent 1px 3px);opacity:.5}
+.vignette{position:fixed;inset:0;pointer-events:none;z-index:901;
+  background:radial-gradient(120% 100% at 50% 40%,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+/* ===== 顶部栏 ===== */
+.topbar{position:absolute;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;
+  justify-content:space-between;padding:12px 16px;
+  background:linear-gradient(180deg,rgba(8,8,15,.95),rgba(8,8,15,0));}
+.brand{display:flex;align-items:center;gap:10px;cursor:pointer}
+.brand .logo{width:38px;height:38px;background:linear-gradient(135deg,var(--orange),var(--amber));
+  display:grid;place-items:center;font-size:19px;box-shadow:0 0 0 2px #000,0 0 18px rgba(255,106,0,.55);image-rendering:pixelated}
+.brand .tt h1{font-size:15px;letter-spacing:2px;font-weight:800;color:#fff;text-shadow:0 0 12px rgba(0,200,255,.5)}
+.brand .tt small{font-size:9px;color:var(--cyan);letter-spacing:2px}
+.topbtns{display:flex;gap:8px;align-items:center}
+.tbtn{width:36px;height:36px;border:1px solid var(--line2);background:var(--bg2);color:var(--dim);
+  display:grid;place-items:center;cursor:pointer;font-size:16px;transition:.15s;position:relative}
+.tbtn:hover,.tbtn.on{border-color:var(--orange);color:var(--orange);background:#1a1a30}
+.tbtn.close:hover{border-color:var(--red);color:var(--red)}
+.tbtn .dot{position:absolute;top:6px;right:6px;width:5px;height:5px;background:var(--red);border-radius:50%;display:none}
+.tbtn .dot.show{display:block;animation:blink 1s infinite}
+
+/* ===== 地图 ===== */
+#mapwrap{position:absolute;inset:0;z-index:10;cursor:grab;touch-action:none}
+#mapwrap.grab{cursor:grabbing}
+#map{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);image-rendering:pixelated;transform-origin:center}
+.map-legend{position:absolute;bottom:118px;left:14px;z-index:150;display:flex;gap:14px;flex-wrap:wrap;
+  background:rgba(10,10,20,.7);border:1px solid var(--line);padding:8px 12px;backdrop-filter:blur(4px)}
+.map-legend span{font-size:10px;color:var(--dim);letter-spacing:1px}
+.map-legend i{display:inline-block;width:8px;height:8px;margin-right:5px;vertical-align:middle}
+.map-legend .c i{background:var(--orange);box-shadow:0 0 8px var(--orange)}
+.map-legend .r i{background:var(--yellow);box-shadow:0 0 8px var(--yellow)}
+.map-legend .e i{background:var(--red);box-shadow:0 0 8px var(--red)}
+
+/* ===== 滤镜 ===== */
+.filters{position:absolute;top:70px;left:14px;z-index:150;display:flex;flex-direction:column;gap:6px}
+.filter{display:flex;align-items:center;gap:9px;background:rgba(10,10,20,.75);border:1px solid var(--line);
+  padding:8px 12px;cursor:pointer;font-size:11px;letter-spacing:1px;color:var(--dim);backdrop-filter:blur(4px);transition:.15s}
+.filter .sw{width:30px;height:16px;border-radius:10px;background:#222;position:relative;transition:.2s;flex:none}
+.filter .sw::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#555;transition:.2s}
+.filter.on{color:var(--txt);border-color:var(--line2)}
+.filter.on.c .sw{background:var(--orange)} .filter.on.c .sw::after{left:16px;background:#fff}
+.filter.on.r .sw{background:var(--yellow)} .filter.on.r .sw::after{left:16px;background:#fff}
+.filter.on.e .sw{background:var(--red)} .filter.on.e .sw::after{left:16px;background:#fff}
+
+/* ===== 底部导航 ===== */
+.bottomnav{position:absolute;bottom:0;left:0;right:0;z-index:300;display:flex;background:rgba(10,10,18,.92);
+  border-top:1px solid var(--line2);backdrop-filter:blur(8px)}
+.navbtn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 2px 10px;
+  cursor:pointer;color:var(--dim);font-size:9px;letter-spacing:1px;transition:.15s;border:none;background:none}
+.navbtn .ic{font-size:19px;filter:grayscale(.4)}
+.navbtn.on{color:var(--orange)} .navbtn.on .ic{filter:none;text-shadow:0 0 12px rgba(255,106,0,.7)}
+.navbtn:active{transform:scale(.94)}
+
+/* ===== 面板（从右侧滑入）===== */
+.panel{position:absolute;top:0;right:0;bottom:0;width:min(400px,92vw);z-index:500;background:var(--bg2);
+  border-left:1px solid var(--line2);transform:translateX(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);
+  display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(0,0,0,.5)}
+.panel.open{transform:translateX(0)}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
+.panel-head h2{font-size:14px;letter-spacing:2px;color:var(--cyan);text-shadow:0 0 10px rgba(0,200,255,.4)}
+.panel-head .x{width:30px;height:30px;border:1px solid var(--line2);background:none;color:var(--dim);cursor:pointer;font-size:16px;display:grid;place-items:center}
+.panel-head .x:hover{color:var(--red);border-color:var(--red)}
+.panel-body{flex:1;overflow-y:auto;padding:14px 16px;-webkit-overflow-scrolling:touch}
+.panel-body::-webkit-scrollbar{width:4px}
+.panel-body::-webkit-scrollbar-thumb{background:var(--line2)}
+
+/* ===== 引导页 ===== */
+#boot{position:absolute;inset:0;z-index:800;background:radial-gradient(1000px 600px at 50% 30%,#16122a,#08080f);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;transition:opacity .5s}
+#boot.hide{opacity:0;pointer-events:none}
+#boot .blogo{width:80px;height:80px;background:linear-gradient(135deg,var(--orange),var(--amber));
+  display:grid;place-items:center;font-size:40px;box-shadow:0 0 0 3px #000,0 0 40px rgba(255,106,0,.6);margin-bottom:20px}
+#boot h1{font-size:24px;letter-spacing:4px;color:#fff;text-shadow:0 0 20px rgba(0,200,255,.6)}
+#boot .sub{font-size:12px;color:var(--cyan);letter-spacing:3px;margin:8px 0 6px}
+#boot .msg{font-size:13px;color:var(--dim);max-width:360px;line-height:1.8;margin-top:16px}
+#boot .msg b{color:var(--amber)}
+#boot .steps{text-align:left;margin-top:20px;font-size:12px;color:var(--dim);line-height:2.1;max-width:360px}
+#boot .steps span{color:var(--orange);font-weight:700}
+#boot button{margin-top:28px;padding:14px 44px;background:linear-gradient(135deg,var(--orange),var(--amber));
+  border:none;color:#fff;font-size:15px;letter-spacing:3px;cursor:pointer;box-shadow:0 6px 24px rgba(255,106,0,.4);transition:.2s}
+#boot button:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(255,106,0,.55)}
+
+/* ===== 活动日志 ===== */
+.log{position:relative;padding:0 0 0 16px;margin-bottom:6px}
+.log::before{content:'';position:absolute;left:4px;top:4px;bottom:-6px;width:1px;background:var(--line)}
+.log:last-child::before{display:none}
+.log .dot{position:absolute;left:0;top:5px;width:9px;height:9px;background:var(--orange);box-shadow:0 0 8px var(--orange)}
+.log .t{font-size:10px;color:var(--faint);letter-spacing:1px}
+.log .c{font-size:13px;line-height:1.5;margin-top:2px}
+.log .c b{color:var(--amber)}
+
+/* ===== 事件卡片 ===== */
+.evt{border:1px solid var(--line);background:var(--panel);padding:14px;margin-bottom:10px;position:relative}
+.evt .tag{position:absolute;top:10px;right:12px;font-size:9px;padding:2px 8px;border:1px solid var(--red);color:var(--red);letter-spacing:1px}
+.evt h3{font-size:14px;margin-bottom:3px}
+.evt .when{font-size:10px;color:var(--cyan);letter-spacing:1px;margin-bottom:6px}
+.evt p{font-size:12px;color:var(--dim);line-height:1.7}
+
+/* ===== 上报表单 ===== */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:10px;color:var(--dim);letter-spacing:1px;margin-bottom:5px}
+.field input,.field textarea,.field select{width:100%;background:var(--panel);border:1px solid var(--line2);color:var(--txt);
+  padding:11px 13px;font-size:13px;outline:none;border-radius:0;font-family:inherit}
+.field input:focus,.field textarea:focus{border-color:var(--orange)}
+.field textarea{resize:vertical;min-height:70px}
+.submit{width:100%;padding:13px;background:linear-gradient(135deg,var(--orange),var(--amber));border:none;color:#fff;
+  font-size:14px;letter-spacing:2px;cursor:pointer}
+.submit:hover{filter:brightness(1.1)}
+
+/* ===== 消息中心 ===== */
+.chatmsg{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:12px;margin-bottom:10px}
+.chatmsg .who{font-size:10px;color:var(--cyan);letter-spacing:1px;margin-bottom:4px}
+.chatmsg .who.me{color:var(--orange)}
+.chatmsg p{font-size:13px;line-height:1.6}
+.chatmsg .tt{font-size:9px;color:var(--faint);margin-top:5px;text-align:right}
+
+/* ===== 帮助 ===== */
+.helpitem{border:1px solid var(--line);padding:12px 14px;margin-bottom:8px;cursor:pointer;background:var(--panel);transition:.15s}
+.helpitem:hover{border-color:var(--orange)}
+.helpitem h3{font-size:13px;display:flex;align-items:center;gap:8px}
+.helpitem p{font-size:12px;color:var(--dim);line-height:1.7;margin-top:6px;display:none}
+.helpitem.open p{display:block}
+
+/* ===== 信号弹窗 ===== */
+#sigModal{position:absolute;inset:0;z-index:600;display:none;align-items:flex-end;justify-content:center;padding-bottom:140px}
+#sigModal.show{display:flex}
+#sigModal .m{background:var(--panel2);border:1px solid var(--line2);border-top:2px solid var(--orange);
+  width:min(360px,90vw);padding:16px;box-shadow:0 8px 40px rgba(0,0,0,.6)}
+#sigModal .m h3{font-size:14px;margin-bottom:3px}
+#sigModal .m .sub{font-size:10px;color:var(--cyan);letter-spacing:1px;margin-bottom:8px}
+#sigModal .m p{font-size:13px;color:var(--dim);line-height:1.7}
+#sigModal .m .x{float:right;color:var(--dim);cursor:pointer;font-size:18px}
+
+@keyframes blink{50%{opacity:.15}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="scanlines"></div>
+  <div class="vignette"></div>
+
+  <!-- 地图 -->
+  <div id="mapwrap">
+    <canvas id="map" width="1400" height="600"></canvas>
+    <div class="filters" id="filters"></div>
+    <div class="map-legend">
+      <span class="c"><i></i>已确认信号</span>
+      <span class="r"><i></i>传闻信号</span>
+      <span class="e"><i></i>事件</span>
+    </div>
+  </div>
+
+  <!-- 顶部栏 -->
+  <div class="topbar">
+    <div class="brand" onclick="recenter()">
+      <div class="logo">M</div>
+      <div class="tt"><h1>MIUI TRACKER</h1><small>工作室追踪器 · 全球信号</small></div>
+    </div>
+    <div class="topbtns">
+      <button class="tbtn" id="soundBtn" onclick="toggleSound()">🔊</button>
+      <button class="tbtn" onclick="openPanel('help')">?</button>
+      <button class="tbtn" onclick="openPanel('message')">✉<span class="dot show" id="msgDot"></span></button>
+      <a class="tbtn close" href="index.html" style="text-decoration:none">✕</a>
+    </div>
+  </div>
+
+  <!-- 底部导航 -->
+  <div class="bottomnav" id="bottomnav">
+    <button class="navbtn on" data-p="map" onclick="go('map')"><span class="ic">🗺️</span>地图</button>
+    <button class="navbtn" data-p="log" onclick="go('log')"><span class="ic">📜</span>日志</button>
+    <button class="navbtn" data-p="events" onclick="go('events')"><span class="ic">⚡</span>事件</button>
+    <button class="navbtn" data-p="report" onclick="go('report')"><span class="ic">📡</span>上报</button>
+    <button class="navbtn" data-p="message" onclick="go('message')"><span class="ic">✉️</span>消息</button>
+    <button class="navbtn" data-p="help" onclick="go('help')"><span class="ic">❓</span>帮助</button>
+  </div>
+
+  <!-- 活动日志面板 -->
+  <div class="panel" id="panel-log">
+    <div class="panel-head"><h2>📜 活动日志</h2><button class="x" onclick="closePanel()">✕</button></div>
+    <div class="panel-body" id="logBody"></div>
+  </div>
+  <!-- 事件面板 -->
+  <div class="panel" id="panel-events">
+    <div class="panel-head"><h2>⚡ 事件</h2><button class="x" onclick="closePanel()">✕</button></div>
+    <div class="panel-body" id="eventsBody"></div>
+  </div>
+  <!-- 上报面板 -->
+  <div class="panel" id="panel-report">
+    <div class="panel-head"><h2>📡 上报信号</h2><button class="x" onclick="closePanel()">✕</button></div>
+    <div class="panel-body">
+      <p style="font-size:12px;color:var(--dim);line-height:1.7;margin-bottom:16px">
+        发现工作室成员、AI小Q 或产品动态？上报你的目击，通过审核后就会出现在地图上。
+      </p>
+      <div class="field"><label>信号类型</label>
+        <select id="rType"><option value="rumored">传闻信号（成员活跃）</option><option value="confirmed">已确认信号</option></select>
+      </div>
+      <div class="field"><label>城市</label><input id="rCity" placeholder="例如：成都"></div>
+      <div class="field"><label>描述</label><textarea id="rDesc" placeholder="描述你看到的情况…"></textarea></div>
+      <button class="submit" onclick="submitReport()">提交情报</button>
+    </div>
+  </div>
+  <!-- 消息中心面板 -->
+  <div class="panel" id="panel-message">
+    <div class="panel-head"><h2>✉️ 消息中心</h2><button class="x" onclick="closePanel()">✕</button></div>
+    <div class="panel-body" id="msgBody"></div>
+  </div>
+  <!-- 帮助面板 -->
+  <div class="panel" id="panel-help">
+    <div class="panel-head"><h2>❓ 帮助</h2><button class="x" onclick="closePanel()">✕</button></div>
+    <div class="panel-body" id="helpBody"></div>
+  </div>
+
+  <!-- 信号弹窗 -->
+  <div id="sigModal" onclick="if(event.target===this)closeSig()">
+    <div class="m">
+      <span class="x" onclick="closeSig()">✕</span>
+      <h3 id="sigTitle"></h3>
+      <div class="sub" id="sigSub"></div>
+      <p id="sigBody"></p>
+    </div>
+  </div>
+
+  <!-- 引导页 -->
+  <div id="boot">
+    <div class="blogo">M</div>
+    <h1>MIUI TRACKER</h1>
+    <div class="sub">WORKSTUDIO TRACKER · 全球信号</div>
+    <div class="msg">欢迎！这里是<b>MIUI工作室</b>官方追踪器。实时追踪 25 人团队与 AI 小 Q 的全球活跃信号，查看工作室动态。</div>
+    <div class="steps">
+      <span>①</span> 拖动地图查看全球信号点<br>
+      <span>②</span> 左侧滤镜筛选：已确认 / 传闻 / 事件<br>
+      <span>③</span> 点击信号点查看详情<br>
+      <span>④</span> 底部导航查看日志、事件、上报
+    </div>
+    <button onclick="start()">开始追踪 ▶</button>
+  </div>
+</div>
+
+<script>
+/* ================= 大陆多边形（lon/lat） ================= */
+const LANDS = [
+  [[-168,66],[-140,62],[-122,56],[-112,50],[-103,38],[-96,26],[-90,21],[-82,25],[-77,32],[-70,42],[-60,48],[-54,52],[-60,56],[-70,60],[-82,63],[-100,68],[-130,71],[-155,71]],
+  [[-52,83],[-20,83],[-18,60],[-46,60]],
+  [[-110,30],[-100,20],[-93,16],[-85,12],[-79,8],[-76,8],[-71,17],[-78,20],[-88,21],[-97,23],[-106,26]],
+  [[-78,10],[-70,6],[-60,5],[-50,1],[-36,-2],[-35,-8],[-38,-16],[-42,-24],[-50,-32],[-58,-38],[-66,-44],[-71,-52],[-69,-56],[-60,-50],[-52,-42],[-47,-34],[-44,-24],[-41,-17],[-43,-10],[-49,-5],[-58,0],[-68,2],[-75,6]],
+  [[-10,58],[-4,63],[2,57],[8,55],[15,55],[22,52],[28,55],[35,58],[41,56],[47,53],[52,49],[58,52],[68,60],[78,62],[82,62],[70,61],[60,60],[50,58],[43,55],[37,50],[30,46],[23,41],[16,43],[10,48],[4,50],[-1,48],[-6,50]],
+  [[-6,35],[0,30],[5,24],[10,16],[15,8],[22,4],[28,-4],[34,-12],[40,-19],[46,-26],[52,-31],[58,-30],[54,-24],[49,-18],[44,-13],[39,-7],[34,-2],[29,3],[24,7],[19,11],[14,14],[9,17],[3,23],[-2,30]],
+  [[30,62],[40,61],[52,55],[62,49],[72,44],[82,39],[92,34],[102,29],[112,24],[122,20],[132,15],[142,10],[152,8],[162,12],[172,16],[176,22],[170,30],[160,33],[150,38],[140,43],[130,48],[120,52],[110,56],[100,59],[90,62],[80,63],[70,62],[60,60],[50,55],[41,52],[31,55]],
+  [[35,31],[45,26],[51,21],[57,18],[61,21],[61,26],[56,29],[50,31],[45,33],[40,34]],
+  [[68,28],[75,23],[80,18],[86,15],[90,9],[92,10],[89,15],[84,20],[78,23],[72,26]],
+  [[95,20],[101,15],[106,10],[109,5],[111,0],[115,-5],[121,-8],[116,-2],[110,5],[105,9],[100,13],[97,18]],
+  [[130,32],[135,36],[140,41],[144,45],[141,43],[135,38],[130,35]],
+  [[114,-15],[125,-12],[135,-12],[146,-15],[152,-20],[152,-25],[147,-29],[140,-33],[131,-36],[124,-35],[116,-32],[113,-27],[112,-21],[113,-17]],
+  [[168,-35],[173,-38],[176,-42],[174,-45],[169,-44],[167,-40]]
+];
+function inPoly(lon,lat,p){let i=false;for(let a=0,b=p.length-1;a<p.length;b=a++){const xi=p[a][0],yi=p[a][1],xj=p[b][0],yj=p[b][1];if(((yi>lat)!=(yj>lat))&&(lon<(xj-xi)*(lat-yi)/(yj-yi)+xi))i=!i;}return i;}
+function isLand(lon,lat){return LANDS.some(p=>inPoly(lon,lat,p));}
+
+/* ================= 信号数据 ================= */
+const SIGNALS = [
+  {t:'confirmed', city:'深圳', lat:22.54, lon:114.06, title:'MIUI工作室总部', sub:'已确认信号 · 大本营', desc:'MIUI工作室总部所在地。25人团队的核心据点，AI小Q的主服务器就部署在这里，信号全天候稳定输出。'},
+  {t:'confirmed', city:'深圳', lat:22.58, lon:114.10, title:'创始人', sub:'已确认信号 · 创始人', desc:'创始人信号常年在线，负责工作室全局统筹与战略方向。最近动态：蜘蛛侠追踪器、MIUI追踪器密集上线。'},
+  {t:'confirmed', city:'广州', lat:23.13, lon:113.26, title:'AI小Q 核心节点', sub:'已确认信号 · 24/7在线', desc:'AI小Q的核心巡检节点之一。每5分钟自动巡检一次，24/7守护聊天室，信号强度拉满。'},
+  {t:'confirmed', city:'北京', lat:39.9, lon:116.4, title:'AI小Q 镜像节点', sub:'已确认信号 · 24/7在线', desc:'AI小Q在北京的镜像节点，负责北方用户的低延迟响应。'},
+  {t:'confirmed', city:'上海', lat:31.23, lon:121.47, title:'AI小Q 镜像节点', sub:'已确认信号 · 24/7在线', desc:'AI小Q在上海的镜像节点，华东地区响应枢纽。'},
+  {t:'confirmed', city:'成都', lat:30.66, lon:104.06, title:'AI小Q 镜像节点', sub:'已确认信号 · 24/7在线', desc:'AI小Q在成都的镜像节点，西南地区响应枢纽。'},
+  {t:'rumored', city:'杭州', lat:30.27, lon:120.15, title:'工程组成员活跃', sub:'传闻信号 · 成员', desc:'有目击称工程组成员在杭州出现，疑似为《卧底的崛起》新关卡踩点。'},
+  {t:'rumored', city:'武汉', lat:30.59, lon:114.31, title:'美术组成员活跃', sub:'传闻信号 · 成员', desc:'美术组成员疑似在武汉采风，可能在为新的像素风素材做实地取材。'},
+  {t:'rumored', city:'西安', lat:34.34, lon:108.94, title:'灵感创意组活跃', sub:'传闻信号 · 成员', desc:'灵感创意组成员被目击在西安，传闻正在构思下一个产品。'},
+  {t:'rumored', city:'南京', lat:32.06, lon:118.80, title:'任务派发活跃', sub:'传闻信号 · PM', desc:'任务派发（PM）在南京出现，疑似在对接新项目排期。'},
+  {t:'rumored', city:'长沙', lat:28.23, lon:112.94, title:'成员活跃', sub:'传闻信号 · 成员', desc:'有玩家上报在长沙发现MIUI成员，正在线下活动布点。'},
+  {t:'rumored', city:'重庆', lat:29.56, lon:106.55, title:'成员活跃', sub:'传闻信号 · 成员', desc:'重庆出现MIUI成员活跃信号，来源待确认。'},
+  {t:'event', city:'深圳', lat:22.60, lon:114.05, title:'工作室成立', sub:'事件 · 2023', desc:'创始人在QQ频道创建MIUI技术交流群，播下第一颗种子。'},
+  {t:'event', city:'广州', lat:23.10, lon:113.20, title:'群聊大厅 v1.0 发布', sub:'事件 · 首发产品', desc:'首个产品上线，实现多群整合，获首批核心用户。'},
+  {t:'event', city:'北京', lat:39.95, lon:116.35, title:'小Q AI 诞生', sub:'事件 · AI接入', desc:'AI助手正式接入，实现@召唤、问答、巡检三大能力。'},
+  {t:'event', city:'上海', lat:31.20, lon:121.40, title:'产品矩阵成型', sub:'事件 · 用户破500', desc:'聊天室、QQ版、MC 3D密集发布，用户突破500。'},
+  {t:'event', city:'杭州', lat:30.30, lon:120.10, title:'品牌全面升级', sub:'事件 · 官网上线', desc:'旗舰官网上线，明确定位：AI轻应用 × 小游戏。'},
+  {t:'event', city:'深圳', lat:22.55, lon:114.08, title:'蜘蛛侠追踪器上线', sub:'事件 · 2026.08', desc:'像素风全球追踪器上线，追踪蜘蛛侠目击情报。'},
+  {t:'event', city:'深圳', lat:22.56, lon:114.09, title:'MIUI追踪器上线', sub:'事件 · 2026.08.22', desc:'MIUI工作室官方追踪器正式上线，全球信号实时追踪。'},
+];
+
+const ACTIVITY = [
+  {t:'2026-08-22 18:39', c:'<b>MIUI追踪器</b>正式上线，全球信号追踪系统启动。'},
+  {t:'2026-08-22 18:35', c:'AI小Q 完成第 <b>100,000</b> 次自动巡检，在线率 100%。'},
+  {t:'2026-08-20 14:12', c:'<b>蜘蛛侠追踪器</b>上线，首日追踪城市突破 20 个。'},
+  {t:'2026-08-18 09:30', c:'聊天室在线人数峰值达到 <b>25 人</b>，AI小Q 同时接待。'},
+  {t:'2026-08-15 20:00', c:'品牌全面升级，旗舰官网正式发布。'},
+  {t:'2026-08-12 11:20', c:'工程组提交《卧底的崛起》新章节代码，进入测试。'},
+  {t:'2026-08-10 16:45', c:'产品矩阵成型，累计用户突破 <b>500</b>。'},
+  {t:'2026-08-05 10:00', c:'美术组更新像素风素材库，新增 120 个素材。'},
+  {t:'2026-07-28 22:15', c:'AI小Q 上线新能力：攻略查询与中英文切换。'},
+  {t:'2026-07-20 13:00', c:'群聊大厅 v1.0 发布，首批核心用户入驻。'},
+];
+
+const EVENTS = [
+  {tag:'里程碑', when:'2026.08.22', t:'MIUI追踪器上线', d:'工作室官方追踪器正式发布，实现全球信号实时追踪，25人团队与AI小Q信号全景呈现。'},
+  {tag:'里程碑', when:'2026.08.20', t:'蜘蛛侠追踪器上线', d:'像素风全球追踪器，追踪蜘蛛侠目击情报，解锁隐藏彩蛋。'},
+  {tag:'里程碑', when:'2026.08.15', t:'品牌全面升级', d:'旗舰官网上线，明确"AI轻应用 × 小游戏"定位，产品矩阵正式成型。'},
+  {tag:'里程碑', when:'2026.08.10', t:'产品矩阵成型', d:'聊天室、QQ完全版、MC 3D 密集发布，用户突破500。'},
+  {tag:'里程碑', when:'2026-07', t:'小Q AI 诞生', d:'AI助手正式接入，实现@召唤、问答、巡检三大能力。'},
+  {tag:'里程碑', when:'2026-07', t:'群聊大厅 v1.0', d:'首个产品上线，实现多群整合，获首批核心用户。'},
+  {tag:'起点', when:'2023', t:'工作室成立', d:'创始人在QQ频道创建MIUI技术交流群，播下第一颗种子。'},
+];
+
+const MESSAGES = [
+  {who:'me', t:'18:39', c:'MIUI追踪器上线了！以后就能实时看到大家的信号了 😎'},
+  {who:'AI小Q', t:'18:40', c:'收到！小Q已接入追踪器，24/7 实时同步我的巡检信号，欢迎随时@我~ 🕸️'},
+  {who:'AI小Q', t:'18:41', c:'提醒：地图上橙色=已确认信号，黄色=传闻，红色=事件。点信号点能看详情哦。'},
+  {who:'me', t:'18:42', c:'真不错，发给群里让大家都来看看。'},
+  {who:'AI小Q', t:'18:43', c:'好主意！已帮你生成分享文案，欢迎分享到 QQ群 1070470498 🚀'},
+];
+
+const HELPS = [
+  {t:'🗺️ 如何查看地图', c:'拖动地图可以平移视角，用两个手指（或滚轮）可以缩放。点击任意信号点即可查看详情。'},
+  {t:'🔍 滤镜是什么', c:'左侧三个开关分别控制「已确认信号」「传闻信号」「事件」的显示。默认全部开启。'},
+  {t:'📡 怎么上报', c:'点击底部「上报」，选择信号类型、填写城市和描述，提交后（本机保存）就会出现在地图上。'},
+  {t:'✉️ 消息中心', c:'这里会收到 AI小Q 和工作室的最新通知。右上角小红点表示有新消息。'},
+  {t:'🔊 音效', c:'点击右上角喇叭可以开关音效（当前为视觉版，音效开关为界面示意）。'},
+];
+
+/* ================= 状态 ================= */
+let filters = {confirmed:true, rumored:true, event:true};
+let soundOn = true;
+let scale = 1, offX = 0, offY = 0;
+let dragging = false, lastX=0, lastY=0, moved=false;
+
+const canvas = document.getElementById('map');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+const mapOff = document.createElement('canvas');
+mapOff.width = W; mapOff.height = H;
+const mctx = mapOff.getContext('2d');
+
+function drawBase(){
+  const cell = 4;
+  mctx.fillStyle = '#05050c'; mctx.fillRect(0,0,W,H);
+  for(let y=0;y<H;y+=cell){
+    for(let x=0;x<W;x+=cell){
+      const lon = x/W*360-180, lat = 90 - y/H*180;
+      if(isLand(lon,lat)){
+        const v = (Math.sin(x*0.55+y*0.4)*8+44)|0;
+        mctx.fillStyle = `rgb(${v},${v+6},${v+2})`;
+        mctx.fillRect(x,y,cell,cell);
+      }
+    }
+  }
+  // 网格
+  mctx.strokeStyle='rgba(0,200,255,.07)';
+  for(let x=0;x<=W;x+=cell*6){mctx.beginPath();mctx.moveTo(x,0);mctx.lineTo(x,H);mctx.stroke();}
+  for(let y=0;y<=H;y+=cell*6){mctx.beginPath();mctx.moveTo(0,y);mctx.lineTo(W,y);mctx.stroke();}
+  mctx.strokeStyle='#242442'; mctx.lineWidth=2; mctx.strokeRect(0,0,W,H);
+}
+
+const COLORS = {confirmed:'#ff8c3a', rumored:'#ffd23f', event:'#ff3b5c'};
+function px(lon){ return (lon+180)/360*W; }
+function py(lat){ return (90-lat)/180*H; }
+
+let reports = JSON.parse(localStorage.getItem('miui_reports')||'[]');
+function allSignals(){
+  return SIGNALS.concat(reports.map(r=>({t:r.t, city:r.city, lat:r.lat, lon:r.lon, title:r.title||('上报·'+r.city), sub:'玩家上报信号', desc:r.desc})));
+}
+
+let t=0;
+function render(){
+  t += 0.03;
+  ctx.clearRect(0,0,W,H);
+  ctx.save();
+  ctx.translate(W/2+offX, H/2+offY);
+  ctx.scale(scale,scale);
+  ctx.translate(-W/2,-H/2);
+  ctx.drawImage(mapOff,0,0);
+  // 雷达扫描
+  const sw = (t*30)%W;
+  const grad = ctx.createLinearGradient(sw-60,0,sw+60,0);
+  grad.addColorStop(0,'rgba(0,200,255,0)');
+  grad.addColorStop(.5,'rgba(0,200,255,.10)');
+  grad.addColorStop(1,'rgba(0,200,255,0)');
+  ctx.fillStyle=grad; ctx.fillRect(sw-60,0,120,H);
+  // 信号点
+  allSignals().forEach((s,i)=>{
+    if(!filters[s.t]) return;
+    const x=px(s.lon), y=py(s.lat);
+    const col = COLORS[s.t];
+    const blink = 0.45+0.55*Math.sin(t*3+i*1.7);
+    ctx.save();
+    ctx.shadowColor=col; ctx.shadowBlur=12;
+    ctx.fillStyle=col; ctx.globalAlpha=0.5+0.5*blink;
+    const sz = s.t==='event'?7:6;
+    ctx.fillRect(x-sz/2,y-sz/2,sz,sz);
+    ctx.globalAlpha=1;
+    if(blink>0.8){ ctx.fillStyle='#fff'; ctx.fillRect(x-1,y-1,2,2); }
+    ctx.restore();
+  });
+  ctx.restore();
+  requestAnimationFrame(render);
+}
+
+/* ================= 交互：拖拽/缩放 ================= */
+const wrap = document.getElementById('mapwrap');
+wrap.addEventListener('pointerdown', e=>{ dragging=true; moved=false; lastX=e.clientX; lastY=e.clientY; wrap.classList.add('grab'); });
+window.addEventListener('pointermove', e=>{
+  if(!dragging) return;
+  offX += e.clientX-lastX; offY += e.clientY-lastY;
+  lastX=e.clientX; lastY=e.clientY;
+  if(Math.abs(e.clientX-lastX)>2) moved=true;
+});
+window.addEventListener('pointerup', ()=>{ dragging=false; wrap.classList.remove('grab'); });
+wrap.addEventListener('click', e=>{
+  if(moved){ moved=false; return; }
+  const rect = canvas.getBoundingClientRect();
+  const mx = ((e.clientX-rect.left) - W/2 - offX)/scale + W/2;
+  const my = ((e.clientY-rect.top) - H/2 - offY)/scale + H/2;
+  let best=null, bd=30/scale;
+  allSignals().forEach(s=>{
+    if(!filters[s.t]) return;
+    const d=Math.hypot(px(s.lon)-mx, py(s.lat)-my);
+    if(d<bd){bd=d;best=s;}
+  });
+  if(best) openSig(best);
+});
+wrap.addEventListener('wheel', e=>{
+  e.preventDefault();
+  scale *= e.deltaY<0?1.12:0.89;
+  scale = Math.max(0.6, Math.min(4, scale));
+},{passive:false});
+// 触屏双指缩放
+let pinch=0;
+wrap.addEventListener('touchstart', e=>{ if(e.touches.length===2) pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); },{passive:true});
+wrap.addEventListener('touchmove', e=>{
+  if(e.touches.length===2){
+    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+    if(pinch){ scale *= d/pinch; scale=Math.max(0.6,Math.min(4,scale)); }
+    pinch=d;
+  }
+},{passive:true});
+
+function recenter(){ scale=1; offX=0; offY=0; }
+
+/* ================= 滤镜 ================= */
+function renderFilters(){
+  const el=document.getElementById('filters');
+  el.innerHTML = [
+    ['confirmed','c','已确认信号'],
+    ['rumored','r','传闻信号'],
+    ['event','e','事件'],
+  ].map(([k,cls,label])=>`<div class="filter ${cls} ${filters[k]?'on':''}" onclick="toggleFilter('${k}')"><span class="sw"></span>${label}</div>`).join('');
+}
+function toggleFilter(k){ filters[k]=!filters[k]; renderFilters(); }
+
+/* ================= 面板 ================= */
+let curPanel=null;
+function openPanel(name){
+  closePanel();
+  curPanel=name;
+  document.getElementById('panel-'+name).classList.add('open');
+  if(name==='message') document.getElementById('msgDot').classList.remove('show');
+  setNav(name);
+}
+function closePanel(){
+  if(curPanel){ document.getElementById('panel-'+curPanel).classList.remove('open'); curPanel=null; }
+  setNav('map');
+}
+function setNav(name){
+  document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('on', b.dataset.p===name));
+}
+function go(name){
+  if(name==='map'){ closePanel(); return; }
+  openPanel(name);
+}
+
+/* ================= 内容渲染 ================= */
+function renderLog(){
+  document.getElementById('logBody').innerHTML = ACTIVITY.map(a=>`
+    <div class="log"><div class="dot"></div><div class="t">${a.t}</div><div class="c">${a.c}</div></div>`).join('');
+}
+function renderEvents(){
+  document.getElementById('eventsBody').innerHTML = EVENTS.map(e=>`
+    <div class="evt"><span class="tag">${e.tag}</span><h3>${e.t}</h3><div class="when">${e.when}</div><p>${e.d}</p></div>`).join('');
+}
+function renderMsg(){
+  document.getElementById('msgBody').innerHTML = MESSAGES.map(m=>`
+    <div class="chatmsg"><div class="who ${m.who==='me'?'me':''}">${m.who==='me'?'创始人':m.who}</div><p>${m.c}</p><div class="tt">${m.t}</div></div>`).join('');
+}
+function renderHelp(){
+  document.getElementById('helpBody').innerHTML = HELPS.map((h,i)=>`
+    <div class="helpitem" onclick="this.classList.toggle('open')"><h3>${h.t}</h3><p>${h.c}</p></div>`).join('');
+}
+
+/* ================= 上报 ================= */
+async function submitReport(){
+  const t=document.getElementById('rType').value;
+  const city=document.getElementById('rCity').value.trim();
+  const desc=document.getElementById('rDesc').value.trim();
+  if(!city||!desc){ alert('请填写城市和描述'); return; }
+  let lat=0,lon=0;
+  try{
+    const url=`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(city+',中国')}`;
+    const res=await fetch(url); const data=await res.json();
+    if(data&&data[0]){ lat=parseFloat(data[0].lat); lon=parseFloat(data[0].lon); }
+  }catch(e){}
+  reports.push({t, city, lat, lon, desc, title:'上报·'+city});
+  localStorage.setItem('miui_reports', JSON.stringify(reports));
+  document.getElementById('rCity').value=''; document.getElementById('rDesc').value='';
+  closePanel();
+  alert('上报成功！信号已标记到地图上 ✅');
+}
+
+/* ================= 信号弹窗 ================= */
+function openSig(s){
+  document.getElementById('sigTitle').textContent = s.title;
+  document.getElementById('sigSub').textContent = s.sub || (s.t==='confirmed'?'已确认信号':s.t==='rumored'?'传闻信号':'事件');
+  document.getElementById('sigBody').textContent = s.desc;
+  document.getElementById('sigModal').classList.add('show');
+}
+function closeSig(){ document.getElementById('sigModal').classList.remove('show'); }
+
+/* ================= 音效 & 启动 ================= */
+function toggleSound(){
+  soundOn=!soundOn;
+  document.getElementById('soundBtn').textContent = soundOn?'🔊':'🔇';
+  document.getElementById('soundBtn').classList.toggle('on', !soundOn);
+}
+function start(){ document.getElementById('boot').classList.add('hide'); }
+
+/* 初始化 */
+drawBase();
+renderFilters();
+renderLog();
+renderEvents();
+renderMsg();
+renderHelp();
+render();
+</script>
+</body>
+</html>
