@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>蜘蛛侠查找器 | MIUI工作室</title>
+<meta name="description" content="蜘蛛侠查找器：《蜘蛛侠4：崭新之日》全片彩蛋解析与查找工具，片尾彩蛋、隐藏细节一网打尽。">
+<meta name="keywords" content="蜘蛛侠查找器,蜘蛛侠4,崭新之日,彩蛋,片尾彩蛋,蜘蛛追踪器,漫威,蜘蛛侠">
+<style>
+:root{--p:#ff5e00;--pd:#e04d00;--g:linear-gradient(135deg,#ff5e00,#ff8c00);--bg:#fff;--bg2:#f8f9fb;--t:#1a1a2e;--t2:#6b7280;--t3:#9ca3af;--b:rgba(0,0,0,.06);--shadow:0 4px 24px rgba(0,0,0,.06);--shadow2:0 12px 40px rgba(0,0,0,.1)}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--t);line-height:1.7;-webkit-font-smoothing:antialiased}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.82);backdrop-filter:blur(20px);border-bottom:1px solid var(--b)}
+nav .logo{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;color:var(--t);text-decoration:none}
+nav .logo span{font-size:24px}
+nav a.back{color:var(--p);font-weight:700;text-decoration:none;border:1px solid rgba(255,94,0,.25);padding:6px 16px;border-radius:20px;transition:.2s}
+nav a.back:hover{background:rgba(255,94,0,.06)}
+.hero{padding:120px 24px 40px;text-align:center;background:radial-gradient(1200px 500px at 50% -10%,rgba(255,94,0,.12),transparent)}
+.hero .icon{font-size:56px}
+.hero h1{font-size:34px;font-weight:800;margin:10px 0 8px;background:var(--g);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--t2);max-width:640px;margin:0 auto;font-size:14px}
+.wrap{max-width:920px;margin:0 auto;padding:20px 24px 80px}
+.search{display:flex;gap:10px;margin:0 0 28px}
+.search input{flex:1;padding:13px 20px;border:1.5px solid var(--b);border-radius:14px;font-size:15px;outline:none;transition:.2s;background:var(--bg2);color:var(--t)}
+.search input:focus{border-color:var(--p);background:#fff;box-shadow:0 0 0 4px rgba(255,94,0,.08)}
+.search button{padding:13px 24px;border:none;border-radius:14px;background:var(--g);color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:.2s}
+.search button:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(255,94,0,.35)}
+.tagbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.tag{padding:6px 14px;border-radius:20px;border:1px solid var(--b);color:var(--t2);font-size:12px;cursor:pointer;transition:.2s;background:#fff}
+.tag.on{background:var(--g);color:#fff;border-color:transparent}
+.hint{color:var(--t3);font-size:13px;margin-bottom:20px;text-align:center}
+.easter{background:#fff;border:1px solid var(--b);border-radius:16px;padding:20px 24px;margin-bottom:14px;cursor:pointer;transition:.22s;box-shadow:var(--shadow)}
+.easter:hover{transform:translateY(-3px);box-shadow:var(--shadow2);border-color:rgba(255,94,0,.3)}
+.easter .head{display:flex;align-items:flex-start;gap:14px}
+.easter .no{flex:none;width:38px;height:38px;border-radius:12px;background:var(--g);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:15px}
+.easter .tt{flex:1}
+.easter .tt h3{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.easter .tt .kind{font-size:11px;padding:2px 10px;border-radius:10px;background:#fff3ec;color:var(--p);font-weight:600}
+.easter .tt .star{font-size:11px;padding:2px 10px;border-radius:10px;background:#fff7e0;color:#c47f00;font-weight:600}
+.easter .body{display:none;margin-top:14px;padding-top:14px;border-top:1px dashed var(--b);color:var(--t2);font-size:14px}
+.easter.open .body{display:block}
+.easter .body b{color:var(--t)}
+.none{text-align:center;color:var(--t3);padding:60px 0;display:none}
+.none.show{display:block}
+footer{text-align:center;color:var(--t3);font-size:12px;padding:30px 24px;border-top:1px solid var(--b)}
+footer a{color:var(--p);text-decoration:none}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo"><span>🕷️</span>蜘蛛侠查找器</a>
+  <a href="index.html" class="back">← 返回官网</a>
+</nav>
+
+<div class="hero">
+  <div class="icon">🕷️</div>
+  <h1>蜘蛛侠查找器</h1>
+  <p>《蜘蛛侠4：崭新之日》（Spider-Man: Brand New Day）全片彩蛋 & 隐藏细节解析，输入关键词快速查找你想找的彩蛋。</p>
+</div>
+
+<div class="wrap">
+  <div class="search">
+    <input id="kw" type="text" placeholder="搜索彩蛋，如：片尾 / 项链 / 蛛丝 / 漫画…">
+    <button onclick="doSearch()">查找 🔍</button>
+  </div>
+  <div class="tagbar" id="tagbar"></div>
+  <p class="hint">共 <span id="total"></span> 个彩蛋 · 点击任意卡片展开详情</p>
+  <div id="list"></div>
+  <div class="none" id="none">😢 没找到相关彩蛋，换个关键词试试</div>
+</div>
+
+<footer>蜘蛛侠查找器 · 由 <a href="index.html">MIUI工作室</a> 出品 · 内容基于《蜘蛛侠4：崭新之日》公开影评整理</footer>
+
+<script>
+const EGGS = [
+  {no:1, kind:"片尾彩蛋", star:true, title:"蜘蛛追踪器（Spider-Tracker）", tags:"片尾 彩蛋 蜘蛛追踪器 查找器 奈德 皇后区 太空", text:"全片唯一的片尾彩蛋，需等完所有字幕（约8-10分钟）才会出现。奈德自研的<b>蜘蛛侠追踪程序</b>上，代表彼得·帕克的红点稳稳定位在纽约皇后区；下一秒红点突然消失，镜头一路从地球往外拉，穿过大气层，红点在遥远深空重新浮现，屏幕显示“未知位置”，最后弹出字幕：<b>“蜘蛛侠将会回归”</b>。这暗示荷兰弟版蜘蛛侠已离开616主宇宙，被传送到深空/其他宇宙。"},
+  {no:2, kind:"片尾彩蛋", star:true, title:"深空信号指向毁灭博士", tags:"片尾 彩蛋 毁灭博士 复联5 复联6 斗界 秘密战争", text:"彩蛋里地球上的信号图标<b>没有消失</b>，而是<b>多出了一个新蜘蛛侠信号</b>——所以有人猜太空里那个可能是另一个平行宇宙的蜘蛛侠。主流解读是：彼得被<b>毁灭博士（Doctor Doom）</b>带走，进入《复仇者联盟5：毁灭之日》结尾的“斗界”战场，为《复联6：秘密战争》铺路。"},
+  {no:3, kind:"开场细节", title:"漫威Logo里彼得溶解消失", tags:"开场 logo 漫威 遗忘咒 溶解 消失", text:"开场漫威 logo 动画里，彼得从所有旧画面中<b>溶解消失</b>，呼应上一部结尾的<b>遗忘咒</b>——全世界（包括他自己最亲近的人）都忘了彼得·帕克是谁。"},
+  {no:4, kind:"开场细节", title:"90秒神还原6张漫画封面", tags:"开场 漫画 封面 神奇蜘蛛侠 致敬", text:"开场90秒内，镜头神还原了<b>6张《神奇蜘蛛侠》经典漫画封面</b>，逐格致敬漫画黄金年代的分镜与构图。"},
+  {no:5, kind:"场景细节", title:"奈德房里的火影忍者海报", tags:"奈德 火影忍者 海报 房间 彩蛋", text:"奈德房间墙上贴着<b>《火影忍者》海报</b>——这是导演的私货（导演同时也是火影真人版导演），也算一次跨界彩蛋。"},
+  {no:6, kind:"道具细节", star:true, title:"MJ的黑大丽花项链", tags:"MJ 项链 黑大丽花 英雄远征 彼得 道具", text:"MJ 一直攥着的<b>黑大丽花项链</b>，正是《蜘蛛侠：英雄远征》里彼得送给她的那条。即使记忆被抹除，这条项链仍是两人羁绊的实物线索，暗示MJ潜意识里还记得什么。"},
+  {no:7, kind:"能力细节", star:true, title:"彼得觉醒有机蛛丝", tags:"蛛丝 有机蛛丝 发射器 托比 能力 觉醒", text:"本片彼得<b>觉醒了有机蛛丝</b>（不再依赖手腕发射器），这一设定致敬了<b>托比·马奎尔版</b>蜘蛛侠的经典能力，也标志着他战力的一次跃升。"}
+];
+
+let curTag = "全部";
+
+function render(){
+  const list = document.getElementById('list');
+  const none = document.getElementById('none');
+  const kw = document.getElementById('kw').value.trim().toLowerCase();
+  const arr = EGGS.filter(e => {
+    const okTag = curTag === "全部" || e.kind === curTag || (curTag==="重点" && e.star);
+    const okKw = !kw || (e.title + e.text + e.tags).toLowerCase().includes(kw);
+    return okTag && okKw;
+  });
+  document.getElementById('total').textContent = EGGS.length;
+  if(arr.length === 0){ list.innerHTML=''; none.classList.add('show'); return; }
+  none.classList.remove('show');
+  list.innerHTML = arr.map(e => `
+    <div class="easter" onclick="this.classList.toggle('open')">
+      <div class="head">
+        <div class="no">${e.no}</div>
+        <div class="tt">
+          <h3>${e.title} <span class="kind">${e.kind}</span>${e.star?'<span class="star">⭐ 重点</span>':''}</h3>
+        </div>
+      </div>
+      <div class="body">${e.text}</div>
+    </div>`).join('');
+}
+
+function renderTags(){
+  const kinds = ["全部","重点",...new Set(EGGS.map(e=>e.kind))];
+  document.getElementById('tagbar').innerHTML = kinds.map(k => `<span class="tag ${curTag===k?'on':''}" onclick="setTag('${k}')">${k}</span>`).join('');
+}
+function setTag(t){ curTag = t; renderTags(); render(); }
+function doSearch(){ render(); }
+document.getElementById('kw').addEventListener('keyup', e => { if(e.key==='Enter') render(); });
+document.getElementById('kw').addEventListener('input', render);
+renderTags();
+render();
+</script>
+</body>
+</html>
