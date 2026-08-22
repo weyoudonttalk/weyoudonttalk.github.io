@@ -4,274 +4,273 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>MIUI TRACKER · 工作室追踪器</title>
-<meta name="description" content="MIUI工作室官方追踪器：8-bit复古像素风全球地图，追踪25人团队与AI小Q信号，活动日志、任务情报、上报目击。">
+<meta name="description" content="MIUI工作室官方追踪器：复古街机风全球地图，追踪25人团队与AI小Q信号。">
 <style>
-/* ================= MIUI TRACKER — 8-BIT 复古像素风 ================= */
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
 :root{
-  --bg:#0a0a14; --bg2:#101024; --bg3:#181832;
-  --line:#2a2a50; --line2:#3a3a68;
-  --orange:#ff7a00; --amber:#ffb020;
-  --cyan:#00d8ff; --green:#2bd97c; --red:#ff3b5c; --blue:#5aa8ff;
-  --txt:#eef0f6; --dim:#9a9ac0; --faint:#606090;
-  --pix:4px;
+  --bg:#0a1628; --bg2:#0d1f38; --panel:#102a47; --panel2:#143455;
+  --line:#09a4c7; --line2:#0e5f73;
+  --cyan:#09a4c7; --cyan2:#b8edff; --txt:#a8e1fe; --dim:#6aa8c7; --faint:#3f6a8a;
+  --green:#00ff50; --red:#ff4040; --event:#96e0f7; --yellow:#ffd23f;
+  --font-pix:'VT323','Courier New',monospace;
+  --font-h:'Press Start 2P','VT323','Courier New',monospace;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 body{
-  font-family:'Courier New','Lucida Console','PingFang SC','Microsoft YaHei',monospace;
-  background:var(--bg); color:var(--txt); overflow:hidden;
+  font-family:var(--font-pix); background:var(--bg); color:var(--txt); overflow:hidden;
   height:100vh; width:100vw; position:fixed; inset:0;
-  user-select:none; -webkit-user-select:none;
+  user-select:none; -webkit-user-select:none; font-size:16px;
 }
-button{font-family:inherit;cursor:pointer}
+button{font-family:var(--font-pix);cursor:pointer;color:var(--txt)}
 #app{position:relative;width:100%;height:100%}
 
-/* 扫描线 + 暗角 + CRT */
+/* 扫描线 + 暗角 */
 .scanlines{position:fixed;inset:0;pointer-events:none;z-index:900;
-  background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px);opacity:.4}
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 1px,transparent 1px 3px);opacity:.4}
 .vignette{position:fixed;inset:0;pointer-events:none;z-index:901;
-  background:radial-gradient(120% 100% at 50% 42%,transparent 55%,rgba(0,0,0,.6) 100%)}
+  background:radial-gradient(120% 100% at 50% 42%,transparent 60%,rgba(0,0,0,.55) 100%)}
 
-/* ================= 像素按钮 ================= */
-.pixbtn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  background:var(--amber); color:#1a0e00; border:none; padding:12px 20px; font-size:13px; font-weight:800;
-  letter-spacing:2px; text-align:center; cursor:pointer; image-rendering:pixelated;
-  box-shadow:0 4px 0 #000, 0 6px 0 #000, 4px 6px 0 #000, -4px 6px 0 #000, 4px 0 0 #000, -4px 0 0 #000, 0 0 0 3px #000;
-  transition:transform .06s, box-shadow .06s;}
-.pixbtn:active{transform:translateY(3px);
-  box-shadow:0 1px 0 #000, 0 3px 0 #000, 3px 3px 0 #000, -3px 3px 0 #000, 3px 0 0 #000, -3px 0 0 #000, 0 0 0 3px #000;}
-.pixbtn.dark{background:#1c1c38; color:var(--txt)}
-.pixbtn.cyan{background:var(--cyan); color:#00141a}
-.pixbtn.red{background:var(--red); color:#fff}
-.pixbtn.sm{padding:8px 12px; font-size:10px; letter-spacing:1px}
-
-/* ================= 覆盖层 ================= */
-.overlay{position:absolute;inset:0;z-index:800;display:flex;align-items:center;justify-content:center;
-  background:radial-gradient(1000px 620px at 50% 34%,#1a1230,#08080f);transition:opacity .45s}
-.overlay.hide{opacity:0;pointer-events:none}
-.overlay .inner{text-align:center;padding:30px;max-width:640px;width:100%}
-
-/* 欢迎 */
-#welcome .logo{width:92px;height:92px;margin:0 auto 22px;background:linear-gradient(135deg,var(--orange),var(--amber));
-  display:grid;place-items:center;font-size:44px;image-rendering:pixelated;
-  box-shadow:0 0 0 4px #000, 0 6px 0 #000, 0 0 46px rgba(255,122,0,.6)}
-#welcome h1{font-size:28px;letter-spacing:5px;color:#fff;text-shadow:0 0 22px rgba(0,216,255,.65);margin-bottom:8px}
-#welcome .sub{font-size:12px;color:var(--cyan);letter-spacing:3px;margin-bottom:22px}
-#welcome .hint{font-size:13px;color:var(--dim);line-height:2;margin-bottom:28px}
-#welcome .hint b{color:var(--amber)}
-.wbtn{display:block;width:100%;max-width:440px;margin:12px auto;padding:16px 20px;
-  border:3px solid #000;background:var(--bg2);color:var(--txt);font-size:13px;letter-spacing:2px;
-  font-weight:700;cursor:pointer;image-rendering:pixelated;transition:.12s;
-  box-shadow:0 4px 0 #000}
-.wbtn.primary{background:linear-gradient(135deg,var(--orange),var(--amber));color:#1a0e00;border-color:#000}
-.wbtn:hover{transform:translateY(-2px);box-shadow:0 6px 0 #000}
-.wbtn:active{transform:translateY(2px);box-shadow:0 2px 0 #000}
-.wbtn .arrow{float:right}
-
-/* 设置 */
-#settings h2{font-size:20px;letter-spacing:3px;color:#fff;margin-bottom:6px}
-#settings .sub{font-size:11px;color:var(--dim);letter-spacing:2px;margin-bottom:26px}
-.setgroup{text-align:left;margin-bottom:18px}
-.setgroup .gl{font-size:11px;color:var(--cyan);letter-spacing:2px;margin-bottom:10px}
-.setrow{display:flex;align-items:center;justify-content:space-between;gap:12px;
-  border:3px solid #000;background:var(--bg2);padding:12px 15px;margin-bottom:8px;cursor:pointer;image-rendering:pixelated;
-  box-shadow:0 3px 0 #000}
-.setrow .lb{font-size:13px;letter-spacing:1px;font-weight:700}
-.setrow .lb small{display:block;font-size:10px;color:var(--faint);margin-top:3px;letter-spacing:0;font-weight:400}
-.switch{width:46px;height:24px;background:#23233c;position:relative;flex:none;border:2px solid #000;image-rendering:pixelated}
-.switch::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;background:#666;transition:.15s;image-rendering:pixelated}
-.setrow.on .switch{background:var(--orange)}
-.setrow.on .switch::after{left:24px;background:#fff}
-
-/* CEO 寄语 */
-#ceo .videobox{width:100%;max-width:480px;margin:0 auto;aspect-ratio:16/10;background:#050508;position:relative;
-  border:4px solid #000;overflow:hidden;box-shadow:0 6px 0 #000, 0 10px 40px rgba(0,0,0,.6);image-rendering:pixelated}
-#ceo .pixface{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:150px;height:150px;
-  display:grid;grid-template-columns:repeat(12,1fr);grid-template-rows:repeat(12,1fr);image-rendering:pixelated}
-#ceo .videobox .wave{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:3px;align-items:flex-end;height:26px}
-#ceo .videobox .wave i{width:4px;background:var(--cyan);animation:wave .5s infinite ease-in-out;display:block}
-#ceo .videobox .wave i:nth-child(1){height:8px}.wave i:nth-child(2){height:18px;animation-delay:.1s}
-.wave i:nth-child(3){height:26px;animation-delay:.2s}.wave i:nth-child(4){height:14px;animation-delay:.3s}
-.wave i:nth-child(5){height:22px;animation-delay:.15s}.wave i:nth-child(6){height:10px;animation-delay:.25s}
-.wave i:nth-child(7){height:20px;animation-delay:.05s}
-@keyframes wave{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
-#ceo .caption{max-width:480px;margin:14px auto 0;font-size:13px;color:var(--dim);line-height:1.9;min-height:110px;text-align:left}
-#ceo .caption .cursor{display:inline-block;width:8px;height:14px;background:var(--orange);vertical-align:-2px;animation:blink 1s steps(1) infinite}
-#ceo .ctrl{display:flex;gap:10px;justify-content:center;margin-top:10px}
-
-/* 初始化 */
-#init h2{font-size:18px;letter-spacing:4px;color:#fff;margin-bottom:20px}
-#init .barwrap{width:100%;max-width:420px;margin:0 auto;height:22px;border:3px solid #000;background:var(--bg2);position:relative;overflow:hidden}
-#init .bar{height:100%;background:linear-gradient(90deg,var(--orange),var(--amber));width:0;transition:width .1s}
-#init .pct{font-size:14px;color:var(--cyan);letter-spacing:2px;margin-top:14px}
-#init .log{font-size:11px;color:var(--faint);letter-spacing:1px;margin-top:18px;line-height:2}
-
-@keyframes blink{50%{opacity:0}}
-
-/* ================= 主界面 ================= */
-.topbar{position:absolute;top:0;left:0;right:0;z-index:300;display:flex;align-items:center;justify-content:space-between;
-  padding:10px 12px;background:linear-gradient(180deg,rgba(10,10,20,.96),rgba(10,10,20,0))}
-.brand{display:flex;align-items:center;gap:10px;cursor:pointer}
-.brand .logo{width:36px;height:36px;background:linear-gradient(135deg,var(--orange),var(--amber));
-  display:grid;place-items:center;font-size:17px;image-rendering:pixelated;
-  box-shadow:0 0 0 3px #000, 0 0 16px rgba(255,122,0,.5)}
-.brand .tt h1{font-size:14px;letter-spacing:2px;font-weight:800;color:#fff;text-shadow:0 0 10px rgba(0,216,255,.5)}
-.brand .tt small{font-size:9px;color:var(--cyan);letter-spacing:2px}
-.topbtns{display:flex;gap:6px;align-items:center}
-.tbtn{min-width:34px;height:34px;padding:0 8px;border:2px solid #000;background:var(--bg2);color:var(--dim);
-  display:grid;place-items:center;cursor:pointer;font-size:14px;transition:.12s;position:relative;letter-spacing:1px;
-  image-rendering:pixelated;box-shadow:0 2px 0 #000}
-.tbtn:hover,.tbtn.on{border-color:var(--orange);color:var(--orange)}
-.tbtn.lbl{font-size:10px;gap:4px;display:flex;align-items:center;font-weight:700}
-.tbtn:active{transform:translateY(2px);box-shadow:none}
-
-/* 地图 */
-#mapwrap{position:absolute;inset:0;z-index:10;cursor:grab;touch-action:none;overflow:hidden}
+/* ============ 主界面 ============ */
+#mapwrap{position:absolute;inset:0;z-index:10;cursor:grab;touch-action:none;overflow:hidden;background:var(--bg)}
 #mapwrap.grab{cursor:grabbing}
-#world{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);transform-origin:center;image-rendering:pixelated}
-#map{display:block;image-rendering:pixelated}
-.pin{position:absolute;transform:translate(-50%,-100%);cursor:pointer;image-rendering:pixelated;transition:filter .1s}
-.pin:hover{filter:brightness(1.3) drop-shadow(0 0 8px #fff)}
-.pin .lbl{position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);font-size:8px;color:var(--dim);
-  white-space:nowrap;letter-spacing:1px;text-shadow:0 1px 2px #000;pointer-events:none;display:none}
-.pin.on .lbl{display:block}
+#world{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);transform-origin:center;width:1600px;height:680px}
+#mapbase{position:absolute;inset:0;width:100%;height:100%;image-rendering:-webkit-optimize-contrast;display:block}
+#gridLines{position:absolute;inset:0;width:100%;height:100%;
+  background:url(images/ui/map/grid_lines.png) center/100% 100% no-repeat;opacity:.45;pointer-events:none;mix-blend-mode:screen}
+#hudH{position:absolute;top:25px;left:100px;right:0;height:18px;pointer-events:none;
+  background:url(images/ui/map/horizontal_measure.png) repeat-x left center/auto 100%;opacity:.8}
+#hudV{position:absolute;top:100px;left:25px;bottom:0;width:18px;pointer-events:none;
+  background:url(images/ui/map/vertical_measure.png) repeat-y top center/100% auto;opacity:.8}
+#pins{position:absolute;inset:0;pointer-events:none}
+.pin{position:absolute;transform:translate(-50%,-50%);cursor:pointer;pointer-events:auto;width:32px;height:auto;display:block;transition:filter .16s ease,transform .16s ease}
+.pin img{width:100%;height:auto;display:block;image-rendering:auto}
+.pin:hover{transform:translate(-50%,-50%) scale(1.15)}
+.pin-confirmed:hover{filter:drop-shadow(0 0 6px rgba(0,255,80,.8))}
+.pin-rumored:hover{filter:drop-shadow(0 0 6px rgba(255,64,64,.8))}
+.pin-event:hover{filter:drop-shadow(0 0 6px rgba(150,224,247,.8))}
+.pin-star:hover{filter:drop-shadow(0 0 6px rgba(255,255,255,.9))}
+.pin .lbl{position:absolute;left:50%;bottom:-14px;transform:translateX(-50%);font-family:var(--font-pix);
+  font-size:11px;color:var(--cyan2);white-space:nowrap;text-shadow:0 0 4px #000,0 0 8px #000;display:none;letter-spacing:.05em}
+.pin:hover .lbl{display:block}
+
+/* 地图 HUD 覆盖层（固定，不随地图缩放） */
+.map-ui{position:absolute;inset:0;pointer-events:none;z-index:20}
+
+/* 雷达 */
+.radar-widget{position:absolute;bottom:110px;right:26px;z-index:30;pointer-events:none;width:110px;height:110px}
+.radar-bg{position:absolute;inset:0;background:url(images/ui/map/radar.png) center/cover no-repeat;opacity:.9}
+#radarCanvas{position:absolute;inset:0;display:block}
+
+/* 顶部栏 */
+.topbar{position:absolute;top:0;left:0;right:0;z-index:300;display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;background:linear-gradient(180deg,rgba(10,22,40,.95),rgba(10,22,40,0))}
+.brand{display:flex;align-items:center;gap:11px;cursor:pointer}
+.brand .logo{width:38px;height:38px;background:linear-gradient(135deg,#09a4c7,#00ff50);
+  display:grid;place-items:center;font-size:20px;color:#04121f;font-weight:bold;
+  box-shadow:0 0 0 2px #04121f, 0 0 18px rgba(0,255,80,.4)}
+.brand .tt h1{font-family:var(--font-h);font-size:13px;letter-spacing:1px;color:#fff;text-shadow:0 0 10px rgba(9,164,199,.7)}
+.brand .tt small{display:block;font-size:13px;color:var(--cyan2);letter-spacing:2px;margin-top:3px;font-family:var(--font-pix)}
+.topbtns{display:flex;gap:7px;align-items:center}
+.tbtn{min-width:38px;height:34px;padding:0 9px;border:1px solid rgba(9,164,199,.5);background:rgba(10,22,40,.8);color:var(--cyan2);
+  display:grid;place-items:center;cursor:pointer;font-size:15px;transition:.12s;position:relative;letter-spacing:1px;font-family:var(--font-pix)}
+.tbtn:hover{border-color:var(--green);color:var(--green);background:rgba(0,255,80,.08)}
+.tbtn.lbl{font-size:14px;gap:4px;display:flex;align-items:center}
 
 /* 滤镜 */
-.filters{position:absolute;top:66px;left:12px;z-index:150;display:flex;flex-direction:column;gap:6px}
-.filter{display:flex;align-items:center;gap:9px;background:rgba(10,10,24,.82);border:2px solid #000;
-  padding:7px 11px;cursor:pointer;font-size:10px;letter-spacing:1px;color:var(--dim);font-weight:700;image-rendering:pixelated;
-  box-shadow:0 2px 0 #000}
-.filter .sw{width:28px;height:15px;background:#222;position:relative;transition:.15s;flex:none;border:1px solid #000;image-rendering:pixelated}
-.filter .sw::after{content:'';position:absolute;top:1px;left:1px;width:11px;height:11px;background:#555;transition:.15s}
+.filters{position:absolute;top:62px;left:16px;z-index:200;display:flex;flex-direction:column;gap:6px;pointer-events:auto}
+.filter{display:flex;align-items:center;gap:9px;background:rgba(10,22,40,.85);border:1px solid rgba(9,164,199,.4);
+  padding:6px 12px;cursor:pointer;font-size:14px;letter-spacing:1px;color:var(--dim);transition:.15s;font-family:var(--font-pix)}
+.filter:hover{color:var(--cyan2)}
+.filter .sw{width:30px;height:16px;background:#0a1628;position:relative;transition:.15s;flex:none;border:1px solid rgba(9,164,199,.5)}
+.filter .sw::after{content:'';position:absolute;top:1px;left:1px;width:12px;height:12px;background:#3f6a8a;transition:.15s}
 .filter.on{color:var(--txt)}
-.filter.c.on .sw{background:var(--green)} .filter.c.on .sw::after{left:14px;background:#fff}
-.filter.r.on .sw{background:var(--red)} .filter.r.on .sw::after{left:14px;background:#fff}
-.filter.e.on .sw{background:var(--blue)} .filter.e.on .sw::after{left:14px;background:#fff}
-
-/* 地图按钮 */
-.mapbtns{position:absolute;right:12px;top:66px;z-index:150;display:flex;flex-direction:column;gap:8px}
-.mapbtn{width:46px;height:46px;background:var(--bg2);border:2px solid #000;cursor:pointer;display:grid;place-items:center;
-  image-rendering:pixelated;box-shadow:0 2px 0 #000;padding:0}
-.mapbtn img{width:36px;height:36px;image-rendering:pixelated}
-.mapbtn:active{transform:translateY(2px);box-shadow:none}
+.filter.c.on .sw{background:rgba(0,255,80,.5)} .filter.c.on .sw::after{left:15px;background:var(--green)}
+.filter.r.on .sw{background:rgba(255,64,64,.5)} .filter.r.on .sw::after{left:15px;background:var(--red)}
+.filter.e.on .sw{background:rgba(150,224,247,.5)} .filter.e.on .sw::after{left:15px;background:var(--event)}
 
 /* 图例 */
-.legend{position:absolute;bottom:40px;left:12px;z-index:150;display:flex;gap:12px;flex-wrap:wrap;
-  background:rgba(10,10,24,.82);border:2px solid #000;padding:7px 12px;box-shadow:0 2px 0 #000}
-.legend span{font-size:9px;color:var(--dim);letter-spacing:1px;font-weight:700;display:flex;align-items:center;gap:5px}
-.legend i{display:inline-block;width:10px;height:10px;image-rendering:pixelated}
-.legend .c i{background:var(--green);box-shadow:0 0 8px var(--green)}
-.legend .r i{background:var(--red);box-shadow:0 0 8px var(--red)}
-.legend .e i{background:var(--blue);box-shadow:0 0 8px var(--blue)}
+.legend{position:absolute;bottom:110px;left:16px;z-index:200;display:flex;gap:13px;flex-wrap:wrap;
+  background:rgba(10,22,40,.85);border:1px solid rgba(9,164,199,.4);padding:7px 13px;pointer-events:auto}
+.legend span{font-size:14px;color:var(--dim);letter-spacing:1px;display:flex;align-items:center;gap:5px;font-family:var(--font-pix)}
+.legend i{display:inline-block;width:11px;height:11px;border:1px solid #000}
+.legend .c i{background:var(--green);box-shadow:0 0 7px var(--green)}
+.legend .r i{background:var(--red);box-shadow:0 0 7px var(--red)}
+.legend .e i{background:var(--event);box-shadow:0 0 7px var(--event)}
+.legend .s i{background:#fff;box-shadow:0 0 7px #fff}
 
-/* ticker 滚动条 */
-.ticker{position:absolute;bottom:0;left:0;right:0;z-index:160;height:30px;background:#05050c;
-  border-top:2px solid #000;display:flex;align-items:center;overflow:hidden;image-rendering:pixelated}
-.ticker .track{white-space:nowrap;font-size:11px;letter-spacing:2px;color:var(--amber);font-weight:700;animation:tick 28s linear infinite}
-.ticker .track span{margin-right:40px}
+/* ticker */
+.ticker{position:absolute;bottom:72px;left:0;right:0;z-index:200;height:26px;background:rgba(4,18,31,.92);
+  border-top:1px solid rgba(9,164,199,.4);border-bottom:1px solid rgba(9,164,199,.4);display:flex;align-items:center;overflow:hidden}
+.ticker .track{white-space:nowrap;font-size:15px;letter-spacing:1px;color:var(--yellow);animation:tick 30s linear infinite;font-family:var(--font-pix)}
+.ticker .track span{margin-right:42px}
 @keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
 /* 底部导航 */
-.bottomnav{position:absolute;bottom:30px;left:0;right:0;z-index:170;display:flex;background:rgba(8,8,16,.94);
-  border-top:2px solid #000;image-rendering:pixelated}
-.navbtn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px 9px;
-  cursor:pointer;color:var(--dim);font-size:8px;letter-spacing:1px;transition:.12s;border:none;background:none;font-weight:700}
-.navbtn .ic{font-size:17px;filter:grayscale(.4);image-rendering:pixelated}
-.navbtn.on{color:var(--amber)} .navbtn.on .ic{filter:none;text-shadow:0 0 10px rgba(255,176,32,.7)}
+.bottomnav{position:absolute;bottom:0;left:0;right:0;z-index:250;display:flex;background:rgba(6,16,28,.96);border-top:1px solid rgba(9,164,199,.5)}
+.navbtn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 2px 8px;
+  cursor:pointer;color:var(--dim);font-size:13px;letter-spacing:1px;transition:.12s;border:none;background:none;font-family:var(--font-pix)}
+.navbtn .ic{font-size:18px}
+.navbtn.on{color:var(--green)} .navbtn.on .ic{text-shadow:0 0 10px rgba(0,255,80,.7)}
 .navbtn:active{transform:scale(.93)}
 
-/* ================= 面板 ================= */
-.panel{position:absolute;top:0;right:0;bottom:0;width:min(390px,92vw);z-index:500;background:var(--bg2);
-  border-left:3px solid #000;transform:translateX(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1);
+/* ============ 面板 ============ */
+.panel{position:absolute;top:0;right:0;bottom:0;width:min(400px,92vw);z-index:500;background:var(--bg2);
+  border-left:1px solid rgba(9,164,199,.5);transform:translateX(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1);
   display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(0,0,0,.5)}
 .panel.open{transform:translateX(0)}
-.panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:3px solid #000}
-.panel-head h2{font-size:13px;letter-spacing:2px;color:var(--cyan);text-shadow:0 0 10px rgba(0,216,255,.4)}
-.panel-head .x{width:30px;height:30px;border:2px solid #000;background:var(--bg3);color:var(--dim);cursor:pointer;font-size:15px;display:grid;place-items:center;image-rendering:pixelated}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(9,164,199,.4)}
+.panel-head h2{font-family:var(--font-h);font-size:11px;letter-spacing:1px;color:var(--cyan2);text-shadow:0 0 10px rgba(9,164,199,.5)}
+.panel-head .x{width:30px;height:30px;border:1px solid rgba(9,164,199,.5);background:none;color:var(--dim);cursor:pointer;font-size:16px;display:grid;place-items:center;font-family:var(--font-pix)}
 .panel-head .x:hover{color:var(--red);border-color:var(--red)}
 .panel-body{flex:1;overflow-y:auto;padding:14px 15px;-webkit-overflow-scrolling:touch}
 .panel-body::-webkit-scrollbar{width:4px}.panel-body::-webkit-scrollbar-thumb{background:var(--line2)}
 
 /* 活动日志 */
-.achips{display:flex;gap:5px;padding:10px 14px;border-bottom:2px solid #000;flex-wrap:wrap}
-.achip{font-size:9px;letter-spacing:1px;padding:4px 10px;border:2px solid #000;color:var(--dim);cursor:pointer;font-weight:700;background:var(--bg3)}
-.achip.on{color:#fff}
-.achip.cc.on{background:var(--green);color:#000}.achip.cr.on{background:var(--red);color:#fff}.achip.ce.on{background:var(--blue);color:#fff}
-.entry{display:flex;gap:11px;padding:12px 15px;cursor:pointer;border-left:3px solid transparent;transition:.12s;border-bottom:1px solid rgba(42,42,80,.4)}
-.entry:hover{background:var(--bg3)}
-.entry .badge{flex:none;width:10px;height:10px;margin-top:3px;image-rendering:pixelated}
+.achips{display:flex;gap:5px;padding:10px 14px;border-bottom:1px solid rgba(9,164,199,.4);flex-wrap:wrap}
+.achip{font-size:14px;letter-spacing:1px;padding:4px 11px;border:1px solid rgba(9,164,199,.4);color:var(--dim);cursor:pointer;font-family:var(--font-pix);background:none}
+.achip.on{color:#04121f;font-weight:bold}
+.achip.cc.on{background:var(--green);border-color:var(--green)}
+.achip.cr.on{background:var(--red);border-color:var(--red)}
+.achip.ce.on{background:var(--event);border-color:var(--event)}
+.entry{display:flex;gap:11px;padding:12px 15px;cursor:pointer;border-left:3px solid transparent;transition:.12s;border-bottom:1px solid rgba(14,95,115,.3)}
+.entry:hover{background:var(--panel)}
+.entry .badge{flex:none;width:10px;height:10px;margin-top:4px}
 .entry.c .badge{background:var(--green);box-shadow:0 0 8px var(--green)}
 .entry.r .badge{background:var(--red);box-shadow:0 0 8px var(--red)}
-.entry.e .badge{background:var(--blue);box-shadow:0 0 8px var(--blue)}
+.entry.e .badge{background:var(--event);box-shadow:0 0 8px var(--event)}
 .entry .meta{flex:1;min-width:0}
-.entry .tag{font-size:8px;letter-spacing:1px;margin-bottom:2px}
-.entry.c .tag{color:var(--green)}.entry.r .tag{color:var(--red)}.entry.e .tag{color:var(--blue)}
-.entry .title{font-size:12px;line-height:1.4;color:var(--txt)}
-.entry .date{font-size:9px;color:var(--faint);margin-top:2px;letter-spacing:1px}
+.entry .tag{font-size:13px;letter-spacing:1px;margin-bottom:2px;font-family:var(--font-pix)}
+.entry.c .tag{color:var(--green)}.entry.r .tag{color:var(--red)}.entry.e .tag{color:var(--event)}
+.entry .title{font-size:15px;line-height:1.4;color:var(--txt)}
+.entry .date{font-size:13px;color:var(--faint);margin-top:2px;letter-spacing:1px}
 
 /* Web Watch */
-.ww{display:flex;gap:11px;border:2px solid #000;background:var(--bg3);padding:13px;margin-bottom:10px;cursor:pointer;transition:.12s;image-rendering:pixelated;box-shadow:0 2px 0 #000}
-.ww:hover{border-color:var(--cyan)}
-.ww .icon{flex:none;width:42px;height:42px;background:var(--bg);border:2px solid #000;display:grid;place-items:center;font-size:20px;image-rendering:pixelated}
-.ww .info h3{font-size:13px;margin-bottom:2px;letter-spacing:1px}
-.ww .info .status{font-size:9px;letter-spacing:1px;margin-bottom:4px}
-.ww .info p{font-size:11px;color:var(--dim);line-height:1.6}
+.ww{display:flex;gap:11px;border:1px solid rgba(9,164,199,.4);background:var(--panel);padding:13px;margin-bottom:10px;cursor:pointer;transition:.12s}
+.ww:hover{border-color:var(--green)}
+.ww .icon{flex:none;width:42px;height:42px;background:var(--bg);border:1px solid rgba(9,164,199,.4);display:grid;place-items:center;font-size:21px}
+.ww .info h3{font-family:var(--font-h);font-size:11px;margin-bottom:3px;letter-spacing:1px;color:var(--cyan2)}
+.ww .info .status{font-size:13px;letter-spacing:1px;margin-bottom:4px;color:var(--green);font-family:var(--font-pix)}
+.ww .info p{font-size:14px;color:var(--dim);line-height:1.5}
 
 /* 帮助 */
-.helpitem{border:2px solid #000;padding:11px 13px;margin-bottom:8px;cursor:pointer;background:var(--bg3);transition:.12s;image-rendering:pixelated}
-.helpitem:hover{border-color:var(--orange)}
-.helpitem h3{font-size:12px;display:flex;align-items:center;gap:8px;letter-spacing:1px}
-.helpitem p{font-size:12px;color:var(--dim);line-height:1.7;margin-top:6px;display:none}
+.helpitem{border:1px solid rgba(9,164,199,.4);padding:11px 13px;margin-bottom:8px;cursor:pointer;background:var(--panel);transition:.12s}
+.helpitem:hover{border-color:var(--green)}
+.helpitem h3{font-size:15px;display:flex;align-items:center;gap:8px;letter-spacing:1px}
+.helpitem p{font-size:14px;color:var(--dim);line-height:1.6;margin-top:6px;display:none}
 .helpitem.open p{display:block}
 
 /* 消息 */
-.chatmsg{background:var(--bg3);border:2px solid #000;padding:11px;margin-bottom:10px;image-rendering:pixelated}
-.chatmsg .who{font-size:10px;color:var(--cyan);letter-spacing:1px;margin-bottom:3px;font-weight:700}
-.chatmsg .who.me{color:var(--orange)}
-.chatmsg p{font-size:13px;line-height:1.6}
-.chatmsg .tt{font-size:9px;color:var(--faint);margin-top:4px;text-align:right}
+.chatmsg{background:var(--panel);border:1px solid rgba(9,164,199,.4);padding:11px;margin-bottom:10px}
+.chatmsg .who{font-size:14px;color:var(--cyan2);letter-spacing:1px;margin-bottom:3px;font-family:var(--font-pix)}
+.chatmsg .who.me{color:var(--yellow)}
+.chatmsg p{font-size:15px;line-height:1.5}
+.chatmsg .tt{font-size:13px;color:var(--faint);margin-top:4px;text-align:right}
 
 /* 事件 */
-.evt{border:2px solid #000;background:var(--bg3);padding:13px;margin-bottom:10px;position:relative;image-rendering:pixelated}
-.evt .tag{position:absolute;top:9px;right:10px;font-size:9px;padding:2px 7px;border:2px solid var(--amber);color:var(--amber);letter-spacing:1px;font-weight:700}
-.evt h3{font-size:13px;margin-bottom:2px;letter-spacing:1px}
-.evt .when{font-size:9px;color:var(--cyan);letter-spacing:1px;margin-bottom:5px}
-.evt p{font-size:11px;color:var(--dim);line-height:1.6}
+.evt{border:1px solid rgba(9,164,199,.4);background:var(--panel);padding:13px;margin-bottom:10px;position:relative}
+.evt .tag{position:absolute;top:9px;right:10px;font-size:13px;padding:2px 8px;border:1px solid var(--yellow);color:var(--yellow);letter-spacing:1px}
+.evt h3{font-family:var(--font-h);font-size:11px;margin-bottom:3px;letter-spacing:1px;color:var(--cyan2)}
+.evt .when{font-size:13px;color:var(--cyan);letter-spacing:1px;margin-bottom:5px}
+.evt p{font-size:14px;color:var(--dim);line-height:1.5}
 
 /* 信号弹窗 */
 #sigModal{position:absolute;inset:0;z-index:600;display:none;align-items:flex-end;justify-content:center;padding:0 14px 16px}
 #sigModal.show{display:flex}
-#sigModal .m{background:var(--bg3);border:3px solid #000;width:min(420px,100%);padding:18px;box-shadow:0 6px 0 #000, 0 12px 44px rgba(0,0,0,.65);animation:rise .25s}
+#sigModal .m{background:var(--panel2);border:1px solid var(--green);width:min(430px,100%);padding:18px;
+  box-shadow:0 0 30px rgba(0,255,80,.15);animation:rise .25s}
 @keyframes rise{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
 #sigModal .m .x{float:right;color:var(--dim);cursor:pointer;font-size:20px;line-height:1}
 #sigModal .m .x:hover{color:var(--red)}
-#sigModal .m .tag{font-size:9px;letter-spacing:2px;margin-bottom:4px;font-weight:700}
-#sigModal .m .tag.c{color:var(--green)}#sigModal .m .tag.r{color:var(--red)}#sigModal .m .tag.e{color:var(--blue)}
-#sigModal .m h3{font-size:16px;margin-bottom:4px;letter-spacing:1px}
-#sigModal .m .sub{font-size:10px;color:var(--faint);letter-spacing:1px;margin-bottom:12px}
-#sigModal .m p{font-size:13px;color:var(--dim);line-height:1.8}
-
-/* 通知弹窗 */
-#notifyModal{position:absolute;inset:0;z-index:700;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(4,4,10,.9)}
-#notifyModal.show{display:flex}
-#notifyModal .box{background:var(--bg3);border:3px solid #000;width:min(430px,100%);padding:22px;text-align:center;box-shadow:0 6px 0 #000, 0 12px 50px rgba(0,0,0,.6)}
-#notifyModal h3{font-size:14px;letter-spacing:2px;margin-bottom:12px}
-#notifyModal p{font-size:12px;color:var(--dim);line-height:1.7;margin-bottom:18px}
+#sigModal .m .tag{font-size:14px;letter-spacing:2px;margin-bottom:4px;font-family:var(--font-pix)}
+#sigModal .m .tag.c{color:var(--green)}#sigModal .m .tag.r{color:var(--red)}#sigModal .m .tag.e{color:var(--event)}#sigModal .m .tag.s{color:#fff}
+#sigModal .m h3{font-family:var(--font-h);font-size:13px;margin-bottom:6px;letter-spacing:1px;color:var(--cyan2)}
+#sigModal .m .sub{font-size:13px;color:var(--faint);letter-spacing:1px;margin-bottom:12px}
+#sigModal .m p{font-size:15px;color:var(--dim);line-height:1.7}
 
 /* 上报 */
-#reportModal{position:absolute;inset:0;z-index:620;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(4,4,10,.88)}
+#reportModal{position:absolute;inset:0;z-index:620;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(4,12,24,.9)}
 #reportModal.show{display:flex}
-#reportModal .box{background:var(--bg3);border:3px solid #000;width:min(430px,100%);padding:20px;position:relative;box-shadow:0 6px 0 #000, 0 12px 50px rgba(0,0,0,.6)}
+#reportModal .box{background:var(--bg2);border:1px solid var(--green);width:min(430px,100%);padding:20px;position:relative;box-shadow:0 0 40px rgba(0,255,80,.1)}
 #reportModal .x{position:absolute;top:9px;right:13px;color:var(--dim);cursor:pointer;font-size:20px}
 #reportModal .x:hover{color:var(--red)}
-#reportModal h3{font-size:14px;letter-spacing:2px;margin-bottom:4px}
-#reportModal .sub{font-size:11px;color:var(--dim);margin-bottom:16px;letter-spacing:1px}
+#reportModal h3{font-family:var(--font-h);font-size:12px;letter-spacing:1px;margin-bottom:4px;color:var(--cyan2)}
+#reportModal .sub{font-size:14px;color:var(--dim);margin-bottom:16px;letter-spacing:1px}
 .field{margin-bottom:12px}
-.field label{display:block;font-size:10px;color:var(--dim);letter-spacing:1px;margin-bottom:4px}
-.field input,.field textarea,.field select{width:100%;background:var(--bg);border:2px solid #000;color:var(--txt);
-  padding:10px 12px;font-size:13px;outline:none;font-family:inherit}
-.field input:focus,.field textarea:focus{border-color:var(--orange)}
+.field label{display:block;font-size:14px;color:var(--dim);letter-spacing:1px;margin-bottom:4px}
+.field input,.field textarea,.field select{width:100%;background:var(--bg);border:1px solid rgba(9,164,199,.4);color:var(--txt);
+  padding:10px 12px;font-size:15px;outline:none;font-family:var(--font-pix)}
+.field input:focus,.field textarea:focus{border-color:var(--green)}
 .field textarea{resize:vertical;min-height:64px}
+.pixbtn{width:100%;padding:12px;background:var(--green);border:none;color:#04121f;font-size:16px;letter-spacing:2px;cursor:pointer;font-weight:bold;font-family:var(--font-pix)}
+.pixbtn:hover{filter:brightness(1.15)}
+
+/* ============ 覆盖层 ============ */
+.overlay{position:absolute;inset:0;z-index:800;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(1000px 620px at 50% 34%,#0d2a4a,#050d18);transition:opacity .45s}
+.overlay.hide{opacity:0;pointer-events:none}
+.overlay .inner{text-align:center;padding:30px;max-width:640px;width:100%}
+
+#welcome .logo{width:90px;height:90px;margin:0 auto 22px;background:linear-gradient(135deg,#09a4c7,#00ff50);
+  display:grid;place-items:center;font-size:42px;color:#04121f;font-weight:bold;
+  box-shadow:0 0 0 3px #04121f, 0 0 46px rgba(0,255,80,.4)}
+#welcome h1{font-family:var(--font-h);font-size:24px;letter-spacing:2px;color:#fff;text-shadow:0 0 20px rgba(9,164,199,.7);margin-bottom:10px}
+#welcome .sub{font-size:16px;color:var(--cyan2);letter-spacing:3px;margin-bottom:22px;font-family:var(--font-pix)}
+#welcome .hint{font-size:16px;color:var(--dim);line-height:1.9;margin-bottom:28px;font-family:var(--font-pix)}
+#welcome .hint b{color:var(--yellow)}
+.wbtn{display:block;width:100%;max-width:440px;margin:12px auto;padding:15px 20px;
+  border:1px solid var(--green);background:rgba(0,255,80,.06);color:var(--txt);font-size:16px;letter-spacing:2px;
+  cursor:pointer;font-family:var(--font-pix);transition:.12s}
+.wbtn.primary{background:var(--green);color:#04121f;font-weight:bold;border-color:var(--green)}
+.wbtn:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,255,80,.25)}
+.wbtn:active{transform:translateY(1px)}
+.wbtn .arrow{float:right}
+
+#settings h2{font-family:var(--font-h);font-size:18px;letter-spacing:2px;color:#fff;margin-bottom:6px}
+#settings .sub{font-size:15px;color:var(--dim);letter-spacing:2px;margin-bottom:26px}
+.setgroup{text-align:left;margin-bottom:18px}
+.setgroup .gl{font-size:15px;color:var(--cyan2);letter-spacing:2px;margin-bottom:10px;font-family:var(--font-pix)}
+.setrow{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  border:1px solid rgba(9,164,199,.4);background:rgba(10,22,40,.7);padding:12px 15px;margin-bottom:8px;cursor:pointer}
+.setrow .lb{font-size:16px;letter-spacing:1px;font-family:var(--font-pix)}
+.setrow .lb small{display:block;font-size:13px;color:var(--faint);margin-top:3px;letter-spacing:0}
+.switch{width:46px;height:24px;background:var(--bg);position:relative;flex:none;border:1px solid rgba(9,164,199,.5)}
+.switch::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;background:#3f6a8a;transition:.15s}
+.setrow.on .switch{background:rgba(0,255,80,.4)}
+.setrow.on .switch::after{left:24px;background:var(--green)}
+
+#ceo .videobox{width:100%;max-width:480px;margin:0 auto;aspect-ratio:16/10;background:#050d18;position:relative;
+  border:1px solid rgba(9,164,199,.5);overflow:hidden;box-shadow:0 0 40px rgba(9,164,199,.2)}
+#ceo .pixface{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:150px;height:150px;
+  display:grid;grid-template-columns:repeat(12,1fr);grid-template-rows:repeat(12,1fr)}
+#ceo .videobox .wave{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:3px;align-items:flex-end;height:26px}
+#ceo .videobox .wave i{width:4px;background:var(--green);animation:wave .5s infinite ease-in-out;display:block}
+#ceo .videobox .wave i:nth-child(1){height:8px}.wave i:nth-child(2){height:18px;animation-delay:.1s}
+.wave i:nth-child(3){height:26px;animation-delay:.2s}.wave i:nth-child(4){height:14px;animation-delay:.3s}
+.wave i:nth-child(5){height:22px;animation-delay:.15s}.wave i:nth-child(6){height:10px;animation-delay:.25s}
+.wave i:nth-child(7){height:20px;animation-delay:.05s}
+@keyframes wave{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+#ceo .caption{max-width:480px;margin:14px auto 0;font-size:16px;color:var(--dim);line-height:1.8;min-height:110px;text-align:left}
+#ceo .caption .cursor{display:inline-block;width:8px;height:16px;background:var(--green);vertical-align:-2px;animation:blink 1s steps(1) infinite}
+#ceo .ctrl{display:flex;gap:10px;justify-content:center;margin-top:10px}
+.minibtn{padding:9px 20px;border:1px solid var(--green);background:rgba(0,255,80,.06);color:var(--txt);font-size:15px;letter-spacing:1px;cursor:pointer;font-family:var(--font-pix)}
+.minibtn:hover{color:var(--green)}
+
+#init h2{font-family:var(--font-h);font-size:16px;letter-spacing:2px;color:#fff;margin-bottom:20px}
+#init .barwrap{width:100%;max-width:420px;margin:0 auto;height:20px;border:1px solid var(--green);background:var(--bg);position:relative;overflow:hidden}
+#init .bar{height:100%;background:linear-gradient(90deg,#09a4c7,var(--green));width:0;transition:width .1s}
+#init .pct{font-size:15px;color:var(--cyan2);letter-spacing:2px;margin-top:14px;font-family:var(--font-pix)}
+#init .log{font-size:14px;color:var(--faint);letter-spacing:1px;margin-top:18px;line-height:2}
+
+@keyframes blink{50%{opacity:0}}
+
+/* 通知弹窗 */
+#notifyModal{position:absolute;inset:0;z-index:700;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(4,12,24,.92)}
+#notifyModal.show{display:flex}
+#notifyModal .box{background:var(--bg2);border:1px solid var(--green);width:min(430px,100%);padding:22px;text-align:center;box-shadow:0 0 40px rgba(0,255,80,.15)}
+#notifyModal h3{font-family:var(--font-h);font-size:12px;letter-spacing:1px;color:var(--cyan2);margin-bottom:12px}
+#notifyModal p{font-size:15px;color:var(--dim);line-height:1.6;margin-bottom:18px}
+@media(max-width:600px){.pin{width:26px}.radar-widget{transform:scale(.8);transform-origin:bottom right}}
 </style>
 </head>
 <body>
@@ -279,24 +278,31 @@ button{font-family:inherit;cursor:pointer}
   <div class="scanlines"></div>
   <div class="vignette"></div>
 
-  <!-- ========== 主界面 ========== -->
+  <!-- 地图 -->
   <div id="mapwrap">
     <div id="world">
-      <canvas id="map" width="1600" height="680"></canvas>
+      <img id="mapbase" src="images/ui/map/worldmap.png" alt="">
+      <div id="gridLines"></div>
+      <div id="hudH"></div>
+      <div id="hudV"></div>
       <div id="pins"></div>
     </div>
-    <div class="filters" id="filters"></div>
-    <div class="mapbtns">
-      <button class="mapbtn" onclick="resetView()" title="回到中心"><img src="images/ui/map/map_center.png" alt=""></button>
-      <button class="mapbtn" onclick="globalView()" title="全球地图"><img src="images/ui/map/globe_btn.png" alt=""></button>
-    </div>
-    <div class="legend">
-      <span class="c"><i></i>已确认</span>
-      <span class="r"><i></i>传闻</span>
-      <span class="e"><i></i>事件</span>
+    <div class="map-ui">
+      <div class="radar-widget">
+        <div class="radar-bg"></div>
+        <canvas id="radarCanvas" width="110" height="110"></canvas>
+      </div>
+      <div class="filters" id="filters"></div>
+      <div class="legend">
+        <span class="c"><i></i>已确认</span>
+        <span class="r"><i></i>传闻</span>
+        <span class="e"><i></i>事件</span>
+        <span class="s"><i></i>重点</span>
+      </div>
     </div>
   </div>
 
+  <!-- 顶部栏 -->
   <div class="topbar">
     <div class="brand" onclick="resetView()">
       <div class="logo">M</div>
@@ -304,7 +310,9 @@ button{font-family:inherit;cursor:pointer}
     </div>
     <div class="topbtns">
       <button class="tbtn" id="soundBtn" onclick="toggleSound()">🔊</button>
-      <button class="tbtn" onclick="openPanel('help')">?</button>
+      <button class="tbtn lbl" onclick="openPanel('log')">活动日志</button>
+      <button class="tbtn lbl" onclick="openPanel('webwatch')">任务情报</button>
+      <button class="tbtn lbl" onclick="openReport()">上报</button>
       <a class="tbtn" href="index.html" style="text-decoration:none">✕</a>
     </div>
   </div>
@@ -316,7 +324,6 @@ button{font-family:inherit;cursor:pointer}
     <button class="navbtn" data-p="webwatch" onclick="go('webwatch')"><span class="ic">🕸️</span>情报</button>
     <button class="navbtn" data-p="events" onclick="go('events')"><span class="ic">⚡</span>事件</button>
     <button class="navbtn" data-p="message" onclick="go('message')"><span class="ic">✉️</span>消息</button>
-    <button class="navbtn" data-p="report" onclick="go('report')"><span class="ic">📡</span>上报</button>
     <button class="navbtn" data-p="help" onclick="go('help')"><span class="ic">❓</span>帮助</button>
   </div>
 
@@ -325,41 +332,28 @@ button{font-family:inherit;cursor:pointer}
 
   <!-- 活动日志 -->
   <div class="panel" id="panel-log">
-    <div class="panel-head"><h2>📜 活动日志</h2><button class="x" onclick="closePanel()">✕</button></div>
+    <div class="panel-head"><h2>活动日志</h2><button class="x" onclick="closePanel()">✕</button></div>
     <div class="achips" id="achips"></div>
     <div class="panel-body" id="logBody"></div>
   </div>
   <!-- Web Watch -->
   <div class="panel" id="panel-webwatch">
-    <div class="panel-head"><h2>🕸️ 任务情报 · WEB WATCH</h2><button class="x" onclick="closePanel()">✕</button></div>
+    <div class="panel-head"><h2>任务情报 · WEB WATCH</h2><button class="x" onclick="closePanel()">✕</button></div>
     <div class="panel-body" id="wwBody"></div>
   </div>
   <!-- 事件 -->
   <div class="panel" id="panel-events">
-    <div class="panel-head"><h2>⚡ 事件</h2><button class="x" onclick="closePanel()">✕</button></div>
+    <div class="panel-head"><h2>事件</h2><button class="x" onclick="closePanel()">✕</button></div>
     <div class="panel-body" id="eventsBody"></div>
   </div>
   <!-- 消息 -->
   <div class="panel" id="panel-message">
-    <div class="panel-head"><h2>✉️ 消息中心</h2><button class="x" onclick="closePanel()">✕</button></div>
+    <div class="panel-head"><h2>消息中心</h2><button class="x" onclick="closePanel()">✕</button></div>
     <div class="panel-body" id="msgBody"></div>
-  </div>
-  <!-- 上报 -->
-  <div class="panel" id="panel-report">
-    <div class="panel-head"><h2>📡 上报信号</h2><button class="x" onclick="closePanel()">✕</button></div>
-    <div class="panel-body">
-      <p style="font-size:12px;color:var(--dim);line-height:1.7;margin-bottom:16px">发现工作室成员、AI小Q 或产品动态？上报你的目击，就会出现在地图上。</p>
-      <div class="field"><label>信号类型</label>
-        <select id="rType"><option value="rumored">传闻信号</option><option value="confirmed">已确认信号</option></select>
-      </div>
-      <div class="field"><label>城市</label><input id="rCity" placeholder="例如：成都"></div>
-      <div class="field"><label>描述</label><textarea id="rDesc" placeholder="描述你看到的情况…"></textarea></div>
-      <button class="pixbtn" style="width:100%" onclick="submitReport()">提交情报</button>
-    </div>
   </div>
   <!-- 帮助 -->
   <div class="panel" id="panel-help">
-    <div class="panel-head"><h2>❓ 帮助</h2><button class="x" onclick="closePanel()">✕</button></div>
+    <div class="panel-head"><h2>帮助</h2><button class="x" onclick="closePanel()">✕</button></div>
     <div class="panel-body" id="helpBody"></div>
   </div>
 
@@ -374,19 +368,32 @@ button{font-family:inherit;cursor:pointer}
     </div>
   </div>
 
-  <!-- 上报弹窗已并入面板 -->
-
-  <!-- ========== 通知弹窗 ========== -->
-  <div id="notifyModal">
+  <!-- 上报 -->
+  <div id="reportModal" onclick="if(event.target===this)closeReport()">
     <div class="box">
-      <h3>🔔 是否开启 MIUI 工作室通知？</h3>
-      <p>开启后，每当工作室有新动态或成员信号更新，你会第一时间收到提醒。</p>
-      <button class="pixbtn" style="width:100%" onclick="notifyYes()">开启通知</button>
-      <button class="pixbtn dark" style="width:100%;margin-top:10px" onclick="notifyNo()">暂不需要</button>
+      <span class="x" onclick="closeReport()">✕</span>
+      <h3>上报信号</h3>
+      <div class="sub">发现成员 / 小Q / 产品动态？上报后就会出现在地图上</div>
+      <div class="field"><label>信号类型</label>
+        <select id="rType"><option value="rumored">传闻信号</option><option value="confirmed">已确认信号</option></select>
+      </div>
+      <div class="field"><label>城市</label><input id="rCity" placeholder="例如：成都"></div>
+      <div class="field"><label>描述</label><textarea id="rDesc" placeholder="描述你看到的情况…"></textarea></div>
+      <button class="pixbtn" onclick="submitReport()">提交情报</button>
     </div>
   </div>
 
-  <!-- ========== 覆盖层 ========== -->
+  <!-- 通知弹窗 -->
+  <div id="notifyModal">
+    <div class="box">
+      <h3>是否开启 MIUI 工作室通知？</h3>
+      <p>开启后，每当工作室有新动态或成员信号更新，你会第一时间收到提醒。</p>
+      <button class="pixbtn" onclick="notifyYes()">开启通知</button>
+      <button class="pixbtn" style="margin-top:10px;background:none;border:1px solid var(--green);color:var(--txt)" onclick="notifyNo()">暂不需要</button>
+    </div>
+  </div>
+
+  <!-- 覆盖层 -->
   <div class="overlay" id="welcome">
     <div class="inner">
       <div class="logo">M</div>
@@ -425,8 +432,8 @@ button{font-family:inherit;cursor:pointer}
       </div>
       <div class="caption" id="ceoCaption"></div>
       <div class="ctrl">
-        <button class="pixbtn dark sm" id="muteBtn" onclick="toggleMute()">🔊 静音</button>
-        <button class="pixbtn sm" onclick="skipCeo()">跳过 ⏭</button>
+        <button class="minibtn" id="muteBtn" onclick="toggleMute()">🔊 静音</button>
+        <button class="minibtn" onclick="skipCeo()">跳过 ⏭</button>
       </div>
     </div>
   </div>
@@ -442,30 +449,11 @@ button{font-family:inherit;cursor:pointer}
 </div>
 
 <script>
-/* ============ 大陆多边形 ============ */
-const LANDS=[
-[[-168,66],[-140,62],[-122,56],[-112,50],[-103,38],[-96,26],[-90,21],[-82,25],[-77,32],[-70,42],[-60,48],[-54,52],[-60,56],[-70,60],[-82,63],[-100,68],[-130,71],[-155,71]],
-[[-52,83],[-20,83],[-18,60],[-46,60]],
-[[-110,30],[-100,20],[-93,16],[-85,12],[-79,8],[-76,8],[-71,17],[-78,20],[-88,21],[-97,23],[-106,26]],
-[[-78,10],[-70,6],[-60,5],[-50,1],[-36,-2],[-35,-8],[-38,-16],[-42,-24],[-50,-32],[-58,-38],[-66,-44],[-71,-52],[-69,-56],[-60,-50],[-52,-42],[-47,-34],[-44,-24],[-41,-17],[-43,-10],[-49,-5],[-58,0],[-68,2],[-75,6]],
-[[-10,58],[-4,63],[2,57],[8,55],[15,55],[22,52],[28,55],[35,58],[41,56],[47,53],[52,49],[58,52],[68,60],[78,62],[82,62],[70,61],[60,60],[50,58],[43,55],[37,50],[30,46],[23,41],[16,43],[10,48],[4,50],[-1,48],[-6,50]],
-[[-6,35],[0,30],[5,24],[10,16],[15,8],[22,4],[28,-4],[34,-12],[40,-19],[46,-26],[52,-31],[58,-30],[54,-24],[49,-18],[44,-13],[39,-7],[34,-2],[29,3],[24,7],[19,11],[14,14],[9,17],[3,23],[-2,30]],
-[[30,62],[40,61],[52,55],[62,49],[72,44],[82,39],[92,34],[102,29],[112,24],[122,20],[132,15],[142,10],[152,8],[162,12],[172,16],[176,22],[170,30],[160,33],[150,38],[140,43],[130,48],[120,52],[110,56],[100,59],[90,62],[80,63],[70,62],[60,60],[50,55],[41,52],[31,55]],
-[[35,31],[45,26],[51,21],[57,18],[61,21],[61,26],[56,29],[50,31],[45,33],[40,34]],
-[[68,28],[75,23],[80,18],[86,15],[90,9],[92,10],[89,15],[84,20],[78,23],[72,26]],
-[[95,20],[101,15],[106,10],[109,5],[111,0],[115,-5],[121,-8],[116,-2],[110,5],[105,9],[100,13],[97,18]],
-[[130,32],[135,36],[140,41],[144,45],[141,43],[135,38],[130,35]],
-[[114,-15],[125,-12],[135,-12],[146,-15],[152,-20],[152,-25],[147,-29],[140,-33],[131,-36],[124,-35],[116,-32],[113,-27],[112,-21],[113,-17]],
-[[168,-35],[173,-38],[176,-42],[174,-45],[169,-44],[167,-40]]
-];
-function inPoly(lon,lat,p){let i=false;for(let a=0,b=p.length-1;a<p.length;b=a++){const xi=p[a][0],yi=p[a][1],xj=p[b][0],yj=p[b][1];if(((yi>lat)!=(yj>lat))&&(lon<(xj-xi)*(lat-yi)/(yj-yi)+xi))i=!i;}return i;}
-function isLand(lon,lat){return LANDS.some(p=>inPoly(lon,lat,p));}
-
 /* ============ 信号数据 ============ */
 const SIGNALS=[
-{t:'confirmed',city:'深圳',lat:22.54,lon:114.06,date:'2026-08-22',title:'MIUI工作室总部',desc:'MIUI工作室总部所在地，25人团队的核心据点。AI小Q主服务器部署于此，信号全天候稳定输出。'},
-{t:'confirmed',city:'深圳',lat:22.58,lon:114.10,date:'2026-08-22',title:'创始人 · 信号在线',desc:'创始人信号常年在线，负责全局统筹。最近动态：MIUI追踪器、蜘蛛侠追踪器密集上线。'},
-{t:'confirmed',city:'广州',lat:23.13,lon:113.26,date:'2026-08-22',title:'AI小Q 核心节点',desc:'AI小Q核心巡检节点之一，每5分钟自动巡检，24/7守护聊天室。'},
+{t:'confirmed',star:true,city:'深圳',lat:22.54,lon:114.06,date:'2026-08-22',title:'MIUI工作室总部',desc:'MIUI工作室总部所在地，25人团队的核心据点。AI小Q主服务器部署于此，信号全天候稳定输出。'},
+{t:'confirmed',star:true,city:'深圳',lat:22.58,lon:114.10,date:'2026-08-22',title:'创始人 · 信号在线',desc:'创始人信号常年在线，负责全局统筹。最近动态：MIUI追踪器、蜘蛛侠追踪器密集上线。'},
+{t:'confirmed',star:true,city:'广州',lat:23.13,lon:113.26,date:'2026-08-22',title:'AI小Q 核心节点',desc:'AI小Q核心巡检节点之一，每5分钟自动巡检，24/7守护聊天室。'},
 {t:'confirmed',city:'北京',lat:39.9,lon:116.4,date:'2026-08-21',title:'AI小Q 北方镜像',desc:'AI小Q北方镜像节点，负责北方用户低延迟响应。'},
 {t:'confirmed',city:'上海',lat:31.23,lon:121.47,date:'2026-08-21',title:'AI小Q 华东镜像',desc:'AI小Q华东镜像节点，华东地区响应枢纽。'},
 {t:'confirmed',city:'成都',lat:30.66,lon:104.06,date:'2026-08-20',title:'AI小Q 西南镜像',desc:'AI小Q西南镜像节点，西南地区响应枢纽。'},
@@ -479,8 +467,8 @@ const SIGNALS=[
 {t:'event',city:'北京',lat:39.95,lon:116.35,date:'2026-07',title:'小Q AI 诞生',desc:'AI助手正式接入，实现@召唤、问答、巡检三大能力。'},
 {t:'event',city:'上海',lat:31.20,lon:121.40,date:'2026-08-10',title:'产品矩阵成型',desc:'聊天室、QQ版、MC 3D密集发布，用户突破500。'},
 {t:'event',city:'杭州',lat:30.30,lon:120.10,date:'2026-08-15',title:'品牌全面升级',desc:'旗舰官网上线，明确定位：AI轻应用 × 小游戏。'},
-{t:'event',city:'深圳',lat:22.55,lon:114.08,date:'2026-08-20',title:'蜘蛛侠追踪器上线',desc:'像素风全球追踪器上线，追踪蜘蛛侠目击情报。'},
-{t:'event',city:'深圳',lat:22.56,lon:114.09,date:'2026-08-22',title:'MIUI追踪器上线',desc:'MIUI工作室官方追踪器正式上线，全球信号实时追踪。'}
+{t:'event',star:true,city:'深圳',lat:22.55,lon:114.08,date:'2026-08-20',title:'蜘蛛侠追踪器上线',desc:'像素风全球追踪器上线，追踪蜘蛛侠目击情报。'},
+{t:'event',star:true,city:'深圳',lat:22.56,lon:114.09,date:'2026-08-22',title:'MIUI追踪器上线',desc:'MIUI工作室官方追踪器正式上线，全球信号实时追踪。'}
 ];
 
 const INTEL=[
@@ -493,30 +481,29 @@ const INTEL=[
 ];
 
 const EVENTS=[
-{tag:'里程碑',when:'2026.08.22',t:'MIUI追踪器上线',d:'工作室官方追踪器正式发布，实现全球信号实时追踪，25人团队与AI小Q信号全景呈现。'},
-{tag:'里程碑',when:'2026.08.20',t:'蜘蛛侠追踪器上线',d:'像素风全球追踪器，追踪蜘蛛侠目击情报，解锁隐藏彩蛋。'},
-{tag:'里程碑',when:'2026.08.15',t:'品牌全面升级',d:'旗舰官网上线，明确"AI轻应用 × 小游戏"定位，产品矩阵正式成型。'},
+{tag:'里程碑',when:'2026.08.22',t:'MIUI追踪器上线',d:'工作室官方追踪器正式发布，实现全球信号实时追踪。'},
+{tag:'里程碑',when:'2026.08.20',t:'蜘蛛侠追踪器上线',d:'像素风全球追踪器，追踪蜘蛛侠目击情报。'},
+{tag:'里程碑',when:'2026.08.15',t:'品牌全面升级',d:'旗舰官网上线，明确"AI轻应用 × 小游戏"定位。'},
 {tag:'里程碑',when:'2026.08.10',t:'产品矩阵成型',d:'聊天室、QQ完全版、MC 3D 密集发布，用户突破500。'},
 {tag:'里程碑',when:'2026-07',t:'小Q AI 诞生',d:'AI助手正式接入，实现@召唤、问答、巡检三大能力。'},
-{tag:'里程碑',when:'2026-07',t:'群聊大厅 v1.0',d:'首个产品上线，实现多群整合，获首批核心用户。'},
-{tag:'起点',when:'2023',t:'工作室成立',d:'创始人在QQ频道创建MIUI技术交流群，播下第一颗种子。'}
+{tag:'里程碑',when:'2026-07',t:'群聊大厅 v1.0',d:'首个产品上线，实现多群整合。'},
+{tag:'起点',when:'2023',t:'工作室成立',d:'创始人在QQ频道创建MIUI技术交流群。'}
 ];
 
 const MESSAGES=[
 {who:'me',t:'18:39',c:'MIUI追踪器上线了！以后就能实时看到大家的信号了 😎'},
-{who:'AI小Q',t:'18:40',c:'收到！小Q已接入追踪器，24/7 实时同步我的巡检信号，欢迎随时@我~ 🕸️'},
-{who:'AI小Q',t:'18:41',c:'提醒：地图上绿色=已确认，红色=传闻，蓝色=事件。点信号点能看详情哦。'},
+{who:'AI小Q',t:'18:40',c:'收到！小Q已接入追踪器，24/7 实时同步我的巡检信号~ 🕸️'},
+{who:'AI小Q',t:'18:41',c:'提醒：地图上绿色=已确认，红色=传闻，蓝色=事件，白色=重点。'},
 {who:'me',t:'18:42',c:'真不错，发给群里让大家都来看看。'},
-{who:'AI小Q',t:'18:43',c:'好主意！已帮你生成分享文案，欢迎分享到 QQ群 1070470498 🚀'}
+{who:'AI小Q',t:'18:43',c:'好主意！欢迎分享到 QQ群 1070470498 🚀'}
 ];
 
 const HELPS=[
 {t:'🗺️ 如何查看地图',c:'拖动地图平移视角，双指（或滚轮）缩放。点击任意信号点查看详情。'},
 {t:'🎛️ 地图滤镜',c:'左侧三个开关分别控制「已确认」「传闻」「事件」信号的显示。'},
-{t:'📡 怎么上报',c:'点击底部「上报」，选择类型、填城市和描述，提交后就会出现在地图上（本机保存）。'},
-{t:'✉️ 消息中心',c:'这里会收到 AI小Q 和工作室的最新通知。'},
-{t:'🕸️ 任务情报',c:'WEB WATCH 展示各小组的工作状态情报，点击可查看。'},
-{t:'🔊 音效',c:'点击右上角喇叭可开关 8-bit 复古音效。'}
+{t:'📡 怎么上报',c:'点击底部「上报」，选择类型、填城市和描述，提交后就会出现在地图上。'},
+{t:'🕸️ 任务情报',c:'WEB WATCH 展示各小组的工作状态情报。'},
+{t:'📡 雷达',c:'右下角雷达实时扫描全球信号。'}
 ];
 
 const TICKER=[
@@ -550,83 +537,82 @@ function sfxOpen(){beep(440,.07,'square',.05);beep(660,.07,'square',.05)}
 function sfxPing(){beep(1200,.04,'square',.05);beep(1600,.07,'square',.05)}
 function sfxConfirm(){beep(523,.09,'square',.06);setTimeout(()=>beep(659,.09,'square',.06),90);setTimeout(()=>beep(784,.13,'square',.06),180)}
 
-/* ============ 地图 ============ */
-const canvas=document.getElementById('map');
-const ctx=canvas.getContext('2d');
-const W=canvas.width,H=canvas.height;
-const off=document.createElement('canvas');off.width=W;off.height=H;
-const octx=off.getContext('2d');
-function px(lon){return (lon+180)/360*W;}
-function py(lat){return (90-lat)/180*H;}
+/* ============ 地图坐标 ============ */
+const MW=1600, MH=680;
+function px(lon){return (lon+180)/360*MW;}
+function py(lat){return (90-lat)/180*MH;}
 
-function drawBase(){
-  const cell=4;
-  octx.fillStyle='#06060d';octx.fillRect(0,0,W,H);
-  for(let y=0;y<H;y+=cell){for(let x=0;x<W;x+=cell){
-    const lon=x/W*360-180,lat=90-y/H*180;
-    if(isLand(lon,lat)){const v=(Math.sin(x*.55+y*.4)*8+44)|0;octx.fillStyle=`rgb(${v},${v+6},${v+2})`;octx.fillRect(x,y,cell,cell);}
-  }}
-  octx.strokeStyle='rgba(0,216,255,.06)';
-  for(let x=0;x<=W;x+=cell*6){octx.beginPath();octx.moveTo(x,0);octx.lineTo(x,H);octx.stroke();}
-  for(let y=0;y<=H;y+=cell*6){octx.beginPath();octx.moveTo(0,y);octx.lineTo(W,y);octx.stroke();}
-  octx.strokeStyle='#2a2a50';octx.lineWidth=2;octx.strokeRect(0,0,W,H);
-}
+const PINIMG={
+  confirmed:'images/ui/map/green_pin.png',
+  rumored:'images/ui/map/red_pin.png',
+  event:'images/ui/map/event_pin.png',
+  star:'images/ui/map/white_pin.png'
+};
 
-const PINIMG={confirmed:'images/ui/map/green_pin.png',rumored:'images/ui/map/red_pin.png',event:'images/ui/map/event_pin.png'};
-let reports=JSON.parse(localStorage.getItem('miui_reports3')||'[]');
+let reports=JSON.parse(localStorage.getItem('miui_reports4')||'[]');
 function allSignals(){return SIGNALS.concat(reports.map(r=>({t:r.t,city:r.city,lat:r.lat,lon:r.lon,title:'上报·'+r.city,sub:'玩家上报信号',desc:r.desc,date:new Date().toISOString().slice(0,10)})));}
 
-let scale=1,offX=0,offY=0,dragging=false,lastX=0,lastY=0,moved=false,tick=0,focusTarget=null;
-
-function renderPins(){
-  const pins=document.getElementById('pins');
-  pins.innerHTML='';
-  allSignals().forEach((s,i)=>{
-    if(!filters[s.t])return;
-    const d=document.createElement('div');
-    d.className='pin '+(focusTarget&&focusTarget.lat===s.lat&&focusTarget.lon===s.lon?'on':'');
-    d.style.left=px(s.lon)+'px';
-    d.style.top=py(s.lat)+'px';
-    d.innerHTML=`<img src="${PINIMG[s.t]}" width="34" height="34" style="image-rendering:pixelated" alt=""><span class="lbl">${s.city}</span>`;
-    d.onclick=()=>{sfxPing();openSig(s);};
-    pins.appendChild(d);
-  });
-}
-
-function render(){
-  tick+=0.03;
-  ctx.clearRect(0,0,W,H);
-  ctx.drawImage(off,0,0);
-  // 雷达扫描
-  const sw=(tick*30)%W;
-  const g=ctx.createLinearGradient(sw-70,0,sw+70,0);
-  g.addColorStop(0,'rgba(0,216,255,0)');g.addColorStop(.5,'rgba(0,216,255,.09)');g.addColorStop(1,'rgba(0,216,255,0)');
-  ctx.fillStyle=g;ctx.fillRect(sw-70,0,140,H);
-  // 聚焦圈
-  if(focusTarget){
-    const x=px(focusTarget.lon),y=py(focusTarget.lat);
-    ctx.strokeStyle='#fff';ctx.lineWidth=2;
-    ctx.beginPath();ctx.arc(x,y,16+Math.sin(tick*5)*3,0,Math.PI*2);ctx.stroke();
-  }
-  requestAnimationFrame(render);
-}
-
-/* 拖拽/缩放 */
+/* ============ 拖拽/缩放 ============ */
+let scale=1,offX=0,offY=0,dragging=false,lastX=0,lastY=0,moved=false,focusTarget=null,tick=0;
 const wrap=document.getElementById('mapwrap');
 const world=document.getElementById('world');
 function applyTransform(){world.style.transform=`translate(calc(-50% + ${offX}px), calc(-50% + ${offY}px)) scale(${scale})`;}
 wrap.addEventListener('pointerdown',e=>{dragging=true;moved=false;lastX=e.clientX;lastY=e.clientY;wrap.classList.add('grab');});
 window.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;offX+=dx;offY+=dy;lastX=e.clientX;lastY=e.clientY;if(Math.abs(dx)+Math.abs(dy)>2)moved=true;applyTransform();});
 window.addEventListener('pointerup',()=>{dragging=false;wrap.classList.remove('grab');});
-wrap.addEventListener('wheel',e=>{e.preventDefault();scale*=e.deltaY<0?1.12:.89;scale=Math.max(.6,Math.min(4.5,scale));applyTransform();},{passive:false});
+wrap.addEventListener('wheel',e=>{e.preventDefault();scale*=e.deltaY<0?1.12:.89;scale=Math.max(.6,Math.min(5,scale));applyTransform();},{passive:false});
 let pinch=0;
 wrap.addEventListener('touchstart',e=>{if(e.touches.length===2)pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);},{passive:true});
-wrap.addEventListener('touchmove',e=>{if(e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);if(pinch){scale*=d/pinch;scale=Math.max(.6,Math.min(4.5,scale));applyTransform();}pinch=d;}},{passive:true});
-function resetView(){scale=1;offX=0;offY=0;focusTarget=null;applyTransform();renderPins();sfxOpen();}
-function globalView(){scale=0.85;offX=0;offY=0;applyTransform();sfxOpen();}
-function focusSignal(s){const x=px(s.lon),y=py(s.lat);offX=-(x-W/2);offY=-(y-H/2);scale=2.4;focusTarget=s;applyTransform();renderPins();sfxPing();setTimeout(()=>{focusTarget=null;renderPins();},2600);}
+wrap.addEventListener('touchmove',e=>{if(e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);if(pinch){scale*=d/pinch;scale=Math.max(.6,Math.min(5,scale));applyTransform();}pinch=d;}},{passive:true});
 
-/* 滤镜 */
+function resetView(){scale=1;offX=0;offY=0;focusTarget=null;applyTransform();sfxOpen();}
+function focusSignal(s){const x=px(s.lon),y=py(s.lat);offX=-(x-MW/2);offY=-(y-MH/2);scale=2.6;focusTarget=s;applyTransform();renderPins();sfxPing();setTimeout(()=>{focusTarget=null;renderPins();},2600);}
+
+/* ============ 渲染 pin ============ */
+function renderPins(){
+  const pins=document.getElementById('pins');
+  pins.innerHTML='';
+  allSignals().forEach((s,i)=>{
+    if(!filters[s.t])return;
+    const d=document.createElement('div');
+    const cls=s.star?'pin-star':(s.t==='confirmed'?'pin-confirmed':s.t==='rumored'?'pin-rumored':'pin-event');
+    d.className='pin '+cls;
+    d.style.left=px(s.lon)+'px';
+    d.style.top=py(s.lat)+'px';
+    d.innerHTML=`<img src="${PINIMG[s.star?'star':s.t]}" alt=""><span class="lbl">${s.city}</span>`;
+    d.onclick=(e)=>{e.stopPropagation();sfxPing();openSig(s);};
+    pins.appendChild(d);
+  });
+}
+
+/* ============ 雷达 ============ */
+const rc=document.getElementById('radarCanvas');
+const rctx=rc.getContext('2d');
+function renderRadar(){
+  rctx.clearRect(0,0,110,110);
+  const cx=55,cy=55,r=50;
+  const ang=tick*1.3;
+  rctx.save();
+  for(let i=0;i<24;i++){
+    const a=ang-i*0.09;
+    rctx.strokeStyle=`rgba(0,255,80,${0.5-i*0.02})`;
+    rctx.lineWidth=2;
+    rctx.beginPath();rctx.moveTo(cx,cy);rctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);rctx.stroke();
+  }
+  rctx.strokeStyle='rgba(0,255,80,.95)';
+  rctx.beginPath();rctx.moveTo(cx,cy);rctx.lineTo(cx+Math.cos(ang)*r,cy+Math.sin(ang)*r);rctx.stroke();
+  rctx.fillStyle='#00ff50';rctx.beginPath();rctx.arc(cx,cy,3.5,0,Math.PI*2);rctx.fill();
+  rctx.fillStyle='rgba(0,255,80,.25)';rctx.beginPath();rctx.arc(cx,cy,3.5,0,Math.PI*2);rctx.fill();
+  rctx.restore();
+}
+
+function render(){
+  tick+=0.03;
+  renderRadar();
+  requestAnimationFrame(render);
+}
+
+/* ============ 滤镜 ============ */
 let filters={confirmed:true,rumored:true,event:true};
 function renderFilters(){
   document.getElementById('filters').innerHTML=[
@@ -643,8 +629,8 @@ function renderLog(){
   document.getElementById('logBody').innerHTML=list.map(s=>{
     const cls={confirmed:'c',rumored:'r',event:'e'}[s.t];
     const typeTxt={confirmed:'已确认',rumored:'传闻',event:'事件'}[s.t];
-    return `<div class="entry ${cls}" onclick="activityFocus(${allSignals().indexOf(s)},'${s.t}')">
-      <span class="badge"></span><div class="meta"><div class="tag">${typeTxt.toUpperCase()}</div>
+    return `<div class="entry ${cls}" onclick="activityFocus(${allSignals().indexOf(s)})">
+      <span class="badge"></span><div class="meta"><div class="tag">${typeTxt}</div>
       <div class="title">${s.title}</div><div class="date">${s.date}</div></div></div>`;
   }).join('');
   document.getElementById('achips').innerHTML=[
@@ -652,7 +638,7 @@ function renderLog(){
   ].map(([k,l,c])=>`<span class="achip c${c} ${actFilter===k?'on':''}" onclick="setActFilter('${k}')">${l}</span>`).join('');
 }
 function setActFilter(k){actFilter=k;renderLog();sfxClick();}
-function activityFocus(i,t){const s=allSignals()[i];if(!s)return;closePanel();focusSignal(s);openSig(s);}
+function activityFocus(i){const s=allSignals()[i];if(!s)return;closePanel();focusSignal(s);openSig(s);}
 
 /* ============ 面板 ============ */
 let curPanel=null;
@@ -666,12 +652,14 @@ function renderWebWatch(){document.getElementById('wwBody').innerHTML=INTEL.map(
 function renderEvents(){document.getElementById('eventsBody').innerHTML=EVENTS.map(e=>`<div class="evt"><span class="tag">${e.tag}</span><h3>${e.t}</h3><div class="when">${e.when}</div><p>${e.d}</p></div>`).join('');}
 function renderMsg(){document.getElementById('msgBody').innerHTML=MESSAGES.map(m=>`<div class="chatmsg"><div class="who ${m.who==='me'?'me':''}">${m.who==='me'?'创始人':m.who}</div><p>${m.c}</p><div class="tt">${m.t}</div></div>`).join('');}
 function renderHelp(){document.getElementById('helpBody').innerHTML=HELPS.map(h=>`<div class="helpitem" onclick="this.classList.toggle('open')"><h3>${h.t}</h3><p>${h.c}</p></div>`).join('');}
-function renderTicker(){const t=document.getElementById('tickerTrack');t.innerHTML=TICKER.map(x=>`<span>◤ ${x} ◢</span>`).join('')+TICKER.map(x=>`<span>◤ ${x} ◢</span>`).join('');}
+function renderTicker(){const t=document.getElementById('tickerTrack');t.innerHTML=(TICKER.map(x=>`<span>◤ ${x} ◢</span>`).join('')+TICKER.map(x=>`<span>◤ ${x} ◢</span>`).join(''));}
 
 /* ============ 信号弹窗 ============ */
 function openSig(s){
-  document.getElementById('sigTag').className='tag '+s.t;
-  document.getElementById('sigTag').textContent={confirmed:'已确认信号',rumored:'传闻信号',event:'事件'}[s.t];
+  const tag=document.getElementById('sigTag');
+  const cls=s.star?'s':s.t;
+  tag.className='tag '+cls;
+  tag.textContent=s.star?'★ 重点信号':{confirmed:'已确认信号',rumored:'传闻信号',event:'事件'}[s.t];
   document.getElementById('sigTitle').textContent=s.title;
   document.getElementById('sigSub').textContent=(s.sub||'')+' · '+(s.date||'');
   document.getElementById('sigBody').textContent=s.desc;
@@ -680,6 +668,8 @@ function openSig(s){
 function closeSig(){document.getElementById('sigModal').classList.remove('show');}
 
 /* ============ 上报 ============ */
+function openReport(){document.getElementById('reportModal').classList.add('show');sfxOpen();}
+function closeReport(){document.getElementById('reportModal').classList.remove('show');}
 async function submitReport(){
   const t=document.getElementById('rType').value;
   const city=document.getElementById('rCity').value.trim();
@@ -688,9 +678,9 @@ async function submitReport(){
   let lat=0,lon=0;
   try{const u=`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(city+',中国')}`;const r=await fetch(u),d=await r.json();if(d&&d[0]){lat=parseFloat(d[0].lat);lon=parseFloat(d[0].lon);}}catch(e){}
   reports.push({t,city,lat,lon,desc});
-  localStorage.setItem('miui_reports3',JSON.stringify(reports));
+  localStorage.setItem('miui_reports4',JSON.stringify(reports));
   document.getElementById('rCity').value='';document.getElementById('rDesc').value='';
-  closePanel();renderPins();renderLog();sfxConfirm();
+  closeReport();renderPins();renderLog();sfxConfirm();
 }
 
 /* ============ 设置 ============ */
@@ -739,13 +729,13 @@ function notifyNo(){document.getElementById('notifyModal').classList.remove('sho
 /* 像素头像 */
 function drawFace(){
   const face=document.getElementById('pixface');
-  const map={'H':'#2a1a10','S':'#f5c08c','E':'#1a1a2e','M':'#e09a6a','O':'#ff7a00','C':'#ffffff','.':'transparent'};
+  const map={'H':'#1a3a5a','S':'#f5c08c','E':'#04121f','M':'#e09a6a','O':'#09a4c7','C':'#ffffff','.':'transparent'};
   const rows=['..HHHHHHHH..','.HHHHHHHHHH.','HHSSSSSSSSHH','HSSSSSSSSSSH','HSSEESSEESSH','HSSEESSEESSH','HSSSSSSSSSSH','.HSSSSSSSSH.','..HSMMMMSH..','...HSSSSH...','....OCCO....','....OOOO....'];
   face.innerHTML='';rows.forEach(row=>{for(const ch of row){const d=document.createElement('div');d.style.background=map[ch]||'transparent';face.appendChild(d);}});
 }
 
 /* ============ 启动 ============ */
-drawBase();drawFace();renderFilters();renderPins();renderLog();renderWebWatch();renderEvents();renderMsg();renderHelp();renderTicker();render();syncSoundBtn();
+drawFace();renderFilters();renderPins();renderLog();renderWebWatch();renderEvents();renderMsg();renderHelp();renderTicker();render();syncSoundBtn();
 setTimeout(()=>{document.getElementById('notifyModal').classList.add('show');},600);
 </script>
 </body>
