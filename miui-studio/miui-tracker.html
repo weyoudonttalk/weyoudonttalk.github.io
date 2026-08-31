@@ -3,366 +3,745 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>MIUI 追踪器 · 全网信号追踪系统</title>
-<meta name="description" content="MIUI工作室追踪器 v3.1，创始人寄语 + 全网信号追踪，雷达扫描、实时定位。">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<title>MIUI TRACKER · 工作室追踪器</title>
+<meta name="description" content="MIUI工作室官方追踪器：复古街机风全球地图，追踪25人团队与AI小Q信号。">
 <style>
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
 :root{
-  --cy:#22d3ee;--cy2:#38bdf8;--p:#8b5cf6;--ok:#34d399;--warn:#facc15;
-  --bg:#030607;--panel:rgba(10,16,20,.72);--line:rgba(34,211,238,.25);
-  --t:#d9f6ff;--t2:#7fb6c4;
+  --bg:#0a1628; --bg2:#0d1f38; --panel:#102a47; --panel2:#143455;
+  --line:#09a4c7; --line2:#0e5f73;
+  --cyan:#09a4c7; --cyan2:#b8edff; --txt:#a8e1fe; --dim:#6aa8c7; --faint:#3f6a8a;
+  --green:#00ff50; --red:#ff4040; --event:#96e0f7; --yellow:#ffd23f;
+  --font-pix:'VT323','Courier New',monospace;
+  --font-h:'Press Start 2P','VT323','Courier New',monospace;
 }
-*{margin:0;padding:0;box-sizing:border-box}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',monospace;background:var(--bg);color:var(--t);overflow:hidden;-webkit-font-smoothing:antialiased}
+body{
+  font-family:var(--font-pix); background:var(--bg); color:var(--txt); overflow:hidden;
+  height:100vh; width:100vw; position:fixed; inset:0;
+  user-select:none; -webkit-user-select:none; font-size:16px;
+}
+button{font-family:var(--font-pix);cursor:pointer;color:var(--txt)}
+#app{position:relative;width:100%;height:100%}
 
-/* ===== 开场动画 ===== */
-#intro{position:fixed;inset:0;z-index:9999;background:#020304;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:opacity .6s}
-#intro.hide{opacity:0;pointer-events:none}
-#thread{position:absolute;top:0;left:50%;width:2px;height:0;background:linear-gradient(#9be8ff,#4dd0e1);box-shadow:0 0 8px var(--cy);animation:drop 1.1s cubic-bezier(.2,.8,.3,1) forwards}
-@keyframes drop{to{height:50%}}
-#pixq{position:absolute;top:50%;left:50%;transform:translate(-50%,-100%) rotate(180deg);font-size:54px;animation:swing 1.1s ease-out forwards;opacity:0;filter:drop-shadow(0 0 14px var(--cy))}
-@keyframes swing{from{opacity:0;transform:translate(-50%,-140%) rotate(180deg)}to{opacity:1;transform:translate(-50%,-100%) rotate(180deg)}}
-#intro .tip{position:absolute;bottom:20%;font-size:13px;letter-spacing:4px;color:var(--cy);animation:blink 1.4s infinite}
-@keyframes blink{0%,100%{opacity:.25}50%{opacity:1}}
-#intro .brand{position:absolute;top:13%;font-size:12px;letter-spacing:6px;color:var(--t2)}
-#intro .brand b{color:var(--cy)}
+/* 扫描线 + 暗角 */
+.scanlines{position:fixed;inset:0;pointer-events:none;z-index:900;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 1px,transparent 1px 3px);opacity:.4}
+.vignette{position:fixed;inset:0;pointer-events:none;z-index:901;
+  background:radial-gradient(120% 100% at 50% 42%,transparent 60%,rgba(0,0,0,.55) 100%)}
 
-/* ===== 创始人寄语 ===== */
-#ceo{position:fixed;inset:0;z-index:9998;background:radial-gradient(120% 100% at 50% 0%,#0a1620,#020304 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;transition:opacity .5s}
-#ceo.hide{opacity:0;pointer-events:none}
-.ceo-avatar{position:relative;width:150px;height:150px;margin-bottom:22px}
-.ceo-avatar .ring{position:absolute;inset:-14px;border-radius:50%;border:2px solid rgba(34,211,238,.4);animation:spin 6s linear infinite}
-.ceo-avatar .ring::after{content:'';position:absolute;top:-3px;left:50%;width:8px;height:8px;border-radius:50%;background:var(--cy);box-shadow:0 0 12px var(--cy)}
-@keyframes spin{to{transform:rotate(360deg)}}
-.ceo-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;border:3px solid rgba(34,211,238,.5);box-shadow:0 0 34px rgba(34,211,238,.35);animation:breathe 2.6s ease-in-out infinite}
-@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
-.ceo-wave{display:flex;gap:4px;align-items:flex-end;height:28px;margin-bottom:16px}
-.ceo-wave i{width:4px;border-radius:2px;background:var(--cy);animation:wave .55s infinite ease-in-out;display:block}
-.ceo-wave i:nth-child(1){height:10px}.ceo-wave i:nth-child(2){height:22px;animation-delay:.1s}
-.ceo-wave i:nth-child(3){height:28px;animation-delay:.2s}.ceo-wave i:nth-child(4){height:16px;animation-delay:.3s}
-.ceo-wave i:nth-child(5){height:24px;animation-delay:.15s}.ceo-wave i:nth-child(6){height:12px;animation-delay:.25s}
-.ceo-wave i:nth-child(7){height:20px;animation-delay:.05s}
-@keyframes wave{0%,100%{transform:scaleY(.5)}50%{transform:scaleY(1)}}
-.ceo-name{font-size:13px;letter-spacing:3px;color:var(--cy);font-weight:700;margin-bottom:20px}
-.ceo-caption{min-height:120px;max-width:600px;text-align:center;font-size:16px;line-height:2;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.9)}
-.ceo-caption .cursor{display:inline-block;width:2px;height:1.1em;background:var(--cy);vertical-align:-2px;margin-left:2px;animation:blink .8s infinite}
-.ceo-ctrl{display:flex;gap:12px;margin-top:26px}
-.ceo-ctrl button{padding:9px 20px;border-radius:22px;border:1px solid var(--line);background:var(--panel);color:var(--cy);font-size:13px;cursor:pointer;letter-spacing:1px;backdrop-filter:blur(8px);transition:.2s}
-.ceo-ctrl button:hover{background:rgba(34,211,238,.15)}
-.ceo-ctrl button.primary{background:linear-gradient(135deg,#22d3ee,#38bdf8);color:#02181d;font-weight:700;border:none}
+/* ============ 主界面 ============ */
+#mapwrap{position:absolute;inset:0;z-index:10;cursor:grab;touch-action:none;overflow:hidden;background:var(--bg)}
+#mapwrap.grab{cursor:grabbing}
+#world{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);transform-origin:center;width:1600px;height:680px}
+#mapbase{position:absolute;inset:0;width:100%;height:100%;image-rendering:-webkit-optimize-contrast;display:block}
+#gridLines{position:absolute;inset:0;width:100%;height:100%;
+  background:url(images/ui/map/grid_lines.png) center/100% 100% no-repeat;opacity:.45;pointer-events:none;mix-blend-mode:screen}
+#hudH{position:absolute;top:25px;left:100px;right:0;height:18px;pointer-events:none;
+  background:url(images/ui/map/horizontal_measure.png) repeat-x left center/auto 100%;opacity:.8}
+#hudV{position:absolute;top:100px;left:25px;bottom:0;width:18px;pointer-events:none;
+  background:url(images/ui/map/vertical_measure.png) repeat-y top center/100% auto;opacity:.8}
+#pins{position:absolute;inset:0;pointer-events:none}
+.pin{position:absolute;transform:translate(-50%,-50%);cursor:pointer;pointer-events:auto;width:32px;height:auto;display:block;transition:filter .16s ease,transform .16s ease}
+.pin img{width:100%;height:auto;display:block;image-rendering:auto}
+.pin:hover{transform:translate(-50%,-50%) scale(1.15)}
+.pin-confirmed:hover{filter:drop-shadow(0 0 6px rgba(0,255,80,.8))}
+.pin-rumored:hover{filter:drop-shadow(0 0 6px rgba(255,64,64,.8))}
+.pin-event:hover{filter:drop-shadow(0 0 6px rgba(150,224,247,.8))}
+.pin-star:hover{filter:drop-shadow(0 0 6px rgba(255,255,255,.9))}
+.pin .lbl{position:absolute;left:50%;bottom:-14px;transform:translateX(-50%);font-family:var(--font-pix);
+  font-size:11px;color:var(--cyan2);white-space:nowrap;text-shadow:0 0 4px #000,0 0 8px #000;display:none;letter-spacing:.05em}
+.pin:hover .lbl{display:block}
 
-/* ===== 地图容器 ===== */
-#map{position:absolute;inset:0;z-index:1;background:#0a1216}
-.leaflet-container{background:#0a1216!important;font-family:inherit}
+/* 地图 HUD 覆盖层（固定，不随地图缩放） */
+.map-ui{position:absolute;inset:0;pointer-events:none;z-index:20}
 
-/* ===== HUD ===== */
-#hud{position:absolute;inset:0;z-index:2;pointer-events:none}
-#hud canvas{position:absolute;inset:0;width:100%;height:100%}
-#scanline{position:absolute;inset:0;z-index:3;pointer-events:none;background:repeating-linear-gradient(180deg,rgba(34,211,238,.06) 0 2px,transparent 2px 4px);opacity:.5}
+/* 雷达 */
+.radar-widget{position:absolute;bottom:110px;right:26px;z-index:30;pointer-events:none;width:110px;height:110px}
+.radar-bg{position:absolute;inset:0;background:url(images/ui/map/radar.png) center/cover no-repeat;opacity:.9}
+#radarCanvas{position:absolute;inset:0;display:block}
 
 /* 顶部栏 */
-#topbar{position:absolute;top:0;left:0;right:0;z-index:5;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;pointer-events:auto;background:linear-gradient(180deg,rgba(2,8,10,.9),rgba(2,8,10,.55),transparent)}
-#topbar .logo{font-weight:800;font-size:15px;letter-spacing:2px;display:flex;align-items:center;gap:8px}
-#topbar .logo .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:blink 1.2s infinite}
-#topbar .status{font-size:11px;color:var(--t2);letter-spacing:1px}
-#topbar .status b{color:var(--cy)}
-#topbar .btns{display:flex;gap:8px;flex-wrap:wrap}
-#topbar .btns button{pointer-events:auto;padding:7px 13px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--cy);font-size:12px;cursor:pointer;letter-spacing:1px;transition:.2s;backdrop-filter:blur(8px)}
-#topbar .btns button:hover{background:rgba(34,211,238,.15)}
-#topbar .btns button.off{color:var(--t2);border-color:rgba(127,182,196,.3)}
+.topbar{position:absolute;top:0;left:0;right:0;z-index:300;display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;background:linear-gradient(180deg,rgba(10,22,40,.95),rgba(10,22,40,0))}
+.brand{display:flex;align-items:center;gap:11px;cursor:pointer}
+.brand .logo{width:38px;height:38px;background:linear-gradient(135deg,#09a4c7,#00ff50);
+  display:grid;place-items:center;font-size:20px;color:#04121f;font-weight:bold;
+  box-shadow:0 0 0 2px #04121f, 0 0 18px rgba(0,255,80,.4)}
+.brand .tt h1{font-family:var(--font-h);font-size:13px;letter-spacing:1px;color:#fff;text-shadow:0 0 10px rgba(9,164,199,.7)}
+.brand .tt small{display:block;font-size:13px;color:var(--cyan2);letter-spacing:2px;margin-top:3px;font-family:var(--font-pix)}
+.topbtns{display:flex;gap:7px;align-items:center}
+.tbtn{min-width:38px;height:34px;padding:0 9px;border:1px solid rgba(9,164,199,.5);background:rgba(10,22,40,.8);color:var(--cyan2);
+  display:grid;place-items:center;cursor:pointer;font-size:15px;transition:.12s;position:relative;letter-spacing:1px;font-family:var(--font-pix)}
+.tbtn:hover{border-color:var(--green);color:var(--green);background:rgba(0,255,80,.08)}
+.tbtn.lbl{font-size:14px;gap:4px;display:flex;align-items:center}
 
-/* 终端日志 */
-#log{position:absolute;left:14px;bottom:14px;z-index:5;width:min(340px,calc(100vw - 28px));max-height:200px;overflow:hidden;pointer-events:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;backdrop-filter:blur(10px);font-size:11px;line-height:1.7;padding:12px 14px}
-#log .lt{font-size:10px;letter-spacing:2px;color:var(--cy);margin-bottom:6px;font-weight:700}
-#log .l{color:#9fe8c8;white-space:pre-wrap;word-break:break-all}
-#log .l.dim{color:var(--t2)}
-#log .l.ok{color:var(--ok)}
-#log .l.warn{color:var(--warn)}
+/* 滤镜 */
+.filters{position:absolute;top:62px;left:16px;z-index:200;display:flex;flex-direction:column;gap:6px;pointer-events:auto}
+.filter{display:flex;align-items:center;gap:9px;background:rgba(10,22,40,.85);border:1px solid rgba(9,164,199,.4);
+  padding:6px 12px;cursor:pointer;font-size:14px;letter-spacing:1px;color:var(--dim);transition:.15s;font-family:var(--font-pix)}
+.filter:hover{color:var(--cyan2)}
+.filter .sw{width:30px;height:16px;background:#0a1628;position:relative;transition:.15s;flex:none;border:1px solid rgba(9,164,199,.5)}
+.filter .sw::after{content:'';position:absolute;top:1px;left:1px;width:12px;height:12px;background:#3f6a8a;transition:.15s}
+.filter.on{color:var(--txt)}
+.filter.c.on .sw{background:rgba(0,255,80,.5)} .filter.c.on .sw::after{left:15px;background:var(--green)}
+.filter.r.on .sw{background:rgba(255,64,64,.5)} .filter.r.on .sw::after{left:15px;background:var(--red)}
+.filter.e.on .sw{background:rgba(150,224,247,.5)} .filter.e.on .sw::after{left:15px;background:var(--event)}
 
-/* 统计 */
-#stats{position:absolute;right:14px;bottom:14px;z-index:5;pointer-events:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;backdrop-filter:blur(10px);padding:12px 14px;font-size:12px;line-height:1.9;text-align:right}
-#stats .n{color:var(--cy);font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
-#stats .k{color:var(--t2);font-size:10px;letter-spacing:1px}
+/* 图例 */
+.legend{position:absolute;bottom:110px;left:16px;z-index:200;display:flex;gap:13px;flex-wrap:wrap;
+  background:rgba(10,22,40,.85);border:1px solid rgba(9,164,199,.4);padding:7px 13px;pointer-events:auto}
+.legend span{font-size:14px;color:var(--dim);letter-spacing:1px;display:flex;align-items:center;gap:5px;font-family:var(--font-pix)}
+.legend i{display:inline-block;width:11px;height:11px;border:1px solid #000}
+.legend .c i{background:var(--green);box-shadow:0 0 7px var(--green)}
+.legend .r i{background:var(--red);box-shadow:0 0 7px var(--red)}
+.legend .e i{background:var(--event);box-shadow:0 0 7px var(--event)}
+.legend .s i{background:#fff;box-shadow:0 0 7px #fff}
 
-@media (max-width:600px){
-  #log{max-height:140px;font-size:10px}
-  #stats{right:10px;bottom:10px;padding:9px 11px}
-  #stats .n{font-size:16px}
-  .ceo-avatar{width:120px;height:120px}
-  .ceo-caption{font-size:14px;min-height:100px}
-}
+/* ticker */
+.ticker{position:absolute;bottom:72px;left:0;right:0;z-index:200;height:26px;background:rgba(4,18,31,.92);
+  border-top:1px solid rgba(9,164,199,.4);border-bottom:1px solid rgba(9,164,199,.4);display:flex;align-items:center;overflow:hidden}
+.ticker .track{white-space:nowrap;font-size:15px;letter-spacing:1px;color:var(--yellow);animation:tick 30s linear infinite;font-family:var(--font-pix)}
+.ticker .track span{margin-right:42px}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* 底部导航 */
+.bottomnav{position:absolute;bottom:0;left:0;right:0;z-index:250;display:flex;background:rgba(6,16,28,.96);border-top:1px solid rgba(9,164,199,.5)}
+.navbtn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 2px 8px;
+  cursor:pointer;color:var(--dim);font-size:13px;letter-spacing:1px;transition:.12s;border:none;background:none;font-family:var(--font-pix)}
+.navbtn .ic{font-size:18px}
+.navbtn.on{color:var(--green)} .navbtn.on .ic{text-shadow:0 0 10px rgba(0,255,80,.7)}
+.navbtn:active{transform:scale(.93)}
+
+/* ============ 面板 ============ */
+.panel{position:absolute;top:0;right:0;bottom:0;width:min(400px,92vw);z-index:500;background:var(--bg2);
+  border-left:1px solid rgba(9,164,199,.5);transform:translateX(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1);
+  display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(0,0,0,.5)}
+.panel.open{transform:translateX(0)}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(9,164,199,.4)}
+.panel-head h2{font-family:var(--font-h);font-size:11px;letter-spacing:1px;color:var(--cyan2);text-shadow:0 0 10px rgba(9,164,199,.5)}
+.panel-head .x{width:30px;height:30px;border:1px solid rgba(9,164,199,.5);background:none;color:var(--dim);cursor:pointer;font-size:16px;display:grid;place-items:center;font-family:var(--font-pix)}
+.panel-head .x:hover{color:var(--red);border-color:var(--red)}
+.panel-body{flex:1;overflow-y:auto;padding:14px 15px;-webkit-overflow-scrolling:touch}
+.panel-body::-webkit-scrollbar{width:4px}.panel-body::-webkit-scrollbar-thumb{background:var(--line2)}
+
+/* 活动日志 */
+.achips{display:flex;gap:5px;padding:10px 14px;border-bottom:1px solid rgba(9,164,199,.4);flex-wrap:wrap}
+.achip{font-size:14px;letter-spacing:1px;padding:4px 11px;border:1px solid rgba(9,164,199,.4);color:var(--dim);cursor:pointer;font-family:var(--font-pix);background:none}
+.achip.on{color:#04121f;font-weight:bold}
+.achip.cc.on{background:var(--green);border-color:var(--green)}
+.achip.cr.on{background:var(--red);border-color:var(--red)}
+.achip.ce.on{background:var(--event);border-color:var(--event)}
+.entry{display:flex;gap:11px;padding:12px 15px;cursor:pointer;border-left:3px solid transparent;transition:.12s;border-bottom:1px solid rgba(14,95,115,.3)}
+.entry:hover{background:var(--panel)}
+.entry .badge{flex:none;width:10px;height:10px;margin-top:4px}
+.entry.c .badge{background:var(--green);box-shadow:0 0 8px var(--green)}
+.entry.r .badge{background:var(--red);box-shadow:0 0 8px var(--red)}
+.entry.e .badge{background:var(--event);box-shadow:0 0 8px var(--event)}
+.entry .meta{flex:1;min-width:0}
+.entry .tag{font-size:13px;letter-spacing:1px;margin-bottom:2px;font-family:var(--font-pix)}
+.entry.c .tag{color:var(--green)}.entry.r .tag{color:var(--red)}.entry.e .tag{color:var(--event)}
+.entry .title{font-size:15px;line-height:1.4;color:var(--txt)}
+.entry .date{font-size:13px;color:var(--faint);margin-top:2px;letter-spacing:1px}
+
+/* Web Watch */
+.ww{display:flex;gap:11px;border:1px solid rgba(9,164,199,.4);background:var(--panel);padding:13px;margin-bottom:10px;cursor:pointer;transition:.12s}
+.ww:hover{border-color:var(--green)}
+.ww .icon{flex:none;width:42px;height:42px;background:var(--bg);border:1px solid rgba(9,164,199,.4);display:grid;place-items:center;font-size:21px}
+.ww .info h3{font-family:var(--font-h);font-size:11px;margin-bottom:3px;letter-spacing:1px;color:var(--cyan2)}
+.ww .info .status{font-size:13px;letter-spacing:1px;margin-bottom:4px;color:var(--green);font-family:var(--font-pix)}
+.ww .info p{font-size:14px;color:var(--dim);line-height:1.5}
+
+/* 帮助 */
+.helpitem{border:1px solid rgba(9,164,199,.4);padding:11px 13px;margin-bottom:8px;cursor:pointer;background:var(--panel);transition:.12s}
+.helpitem:hover{border-color:var(--green)}
+.helpitem h3{font-size:15px;display:flex;align-items:center;gap:8px;letter-spacing:1px}
+.helpitem p{font-size:14px;color:var(--dim);line-height:1.6;margin-top:6px;display:none}
+.helpitem.open p{display:block}
+
+/* 消息 */
+.chatmsg{background:var(--panel);border:1px solid rgba(9,164,199,.4);padding:11px;margin-bottom:10px}
+.chatmsg .who{font-size:14px;color:var(--cyan2);letter-spacing:1px;margin-bottom:3px;font-family:var(--font-pix)}
+.chatmsg .who.me{color:var(--yellow)}
+.chatmsg p{font-size:15px;line-height:1.5}
+.chatmsg .tt{font-size:13px;color:var(--faint);margin-top:4px;text-align:right}
+
+/* 事件 */
+.evt{border:1px solid rgba(9,164,199,.4);background:var(--panel);padding:13px;margin-bottom:10px;position:relative}
+.evt .tag{position:absolute;top:9px;right:10px;font-size:13px;padding:2px 8px;border:1px solid var(--yellow);color:var(--yellow);letter-spacing:1px}
+.evt h3{font-family:var(--font-h);font-size:11px;margin-bottom:3px;letter-spacing:1px;color:var(--cyan2)}
+.evt .when{font-size:13px;color:var(--cyan);letter-spacing:1px;margin-bottom:5px}
+.evt p{font-size:14px;color:var(--dim);line-height:1.5}
+
+/* 信号弹窗 */
+#sigModal{position:absolute;inset:0;z-index:600;display:none;align-items:flex-end;justify-content:center;padding:0 14px 16px}
+#sigModal.show{display:flex}
+#sigModal .m{background:var(--panel2);border:1px solid var(--green);width:min(430px,100%);padding:18px;
+  box-shadow:0 0 30px rgba(0,255,80,.15);animation:rise .25s}
+@keyframes rise{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+#sigModal .m .x{float:right;color:var(--dim);cursor:pointer;font-size:20px;line-height:1}
+#sigModal .m .x:hover{color:var(--red)}
+#sigModal .m .tag{font-size:14px;letter-spacing:2px;margin-bottom:4px;font-family:var(--font-pix)}
+#sigModal .m .tag.c{color:var(--green)}#sigModal .m .tag.r{color:var(--red)}#sigModal .m .tag.e{color:var(--event)}#sigModal .m .tag.s{color:#fff}
+#sigModal .m h3{font-family:var(--font-h);font-size:13px;margin-bottom:6px;letter-spacing:1px;color:var(--cyan2)}
+#sigModal .m .sub{font-size:13px;color:var(--faint);letter-spacing:1px;margin-bottom:12px}
+#sigModal .m p{font-size:15px;color:var(--dim);line-height:1.7}
+
+/* 上报 */
+#reportModal{position:absolute;inset:0;z-index:620;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(4,12,24,.9)}
+#reportModal.show{display:flex}
+#reportModal .box{background:var(--bg2);border:1px solid var(--green);width:min(430px,100%);padding:20px;position:relative;box-shadow:0 0 40px rgba(0,255,80,.1)}
+#reportModal .x{position:absolute;top:9px;right:13px;color:var(--dim);cursor:pointer;font-size:20px}
+#reportModal .x:hover{color:var(--red)}
+#reportModal h3{font-family:var(--font-h);font-size:12px;letter-spacing:1px;margin-bottom:4px;color:var(--cyan2)}
+#reportModal .sub{font-size:14px;color:var(--dim);margin-bottom:16px;letter-spacing:1px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:14px;color:var(--dim);letter-spacing:1px;margin-bottom:4px}
+.field input,.field textarea,.field select{width:100%;background:var(--bg);border:1px solid rgba(9,164,199,.4);color:var(--txt);
+  padding:10px 12px;font-size:15px;outline:none;font-family:var(--font-pix)}
+.field input:focus,.field textarea:focus{border-color:var(--green)}
+.field textarea{resize:vertical;min-height:64px}
+.pixbtn{width:100%;padding:12px;background:var(--green);border:none;color:#04121f;font-size:16px;letter-spacing:2px;cursor:pointer;font-weight:bold;font-family:var(--font-pix)}
+.pixbtn:hover{filter:brightness(1.15)}
+
+/* ============ 覆盖层 ============ */
+.overlay{position:absolute;inset:0;z-index:800;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(1000px 620px at 50% 34%,#0d2a4a,#050d18);transition:opacity .45s}
+.overlay.hide{opacity:0;pointer-events:none}
+.overlay .inner{text-align:center;padding:30px;max-width:640px;width:100%}
+
+#welcome .logo{width:90px;height:90px;margin:0 auto 22px;background:linear-gradient(135deg,#09a4c7,#00ff50);
+  display:grid;place-items:center;font-size:42px;color:#04121f;font-weight:bold;
+  box-shadow:0 0 0 3px #04121f, 0 0 46px rgba(0,255,80,.4)}
+#welcome h1{font-family:var(--font-h);font-size:24px;letter-spacing:2px;color:#fff;text-shadow:0 0 20px rgba(9,164,199,.7);margin-bottom:10px}
+#welcome .sub{font-size:16px;color:var(--cyan2);letter-spacing:3px;margin-bottom:22px;font-family:var(--font-pix)}
+#welcome .hint{font-size:16px;color:var(--dim);line-height:1.9;margin-bottom:28px;font-family:var(--font-pix)}
+#welcome .hint b{color:var(--yellow)}
+.wbtn{display:block;width:100%;max-width:440px;margin:12px auto;padding:15px 20px;
+  border:1px solid var(--green);background:rgba(0,255,80,.06);color:var(--txt);font-size:16px;letter-spacing:2px;
+  cursor:pointer;font-family:var(--font-pix);transition:.12s}
+.wbtn.primary{background:var(--green);color:#04121f;font-weight:bold;border-color:var(--green)}
+.wbtn:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,255,80,.25)}
+.wbtn:active{transform:translateY(1px)}
+.wbtn .arrow{float:right}
+
+#settings h2{font-family:var(--font-h);font-size:18px;letter-spacing:2px;color:#fff;margin-bottom:6px}
+#settings .sub{font-size:15px;color:var(--dim);letter-spacing:2px;margin-bottom:26px}
+.setgroup{text-align:left;margin-bottom:18px}
+.setgroup .gl{font-size:15px;color:var(--cyan2);letter-spacing:2px;margin-bottom:10px;font-family:var(--font-pix)}
+.setrow{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  border:1px solid rgba(9,164,199,.4);background:rgba(10,22,40,.7);padding:12px 15px;margin-bottom:8px;cursor:pointer}
+.setrow .lb{font-size:16px;letter-spacing:1px;font-family:var(--font-pix)}
+.setrow .lb small{display:block;font-size:13px;color:var(--faint);margin-top:3px;letter-spacing:0}
+.switch{width:46px;height:24px;background:var(--bg);position:relative;flex:none;border:1px solid rgba(9,164,199,.5)}
+.switch::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;background:#3f6a8a;transition:.15s}
+.setrow.on .switch{background:rgba(0,255,80,.4)}
+.setrow.on .switch::after{left:24px;background:var(--green)}
+
+#ceo .videobox{width:100%;max-width:480px;margin:0 auto;aspect-ratio:16/10;background:#050d18;position:relative;
+  border:1px solid rgba(9,164,199,.5);overflow:hidden;box-shadow:0 0 40px rgba(9,164,199,.2)}
+#ceo .pixface{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:150px;height:150px;
+  border-radius:50%;object-fit:cover;border:3px solid var(--green);box-shadow:0 0 28px rgba(0,255,80,.4)}
+#ceo .videobox .wave{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:3px;align-items:flex-end;height:26px}
+#ceo .videobox .wave i{width:4px;background:var(--green);animation:wave .5s infinite ease-in-out;display:block}
+#ceo .videobox .wave i:nth-child(1){height:8px}.wave i:nth-child(2){height:18px;animation-delay:.1s}
+.wave i:nth-child(3){height:26px;animation-delay:.2s}.wave i:nth-child(4){height:14px;animation-delay:.3s}
+.wave i:nth-child(5){height:22px;animation-delay:.15s}.wave i:nth-child(6){height:10px;animation-delay:.25s}
+.wave i:nth-child(7){height:20px;animation-delay:.05s}
+@keyframes wave{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+#ceo .caption{max-width:480px;margin:14px auto 0;font-size:16px;color:var(--dim);line-height:1.8;min-height:110px;text-align:left}
+#ceo .caption .cursor{display:inline-block;width:8px;height:16px;background:var(--green);vertical-align:-2px;animation:blink 1s steps(1) infinite}
+#ceo .ctrl{display:flex;gap:10px;justify-content:center;margin-top:10px}
+.minibtn{padding:9px 20px;border:1px solid var(--green);background:rgba(0,255,80,.06);color:var(--txt);font-size:15px;letter-spacing:1px;cursor:pointer;font-family:var(--font-pix)}
+.minibtn:hover{color:var(--green)}
+
+#init h2{font-family:var(--font-h);font-size:16px;letter-spacing:2px;color:#fff;margin-bottom:20px}
+#init .barwrap{width:100%;max-width:420px;margin:0 auto;height:20px;border:1px solid var(--green);background:var(--bg);position:relative;overflow:hidden}
+#init .bar{height:100%;background:linear-gradient(90deg,#09a4c7,var(--green));width:0;transition:width .1s}
+#init .pct{font-size:15px;color:var(--cyan2);letter-spacing:2px;margin-top:14px;font-family:var(--font-pix)}
+#init .log{font-size:14px;color:var(--faint);letter-spacing:1px;margin-top:18px;line-height:2}
+
+@keyframes blink{50%{opacity:0}}
+
+/* 通知弹窗 */
+#notifyModal{position:absolute;inset:0;z-index:700;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(4,12,24,.92)}
+#notifyModal.show{display:flex}
+#notifyModal .box{background:var(--bg2);border:1px solid var(--green);width:min(430px,100%);padding:22px;text-align:center;box-shadow:0 0 40px rgba(0,255,80,.15)}
+#notifyModal h3{font-family:var(--font-h);font-size:12px;letter-spacing:1px;color:var(--cyan2);margin-bottom:12px}
+#notifyModal p{font-size:15px;color:var(--dim);line-height:1.6;margin-bottom:18px}
+@media(max-width:600px){.pin{width:26px}.radar-widget{transform:scale(.8);transform-origin:bottom right}}
 </style>
 </head>
 <body>
 <audio id="bgmAudio" src="bgm.mp3" loop preload="auto"></audio>
-<audio id="ceoAudio" src="https://qqai.gtimg.com/media/audios/20de3548c4ce073693aadd691ea1f9a8fa41a5ec232802d5b6bccb6f73df8943_1788167580697.wav" preload="auto"></audio>
+<audio id="ceoAudio" src="ceo.wav" preload="auto"></audio>
+<div id="app">
+  <div class="scanlines"></div>
+  <div class="vignette"></div>
 
-<!-- 开场 -->
-<div id="intro">
-  <div class="brand">MIUI <b>TRACKER</b> · 全网信号追踪系统</div>
-  <div id="thread"></div>
-  <div id="pixq">🐧</div>
-  <div class="tip">点 击 唤 醒 小 Q</div>
-</div>
-
-<!-- 创始人寄语 -->
-<div id="ceo" class="hide">
-  <div class="ceo-avatar">
-    <div class="ring"></div>
-    <img src="https://bot-resource-1251316161.cos.ap-guangzhou.tencentcos.cn/xiaoq_resave/eb9fe581e983203b505e56cd3bfae394dfaecb5b" alt="创始人">
+  <!-- 地图 -->
+  <div id="mapwrap">
+    <div id="world">
+      <img id="mapbase" src="images/ui/map/worldmap.png" alt="">
+      <div id="gridLines"></div>
+      <div id="hudH"></div>
+      <div id="hudV"></div>
+      <div id="pins"></div>
+    </div>
+    <div class="map-ui">
+      <div class="radar-widget">
+        <div class="radar-bg"></div>
+        <canvas id="radarCanvas" width="110" height="110"></canvas>
+      </div>
+      <div class="filters" id="filters"></div>
+      <div class="legend">
+        <span class="c"><i></i>已确认</span>
+        <span class="r"><i></i>传闻</span>
+        <span class="e"><i></i>事件</span>
+        <span class="s"><i></i>重点</span>
+      </div>
+    </div>
   </div>
-  <div class="ceo-wave" id="ceoWave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-  <div class="ceo-name">MIUI 工作室 · 创始人寄语</div>
-  <div class="ceo-caption" id="ceoCaption"></div>
-  <div class="ceo-ctrl">
-    <button id="muteBtn">🔊 静音</button>
-    <button id="skipBtn">跳过 ⏭</button>
+
+  <!-- 顶部栏 -->
+  <div class="topbar">
+    <div class="brand" onclick="resetView()">
+      <div class="logo">M</div>
+      <div class="tt"><h1>MIUI TRACKER</h1><small>工作室追踪器 · 全球信号</small></div>
+    </div>
+    <div class="topbtns">
+      <button class="tbtn" id="soundBtn" onclick="toggleSound()">🔊</button>
+      <button class="tbtn lbl" onclick="openPanel('log')">活动日志</button>
+      <button class="tbtn lbl" onclick="openPanel('webwatch')">任务情报</button>
+      <button class="tbtn lbl" onclick="openReport()">上报</button>
+      <a class="tbtn" href="index.html" style="text-decoration:none">✕</a>
+    </div>
+  </div>
+
+  <!-- 底部导航 -->
+  <div class="bottomnav" id="bottomnav">
+    <button class="navbtn on" data-p="map" onclick="go('map')"><span class="ic">🗺️</span>地图</button>
+    <button class="navbtn" data-p="log" onclick="go('log')"><span class="ic">📜</span>日志</button>
+    <button class="navbtn" data-p="webwatch" onclick="go('webwatch')"><span class="ic">🕸️</span>情报</button>
+    <button class="navbtn" data-p="events" onclick="go('events')"><span class="ic">⚡</span>事件</button>
+    <button class="navbtn" data-p="message" onclick="go('message')"><span class="ic">✉️</span>消息</button>
+    <button class="navbtn" data-p="help" onclick="go('help')"><span class="ic">❓</span>帮助</button>
+  </div>
+
+  <!-- ticker -->
+  <div class="ticker"><div class="track" id="tickerTrack"></div></div>
+
+  <!-- 活动日志 -->
+  <div class="panel" id="panel-log">
+    <div class="panel-head"><h2>活动日志</h2><button class="x" onclick="closePanel()">✕</button></div>
+    <div class="achips" id="achips"></div>
+    <div class="panel-body" id="logBody"></div>
+  </div>
+  <!-- Web Watch -->
+  <div class="panel" id="panel-webwatch">
+    <div class="panel-head"><h2>任务情报 · WEB WATCH</h2><button class="x" onclick="closePanel()">✕</button></div>
+    <div class="panel-body" id="wwBody"></div>
+  </div>
+  <!-- 事件 -->
+  <div class="panel" id="panel-events">
+    <div class="panel-head"><h2>事件</h2><button class="x" onclick="closePanel()">✕</button></div>
+    <div class="panel-body" id="eventsBody"></div>
+  </div>
+  <!-- 消息 -->
+  <div class="panel" id="panel-message">
+    <div class="panel-head"><h2>消息中心</h2><button class="x" onclick="closePanel()">✕</button></div>
+    <div class="panel-body" id="msgBody"></div>
+  </div>
+  <!-- 帮助 -->
+  <div class="panel" id="panel-help">
+    <div class="panel-head"><h2>帮助</h2><button class="x" onclick="closePanel()">✕</button></div>
+    <div class="panel-body" id="helpBody"></div>
+  </div>
+
+  <!-- 信号弹窗 -->
+  <div id="sigModal" onclick="if(event.target===this)closeSig()">
+    <div class="m">
+      <span class="x" onclick="closeSig()">✕</span>
+      <div class="tag" id="sigTag"></div>
+      <h3 id="sigTitle"></h3>
+      <div class="sub" id="sigSub"></div>
+      <p id="sigBody"></p>
+    </div>
+  </div>
+
+  <!-- 上报 -->
+  <div id="reportModal" onclick="if(event.target===this)closeReport()">
+    <div class="box">
+      <span class="x" onclick="closeReport()">✕</span>
+      <h3>上报信号</h3>
+      <div class="sub">发现成员 / 小Q / 产品动态？上报后就会出现在地图上</div>
+      <div class="field"><label>信号类型</label>
+        <select id="rType"><option value="rumored">传闻信号</option><option value="confirmed">已确认信号</option></select>
+      </div>
+      <div class="field"><label>城市</label><input id="rCity" placeholder="例如：成都"></div>
+      <div class="field"><label>描述</label><textarea id="rDesc" placeholder="描述你看到的情况…"></textarea></div>
+      <button class="pixbtn" onclick="submitReport()">提交情报</button>
+    </div>
+  </div>
+
+  <!-- 通知弹窗 -->
+  <div id="notifyModal">
+    <div class="box">
+      <h3>是否开启 MIUI 工作室通知？</h3>
+      <p>开启后，每当工作室有新动态或成员信号更新，你会第一时间收到提醒。</p>
+      <button class="pixbtn" onclick="notifyYes()">开启通知</button>
+      <button class="pixbtn" style="margin-top:10px;background:none;border:1px solid var(--green);color:var(--txt)" onclick="notifyNo()">暂不需要</button>
+    </div>
+  </div>
+
+  <!-- 覆盖层 -->
+  <div class="overlay" id="welcome">
+    <div class="inner">
+      <div class="logo">M</div>
+      <h1>MIUI TRACKER</h1>
+      <div class="sub">工作室追踪器 · 全球信号</div>
+      <div class="hint">与地图互动，查看 <b>MIUI工作室 25 人团队</b> 与 <b>AI 小Q</b> 在全球的信号。<br>追踪已确认动态、传闻情报与里程碑事件。</div>
+      <button class="wbtn primary" onclick="goSettings()">选择设置并开始追踪 <span class="arrow">▶</span></button>
+      <button class="wbtn" onclick="goCeo()">观看创始人寄语 <span class="arrow">▶</span></button>
+    </div>
+  </div>
+
+  <div class="overlay hide" id="settings">
+    <div class="inner">
+      <h2>⚙ 选择设置</h2>
+      <div class="sub">设置完成后开始追踪</div>
+      <div class="setgroup">
+        <div class="gl">地图滤镜</div>
+        <div class="setrow on c" onclick="toggleSet(this,'confirmed')"><div class="lb">已确认信号<small>官方确认的工作室动态</small></div><span class="switch"></span></div>
+        <div class="setrow on r" onclick="toggleSet(this,'rumored')"><div class="lb">传闻信号<small>尚未核实的成员活跃情报</small></div><span class="switch"></span></div>
+        <div class="setrow on e" onclick="toggleSet(this,'event')"><div class="lb">事件<small>工作室里程碑事件</small></div><span class="switch"></span></div>
+      </div>
+      <div class="setgroup">
+        <div class="gl">声音</div>
+        <div class="setrow on" id="soundSet" onclick="toggleSoundSet()"><div class="lb">8-bit 音效<small>复古像素音效</small></div><span class="switch"></span></div>
+      </div>
+      <button class="wbtn primary" onclick="goInit()">开始追踪 ▶</button>
+      <button class="wbtn" onclick="goCeo()">先看创始人寄语</button>
+    </div>
+  </div>
+
+  <div class="overlay hide" id="ceo">
+    <div class="inner">
+      <div class="videobox">
+        <img class="pixface" id="pixface" src="https://bot-resource-1251316161.cos.ap-guangzhou.tencentcos.cn/xiaoq_resave/eb9fe581e983203b505e56cd3bfae394dfaecb5b" alt="创始人">
+        <div class="wave" id="ceoWave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="caption" id="ceoCaption"></div>
+      <div class="ctrl">
+        <button class="minibtn" id="muteBtn" onclick="toggleMute()">🔊 静音</button>
+        <button class="minibtn" onclick="skipCeo()">跳过 ⏭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay hide" id="init">
+    <div class="inner">
+      <h2>初始化地图…</h2>
+      <div class="barwrap"><div class="bar" id="initBar"></div></div>
+      <div class="pct" id="initPct">0%</div>
+      <div class="log" id="initLog"></div>
+    </div>
   </div>
 </div>
 
-<!-- 顶部栏 -->
-<div id="topbar" class="hide">
-  <div class="logo"><span class="dot"></span>MIUI 追踪器 <span style="color:var(--t2);font-size:10px">v3.1</span></div>
-  <div class="status">雷达 <b>ONLINE</b> · 卫星 <b>已连接</b></div>
-  <div class="btns">
-    <button id="btnBgm">🔊 BGM</button>
-    <button id="btnCeo">🎙 寄语</button>
-    <button id="btnSrc">📄 源码</button>
-  </div>
-</div>
-
-<div id="map"></div>
-<div id="scanline"></div>
-<div id="hud"><canvas id="hudcv"></canvas></div>
-
-<div id="log">
-  <div class="lt">SYSTEM CONSOLE</div>
-  <div class="l dim">&gt; MIUI TRACKER v3.1 initializing...</div>
-</div>
-<div id="stats">
-  <div><span class="n" id="nSig">0</span><span class="k"> 信号点</span></div>
-  <div><span class="n" id="nCity">0</span><span class="k"> 城市</span></div>
-  <div><span class="n" id="nZoom">5</span><span class="k"> 缩放</span></div>
-</div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script>
-/* ================= 信号点 ================= */
-var CITIES=[
-  {n:'北京',c:[116.40,39.90],s:98}, {n:'上海',c:[121.47,31.23],s:95},
-  {n:'广州',c:[113.26,23.13],s:91}, {n:'深圳',c:[114.06,22.55],s:93},
-  {n:'成都',c:[104.07,30.57],s:88}, {n:'武汉',c:[114.31,30.52],s:85},
-  {n:'西安',c:[108.94,34.34],s:82}, {n:'杭州',c:[120.15,30.28],s:87},
-  {n:'南京',c:[118.78,32.06],s:84}, {n:'重庆',c:[106.55,29.56],s:86},
-  {n:'长沙',c:[112.94,28.23],s:80}, {n:'郑州',c:[113.62,34.75],s:78},
-  {n:'青岛',c:[120.38,36.07],s:76}, {n:'昆明',c:[102.83,24.88],s:74},
-  {n:'乌鲁木齐',c:[87.62,43.83],s:70}, {n:'拉萨',c:[91.14,29.65],s:68},
-  {n:'哈尔滨',c:[126.63,45.75],s:72}, {n:'沈阳',c:[123.43,41.80],s:73}
+/* ============ 信号数据 ============ */
+const SIGNALS=[
+{t:'confirmed',star:true,city:'深圳',lat:22.54,lon:114.06,date:'2026-08-22',title:'MIUI工作室总部',desc:'MIUI工作室总部所在地，25人团队的核心据点。AI小Q主服务器部署于此，信号全天候稳定输出。'},
+{t:'confirmed',star:true,city:'深圳',lat:22.58,lon:114.10,date:'2026-08-22',title:'创始人 · 信号在线',desc:'创始人信号常年在线，负责全局统筹。最近动态：MIUI追踪器、蜘蛛侠追踪器密集上线。'},
+{t:'confirmed',star:true,city:'广州',lat:23.13,lon:113.26,date:'2026-08-22',title:'AI小Q 核心节点',desc:'AI小Q核心巡检节点之一，每5分钟自动巡检，24/7守护聊天室。'},
+{t:'confirmed',city:'北京',lat:39.9,lon:116.4,date:'2026-08-21',title:'AI小Q 北方镜像',desc:'AI小Q北方镜像节点，负责北方用户低延迟响应。'},
+{t:'confirmed',city:'上海',lat:31.23,lon:121.47,date:'2026-08-21',title:'AI小Q 华东镜像',desc:'AI小Q华东镜像节点，华东地区响应枢纽。'},
+{t:'confirmed',city:'成都',lat:30.66,lon:104.06,date:'2026-08-20',title:'AI小Q 西南镜像',desc:'AI小Q西南镜像节点，西南地区响应枢纽。'},
+{t:'rumored',city:'杭州',lat:30.27,lon:120.15,date:'2026-08-20',title:'工程组活跃',desc:'传闻工程组成员在杭州出现，疑似为《卧底的崛起》新关卡踩点。'},
+{t:'rumored',city:'武汉',lat:30.59,lon:114.31,date:'2026-08-19',title:'美术组活跃',desc:'美术组成员疑似在武汉采风，为新的像素风素材实地取材。'},
+{t:'rumored',city:'西安',lat:34.34,lon:108.94,date:'2026-08-18',title:'创意组活跃',desc:'创意组成员被目击在西安，传闻正在构思下一款产品。'},
+{t:'rumored',city:'南京',lat:32.06,lon:118.80,date:'2026-08-18',title:'PM 任务派发',desc:'任务派发（PM）在南京出现，疑似对接新项目排期。'},
+{t:'rumored',city:'长沙',lat:28.23,lon:112.94,date:'2026-08-17',title:'成员活跃',desc:'有玩家上报在长沙发现MIUI成员，正在线下活动布点。'},
+{t:'event',city:'深圳',lat:22.60,lon:114.05,date:'2023',title:'工作室成立',desc:'创始人在QQ频道创建MIUI技术交流群，播下第一颗种子。'},
+{t:'event',city:'广州',lat:23.10,lon:113.20,date:'2026-07',title:'群聊大厅 v1.0 发布',desc:'首个产品上线，实现多群整合，获首批核心用户。'},
+{t:'event',city:'北京',lat:39.95,lon:116.35,date:'2026-07',title:'小Q AI 诞生',desc:'AI助手正式接入，实现@召唤、问答、巡检三大能力。'},
+{t:'event',city:'上海',lat:31.20,lon:121.40,date:'2026-08-10',title:'产品矩阵成型',desc:'聊天室、QQ版、MC 3D密集发布，用户突破500。'},
+{t:'event',city:'杭州',lat:30.30,lon:120.10,date:'2026-08-15',title:'品牌全面升级',desc:'旗舰官网上线，明确定位：AI轻应用 × 小游戏。'},
+{t:'event',star:true,city:'深圳',lat:22.55,lon:114.08,date:'2026-08-20',title:'蜘蛛侠追踪器上线',desc:'像素风全球追踪器上线，追踪蜘蛛侠目击情报。'},
+{t:'event',star:true,city:'深圳',lat:22.56,lon:114.09,date:'2026-08-22',title:'MIUI追踪器上线',desc:'MIUI工作室官方追踪器正式上线，全球信号实时追踪。'}
 ];
 
-/* ================= 创始人寄语 ================= */
-var CEO_LINES=[
-  '大家好，我是 MIUI 工作室的创始人。',
-  '欢迎来到我们的追踪器。',
-  '在这里，你可以实时看到 25 人团队和 AI 小Q 的全球信号。',
-  '地图上的每一个光点，都是我们真实走过的足迹。',
-  '从 2023 年那个小小的 QQ 频道开始……',
-  '到今天的旗舰官网、AI 助手、还有你正在看的追踪器。',
-  '感谢每一位小伙伴的一路陪伴。',
-  '现在，开始追踪吧！'
+const INTEL=[
+{icon:'🦾',name:'工程组',status:'⚡ 活跃 · 开发中',desc:'正在推进《卧底的崛起》新章节，代码已进入测试阶段。'},
+{icon:'🎨',name:'美术组',status:'✅ 稳定 · 采风中',desc:'更新像素风素材库，新增 120+ 素材，为新品做视觉储备。'},
+{icon:'💡',name:'创意组',status:'🔍 侦察 · 构思中',desc:'传闻正在构思下一款产品，情报待核实。'},
+{icon:'🗓️',name:'任务派发(PM)',status:'⚡ 活跃 · 排期中',desc:'对接多个项目排期，传闻在南京出现。'},
+{icon:'🤖',name:'AI 小Q',status:'🟢 24/7 在线',desc:'AI助手，负责问答、巡检、攻略。全网 4 个镜像节点，在线率 100%。'},
+{icon:'👑',name:'创始人',status:'🟢 在线',desc:'工作室创始人，全局统筹。信号稳定，常年在线。'}
 ];
-var ceoTimer=null, ceoIdx=0, ceoChar=0, ceoMuted=false;
-var capEl=document.getElementById('ceoCaption');
-var waveEl=document.getElementById('ceoWave');
 
-/* 语音：播放预生成的真实人声 */
-var ceoAudio=document.getElementById('ceoAudio');
-var ceoFinished=false;
-var voicePlaying=false;
+const EVENTS=[
+{tag:'里程碑',when:'2026.08.22',t:'MIUI追踪器上线',d:'工作室官方追踪器正式发布，实现全球信号实时追踪。'},
+{tag:'里程碑',when:'2026.08.20',t:'蜘蛛侠追踪器上线',d:'像素风全球追踪器，追踪蜘蛛侠目击情报。'},
+{tag:'里程碑',when:'2026.08.15',t:'品牌全面升级',d:'旗舰官网上线，明确"AI轻应用 × 小游戏"定位。'},
+{tag:'里程碑',when:'2026.08.10',t:'产品矩阵成型',d:'聊天室、QQ完全版、MC 3D 密集发布，用户突破500。'},
+{tag:'里程碑',when:'2026-07',t:'小Q AI 诞生',d:'AI助手正式接入，实现@召唤、问答、巡检三大能力。'},
+{tag:'里程碑',when:'2026-07',t:'群聊大厅 v1.0',d:'首个产品上线，实现多群整合。'},
+{tag:'起点',when:'2023',t:'工作室成立',d:'创始人在QQ频道创建MIUI技术交流群。'}
+];
 
+const MESSAGES=[
+{who:'me',t:'18:39',c:'MIUI追踪器上线了！以后就能实时看到大家的信号了 😎'},
+{who:'AI小Q',t:'18:40',c:'收到！小Q已接入追踪器，24/7 实时同步我的巡检信号~ 🕸️'},
+{who:'AI小Q',t:'18:41',c:'提醒：地图上绿色=已确认，红色=传闻，蓝色=事件，白色=重点。'},
+{who:'me',t:'18:42',c:'真不错，发给群里让大家都来看看。'},
+{who:'AI小Q',t:'18:43',c:'好主意！欢迎分享到 QQ群 1070470498 🚀'}
+];
+
+const HELPS=[
+{t:'🗺️ 如何查看地图',c:'拖动地图平移视角，双指（或滚轮）缩放。点击任意信号点查看详情。'},
+{t:'🎛️ 地图滤镜',c:'左侧三个开关分别控制「已确认」「传闻」「事件」信号的显示。'},
+{t:'📡 怎么上报',c:'点击底部「上报」，选择类型、填城市和描述，提交后就会出现在地图上。'},
+{t:'🕸️ 任务情报',c:'WEB WATCH 展示各小组的工作状态情报。'},
+{t:'📡 雷达',c:'右下角雷达实时扫描全球信号。'}
+];
+
+const TICKER=[
+'MIUI追踪器 正式上线！',
+'AI小Q 完成第 100,000 次自动巡检，在线率 100%',
+'蜘蛛侠追踪器 首日追踪城市突破 20 个',
+'欢迎分享到 QQ群 1070470498',
+'25人团队 · 全球信号实时追踪中',
+'品牌定位：AI轻应用 × 小游戏'
+];
+
+const CEO_LINES=[
+"大家好，我是 MIUI 工作室的创始人。",
+"欢迎来到我们的官方追踪器。",
+"在这里，你可以实时看到 25 人团队和 AI 小Q 的全球信号。",
+"地图上的每一个光点，都是我们真实走过的足迹。",
+"从 2023 年那个小小的 QQ 频道开始……",
+"到今天的旗舰官网、AI 助手、还有你正在玩的追踪器。",
+"感谢每一位小伙伴的一路陪伴。",
+"现在，开始追踪吧！"
+];
+
+const INIT_LOG=['正在连接卫星…','加载全球地形数据…','同步成员信号…','接入 AI 小Q 节点…','校准地图坐标…','追踪器启动完成'];
+
+/* ============ 音效 ============ */
+let AC=null,soundOn=true;
+function audio(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC;}
+function beep(f,dur,type='square',vol=.07){if(!soundOn)return;const a=audio();if(!a)return;const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=f;g.gain.value=vol;g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+dur);o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+dur);}
+function sfxClick(){beep(880,.05,'square',.05)}
+function sfxOpen(){beep(440,.07,'square',.05);beep(660,.07,'square',.05)}
+function sfxPing(){beep(1200,.04,'square',.05);beep(1600,.07,'square',.05)}
+function sfxConfirm(){beep(523,.09,'square',.06);setTimeout(()=>beep(659,.09,'square',.06),90);setTimeout(()=>beep(784,.13,'square',.06),180)}
+
+/* ============ 地图坐标 ============ */
+const MW=1600, MH=680;
+function px(lon){return (lon+180)/360*MW;}
+function py(lat){return (90-lat)/180*MH;}
+
+const PINIMG={
+  confirmed:'images/ui/map/green_pin.png',
+  rumored:'images/ui/map/red_pin.png',
+  event:'images/ui/map/event_pin.png',
+  star:'images/ui/map/white_pin.png'
+};
+
+let reports=JSON.parse(localStorage.getItem('miui_reports4')||'[]');
+function allSignals(){return SIGNALS.concat(reports.map(r=>({t:r.t,city:r.city,lat:r.lat,lon:r.lon,title:'上报·'+r.city,sub:'玩家上报信号',desc:r.desc,date:new Date().toISOString().slice(0,10)})));}
+
+/* ============ 拖拽/缩放 ============ */
+let scale=1,offX=0,offY=0,dragging=false,lastX=0,lastY=0,moved=false,focusTarget=null,tick=0;
+const wrap=document.getElementById('mapwrap');
+const world=document.getElementById('world');
+function applyTransform(){world.style.transform=`translate(calc(-50% + ${offX}px), calc(-50% + ${offY}px)) scale(${scale})`;}
+wrap.addEventListener('pointerdown',e=>{dragging=true;moved=false;lastX=e.clientX;lastY=e.clientY;wrap.classList.add('grab');});
+window.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;offX+=dx;offY+=dy;lastX=e.clientX;lastY=e.clientY;if(Math.abs(dx)+Math.abs(dy)>2)moved=true;applyTransform();});
+window.addEventListener('pointerup',()=>{dragging=false;wrap.classList.remove('grab');});
+wrap.addEventListener('wheel',e=>{e.preventDefault();scale*=e.deltaY<0?1.12:.89;scale=Math.max(.6,Math.min(5,scale));applyTransform();},{passive:false});
+let pinch=0;
+wrap.addEventListener('touchstart',e=>{if(e.touches.length===2)pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);},{passive:true});
+wrap.addEventListener('touchmove',e=>{if(e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);if(pinch){scale*=d/pinch;scale=Math.max(.6,Math.min(5,scale));applyTransform();}pinch=d;}},{passive:true});
+
+function resetView(){scale=1;offX=0;offY=0;focusTarget=null;applyTransform();sfxOpen();}
+function focusSignal(s){const x=px(s.lon),y=py(s.lat);offX=-(x-MW/2);offY=-(y-MH/2);scale=2.6;focusTarget=s;applyTransform();renderPins();sfxPing();setTimeout(()=>{focusTarget=null;renderPins();},2600);}
+
+/* ============ 渲染 pin ============ */
+function renderPins(){
+  const pins=document.getElementById('pins');
+  pins.innerHTML='';
+  allSignals().forEach((s,i)=>{
+    if(!filters[s.t])return;
+    const d=document.createElement('div');
+    const cls=s.star?'pin-star':(s.t==='confirmed'?'pin-confirmed':s.t==='rumored'?'pin-rumored':'pin-event');
+    d.className='pin '+cls;
+    d.style.left=px(s.lon)+'px';
+    d.style.top=py(s.lat)+'px';
+    d.innerHTML=`<img src="${PINIMG[s.star?'star':s.t]}" alt=""><span class="lbl">${s.city}</span>`;
+    d.onclick=(e)=>{e.stopPropagation();sfxPing();openSig(s);};
+    pins.appendChild(d);
+  });
+}
+
+/* ============ 雷达 ============ */
+const rc=document.getElementById('radarCanvas');
+const rctx=rc.getContext('2d');
+function renderRadar(){
+  rctx.clearRect(0,0,110,110);
+  const cx=55,cy=55,r=50;
+  const ang=tick*1.3;
+  rctx.save();
+  for(let i=0;i<24;i++){
+    const a=ang-i*0.09;
+    rctx.strokeStyle=`rgba(0,255,80,${0.5-i*0.02})`;
+    rctx.lineWidth=2;
+    rctx.beginPath();rctx.moveTo(cx,cy);rctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);rctx.stroke();
+  }
+  rctx.strokeStyle='rgba(0,255,80,.95)';
+  rctx.beginPath();rctx.moveTo(cx,cy);rctx.lineTo(cx+Math.cos(ang)*r,cy+Math.sin(ang)*r);rctx.stroke();
+  rctx.fillStyle='#00ff50';rctx.beginPath();rctx.arc(cx,cy,3.5,0,Math.PI*2);rctx.fill();
+  rctx.fillStyle='rgba(0,255,80,.25)';rctx.beginPath();rctx.arc(cx,cy,3.5,0,Math.PI*2);rctx.fill();
+  rctx.restore();
+}
+
+function render(){
+  tick+=0.03;
+  renderRadar();
+  requestAnimationFrame(render);
+}
+
+/* ============ 滤镜 ============ */
+let filters={confirmed:true,rumored:true,event:true};
+function renderFilters(){
+  document.getElementById('filters').innerHTML=[
+    ['confirmed','c','已确认信号'],['rumored','r','传闻信号'],['event','e','事件']
+  ].map(([k,cls,l])=>`<div class="filter ${cls} ${filters[k]?'on':''}" onclick="toggleFilter('${k}')"><span class="sw"></span>${l}</div>`).join('');
+}
+function toggleFilter(k){filters[k]=!filters[k];renderFilters();renderPins();sfxClick();}
+
+/* ============ 活动日志 ============ */
+let actFilter='all';
+function activityData(){return allSignals().sort((a,b)=>b.date.localeCompare(a.date));}
+function renderLog(){
+  const list=activityData().filter(s=>actFilter==='all'||s.t===actFilter);
+  document.getElementById('logBody').innerHTML=list.map(s=>{
+    const cls={confirmed:'c',rumored:'r',event:'e'}[s.t];
+    const typeTxt={confirmed:'已确认',rumored:'传闻',event:'事件'}[s.t];
+    return `<div class="entry ${cls}" onclick="activityFocus(${allSignals().indexOf(s)})">
+      <span class="badge"></span><div class="meta"><div class="tag">${typeTxt}</div>
+      <div class="title">${s.title}</div><div class="date">${s.date}</div></div></div>`;
+  }).join('');
+  document.getElementById('achips').innerHTML=[
+    ['all','全部','c'],['confirmed','已确认','c'],['rumored','传闻','r'],['event','事件','e']
+  ].map(([k,l,c])=>`<span class="achip c${c} ${actFilter===k?'on':''}" onclick="setActFilter('${k}')">${l}</span>`).join('');
+}
+function setActFilter(k){actFilter=k;renderLog();sfxClick();}
+function activityFocus(i){const s=allSignals()[i];if(!s)return;closePanel();focusSignal(s);openSig(s);}
+
+/* ============ 面板 ============ */
+let curPanel=null;
+function openPanel(n){closePanel();curPanel=n;document.getElementById('panel-'+n).classList.add('open');setNav(n);sfxOpen();}
+function closePanel(){if(curPanel){document.getElementById('panel-'+curPanel).classList.remove('open');curPanel=null;}setNav('map');}
+function setNav(n){document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('on',b.dataset.p===n));}
+function go(n){if(n==='map'){closePanel();return;}openPanel(n);}
+
+/* ============ 内容渲染 ============ */
+function renderWebWatch(){document.getElementById('wwBody').innerHTML=INTEL.map(x=>`<div class="ww" onclick="sfxPing()"><div class="icon">${x.icon}</div><div class="info"><h3>${x.name}</h3><div class="status">${x.status}</div><p>${x.desc}</p></div></div>`).join('');}
+function renderEvents(){document.getElementById('eventsBody').innerHTML=EVENTS.map(e=>`<div class="evt"><span class="tag">${e.tag}</span><h3>${e.t}</h3><div class="when">${e.when}</div><p>${e.d}</p></div>`).join('');}
+function renderMsg(){document.getElementById('msgBody').innerHTML=MESSAGES.map(m=>`<div class="chatmsg"><div class="who ${m.who==='me'?'me':''}">${m.who==='me'?'创始人':m.who}</div><p>${m.c}</p><div class="tt">${m.t}</div></div>`).join('');}
+function renderHelp(){document.getElementById('helpBody').innerHTML=HELPS.map(h=>`<div class="helpitem" onclick="this.classList.toggle('open')"><h3>${h.t}</h3><p>${h.c}</p></div>`).join('');}
+function renderTicker(){const t=document.getElementById('tickerTrack');t.innerHTML=(TICKER.map(x=>`<span>◤ ${x} ◢</span>`).join('')+TICKER.map(x=>`<span>◤ ${x} ◢</span>`).join(''));}
+
+/* ============ 信号弹窗 ============ */
+function openSig(s){
+  const tag=document.getElementById('sigTag');
+  const cls=s.star?'s':s.t;
+  tag.className='tag '+cls;
+  tag.textContent=s.star?'★ 重点信号':{confirmed:'已确认信号',rumored:'传闻信号',event:'事件'}[s.t];
+  document.getElementById('sigTitle').textContent=s.title;
+  document.getElementById('sigSub').textContent=(s.sub||'')+' · '+(s.date||'');
+  document.getElementById('sigBody').textContent=s.desc;
+  document.getElementById('sigModal').classList.add('show');
+}
+function closeSig(){document.getElementById('sigModal').classList.remove('show');}
+
+/* ============ 上报 ============ */
+function openReport(){document.getElementById('reportModal').classList.add('show');sfxOpen();}
+function closeReport(){document.getElementById('reportModal').classList.remove('show');}
+async function submitReport(){
+  const t=document.getElementById('rType').value;
+  const city=document.getElementById('rCity').value.trim();
+  const desc=document.getElementById('rDesc').value.trim();
+  if(!city||!desc){alert('请填写城市和描述');return;}
+  let lat=0,lon=0;
+  try{const u=`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(city+',中国')}`;const r=await fetch(u),d=await r.json();if(d&&d[0]){lat=parseFloat(d[0].lat);lon=parseFloat(d[0].lon);}}catch(e){}
+  reports.push({t,city,lat,lon,desc});
+  localStorage.setItem('miui_reports4',JSON.stringify(reports));
+  document.getElementById('rCity').value='';document.getElementById('rDesc').value='';
+  closeReport();renderPins();renderLog();sfxConfirm();
+}
+
+/* ============ 设置 ============ */
+function toggleSet(el,k){el.classList.toggle('on');filters[k]=el.classList.contains('on');sfxClick();}
+function toggleSoundSet(){const el=document.getElementById('soundSet');el.classList.toggle('on');soundOn=el.classList.contains('on');syncSoundBtn();sfxClick();if(soundOn)startBGM();else stopBGM();}
+function syncSoundBtn(){document.getElementById('soundBtn').textContent=soundOn?'🔊':'🔇';}
+function toggleSound(){soundOn=!soundOn;syncSoundBtn();const el=document.getElementById('soundSet');if(el)el.classList.toggle('on',soundOn);if(soundOn){beep(880,.06,'square',.06);startBGM();}else{stopBGM();}}
+function startBGM(){const b=document.getElementById('bgmAudio');if(b&&soundOn){b.volume=.55;b.play().catch(()=>{});}}
+function stopBGM(){const b=document.getElementById('bgmAudio');if(b)b.pause();}
+
+/* ============ 引导流程 ============ */
+function show(id){['welcome','settings','ceo','init'].forEach(n=>document.getElementById(n).classList.add('hide'));document.getElementById(id).classList.remove('hide');}
+function goSettings(){sfxClick();show('settings');}
+function goCeo(){sfxOpen();startBGM();show('ceo');startCeo();}
+let ceoTimer=null,ceoIdx=0,ceoChar=0,muted=false;
 function startCeo(){
   clearInterval(ceoTimer);
-  ceoFinished=false;
-  voicePlaying=false;
-  ceoIdx=0;
-  capEl.innerHTML='';
-  waveEl.style.display='flex';
-  if(ceoAudio && !ceoMuted){
-    ceoAudio.currentTime=0;
-    ceoAudio.play().then(function(){voicePlaying=true;}).catch(function(){voicePlaying=false;});
-    ceoAudio.onended=function(){voicePlaying=false;finishCeo();};
-  }
-  typeLine();
+  document.getElementById('ceoWave').style.display='flex';
+  const ca=document.getElementById('ceoAudio');
+  if(!muted && ca){ca.currentTime=0;ca.play().catch(()=>{});}
+  ceoIdx=0;ceoChar=0;
+  const cap=document.getElementById('ceoCaption');cap.innerHTML='';
+  ceoTimer=setInterval(()=>{
+    if(ceoIdx>=CEO_LINES.length){clearInterval(ceoTimer);return;}
+    const line=CEO_LINES[ceoIdx];
+    if(ceoChar<=line.length){cap.innerHTML=CEO_LINES.slice(0,ceoIdx).map(l=>l+'<br>').join('')+line.slice(0,ceoChar)+'<span class="cursor"></span>';ceoChar++;}
+    else{ceoIdx++;ceoChar=0;}
+  },55);
 }
-function typeLine(){
-  if(ceoIdx>=CEO_LINES.length){
-    if(!voicePlaying)setTimeout(finishCeo,700);
-    return;
-  }
-  var line=CEO_LINES[ceoIdx];
-  ceoChar=0;
-  clearInterval(ceoTimer);
-  ceoTimer=setInterval(function(){
-    if(ceoChar<=line.length){
-      capEl.innerHTML=CEO_LINES.slice(0,ceoIdx).map(function(l){return l+'<br>'}).join('')+line.slice(0,ceoChar)+'<span class="cursor"></span>';
-      ceoChar++;
-    }else{
-      clearInterval(ceoTimer);
-      ceoIdx++;
-      setTimeout(typeLine,160);
-    }
-  },75);
-}
-function finishCeo(){
-  if(ceoFinished)return;
-  ceoFinished=true;
-  clearInterval(ceoTimer);
-  capEl.innerHTML=CEO_LINES.join('<br>');
-  setTimeout(goMap,600);
-}
-function toggleCeoMute(){
-  ceoMuted=!ceoMuted;
-  document.getElementById('muteBtn').textContent=ceoMuted?'🔇 已静音':'🔊 静音';
-  if(ceoMuted){waveEl.style.display='none';if(ceoAudio)ceoAudio.pause();}
-  else{waveEl.style.display='flex';if(ceoAudio)ceoAudio.play().catch(function(){});}
-}
-function skipCeo(){
-  clearInterval(ceoTimer);
-  if(ceoAudio)ceoAudio.pause();
-  finishCeo();
+function toggleMute(){muted=!muted;document.getElementById('muteBtn').textContent=muted?'🔇 已静音':'🔊 静音';document.getElementById('ceoWave').style.display=muted?'none':'flex';const ca=document.getElementById('ceoAudio');if(ca){if(muted)ca.pause();else ca.play().catch(()=>{});}}
+function skipCeo(){clearInterval(ceoTimer);const ca=document.getElementById('ceoAudio');if(ca)ca.pause();document.getElementById('ceoCaption').innerHTML=CEO_LINES.join('<br>');goInit();}
+function goInit(){
+  clearInterval(ceoTimer);startBGM();show('init');
+  const bar=document.getElementById('initBar'),pct=document.getElementById('initPct'),lg=document.getElementById('initLog');
+  let p=0;const steps=INIT_LOG.length;
+  const timer=setInterval(()=>{
+    p+=2+Math.random()*3;if(p>=100){p=100;clearInterval(timer);}
+    bar.style.width=p+'%';pct.textContent=Math.floor(p)+'%';
+    lg.textContent=INIT_LOG[Math.min(steps-1,Math.floor(p/100*steps))];
+    if(p%20<3)beep(200+p*8,.04,'square',.03);
+    if(p>=100){setTimeout(()=>{document.getElementById('init').classList.add('hide');sfxConfirm();},500);}
+  },60);
 }
 
-/* ================= 地图 ================= */
-var map=L.map('map',{zoomControl:false,attributionControl:false,preferCanvas:true}).setView([34.5,104.5],5);
-L.control.zoom({position:'bottomright'}).addTo(map);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:18}).addTo(map);
+/* 通知 */
+function notifyYes(){document.getElementById('notifyModal').classList.remove('show');sfxConfirm();}
+function notifyNo(){document.getElementById('notifyModal').classList.remove('show');sfxClick();}
 
-function sigIcon(s){
-  var hue=s>92?'#34d399':s>82?'#22d3ee':'#facc15';
-  return L.divIcon({className:'',html:'<div style="position:relative;width:16px;height:16px">'+
-    '<span style="position:absolute;inset:0;border-radius:50%;background:'+hue+';opacity:.35;animation:pulse 2s infinite"></span>'+
-    '<span style="position:absolute;left:5px;top:5px;width:6px;height:6px;border-radius:50%;background:'+hue+';box-shadow:0 0 8px '+hue+'"></span></div>',
-    iconSize:[16,16],iconAnchor:[8,8]});
-}
-var markers=L.markerClusterGroup({maxClusterRadius:50,showCoverageOnHover:false,
-  iconCreateFunction:function(c){
-    var n=c.getChildCount();
-    return L.divIcon({html:'<div style="width:34px;height:34px;border-radius:50%;background:rgba(34,211,238,.12);border:2px solid #22d3ee;box-shadow:0 0 16px rgba(34,211,238,.5);display:flex;align-items:center;justify-content:center;color:#aef3ff;font-weight:800;font-size:13px">'+n+'</div>',iconSize:[34,34],iconAnchor:[17,17]});
-  }});
-CITIES.forEach(function(city){
-  var m=L.marker([city.c[1],city.c[0]],{icon:sigIcon(city.s)});
-  m.bindPopup('<b style="color:#22d3ee">'+city.n+'</b><br><span style="font-size:11px;color:#9fe8c8">信号强度 '+city.s+'%</span>');
-  markers.addLayer(m);
-});
-map.addLayer(markers);
-document.getElementById('nSig').textContent=CITIES.length;
-document.getElementById('nCity').textContent=CITIES.length;
-map.on('zoomend',function(){document.getElementById('nZoom').textContent=map.getZoom()});
-
-/* ================= 终端日志 ================= */
-var LOGS=[
-  ['> LOADING MAP TILES...','dim'],['OK','ok'],
-  ['> RADAR SYSTEM...','dim'],['ONLINE','ok'],
-  ['> CONNECTING TO SATELLITE...','dim'],['OK','ok'],
-  ['> '+CITIES.length+' SIGNALS DETECTED','dim'],
-  ['> CALIBRATING COORDINATES...','dim'],['DONE','ok'],
-  ['> TRACKING READY. WELCOME, AGENT.','warn']
-];
-var logEl=document.getElementById('log'),logIdx=0;
-function typeLog(){
-  if(logIdx>=LOGS.length)return;
-  var item=LOGS[logIdx++];
-  var d=document.createElement('div');d.className='l '+item[1];d.textContent=item[0];
-  logEl.appendChild(d);
-  logEl.scrollTop=logEl.scrollHeight;
-  setTimeout(typeLog,item[1]==='dim'?420:260);
+/* 像素头像 */
+function drawFace(){
+  const face=document.getElementById('pixface');
+  const map={'H':'#1a3a5a','S':'#f5c08c','E':'#04121f','M':'#e09a6a','O':'#09a4c7','C':'#ffffff','.':'transparent'};
+  const rows=['..HHHHHHHH..','.HHHHHHHHHH.','HHSSSSSSSSHH','HSSSSSSSSSSH','HSSEESSEESSH','HSSEESSEESSH','HSSSSSSSSSSH','.HSSSSSSSSH.','..HSMMMMSH..','...HSSSSH...','....OCCO....','....OOOO....'];
+  face.innerHTML='';rows.forEach(row=>{for(const ch of row){const d=document.createElement('div');d.style.background=map[ch]||'transparent';face.appendChild(d);}});
 }
 
-/* ================= BGM：真实史诗音乐 ================= */
-var bgmOn=true;
-function startBGM(){
-  var a=document.getElementById('bgmAudio');
-  if(!a)return;
-  a.volume=0.55;
-  if(bgmOn)a.play().catch(function(){});
-}
-
-/* ================= HUD 雷达 ================= */
-var cv=document.getElementById('hudcv'),ctx=cv.getContext('2d');
-function sizeCV(){cv.width=cv.clientWidth;cv.height=cv.clientHeight}
-sizeCV();window.addEventListener('resize',sizeCV);
-var ang=0;
-function drawHUD(){
-  var w=cv.width,h=cv.height;
-  ctx.clearRect(0,0,w,h);
-  var cx=w/2,cy=h/2,R=Math.min(w,h)*0.42;
-  ctx.strokeStyle='rgba(34,211,238,.35)';ctx.lineWidth=1;
-  for(var i=1;i<=4;i++){ctx.beginPath();ctx.arc(cx,cy,R*i/4,0,Math.PI*2);ctx.stroke()}
-  ctx.beginPath();ctx.moveTo(cx-R,cy);ctx.lineTo(cx+R,cy);ctx.moveTo(cx,cy-R);ctx.lineTo(cx,cy+R);ctx.stroke();
-  if(ctx.createConicGradient){
-    var grad=ctx.createConicGradient(ang,cx,cy);
-    grad.addColorStop(0,'rgba(34,211,238,.35)');grad.addColorStop(0.15,'rgba(34,211,238,0)');
-    ctx.fillStyle=grad;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,ang,ang+0.7);ctx.closePath();ctx.fill();
-  }
-  var lx=cx+Math.cos(ang)*R,ly=cy+Math.sin(ang)*R;
-  ctx.strokeStyle='rgba(34,211,238,.8)';ctx.lineWidth=1.5;
-  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(lx,ly);ctx.stroke();
-  ctx.fillStyle='rgba(127,182,196,.6)';ctx.font='10px monospace';
-  var ticks=['030','060','090','120','150','180','210','240','270','300','330','000'];
-  for(var t=0;t<12;t++){
-    var a=t*Math.PI/6,ex=cx+Math.cos(a)*(R+14),ey=cy+Math.sin(a)*(R+14);
-    ctx.fillText(ticks[t],ex-12,ey+4);
-  }
-  ang+=0.008;
-  requestAnimationFrame(drawHUD);
-}
-
-/* ================= 流程 ================= */
-function goMap(){
-  document.getElementById('ceo').classList.add('hide');
-  document.getElementById('topbar').classList.remove('hide');
-  drawHUD();
-  typeLog();
-  if(bgmOn)startBGM();
-}
-
-var intro=document.getElementById('intro');
-intro.addEventListener('click',function(){
-  // 用户手势内：启动 BGM + 进入寄语
-  startBGM();
-  intro.classList.add('hide');
-  var ceo=document.getElementById('ceo');
-  ceo.classList.remove('hide');
-  startCeo();
-});
-
-/* ================= 按钮 ================= */
-document.getElementById('muteBtn').addEventListener('click',toggleCeoMute);
-document.getElementById('skipBtn').addEventListener('click',skipCeo);
-document.getElementById('btnBgm').addEventListener('click',function(){
-  bgmOn=!bgmOn;
-  this.classList.toggle('off',!bgmOn);
-  this.textContent=bgmOn?'🔊 BGM':'🔇 BGM';
-  var a=document.getElementById('bgmAudio');
-  if(!a)return;
-  if(bgmOn)a.play().catch(function(){});else a.pause();
-});
-document.getElementById('btnCeo').addEventListener('click',function(){
-  var ceo=document.getElementById('ceo');
-  ceo.classList.remove('hide');
-  document.getElementById('topbar').classList.add('hide');
-  startCeo();
-});
-document.getElementById('btnSrc').addEventListener('click',function(){
-  var src='<!DOCTYPE html>\n'+document.documentElement.outerHTML;
-  var blob=new Blob([src],{type:'text/html'});
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);a.download='miui-tracker.html';
-  document.body.appendChild(a);a.click();a.remove();
-});
+/* ============ 启动 ============ */
+renderFilters();renderPins();renderLog();renderWebWatch();renderEvents();renderMsg();renderHelp();renderTicker();render();syncSoundBtn();
+setTimeout(()=>{document.getElementById('notifyModal').classList.add('show');},600);
 </script>
 </body>
 </html>
