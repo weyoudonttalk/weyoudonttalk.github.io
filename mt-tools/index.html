@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MT 超级工具箱 Ultra Pro</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Courier New', monospace;
+    background: #0a0a0f;
+    color: #e0e0e0;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+/* 粒子背景 */
+#particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+/* 主容器 */
+.container { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 20px; }
+/* 头部 */
+header {
+    text-align: center; padding: 30px 0;
+    border-bottom: 2px solid #00ffcc;
+    margin-bottom: 30px;
+}
+header h1 {
+    font-size: 2em;
+    background: linear-gradient(90deg, #00ffcc, #ff00ff, #00ccff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px rgba(0,255,204,0.5);
+}
+header .author { color: #888; margin-top: 10px; font-size: 0.9em; }
+/* 导航 */
+.nav { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+.nav button {
+    flex: 1; min-width: 150px;
+    padding: 15px;
+    background: rgba(0,255,204,0.1);
+    border: 1px solid #00ffcc;
+    color: #00ffcc;
+    font-size: 1em;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+.nav button:hover, .nav button.active {
+    background: #00ffcc;
+    color: #000;
+    box-shadow: 0 0 20px #00ffcc;
+}
+/* 模块 */
+.module { display: none; }
+.module.active { display: block; }
+.card {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0,255,204,0.3);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+.card h3 { color: #00ffcc; margin-bottom: 15px; }
+/* 按钮 */
+.btn {
+    padding: 10px 20px;
+    background: linear-gradient(45deg, #00ffcc, #ff00ff);
+    border: none;
+    color: #000;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 5px;
+}
+.btn:hover { transform: scale(1.05); }
+/* 输入框 */
+input, textarea, select {
+    width: 100%; padding: 10px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid #333;
+    color: #00ffcc;
+    border-radius: 6px;
+    margin: 5px 0;
+    font-family: monospace;
+}
+/* 画布 */
+canvas {
+    border: 1px solid #00ffcc;
+    border-radius: 8px;
+    display: block;
+    margin: 10px auto;
+    background: #000;
+}
+/* 输出 */
+.output {
+    background: #000;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 10px;
+    min-height: 100px;
+    white-space: pre-wrap;
+    color: #00ffcc;
+    font-size: 0.9em;
+    overflow-x: auto;
+}
+/* 聊天 */
+.chat-msg { margin: 10px 0; padding: 10px; border-radius: 8px; }
+.chat-user { background: rgba(0,255,204,0.1); border-left: 3px solid #00ffcc; }
+.chat-ai { background: rgba(255,0,255,0.1); border-left: 3px solid #ff00ff; }
+/* 响应式 */
+@media (max-width: 600px) {
+    header h1 { font-size: 1.3em; }
+    .nav button { min-width: 100%; }
+}
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+<div class="container">
+<header>
+    <h1>🚀 MT 超级工具箱 Ultra Pro</h1>
+    <p class="author">by 快手 IMUK 混碱 | 退出密码: IMUK666</p>
+</header>
+
+<div class="nav">
+    <button onclick="showModule('draw', this)" class="active">🎨 绘图工坊</button>
+    <button onclick="showModule('calc', this)">🧮 超强算术机</button>
+    <button onclick="showModule('ai', this)">🤖 AI 智能助手</button>
+</div>
+
+<!-- 绘图模块 -->
+<div id="draw" class="module active">
+    <div class="card">
+        <h3>🎨 ASCII / Canvas 绘图</h3>
+        <select id="drawType" onchange="draw()">
+            <option value="sin">正弦波 sin(x)</option>
+            <option value="cos">余弦波 cos(x)</option>
+            <option value="parabola">抛物线 x²</option>
+            <option value="circle">圆形</option>
+            <option value="rect">矩形</option>
+            <option value="triangle">三角形</option>
+        </select>
+        <canvas id="drawCanvas" width="400" height="300"></canvas>
+        <div class="output" id="drawOutput"></div>
+    </div>
+</div>
+
+<!-- 算术模块 -->
+<div id="calc" class="module">
+    <div class="card">
+        <h3>🧮 超强算术机</h3>
+        <p style="color:#888;font-size:0.8em">支持: + - * / ^ sin cos tan log sqrt | 示例: (3+4)*5^2</p>
+        <input id="calcInput" placeholder="输入算式，如: sin(3.14/2)*10 + sqrt(144)">
+        <button class="btn" onclick="calculate()">计算</button>
+        <div class="output" id="calcOutput">等待输入...</div>
+    </div>
+</div>
+
+<!-- AI 模块 -->
+<div id="ai" class="module">
+    <div class="card">
+        <h3>🤖 AI 智能助手</h3>
+        <div style="margin-bottom:10px">
+            <label><input type="radio" name="aiMode" value="offline" checked onchange="switchMode()"> 离线模式</label>
+            <label style="margin-left:15px"><input type="radio" name="aiMode" value="online" onchange="switchMode()"> 在线模式</label>
+        </div>
+        <div id="onlineConfig" style="display:none">
+            <input id="apiUrl" placeholder="API地址 (如 https://api.openai.com/v1/chat/completions)">
+            <input id="apiKey" placeholder="API Key" type="password">
+            <input id="apiModel" placeholder="模型 (如 gpt-3.5-turbo)">
+            <button class="btn" onclick="saveConfig()">保存配置</button>
+        </div>
+        <div id="chatArea" style="max-height:300px;overflow-y:auto;margin:10px 0"></div>
+        <input id="aiInput" placeholder="输入消息... (离线模式支持：你好/时间/设备/计算/帮助)">
+        <button class="btn" onclick="sendAI()">发送</button>
+    </div>
+</div>
+</div>
+
+<script>
+// ============ 粒子背景 ============
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const particles = [];
+for(let i=0; i<50; i++) {
+    particles.push({
+        x: Math.random()*canvas.width,
+        y: Math.random()*canvas.height,
+        s: Math.random()*2+0.5,
+        vx: (Math.random()-0.5)*0.5,
+        vy: (Math.random()-0.5)*0.5
+    });
+}
+function animate() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p => {
+        p.x+=p.vx; p.y+=p.vy;
+        if(p.x<0||p.x>canvas.width) p.vx*=-1;
+        if(p.y<0||p.y>canvas.height) p.vy*=-1;
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.s,0,Math.PI*2);
+        ctx.fillStyle='rgba(0,255,204,0.3)';
+        ctx.fill();
+    });
+    requestAnimationFrame(animate);
+}
+animate();
+
+// ============ 模块切换 ============
+function showModule(id, btn) {
+    document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+    document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if(btn) btn.classList.add('active');
+}
+
+// ============ 绘图 ============
+function draw() {
+    const type = document.getElementById('drawType').value;
+    const c = document.getElementById('drawCanvas');
+    const ctx2 = c.getContext('2d');
+    ctx2.clearRect(0,0,c.width,c.height);
+    ctx2.strokeStyle = '#00ffcc';
+    ctx2.lineWidth = 2;
+    
+    if(type === 'sin' || type === 'cos' || type === 'parabola') {
+        ctx2.beginPath();
+        for(let x=0; x<c.width; x++) {
+            let nx = (x/c.width)*4*Math.PI - 2*Math.PI;
+            let y = 0;
+            if(type==='sin') y = Math.sin(nx);
+            else if(type==='cos') y = Math.cos(nx);
+            else y = nx*nx/20;
+            let py = c.height/2 - y*c.height/4;
+            if(x===0) ctx2.moveTo(x,py);
+            else ctx2.lineTo(x,py);
+        }
+        ctx2.stroke();
+    } else if(type === 'circle') {
+        ctx2.beginPath();
+        ctx2.arc(c.width/2, c.height/2, 80, 0, Math.PI*2);
+        ctx2.stroke();
+    } else if(type === 'rect') {
+        ctx2.strokeRect(50, 50, c.width-100, c.height-100);
+    } else if(type === 'triangle') {
+        ctx2.beginPath();
+        ctx2.moveTo(c.width/2, 30);
+        ctx2.lineTo(30, c.height-30);
+        ctx2.lineTo(c.width-30, c.height-30);
+        ctx2.closePath();
+        ctx2.stroke();
+    }
+    document.getElementById('drawOutput').textContent = '已绘制: ' + type;
+}
+
+// ============ 算术 ============
+function calculate() {
+    const expr = document.getElementById('calcInput').value;
+    if(!expr) return;
+    try {
+        // 安全替换
+        let safeExpr = expr.replace(/\^/g, '**')
+            .replace(/sin/g, 'Math.sin').replace(/cos/g, 'Math.cos')
+            .replace(/tan/g, 'Math.tan').replace(/log/g, 'Math.log10')
+            .replace(/sqrt/g, 'Math.sqrt').replace(/pi/gi, 'Math.PI');
+        // 安全检查
+        if(/[^0-9+\-*/.() MathPIsincoatlge]{2,}/.test(safeExpr.replace(/\s/g,''))) {
+            throw new Error('非法字符');
+        }
+        const result = Function('"use strict"; return (' + safeExpr + ')')();
+        document.getElementById('calcOutput').textContent = expr + ' = ' + result;
+    } catch(e) {
+        document.getElementById('calcOutput').textContent = '❌ 计算错误: ' + e.message;
+    }
+}
+
+// ============ AI ============
+let aiMode = 'offline';
+function switchMode() {
+    aiMode = document.querySelector('input[name="aiMode"]:checked').value;
+    document.getElementById('onlineConfig').style.display = aiMode === 'online' ? 'block' : 'none';
+}
+
+function saveConfig() {
+    const cfg = {
+        url: document.getElementById('apiUrl').value,
+        key: document.getElementById('apiKey').value,
+        model: document.getElementById('apiModel').value
+    };
+    localStorage.setItem('mt_ai_config', JSON.stringify(cfg));
+    alert('✅ 配置已保存');
+}
+
+// 加载配置
+const savedCfg = localStorage.getItem('mt_ai_config');
+if(savedCfg) {
+    const cfg = JSON.parse(savedCfg);
+    document.getElementById('apiUrl').value = cfg.url || '';
+    document.getElementById('apiKey').value = cfg.key || '';
+    document.getElementById('apiModel').value = cfg.model || '';
+}
+
+function sendAI() {
+    const input = document.getElementById('aiInput');
+    const msg = input.value.trim();
+    if(!msg) return;
+    addMsg('user', msg);
+    input.value = '';
+    
+    if(aiMode === 'offline') {
+        // 离线关键字匹配
+        let reply = '';
+        if(/你好|hi|hello/i.test(msg)) reply = '你好！我是 MT 智能助手，作者 快手 IMUK 混碱。';
+        else if(/时间|几点/.test(msg)) reply = '当前时间: ' + new Date().toLocaleString('zh-CN');
+        else if(/日期|今天/.test(msg)) reply = '今天是: ' + new Date().toLocaleDateString('zh-CN');
+        else if(/设备|手机|型号/.test(msg)) reply = '设备: ' + (navigator.userAgent.match(/Android.*?;/)||['未知'])[0] + '\n浏览器: ' + navigator.userAgent.split(' ')[0];
+        else if(/算|计算|多少/.test(msg)) {
+            try {
+                let expr = msg.match(/[0-9]+\s*[+\-*/]\s*[0-9]+/);
+                if(expr) {
+                    reply = '计算结果: ' + eval(expr[0]);
+                } else reply = '请直接输入算式，如：123*456';
+            } catch { reply = '计算失败'; }
+        }
+        else if(/帮助|help/.test(msg)) reply = '离线模式支持：你好、时间、日期、设备、计算、帮助';
+        else reply = '离线模式仅支持预设问题。配置在线API可解锁完整AI能力。';
+        setTimeout(() => addMsg('ai', reply), 500);
+    } else {
+        // 在线模式
+        const cfg = JSON.parse(localStorage.getItem('mt_ai_config') || '{}');
+        if(!cfg.url || !cfg.key) { addMsg('ai', '❌ 请先配置API'); return; }
+        addMsg('ai', '🤔 思考中...');
+        fetch(cfg.url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + cfg.key
+            },
+            body: JSON.stringify({
+                model: cfg.model || 'gpt-3.5-turbo',
+                messages: [{role: 'user', content: msg}]
+            })
+        })
+        .then(r => r.json())
+        .then(d => {
+            const reply = d.choices?.[0]?.message?.content || '无响应';
+            document.querySelector('.chat-ai:last-child').remove();
+            addMsg('ai', reply);
+        })
+        .catch(e => {
+            document.querySelector('.chat-ai:last-child').remove();
+            addMsg('ai', '❌ 请求失败: ' + e.message);
+        });
+    }
+}
+
+function addMsg(role, text) {
+    const area = document.getElementById('chatArea');
+    const div = document.createElement('div');
+    div.className = 'chat-msg ' + (role === 'user' ? 'chat-user' : 'chat-ai');
+    div.textContent = (role === 'user' ? '👤 ' : '🤖 ') + text;
+    area.appendChild(div);
+    area.scrollTop = area.scrollHeight;
+}
+
+// 初始化
+draw();
+</script>
+</body>
+</html>
