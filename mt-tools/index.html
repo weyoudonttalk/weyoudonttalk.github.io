@@ -3,401 +3,513 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MT 超级工具箱 Ultra Pro</title>
+<title>MT 网页狠货工具箱 Ultra Hard</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-    font-family: 'Courier New', monospace;
-    background: #0a0a0f;
-    color: #e0e0e0;
-    min-height: 100vh;
-    overflow-x: hidden;
-}
-/* 粒子背景 */
-#particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
-/* 主容器 */
-.container { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 20px; }
-/* 头部 */
-header {
-    text-align: center; padding: 30px 0;
-    border-bottom: 2px solid #00ffcc;
-    margin-bottom: 30px;
-}
-header h1 {
-    font-size: 2em;
-    background: linear-gradient(90deg, #00ffcc, #ff00ff, #00ccff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 30px rgba(0,255,204,0.5);
-}
-header .author { color: #888; margin-top: 10px; font-size: 0.9em; }
-/* 导航 */
-.nav { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
-.nav button {
-    flex: 1; min-width: 150px;
-    padding: 15px;
-    background: rgba(0,255,204,0.1);
-    border: 1px solid #00ffcc;
-    color: #00ffcc;
-    font-size: 1em;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.3s;
-}
-.nav button:hover, .nav button.active {
-    background: #00ffcc;
-    color: #000;
-    box-shadow: 0 0 20px #00ffcc;
-}
-/* 模块 */
-.module { display: none; }
-.module.active { display: block; }
-.card {
-    background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(0,255,204,0.3);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-.card h3 { color: #00ffcc; margin-bottom: 15px; }
-/* 按钮 */
-.btn {
-    padding: 10px 20px;
-    background: linear-gradient(45deg, #00ffcc, #ff00ff);
-    border: none;
-    color: #000;
-    font-weight: bold;
-    border-radius: 6px;
-    cursor: pointer;
-    margin: 5px;
-}
-.btn:hover { transform: scale(1.05); }
-/* 输入框 */
-input, textarea, select {
-    width: 100%; padding: 10px;
-    background: rgba(0,0,0,0.5);
-    border: 1px solid #333;
-    color: #00ffcc;
-    border-radius: 6px;
-    margin: 5px 0;
-    font-family: monospace;
-}
-/* 画布 */
-canvas {
-    border: 1px solid #00ffcc;
-    border-radius: 8px;
-    display: block;
-    margin: 10px auto;
-    background: #000;
-}
-/* 输出 */
-.output {
-    background: #000;
-    border: 1px solid #333;
-    border-radius: 6px;
-    padding: 15px;
-    margin-top: 10px;
-    min-height: 100px;
-    white-space: pre-wrap;
-    color: #00ffcc;
-    font-size: 0.9em;
-    overflow-x: auto;
-}
-/* 聊天 */
-.chat-msg { margin: 10px 0; padding: 10px; border-radius: 8px; }
-.chat-user { background: rgba(0,255,204,0.1); border-left: 3px solid #00ffcc; }
-.chat-ai { background: rgba(255,0,255,0.1); border-left: 3px solid #ff00ff; }
-/* 响应式 */
-@media (max-width: 600px) {
-    header h1 { font-size: 1.3em; }
-    .nav button { min-width: 100%; }
-}
+:root{--cyan:#00ffcc;--pink:#ff00ff;--bg:#05050a;--card:rgba(255,255,255,.05);--line:rgba(0,255,204,.2);--txt:#e6e6f0;--dim:#8888aa}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
+#bg{position:fixed;inset:0;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:24px 16px 80px}
+header{text-align:center;padding:30px 0 20px;border-bottom:1px solid var(--line);margin-bottom:26px}
+header h1{font-size:clamp(1.6rem,4.5vw,2.8rem);background:linear-gradient(90deg,var(--cyan),var(--pink),#ffff00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 40px rgba(0,255,204,.3)}
+header .sub{color:var(--dim);margin-top:10px;font-size:.9rem}
+.entry{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.entry a{display:inline-block;padding:10px 22px;border-radius:10px;text-decoration:none;font-weight:700;font-size:.9rem}
+.entry .home{background:linear-gradient(45deg,var(--cyan),var(--pink));color:#000}
+.entry .chat{background:transparent;border:1px solid var(--cyan);color:var(--cyan)}
+.entry a:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,255,204,.35)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.tab{flex:1;min-width:140px;padding:14px 10px;background:var(--card);border:1px solid var(--line);color:var(--cyan);border-radius:12px;cursor:pointer;transition:.25s;text-align:center;backdrop-filter:blur(8px);font-weight:600}
+.tab:hover,.tab.on{background:linear-gradient(45deg,var(--cyan),var(--pink));color:#000;box-shadow:0 0 22px rgba(0,255,204,.5)}
+.panel{display:none;animation:fade .3s ease}
+.panel.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:20px;backdrop-filter:blur(12px)}
+.card h3{color:var(--cyan);margin-bottom:16px;font-size:1.1rem;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'⚡';color:var(--pink)}
+textarea,input,select{width:100%;padding:12px;background:rgba(0,0,0,.4);border:1px solid #2a2a44;color:var(--cyan);border-radius:10px;margin:6px 0;font-family:monospace;font-size:.9rem}
+.btn{padding:12px 22px;background:linear-gradient(45deg,var(--cyan),var(--pink));border:none;color:#000;font-weight:700;border-radius:10px;cursor:pointer;margin:6px 8px 6px 0;transition:.2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,255,204,.4)}
+.btn.ghost{background:transparent;border:1px solid var(--cyan);color:var(--cyan)}
+.btn.danger{background:linear-gradient(45deg,#ff3366,#ff0033);color:#fff}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.out{background:#000;border:1px solid #222;border-radius:10px;padding:16px;margin-top:12px;min-height:90px;white-space:pre-wrap;word-break:break-all;color:var(--cyan);font-family:monospace;font-size:.85rem;overflow-x:auto;max-height:300px;overflow-y:auto}
+.grid{display:grid;gap:14px}
+.grid2{grid-template-columns:1fr 1fr}
+.grid3{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+@media(max-width:768px){.grid2{grid-template-columns:1fr}.tab{min-width:100%}}
+canvas{border-radius:10px;max-width:100%;background:#000}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:30px;text-align:center;color:var(--dim);cursor:pointer;transition:.2s}
+.drop:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,255,204,.05)}
+.badge{display:inline-block;background:rgba(0,255,204,.12);border:1px solid var(--line);color:var(--cyan);padding:3px 12px;border-radius:99px;font-size:.75rem;margin:0 4px}
+footer{text-align:center;color:var(--dim);margin-top:40px;font-size:.85rem}
+.progress{height:8px;background:#111;border-radius:4px;overflow:hidden;margin-top:10px}
+.progress>div{height:100%;background:linear-gradient(90deg,var(--cyan),var(--pink));width:0;transition:.3s}
+img.prev{max-width:100%;border-radius:8px;margin-top:10px;border:1px solid var(--line)}
+label{color:var(--dim);font-size:.82rem}
+video{max-width:100%;border-radius:10px;background:#000}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.kv-item{display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.3);border:1px solid #222;border-radius:8px;padding:10px 14px;margin:6px 0;gap:10px}
+.kv-item b{color:var(--cyan);word-break:break-all}
+.kv-item span{color:var(--dim);font-size:.8rem;word-break:break-all}
 </style>
 </head>
 <body>
-<canvas id="particles"></canvas>
-<div class="container">
+<canvas id="bg"></canvas>
+<div class="wrap">
 <header>
-    <h1>🚀 MT 超级工具箱 Ultra Pro</h1>
-    <p class="author">by 快手 IMUK 混碱 | 退出密码: IMUK666</p>
-    <p style="margin-top:10px"><a href="https://weyoudonttalk.github.io/miui-studio/" style="color:#ff00ff;text-decoration:none;font-size:0.95em">🏠 返回 MIUI 官网</a></p>
+  <h1>⚡ MT 网页狠货工具箱 Ultra Hard</h1>
+  <div class="sub">单文件 · 零上传 · 纯本地 · 作者：快手 IMUK 混碱　<span class="badge">图片处理</span><span class="badge">音视频</span><span class="badge">摄像头</span><span class="badge">本地数据库</span><span class="badge">多线程</span><span class="badge">文件哈希</span></div>
+  <div class="entry">
+    <a class="home" href="https://weyoudonttalk.github.io/miui-studio/">🏠 返回 MIUI 官网</a>
+    <a class="chat" href="https://weyoudonttalk.github.io/miui-chat/" target="_blank">💬 进入聊天室</a>
+  </div>
 </header>
 
-<div class="nav">
-    <button onclick="showModule('draw', this)" class="active">🎨 绘图工坊</button>
-    <button onclick="showModule('calc', this)">🧮 超强算术机</button>
-    <button onclick="showModule('ai', this)">🤖 AI 智能助手</button>
+<div class="tabs">
+  <div class="tab on" data-p="p1">🖼️ 图片狠处理</div>
+  <div class="tab" data-p="p2">🎵 音频波形</div>
+  <div class="tab" data-p="p3">📷 摄像头滤镜</div>
+  <div class="tab" data-p="p4">🗄️ 本地数据库</div>
+  <div class="tab" data-p="p5">⚙️ 多线程计算</div>
+  <div class="tab" data-p="p6">🔐 文件哈希</div>
+  <div class="tab" data-p="p7">🎬 视频截帧</div>
+  <div class="tab" data-p="p8">🤖 AI 生图</div>
 </div>
 
-<!-- 绘图模块 -->
-<div id="draw" class="module active">
-    <div class="card">
-        <h3>🎨 ASCII / Canvas 绘图</h3>
-        <select id="drawType" onchange="draw()">
-            <option value="sin">正弦波 sin(x)</option>
-            <option value="cos">余弦波 cos(x)</option>
-            <option value="parabola">抛物线 x²</option>
-            <option value="circle">圆形</option>
-            <option value="rect">矩形</option>
-            <option value="triangle">三角形</option>
+<!-- 1. 图片狠处理 -->
+<section class="panel on" id="p1">
+  <div class="card">
+    <h3>图片压缩 / 格式转换 / 批量处理（纯本地，不上传）</h3>
+    <div class="drop" onclick="document.getElementById('imgs').click()">
+      点击选择图片（可多选）或拖拽到此处<br>
+      <small>支持 JPG/PNG/WebP/AVIF/BMP/GIF，使用 Canvas API 本地处理</small>
+    </div>
+    <input type="file" id="imgs" accept="image/*" multiple hidden onchange="handleImgs(this.files)">
+    <div class="grid grid2" style="margin-top:14px">
+      <div>
+        <label>输出格式</label>
+        <select id="imgFmt">
+          <option value="image/jpeg">JPG（最小）</option>
+          <option value="image/webp">WebP（推荐，小且清晰）</option>
+          <option value="image/png">PNG（无损）</option>
+          <option value="image/avif">AVIF（极致压缩）</option>
         </select>
-        <canvas id="drawCanvas" width="400" height="300"></canvas>
-        <div class="output" id="drawOutput"></div>
+      </div>
+      <div>
+        <label>压缩质量：<span id="qval">80</span>%</label>
+        <input type="range" id="imgQuality" min="10" max="100" value="80" oninput="document.getElementById('qval').textContent=this.value">
+      </div>
     </div>
-    <div class="card">
-        <h3>🖼️ AI 文字生图</h3>
-        <p style="color:#888;font-size:0.8em">输入想画的内容，AI 免费帮你生成图片，无需任何配置</p>
-        <input id="aiDrawInput" placeholder="输入想画的内容，如：少女、星空、赛博朋克城市、一只戴帽子的猫...">
-        <button class="btn" onclick="aiDraw()">✨ 生成图片</button>
-        <div id="aiDrawArea" style="text-align:center;margin-top:12px"></div>
+    <div class="grid grid2">
+      <div>
+        <label>缩放宽度（像素，0=原尺寸）</label>
+        <input type="number" id="imgWidth" value="0" min="0">
+      </div>
+      <div>
+        <label>已选 <span id="imgCount">0</span> 张</label>
+        <div class="out" id="imgList" style="max-height:120px">尚未选择图片</div>
+      </div>
     </div>
-</div>
+    <button class="btn" onclick="processImgs()">🚀 开始处理</button>
+    <div class="progress"><div id="imgProg"></div></div>
+    <div id="imgResult"></div>
+  </div>
+</section>
 
-<!-- 算术模块 -->
-<div id="calc" class="module">
-    <div class="card">
-        <h3>🧮 超强算术机</h3>
-        <p style="color:#888;font-size:0.8em">支持: + - * / ^ sin cos tan log sqrt | 示例: (3+4)*5^2</p>
-        <input id="calcInput" placeholder="输入算式，如: sin(3.14/2)*10 + sqrt(144)">
-        <button class="btn" onclick="calculate()">计算</button>
-        <div class="output" id="calcOutput">等待输入...</div>
+<!-- 2. 音频波形 -->
+<section class="panel" id="p2">
+  <div class="card">
+    <h3>音频波形可视化（Web Audio API，纯本地）</h3>
+    <input type="file" id="audioFile" accept="audio/*" onchange="loadAudio(this.files[0])">
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="playBtn" onclick="togglePlay()" disabled>▶ 播放</button>
+      <button class="btn ghost" onclick="drawWave()">🔁 重绘波形</button>
     </div>
-</div>
+    <canvas id="waveCanvas" width="900" height="260" style="width:100%"></canvas>
+    <div class="out" id="audioInfo">请选择一个音频文件（MP3/WAV/OGG/M4A）</div>
+  </div>
+</section>
 
-<!-- AI 模块 -->
-<div id="ai" class="module">
-    <div class="card">
-        <h3>🤖 AI 智能助手</h3>
-        <div style="margin-bottom:10px">
-            <label><input type="radio" name="aiMode" value="offline" checked onchange="switchMode()"> 离线模式</label>
-            <label style="margin-left:15px"><input type="radio" name="aiMode" value="online" onchange="switchMode()"> 在线模式</label>
-        </div>
-        <div id="onlineConfig" style="display:none">
-            <input id="apiUrl" placeholder="API地址 (如 https://api.openai.com/v1/chat/completions)">
-            <input id="apiKey" placeholder="API Key" type="password">
-            <input id="apiModel" placeholder="模型 (如 gpt-3.5-turbo)">
-            <button class="btn" onclick="saveConfig()">保存配置</button>
-        </div>
-        <div id="chatArea" style="max-height:300px;overflow-y:auto;margin:10px 0"></div>
-        <input id="aiInput" placeholder="输入消息... (离线模式支持：你好/时间/设备/计算/帮助)">
-        <button class="btn" onclick="sendAI()">发送</button>
+<!-- 3. 摄像头滤镜 -->
+<section class="panel" id="p3">
+  <div class="card">
+    <h3>摄像头实时滤镜（本地处理，画面不出设备）</h3>
+    <div class="row">
+      <button class="btn" onclick="startCam()">📷 开启摄像头</button>
+      <button class="btn danger" onclick="stopCam()">⏹ 关闭</button>
+      <button class="btn ghost" onclick="snap()">📸 拍照下载</button>
     </div>
-</div>
+    <div class="grid grid2" style="margin-top:12px">
+      <video id="camVideo" autoplay playsinline muted></video>
+      <canvas id="camCanvas" width="640" height="480"></canvas>
+    </div>
+    <div style="margin-top:12px">
+      <label>滤镜</label>
+      <select id="camFilter" onchange="setFilter()">
+        <option value="none">正常</option>
+        <option value="grayscale(100%)">黑白</option>
+        <option value="invert(100%)">反色</option>
+        <option value="sepia(100%)">复古</option>
+        <option value="blur(4px)">模糊</option>
+        <option value="brightness(160%)">提亮</option>
+        <option value="contrast(180%)">高对比</option>
+        <option value="hue-rotate(90deg)">色相旋转</option>
+      </select>
+    </div>
+  </div>
+</section>
+
+<!-- 4. 本地数据库 -->
+<section class="panel" id="p4">
+  <div class="card">
+    <h3>IndexedDB 本地数据库（数据存在你浏览器里，永不丢失）</h3>
+    <div class="grid grid2">
+      <div>
+        <label>键 Key</label>
+        <input id="kvKey" placeholder="如：name">
+      </div>
+      <div>
+        <label>值 Value</label>
+        <input id="kvVal" placeholder="如：IMUK">
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn" onclick="kvPut()">➕ 保存</button>
+      <button class="btn ghost" onclick="kvGet()">🔍 查询</button>
+      <button class="btn ghost" onclick="kvDel()">🗑 删除</button>
+      <button class="btn danger" onclick="kvClear()">🧹 清空全部</button>
+      <button class="btn ghost" onclick="kvList()">📋 刷新列表</button>
+    </div>
+    <div class="out" id="kvOut">点击「保存」写入数据，点击「刷新列表」查看所有记录</div>
+    <div id="kvListArea"></div>
+  </div>
+</section>
+
+<!-- 5. 多线程计算 -->
+<section class="panel" id="p5">
+  <div class="card">
+    <h3>Web Worker 多线程计算（后台算，不卡页面）</h3>
+    <p style="color:var(--dim);font-size:.85rem">求 2 到 N 之间所有质数之和。多线程在后台跑，页面下方的计时器始终流畅跳动，证明 UI 没被卡死。</p>
+    <div class="row" style="margin-top:10px">
+      <input id="primeN" type="number" value="200000" style="max-width:200px">
+      <button class="btn" onclick="runWorker()">⚙️ 多线程计算</button>
+      <button class="btn ghost" onclick="runMain()">🧵 单线程对比</button>
+    </div>
+    <div class="out" id="primeOut">尚未计算</div>
+    <div class="out" id="tick" style="min-height:30px">UI 心跳计时器：0.0 秒</div>
+  </div>
+</section>
+
+<!-- 6. 文件哈希 -->
+<section class="panel" id="p6">
+  <div class="card">
+    <h3>文件哈希 / 校验（crypto.subtle，纯本地）</h3>
+    <input type="file" id="hashFile" onchange="hashFile()">
+    <div class="grid grid2" style="margin-top:10px">
+      <div>
+        <label>算法</label>
+        <select id="hashAlgo">
+          <option value="SHA-256">SHA-256（推荐）</option>
+          <option value="SHA-1">SHA-1</option>
+          <option value="SHA-512">SHA-512</option>
+          <option value="SHA-384">SHA-384</option>
+        </select>
+      </div>
+      <div>
+        <label>文件信息</label>
+        <div class="out" id="hashInfo">未选择文件</div>
+      </div>
+    </div>
+    <div style="margin-top:10px">
+      <label>哈希结果</label>
+      <div class="out" id="hashOut">等待计算...</div>
+    </div>
+    <button class="btn ghost" onclick="copyHash()">📋 复制结果</button>
+  </div>
+</section>
+
+<!-- 7. 视频截帧 -->
+<section class="panel" id="p7">
+  <div class="card">
+    <h3>视频截帧（本地提取某一帧为图片）</h3>
+    <input type="file" id="videoFile" accept="video/*" onchange="loadVideo(this.files[0])">
+    <div class="grid grid2" style="margin-top:12px">
+      <video id="vd" controls></video>
+      <div>
+        <canvas id="frameCanvas" width="640" height="360" style="width:100%"></canvas>
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <label>截取时间点（秒）</label>
+      <input id="frameTime" type="number" value="1" min="0" step="0.1" style="max-width:140px">
+      <button class="btn" onclick="captureFrame()">🎬 截取当前帧</button>
+      <button class="btn ghost" onclick="captureAt()">⏱ 按时间点截取</button>
+    </div>
+    <div class="out" id="frameOut">选择一个视频文件后，可播放定位或直接按时间点截帧</div>
+  </div>
+</section>
+
+<!-- 8. AI 生图 -->
+<section class="panel" id="p8">
+  <div class="card">
+    <h3>AI 文字生图（在线，免费，无需配置）</h3>
+    <p style="color:var(--dim);font-size:.85rem">输入想画的内容，AI 免费生成。中文直接写，如：少女、星空、赛博朋克城市、一只戴帽子的猫。</p>
+    <input id="aiDrawInput" placeholder="输入想画的内容，如：星空下的少女...">
+    <button class="btn" onclick="aiDraw()">✨ 生成图片</button>
+    <div id="aiDrawArea" style="text-align:center;margin-top:14px"></div>
+  </div>
+</section>
+
+<footer>MT 网页狠货工具箱 Ultra Hard · by 快手 IMUK 混碱 · 所有数据纯本地处理，绝不上传</footer>
 </div>
 
 <script>
 // ============ 粒子背景 ============
-const canvas = document.getElementById('particles');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-const particles = [];
-for(let i=0; i<50; i++) {
-    particles.push({
-        x: Math.random()*canvas.width,
-        y: Math.random()*canvas.height,
-        s: Math.random()*2+0.5,
-        vx: (Math.random()-0.5)*0.5,
-        vy: (Math.random()-0.5)*0.5
-    });
-}
-function animate() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    particles.forEach(p => {
-        p.x+=p.vx; p.y+=p.vy;
-        if(p.x<0||p.x>canvas.width) p.vx*=-1;
-        if(p.y<0||p.y>canvas.height) p.vy*=-1;
-        ctx.beginPath();
-        ctx.arc(p.x,p.y,p.s,0,Math.PI*2);
-        ctx.fillStyle='rgba(0,255,204,0.3)';
-        ctx.fill();
-    });
-    requestAnimationFrame(animate);
-}
-animate();
+const bg=document.getElementById('bg'),bctx=bg.getContext('2d');
+bg.width=innerWidth;bg.height=innerHeight;
+const ps=[];for(let i=0;i<60;i++)ps.push({x:Math.random()*bg.width,y:Math.random()*bg.height,s:Math.random()*2+.5,vx:(Math.random()-.5)*.5,vy:(Math.random()-.5)*.5});
+(function loop(){bctx.clearRect(0,0,bg.width,bg.height);ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>bg.width)p.vx*=-1;if(p.y<0||p.y>bg.height)p.vy*=-1;bctx.beginPath();bctx.arc(p.x,p.y,p.s,0,Math.PI*2);bctx.fillStyle='rgba(0,255,204,.25)';bctx.fill()});requestAnimationFrame(loop)})();
 
-// ============ 模块切换 ============
-function showModule(id, btn) {
-    document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
-    document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    if(btn) btn.classList.add('active');
-}
+// ============ Tab 切换 ============
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');document.getElementById(t.dataset.p).classList.add('on');
+});
 
-// ============ 绘图 ============
-function draw() {
-    const type = document.getElementById('drawType').value;
-    const c = document.getElementById('drawCanvas');
-    const ctx2 = c.getContext('2d');
-    ctx2.clearRect(0,0,c.width,c.height);
-    ctx2.strokeStyle = '#00ffcc';
-    ctx2.lineWidth = 2;
-    
-    if(type === 'sin' || type === 'cos' || type === 'parabola') {
-        ctx2.beginPath();
-        for(let x=0; x<c.width; x++) {
-            let nx = (x/c.width)*4*Math.PI - 2*Math.PI;
-            let y = 0;
-            if(type==='sin') y = Math.sin(nx);
-            else if(type==='cos') y = Math.cos(nx);
-            else y = nx*nx/20;
-            let py = c.height/2 - y*c.height/4;
-            if(x===0) ctx2.moveTo(x,py);
-            else ctx2.lineTo(x,py);
-        }
-        ctx2.stroke();
-    } else if(type === 'circle') {
-        ctx2.beginPath();
-        ctx2.arc(c.width/2, c.height/2, 80, 0, Math.PI*2);
-        ctx2.stroke();
-    } else if(type === 'rect') {
-        ctx2.strokeRect(50, 50, c.width-100, c.height-100);
-    } else if(type === 'triangle') {
-        ctx2.beginPath();
-        ctx2.moveTo(c.width/2, 30);
-        ctx2.lineTo(30, c.height-30);
-        ctx2.lineTo(c.width-30, c.height-30);
-        ctx2.closePath();
-        ctx2.stroke();
-    }
-    document.getElementById('drawOutput').textContent = '已绘制: ' + type;
+// ============ 1. 图片处理 ============
+let imgFiles=[];
+function handleImgs(files){imgFiles=Array.from(files);document.getElementById('imgCount').textContent=imgFiles.length;document.getElementById('imgList').textContent=imgFiles.map((f,i)=>(i+1)+'. '+f.name+' ('+(f.size/1024).toFixed(1)+' KB)').join('\n')||'尚未选择图片';document.getElementById('imgResult').innerHTML='';}
+function loadImage(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=e.target.result};r.onerror=rej;r.readAsDataURL(file)})}
+async function processImgs(){
+  if(!imgFiles.length){alert('先选图片');return}
+  const fmt=document.getElementById('imgFmt').value,qual=+document.getElementById('imgQuality').value/100,maxW=+document.getElementById('imgWidth').value;
+  const bar=document.getElementById('imgProg'),area=document.getElementById('imgResult');
+  area.innerHTML='';
+  let html='';
+  for(let i=0;i<imgFiles.length;i++){
+    bar.style.width=((i)/imgFiles.length*100)+'%';
+    try{
+      const img=await loadImage(imgFiles[i]);
+      const w=maxW>0?maxW:img.naturalWidth, h=maxW>0?Math.round(img.naturalHeight*(maxW/img.naturalWidth)):img.naturalHeight;
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      const cx=c.getContext('2d');cx.drawImage(img,0,0,w,h);
+      const blob=await new Promise(r=>c.toBlob(r,fmt,qual));
+      if(!blob)throw new Error('格式不支持');
+      const url=URL.createObjectURL(blob);
+      const oldKB=(imgFiles[i].size/1024).toFixed(1),newKB=(blob.size/1024).toFixed(1);
+      const ext=fmt.split('/')[1];
+      html+=`<div class="card" style="padding:14px"><img src="${url}" class="prev"><div style="color:var(--dim);font-size:.82rem;margin-top:8px">${imgFiles[i].name}<br>${oldKB} KB → ${newKB} KB（${(100-blob.size/imgFiles[i].size*100).toFixed(1)}% 缩减）</div><a class="btn" style="display:inline-block;margin-top:8px;text-decoration:none" href="${url}" download="processed_${i+1}.${ext}">⬇ 下载</a></div>`;
+    }catch(e){html+=`<div class="card" style="padding:14px;color:#f66">❌ ${imgFiles[i].name} 处理失败：${e.message}</div>`}
+  }
+  bar.style.width='100%';
+  area.innerHTML=html;
+  setTimeout(()=>bar.style.width='0',1200);
 }
 
-// ============ AI 文字生图 ============
-function aiDraw() {
-    const p = document.getElementById('aiDrawInput').value.trim();
-    if(!p) { alert('先输入想画的内容哦'); return; }
-    const area = document.getElementById('aiDrawArea');
-    area.innerHTML = '<p style="color:#888">🖌️ 绘制中，约几秒到十几秒...</p>';
-    const url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(p) + '?width=512&height=512&nologo=true&seed=' + Math.floor(Math.random()*1000000);
-    const img = new Image();
-    img.onload = function() {
-        area.innerHTML = '';
-        img.style.maxWidth = '100%';
-        img.style.borderRadius = '8px';
-        img.style.border = '1px solid #00ffcc';
-        img.style.boxShadow = '0 0 20px rgba(0,255,204,0.3)';
-        area.appendChild(img);
-    };
-    img.onerror = function() {
-        area.innerHTML = '<p style="color:#f66">❌ 生成失败，可能网络问题，请稍后重试</p>';
-    };
-    img.src = url;
+// ============ 2. 音频波形 ============
+let audioCtx,audioBuffer,audioSrc;
+function loadAudio(file){
+  if(!file)return;
+  const fr=new FileReader();
+  fr.onload=e=>{
+    audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+    audioCtx.decodeAudioData(e.target.result,buf=>{
+      audioBuffer=buf;
+      document.getElementById('audioInfo').textContent=`${file.name}\n时长 ${buf.duration.toFixed(2)} 秒 · 采样率 ${buf.sampleRate} Hz · ${buf.numberOfChannels} 声道`;
+      document.getElementById('playBtn').disabled=false;
+      drawWave();
+    },()=>{document.getElementById('audioInfo').textContent='解码失败，换个格式试试';});
+  };
+  fr.readAsArrayBuffer(file);
+}
+function drawWave(){
+  if(!audioBuffer)return;
+  const c=document.getElementById('waveCanvas'),cx=c.getContext('2d');
+  cx.clearRect(0,0,c.width,c.height);
+  const data=audioBuffer.getChannelData(0),step=Math.max(1,Math.floor(data.length/c.width));
+  cx.strokeStyle='#00ffcc';cx.lineWidth=1;cx.beginPath();
+  for(let x=0;x<c.width;x++){
+    const i=x*step;let y=c.height/2+data[i]*c.height/2;
+    if(x===0)cx.moveTo(x,y);else cx.lineTo(x,y);
+  }
+  cx.stroke();
+  cx.strokeStyle='rgba(255,0,255,.5)';cx.lineWidth=1;cx.beginPath();
+  for(let x=0;x<c.width;x++){
+    const i=Math.min(data.length-1,x*step);let y=c.height/2+Math.abs(data[i])*c.height/2;
+    if(x===0)cx.moveTo(x,y);else cx.lineTo(x,y);
+  }
+  cx.stroke();
+}
+function togglePlay(){
+  if(!audioBuffer)return;
+  const btn=document.getElementById('playBtn');
+  if(audioSrc){audioSrc.stop();audioSrc=null;btn.textContent='▶ 播放';return;}
+  audioSrc=audioCtx.createBufferSource();audioSrc.buffer=audioBuffer;audioSrc.connect(audioCtx.destination);
+  audioSrc.onended=()=>{audioSrc=null;btn.textContent='▶ 播放'};
+  audioSrc.start();btn.textContent='⏸ 停止';
 }
 
-// ============ 算术 ============
-function calculate() {
-    const expr = document.getElementById('calcInput').value;
-    if(!expr) return;
-    try {
-        // 安全替换
-        let safeExpr = expr.replace(/\^/g, '**')
-            .replace(/sin/g, 'Math.sin').replace(/cos/g, 'Math.cos')
-            .replace(/tan/g, 'Math.tan').replace(/log/g, 'Math.log10')
-            .replace(/sqrt/g, 'Math.sqrt').replace(/pi/gi, 'Math.PI');
-        // 安全检查
-        if(/[^0-9+\-*/.() MathPIsincoatlge]{2,}/.test(safeExpr.replace(/\s/g,''))) {
-            throw new Error('非法字符');
-        }
-        const result = Function('"use strict"; return (' + safeExpr + ')')();
-        document.getElementById('calcOutput').textContent = expr + ' = ' + result;
-    } catch(e) {
-        document.getElementById('calcOutput').textContent = '❌ 计算错误: ' + e.message;
-    }
+// ============ 3. 摄像头滤镜 ============
+let camStream=null,camTimer=null;
+async function startCam(){
+  try{
+    camStream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480}});
+    const v=document.getElementById('camVideo');v.srcObject=camStream;await v.play();
+    setFilter();camTimer=setInterval(drawCam,30);
+  }catch(e){alert('无法访问摄像头：'+e.message+'（可能是权限被拒或非 HTTPS）')}
+}
+function stopCam(){
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null}
+  if(camTimer){clearInterval(camTimer);camTimer=null}
+}
+function setFilter(){drawCam()}
+function drawCam(){
+  const v=document.getElementById('camVideo'),c=document.getElementById('camCanvas'),cx=c.getContext('2d');
+  if(!camStream||v.readyState<2)return;
+  cx.filter=document.getElementById('camFilter').value;
+  cx.drawImage(v,0,0,c.width,c.height);
+  cx.filter='none';
+}
+function snap(){
+  const c=document.getElementById('camCanvas');
+  const a=document.createElement('a');a.download='snap_'+Date.now()+'.png';a.href=c.toDataURL('image/png');a.click();
 }
 
-// ============ AI ============
-let aiMode = 'offline';
-function switchMode() {
-    aiMode = document.querySelector('input[name="aiMode"]:checked').value;
-    document.getElementById('onlineConfig').style.display = aiMode === 'online' ? 'block' : 'none';
+// ============ 4. 本地数据库 ============
+let db;
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open('mtDB',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv',{keyPath:'k'});r.onsuccess=()=>{db=r.result;res()};r.onerror=()=>rej(r.error)})}
+async function kvPut(){
+  await openDB();const k=document.getElementById('kvKey').value.trim(),v=document.getElementById('kvVal').value.trim();
+  if(!k){alert('键不能为空');return}
+  await new Promise((res,rej)=>{const t=db.transaction('kv','readwrite').objectStore('kv').put({k,v});t.onsuccess=res;t.onerror=()=>rej(t.error)});
+  document.getElementById('kvOut').textContent=`✅ 已保存：${k} = ${v}`;kvList();
+}
+async function kvGet(){
+  await openDB();const k=document.getElementById('kvKey').value.trim();
+  if(!k){alert('输入要查询的键');return}
+  const r=await new Promise((res,rej)=>{const q=db.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});
+  document.getElementById('kvOut').textContent=r?`${r.k} = ${r.v}`:'❌ 没有这个键';
+}
+async function kvDel(){
+  await openDB();const k=document.getElementById('kvKey').value.trim();
+  if(!k){alert('输入要删除的键');return}
+  await new Promise((res,rej)=>{const t=db.transaction('kv','readwrite').objectStore('kv').delete(k);t.onsuccess=res;t.onerror=()=>rej(t.error)});
+  document.getElementById('kvOut').textContent='🗑 已删除：'+k;kvList();
+}
+async function kvClear(){
+  if(!confirm('确定清空全部数据？'))return;
+  await openDB();await new Promise((res,rej)=>{const t=db.transaction('kv','readwrite').objectStore('kv').clear();t.onsuccess=res;t.onerror=()=>rej(t.error)});
+  document.getElementById('kvOut').textContent='🧹 已清空';kvList();
+}
+async function kvList(){
+  await openDB();
+  const all=await new Promise((res,rej)=>{const q=db.transaction('kv').objectStore('kv').getAll();q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});
+  const area=document.getElementById('kvListArea');
+  area.innerHTML=all.length?all.map((x,i)=>`<div class="kv-item"><div><b>${x.k}</b><br><span>${x.v}</span></div><button class="btn danger" onclick="kvDelOne('${x.k}')">删除</button></div>`).join(''):'<div style="color:var(--dim)">暂无数据</div>';
+  document.getElementById('kvOut').textContent=`共 ${all.length} 条记录`;
+}
+async function kvDelOne(k){document.getElementById('kvKey').value=k;await kvDel()}
+
+// ============ 5. 多线程计算 ============
+const tickStart=Date.now();
+setInterval(()=>{document.getElementById('tick').textContent='UI 心跳计时器：'+((Date.now()-tickStart)/1000).toFixed(1)+' 秒'},100);
+function sumPrimes(n){
+  let sum=0,count=0;
+  for(let i=2;i<=n;i++){
+    let p=true;for(let j=2;j*j<=i;j++){if(i%j===0){p=false;break}}
+    if(p){sum+=i;count++}
+  }
+  return {sum,count};
+}
+function runMain(){
+  const n=+document.getElementById('primeN').value||200000;
+  const o=document.getElementById('primeOut');
+  o.textContent='单线程计算中...（此时页面可能会卡一下）';
+  const t0=performance.now();
+  setTimeout(()=>{
+    const r=sumPrimes(n);
+    o.textContent=`单线程结果：2~${n} 共 ${r.count} 个质数，和为 ${r.sum}\n耗时 ${((performance.now()-t0)/1000).toFixed(2)} 秒`;
+  },50);
+}
+function runWorker(){
+  const n=+document.getElementById('primeN').value||200000;
+  const o=document.getElementById('primeOut');
+  o.textContent='多线程计算中...（页面保持流畅）';
+  const code=`self.onmessage=function(e){var n=e.data,sum=0,count=0;for(var i=2;i<=n;i++){var p=true;for(var j=2;j*j<=i;j++){if(i%j===0){p=false;break}}if(p){sum+=i;count++}}self.postMessage({sum:sum,count:count})}`;
+  const blob=new Blob([code],{type:'application/javascript'});
+  const w=new Worker(URL.createObjectURL(blob));
+  const t0=performance.now();
+  w.onmessage=e=>{o.textContent=`多线程结果：2~${n} 共 ${e.data.count} 个质数，和为 ${e.data.sum}\n耗时 ${((performance.now()-t0)/1000).toFixed(2)} 秒`;w.terminate()};
+  w.postMessage(n);
 }
 
-function saveConfig() {
-    const cfg = {
-        url: document.getElementById('apiUrl').value,
-        key: document.getElementById('apiKey').value,
-        model: document.getElementById('apiModel').value
-    };
-    localStorage.setItem('mt_ai_config', JSON.stringify(cfg));
-    alert('✅ 配置已保存');
+// ============ 6. 文件哈希 ============
+let lastHash='';
+async function hashFile(){
+  const f=document.getElementById('hashFile').files[0];
+  if(!f)return;
+  document.getElementById('hashInfo').textContent=`${f.name} · ${(f.size/1024).toFixed(1)} KB · ${f.type||'未知类型'}`;
+  document.getElementById('hashOut').textContent='计算中...';
+  try{
+    const buf=await f.arrayBuffer();
+    const algo=document.getElementById('hashAlgo').value;
+    const digest=await crypto.subtle.digest(algo,buf);
+    lastHash=[...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');
+    document.getElementById('hashOut').textContent=algo+'：\n'+lastHash;
+  }catch(e){document.getElementById('hashOut').textContent='❌ 计算失败：'+e.message}
+}
+function copyHash(){
+  if(!lastHash){alert('先算一个哈希');return}
+  if(navigator.clipboard){navigator.clipboard.writeText(lastHash).then(()=>alert('✅ 已复制'))}
+  else alert(lastHash);
 }
 
-// 加载配置
-const savedCfg = localStorage.getItem('mt_ai_config');
-if(savedCfg) {
-    const cfg = JSON.parse(savedCfg);
-    document.getElementById('apiUrl').value = cfg.url || '';
-    document.getElementById('apiKey').value = cfg.key || '';
-    document.getElementById('apiModel').value = cfg.model || '';
+// ============ 7. 视频截帧 ============
+let vdUrl=null;
+function loadVideo(file){
+  if(!file)return;
+  if(vdUrl)URL.revokeObjectURL(vdUrl);
+  vdUrl=URL.createObjectURL(file);
+  const v=document.getElementById('vd');v.src=vdUrl;
+  document.getElementById('frameOut').textContent=`已加载：${file.name}（可播放定位，或按时间点截帧）`;
+}
+function drawFrame(){
+  const v=document.getElementById('vd'),c=document.getElementById('frameCanvas');
+  const cx=c.getContext('2d');
+  const sw=v.videoWidth,sh=v.videoHeight;
+  if(!sw)return false;
+  c.width=sw;c.height=sh;
+  cx.drawImage(v,0,0,c.width,c.height);
+  return true;
+}
+function captureFrame(){
+  if(!drawFrame()){document.getElementById('frameOut').textContent='视频还没就绪，先播放一下';return}
+  const c=document.getElementById('frameCanvas');
+  const a=document.createElement('a');a.download='frame_'+Date.now()+'.png';a.href=c.toDataURL('image/png');a.click();
+  document.getElementById('frameOut').textContent='✅ 已截取当前画面并下载';
+}
+function captureAt(){
+  const v=document.getElementById('vd');
+  if(!v.duration){document.getElementById('frameOut').textContent='视频还没加载完';return}
+  const t=+document.getElementById('frameTime').value||0;
+  v.currentTime=Math.min(t,v.duration);
+  v.onseeked=()=>{captureFrame();document.getElementById('frameOut').textContent=`✅ 已截取 ${v.currentTime.toFixed(1)} 秒处画面并下载`};
 }
 
-function sendAI() {
-    const input = document.getElementById('aiInput');
-    const msg = input.value.trim();
-    if(!msg) return;
-    addMsg('user', msg);
-    input.value = '';
-    
-    if(aiMode === 'offline') {
-        // 离线关键字匹配
-        let reply = '';
-        if(/你好|hi|hello/i.test(msg)) reply = '你好！我是 MT 智能助手，作者 快手 IMUK 混碱。';
-        else if(/时间|几点/.test(msg)) reply = '当前时间: ' + new Date().toLocaleString('zh-CN');
-        else if(/日期|今天/.test(msg)) reply = '今天是: ' + new Date().toLocaleDateString('zh-CN');
-        else if(/设备|手机|型号/.test(msg)) reply = '设备: ' + (navigator.userAgent.match(/Android.*?;/)||['未知'])[0] + '\n浏览器: ' + navigator.userAgent.split(' ')[0];
-        else if(/算|计算|多少/.test(msg)) {
-            try {
-                let expr = msg.match(/[0-9]+\s*[+\-*/]\s*[0-9]+/);
-                if(expr) {
-                    reply = '计算结果: ' + eval(expr[0]);
-                } else reply = '请直接输入算式，如：123*456';
-            } catch { reply = '计算失败'; }
-        }
-        else if(/帮助|help/.test(msg)) reply = '离线模式支持：你好、时间、日期、设备、计算、帮助';
-        else reply = '离线模式仅支持预设问题。配置在线API可解锁完整AI能力。';
-        setTimeout(() => addMsg('ai', reply), 500);
-    } else {
-        // 在线模式
-        const cfg = JSON.parse(localStorage.getItem('mt_ai_config') || '{}');
-        if(!cfg.url || !cfg.key) { addMsg('ai', '❌ 请先配置API'); return; }
-        addMsg('ai', '🤔 思考中...');
-        fetch(cfg.url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + cfg.key
-            },
-            body: JSON.stringify({
-                model: cfg.model || 'gpt-3.5-turbo',
-                messages: [{role: 'user', content: msg}]
-            })
-        })
-        .then(r => r.json())
-        .then(d => {
-            const reply = d.choices?.[0]?.message?.content || '无响应';
-            document.querySelector('.chat-ai:last-child').remove();
-            addMsg('ai', reply);
-        })
-        .catch(e => {
-            document.querySelector('.chat-ai:last-child').remove();
-            addMsg('ai', '❌ 请求失败: ' + e.message);
-        });
-    }
+// ============ 8. AI 生图 ============
+function aiDraw(){
+  const p=document.getElementById('aiDrawInput').value.trim();
+  if(!p){alert('先输入想画的内容哦');return}
+  const area=document.getElementById('aiDrawArea');
+  area.innerHTML='<p style="color:var(--dim)">🖌️ 绘制中，约几秒到十几秒...</p>';
+  const url='https://image.pollinations.ai/prompt/'+encodeURIComponent(p)+'?width=512&height=512&nologo=true&seed='+Math.floor(Math.random()*1000000);
+  const img=new Image();
+  img.onload=()=>{area.innerHTML='';img.style.maxWidth='100%';img.style.borderRadius='10px';img.style.border='1px solid var(--line)';img.style.boxShadow='0 0 24px rgba(0,255,204,.3)';area.appendChild(img)};
+  img.onerror=()=>{area.innerHTML='<p style="color:#f66">❌ 生成失败，可能网络问题，请稍后重试</p>'};
+  img.src=url;
 }
-
-function addMsg(role, text) {
-    const area = document.getElementById('chatArea');
-    const div = document.createElement('div');
-    div.className = 'chat-msg ' + (role === 'user' ? 'chat-user' : 'chat-ai');
-    div.textContent = (role === 'user' ? '👤 ' : '🤖 ') + text;
-    area.appendChild(div);
-    area.scrollTop = area.scrollHeight;
-}
-
-// 初始化
-draw();
 </script>
 </body>
 </html>
