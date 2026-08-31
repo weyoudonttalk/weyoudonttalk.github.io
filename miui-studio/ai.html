@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI小Q · MIUI工作室智能助手</title>
+<meta name="description" content="MIUI工作室的AI助手小Q，在线解答工作室、游戏、产品、加入方式等问题。">
+<style>
+:root{--p:#8b5cf6;--pd:#6d28d9;--cy:#e879f9;--g:linear-gradient(135deg,#8b5cf6,#6d28d9);
+--bg:#05060b;--bg2:#0b0d17;--card:rgba(255,255,255,.03);--card-b:#171626;
+--t:#eef0f8;--t2:#9aa1b5;--t3:#5f6678;--b:rgba(255,255,255,.08);--glow:0 0 24px rgba(139,92,246,.35)}
+body[data-theme="aurora"]{--p:#34d399;--pd:#2dd4bf;--cy:#38bdf8;--g:linear-gradient(135deg,#34d399,#2dd4bf);
+--bg:#03101a;--bg2:#06212e;--card:rgba(255,255,255,.04);--card-b:#0a2c3a;
+--t:#e8f7ff;--t2:#8fb8c9;--t3:#5a7a8a;--b:rgba(255,255,255,.09);--glow:0 0 24px rgba(52,211,153,.35)}
+body[data-theme="flame"]{--p:#ef4444;--pd:#f97316;--cy:#facc15;--g:linear-gradient(135deg,#ef4444,#f97316);
+--bg:#0a0505;--bg2:#160a0a;--card:rgba(255,255,255,.03);--card-b:#241414;
+--t:#fef2f2;--t2:#d4a1a1;--t3:#8a6060;--b:rgba(255,255,255,.09);--glow:0 0 24px rgba(239,68,68,.35)}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--t);overflow:hidden;-webkit-font-smoothing:antialiased}
+.gifbg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.gifbg img{width:100%;height:100%;object-fit:cover;opacity:.2;filter:blur(9px) saturate(1.3) brightness(.8)}
+.gifbg .ov{position:absolute;inset:0;background:linear-gradient(180deg,var(--bg),rgba(0,0,0,.42) 45%,var(--bg))}
+.wrap{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;max-width:760px;margin:0 auto}
+nav{padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--b);background:rgba(7,8,13,.5);backdrop-filter:blur(18px)}
+nav .logo{font-weight:800;font-size:15px;text-decoration:none;color:var(--t);display:flex;align-items:center;gap:8px}
+nav .logo span{font-size:20px}
+nav .nl{display:flex;gap:6px;flex-wrap:wrap}
+nav .nl a{color:var(--t2);font-size:11px;font-weight:600;text-decoration:none;padding:5px 11px;border-radius:16px;border:1px solid transparent}
+nav .nl a:hover{color:var(--p)}
+nav .nl a.back{background:var(--g);color:#fff}
+.chat{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:14px}
+.msg{max-width:82%;padding:11px 15px;border-radius:16px;font-size:14px;line-height:1.75;white-space:pre-wrap;word-break:break-word;animation:pop .25s ease}
+.msg.ai{align-self:flex-start;background:var(--card-b);border:1px solid var(--b);border-bottom-left-radius:4px}
+.msg.me{align-self:flex-end;background:var(--g);color:#fff;border-bottom-right-radius:4px}
+.msg.ai .t{font-size:10px;color:var(--p);font-weight:700;letter-spacing:1px;margin-bottom:3px}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.quick{display:flex;gap:8px;flex-wrap:wrap;padding:0 18px 10px}
+.quick button{padding:7px 14px;border-radius:16px;border:1px solid var(--b);background:var(--card);color:var(--t2);font-size:12px;cursor:pointer;transition:.2s}
+.quick button:hover{color:var(--p);border-color:rgba(139,92,246,.4)}
+.inputbar{display:flex;gap:10px;padding:12px 18px 16px;border-top:1px solid var(--b);background:rgba(7,8,13,.4);backdrop-filter:blur(18px)}
+.inputbar input{flex:1;padding:12px 16px;border-radius:22px;border:1px solid var(--b);background:var(--card);color:var(--t);font-size:14px;outline:none}
+.inputbar input:focus{border-color:var(--p)}
+.inputbar button{width:44px;height:44px;border-radius:50%;border:none;background:var(--g);color:#fff;font-size:18px;cursor:pointer;flex-shrink:0;transition:.2s}
+.inputbar button:hover{box-shadow:var(--glow)}
+.hint{text-align:center;font-size:10px;color:var(--t3);padding-bottom:6px}
+</style>
+</head>
+<body data-theme="shadow">
+<div class="gifbg"><img id="bgimg" src="https://media.giphy.com/media/oNb3GLUvhF768/giphy.gif" alt=""><div class="ov"></div></div>
+<div class="wrap">
+  <nav>
+    <a class="logo" href="pro.html"><span>🤖</span>AI 小Q</a>
+    <div class="nl">
+      <a href="optimizer.html">⚡ 优化脚本</a>
+      <a href="pro.html" class="back">← 返回主站</a>
+    </div>
+  </nav>
+  <div class="chat" id="chat"></div>
+  <div class="quick" id="quick"></div>
+  <div class="inputbar">
+    <input id="ipt" type="text" placeholder="问我关于 MIUI工作室 的任何问题…" autocomplete="off">
+    <button id="send">➤</button>
+  </div>
+  <div class="hint">小Q · 24/7 在线 · 知识库版</div>
+</div>
+<script>
+var bgimg=document.getElementById('bgimg');
+var THEMES={shadow:'oNb3GLUvhF768',aurora:'r5E0uV2Facm2c',flame:'7nTSif6uXrzR8TPWOT'};
+var KB=[
+{k:['你好','在吗','hi','hello','嗨','在不在'],a:'你好呀！我是小Q，MIUI工作室的AI助手 👋 关于工作室、游戏、产品、加入方式、优化脚本，你都可以问我～'},
+{k:['你是谁','小q是谁','你是什么','介绍一下你','ai小q'],a:'我是小Q，MIUI工作室的AI管理员 🤖 平时在聊天室里 @我就能召唤，24/7在线，负责解答、巡检、陪聊。这里是网站的「站点小Q」版，内置了工作室知识库，问啥答啥～'},
+{k:['工作室','是做什么','做什么的','miui','介绍'],a:'MIUI工作室是一支专注「AI轻应用 + 小游戏」研发的团队，深耕QQ频道生态。代表作有悬疑单机游戏《卧底的崛起》、恶魔轮盘赌、3D我的世界，还提供内置AI小Q的在线聊天室 🎮'},
+{k:['产品','作品','矩阵','有什么','有哪些'],a:'旗舰产品矩阵来啦 📦：\n💬 MIUI聊天室（25人在线，AI小Q管理）\n🐧 QQ完全版（登录·聊天·AI·二维码·相册）\n🏠 群聊大厅 v6（多群一站式管理）\n⛏️ 我的世界 3D（Three.js程序化地形）\n🤖 AI小Q（@召唤秒回，多轮对话）\n🎬 QQ×快手（聊天+短视频）\n📍 MIUI追踪器 / 📡 蜘蛛侠追踪器 / 🕷️ 蜘蛛侠查找器'},
+{k:['游戏','玩什么','卧底','恶魔轮盘','轮盘赌','我的世界','mc'],a:'游戏都在浏览器里即点即玩、零安装 🎮 代表作：《卧底的崛起》（悬疑单机）、恶魔轮盘赌、3D我的世界（支持手机触屏+键鼠）。在官网「旗舰产品矩阵」点对应卡片就能玩～'},
+{k:['聊天室','怎么进','进群','群号','qq群','加群'],a:'聊天室完全免费、无需下载注册 💬 点击网站任意「进入聊天室」按钮即可弹出；也可以直接加 QQ群 1070470498 一起聊。'},
+{k:['优化','脚本','卡顿','卡','清理','加速','root'],a:'我们有「优化脚本工具箱」⚡ 分免root（ADB）和需root（终端）两类，一键复制就能执行：关动画、清缓存、限后台、调调度器等。入口在导航栏「⚡ 优化脚本」→ https://weyoudonttalk.github.io/miui-studio/optimizer.html'},
+{k:['主题','版本','暗影','极光','烈焰','简约','皮肤'],a:'官网有四个主题版本 🌈：☀️简约版、🌑暗影版、🌌极光版、🔥烈焰版，导航栏右上角一键切换，配色和动图背景都会跟着变～'},
+{k:['官网','网址','地址','链接','网站'],a:'官方网站（永久在线）：https://weyoudonttalk.github.io/miui-studio/ 🌐 主站就是它，其他页面从这里进。'},
+{k:['团队','多少人','成员','创始人','25'],a:'核心团队25人 👑：创始人(总负责) + 小Q(AI管理员) + 灵感创意2人 + 工程组2人 + 任务派发1人 + 美术组1人 + 科技组全员。'},
+{k:['成立','历史','历程','什么时候','发展'],a:'发展历程 🗓️：\n2025·06 工作室成立（QQ频道MIUI技术交流群）\n2025·09 群聊大厅 v1.0 发布\n2025·12 小Q AI 诞生\n2026·03 产品矩阵成型，用户破500\n2026·07 品牌全面升级，旗舰官网上线'},
+{k:['加入','招人','一起','合作','报名'],a:'欢迎开发者、设计师、创意伙伴加入 🚀 进聊天室或QQ群 1070470498 找创始人聊聊，说说你的想法，合适就能一起搞事情～'},
+{k:['联系','邮箱','频道'],a:'联系方式 📫：🐧 QQ频道「MIUI工作室」、👥 QQ群 1070470498、🌐 官网 https://weyoudonttalk.github.io/miui-studio/、📧 邮件见官网底部「联系我们」。'},
+{k:['下载','安装','app','收费','免费','要不要钱'],a:'所有游戏和产品都基于浏览器运行，即点即玩、零安装、免费 🎮 手机电脑都能直接打开，不用下载 App～'},
+{k:['谢谢','感谢','辛苦了','谢谢啦'],a:'不客气～随时来找我 😊 还有别的想了解的尽管问！'}
+];
+var FALLBACK=[
+'这个问题我知识库还没收录 🤔 你可以换种问法，或者问我：工作室是做什么的、有什么产品、游戏怎么玩、怎么加入、QQ群号等～',
+'我还在学习成长中 🌱 试试问「MIUI工作室是做什么的」或「有什么产品」这类问题，我答得更溜！',
+'这个暂时超出我的知识范围啦～不过关于工作室、游戏、聊天室、优化脚本的问题，我基本都能答 😄'
+];
+var chat=document.getElementById('chat');
+var quick=document.getElementById('quick');
+var ipt=document.getElementById('ipt');
+function addMsg(txt,who){
+  var d=document.createElement('div');
+  d.className='msg '+who;
+  if(who==='ai'){d.innerHTML='<div class="t">🤖 小Q</div>'+txt.replace(/\n/g,'<br>')}
+  else d.textContent=txt;
+  chat.appendChild(d);
+  chat.scrollTop=chat.scrollHeight;
+}
+function reply(q){
+  q=q.trim();
+  var best=null,bestScore=0;
+  KB.forEach(function(item){
+    var score=0;
+    item.k.forEach(function(kw){ if(q.indexOf(kw)>=0) score++; });
+    if(score>bestScore){bestScore=score;best=item;}
+  });
+  var out;
+  if(best){out=best.a;}
+  else{out=FALLBACK[Math.floor(Math.random()*FALLBACK.length)];}
+  setTimeout(function(){addMsg(out,'ai')},350);
+}
+function send(){
+  var q=ipt.value.trim();
+  if(!q)return;
+  addMsg(q,'me');
+  ipt.value='';
+  reply(q);
+}
+document.getElementById('send').onclick=send;
+ipt.addEventListener('keydown',function(e){if(e.key==='Enter')send()});
+var QUICK=['MIUI工作室是做什么的？','有什么产品？','游戏怎么玩？','怎么加入工作室？','QQ群号多少？','优化脚本在哪？'];
+QUICK.forEach(function(t){
+  var b=document.createElement('button');
+  b.textContent=t;
+  b.onclick=function(){addMsg(t,'me');reply(t)};
+  quick.appendChild(b);
+});
+addMsg('你好，我是小Q 🤖 MIUI工作室的AI助手。关于工作室、游戏、产品、加入方式、优化脚本……你问，我答！','ai');
+</script>
+</body>
+</html>
