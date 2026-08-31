@@ -96,6 +96,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 </style>
 </head>
 <body>
+<audio id="bgmAudio" src="bgm.mp3" loop preload="auto"></audio>
+<audio id="ceoAudio" src="https://qqai.gtimg.com/media/audios/20de3548c4ce073693aadd691ea1f9a8fa41a5ec232802d5b6bccb6f73df8943_1788167580697.wav" preload="auto"></audio>
 
 <!-- 开场 -->
 <div id="intro">
@@ -176,42 +178,32 @@ var ceoTimer=null, ceoIdx=0, ceoChar=0, ceoMuted=false;
 var capEl=document.getElementById('ceoCaption');
 var waveEl=document.getElementById('ceoWave');
 
-/* 语音：优先中文 voice，找不到用默认 */
-var zhVoice=null;
-function loadVoices(){
-  if(!('speechSynthesis' in window))return;
-  var vs=speechSynthesis.getVoices();
-  zhVoice=vs.filter(function(v){return /zh|cmn|chinese|yue/i.test(v.lang)})[0]||null;
-}
-if('speechSynthesis' in window){
-  loadVoices();
-  speechSynthesis.onvoiceschanged=loadVoices;
-}
-function speak(text,onend){
-  if(ceoMuted){if(onend)onend();return;}
-  if(!('speechSynthesis' in window)){if(onend)onend();return;}
-  var u=new SpeechSynthesisUtterance(text);
-  u.lang='zh-CN';u.rate=1.02;u.pitch=1.05;
-  if(zhVoice)u.voice=zhVoice;
-  u.onend=function(){if(onend)onend()};
-  u.onerror=function(){if(onend)onend()};
-  // 兜底：若 2 秒内未触发 onend 且没有 voice，强行继续
-  setTimeout(function(){},0);
-  speechSynthesis.speak(u);
-}
+/* 语音：播放预生成的真实人声 */
+var ceoAudio=document.getElementById('ceoAudio');
+var ceoFinished=false;
+var voicePlaying=false;
 
 function startCeo(){
   clearInterval(ceoTimer);
-  ceoIdx=0;ceoChar=0;
+  ceoFinished=false;
+  voicePlaying=false;
+  ceoIdx=0;
   capEl.innerHTML='';
   waveEl.style.display='flex';
-  speakLine();
+  if(ceoAudio && !ceoMuted){
+    ceoAudio.currentTime=0;
+    ceoAudio.play().then(function(){voicePlaying=true;}).catch(function(){voicePlaying=false;});
+    ceoAudio.onended=function(){voicePlaying=false;finishCeo();};
+  }
+  typeLine();
 }
-function speakLine(){
-  if(ceoIdx>=CEO_LINES.length){ finishCeo(); return; }
+function typeLine(){
+  if(ceoIdx>=CEO_LINES.length){
+    if(!voicePlaying)setTimeout(finishCeo,700);
+    return;
+  }
   var line=CEO_LINES[ceoIdx];
   ceoChar=0;
-  // 打字机字幕
   clearInterval(ceoTimer);
   ceoTimer=setInterval(function(){
     if(ceoChar<=line.length){
@@ -219,15 +211,14 @@ function speakLine(){
       ceoChar++;
     }else{
       clearInterval(ceoTimer);
+      ceoIdx++;
+      setTimeout(typeLine,160);
     }
-  },60);
-  // 语音朗读，读完进下一句
-  speak(line,function(){
-    ceoIdx++;
-    setTimeout(speakLine,180);
-  });
+  },75);
 }
 function finishCeo(){
+  if(ceoFinished)return;
+  ceoFinished=true;
   clearInterval(ceoTimer);
   capEl.innerHTML=CEO_LINES.join('<br>');
   setTimeout(goMap,600);
@@ -235,14 +226,13 @@ function finishCeo(){
 function toggleCeoMute(){
   ceoMuted=!ceoMuted;
   document.getElementById('muteBtn').textContent=ceoMuted?'🔇 已静音':'🔊 静音';
-  if(ceoMuted){waveEl.style.display='none';speechSynthesis.cancel();}
-  else{waveEl.style.display='flex';}
+  if(ceoMuted){waveEl.style.display='none';if(ceoAudio)ceoAudio.pause();}
+  else{waveEl.style.display='flex';if(ceoAudio)ceoAudio.play().catch(function(){});}
 }
 function skipCeo(){
   clearInterval(ceoTimer);
-  speechSynthesis.cancel();
-  capEl.innerHTML=CEO_LINES.join('<br>');
-  goMap();
+  if(ceoAudio)ceoAudio.pause();
+  finishCeo();
 }
 
 /* ================= 地图 ================= */
@@ -291,67 +281,13 @@ function typeLog(){
   setTimeout(typeLog,item[1]==='dim'?420:260);
 }
 
-/* ================= BGM：Web Audio 史诗配乐 ================= */
-var audioCtx=null,bgmTimer=null,bgmOn=true;
+/* ================= BGM：真实史诗音乐 ================= */
+var bgmOn=true;
 function startBGM(){
-  if(audioCtx){
-    if(audioCtx.state==='suspended')audioCtx.resume();
-    return;
-  }
-  try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return;}
-  if(audioCtx.state==='suspended')audioCtx.resume();
-  var master=audioCtx.createGain();master.gain.value=0.5;master.connect(audioCtx.destination);
-  var chords=[
-    [110,164.81,220,261.63,329.63],
-    [87.31,130.81,174.61,220,261.63],
-    [130.81,196,261.63,329.63,392],
-    [98,146.83,196,246.94,293.66]
-  ];
-  var ci=0;
-  function playChord(){
-    var ch=chords[ci%4];
-    ch.forEach(function(f){
-      var o=audioCtx.createOscillator();o.type='sawtooth';o.frequency.value=f;
-      var g=audioCtx.createGain();
-      g.gain.setValueAtTime(0,audioCtx.currentTime);
-      g.gain.linearRampToValueAtTime(0.05,audioCtx.currentTime+0.35);
-      g.gain.linearRampToValueAtTime(0.001,audioCtx.currentTime+2.0);
-      var lp=audioCtx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=900;
-      o.connect(lp);lp.connect(g);g.connect(master);o.start();o.stop(audioCtx.currentTime+2.1);
-    });
-    var b=audioCtx.createOscillator();b.type='sine';b.frequency.value=ch[0];
-    var bg=audioCtx.createGain();
-    bg.gain.setValueAtTime(0.12,audioCtx.currentTime);
-    bg.gain.linearRampToValueAtTime(0.001,audioCtx.currentTime+2.0);
-    b.connect(bg);bg.connect(master);b.start();b.stop(audioCtx.currentTime+2.1);
-    ci++;
-  }
-  function kick(){
-    var o=audioCtx.createOscillator();o.type='sine';
-    o.frequency.setValueAtTime(130,audioCtx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(42,audioCtx.currentTime+0.16);
-    var g=audioCtx.createGain();
-    g.gain.setValueAtTime(0.5,audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.22);
-    o.connect(g);g.connect(master);o.start();o.stop(audioCtx.currentTime+0.22);
-  }
-  function snare(){
-    var buf=audioCtx.createBuffer(1,audioCtx.sampleRate*0.08,audioCtx.sampleRate);
-    var d=buf.getChannelData(0);
-    for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);
-    var s=audioCtx.createBufferSource();s.buffer=buf;
-    var g=audioCtx.createGain();g.gain.value=0.12;
-    var hp=audioCtx.createBiquadFilter();hp.type='highpass';hp.frequency.value=1800;
-    s.connect(hp);hp.connect(g);g.connect(master);s.start();
-  }
-  var beat=0;
-  playChord();
-  bgmTimer=setInterval(function(){
-    beat++;
-    kick();
-    if(beat%2===0)snare();
-    if(beat%4===0)playChord();
-  },480);
+  var a=document.getElementById('bgmAudio');
+  if(!a)return;
+  a.volume=0.55;
+  if(bgmOn)a.play().catch(function(){});
 }
 
 /* ================= HUD 雷达 ================= */
@@ -410,8 +346,9 @@ document.getElementById('btnBgm').addEventListener('click',function(){
   bgmOn=!bgmOn;
   this.classList.toggle('off',!bgmOn);
   this.textContent=bgmOn?'🔊 BGM':'🔇 BGM';
-  if(bgmOn){if(!audioCtx)startBGM();else audioCtx.resume();}
-  else if(audioCtx)audioCtx.suspend();
+  var a=document.getElementById('bgmAudio');
+  if(!a)return;
+  if(bgmOn)a.play().catch(function(){});else a.pause();
 });
 document.getElementById('btnCeo').addEventListener('click',function(){
   var ceo=document.getElementById('ceo');
