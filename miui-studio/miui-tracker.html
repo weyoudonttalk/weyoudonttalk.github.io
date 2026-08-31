@@ -12,8 +12,8 @@
   --line:#09a4c7; --line2:#0e5f73;
   --cyan:#09a4c7; --cyan2:#b8edff; --txt:#a8e1fe; --dim:#6aa8c7; --faint:#3f6a8a;
   --green:#00ff50; --red:#ff4040; --event:#96e0f7; --yellow:#ffd23f;
-  --font-pix:'VT323','Courier New',monospace;
-  --font-h:'Press Start 2P','VT323','Courier New',monospace;
+  --font-pix:'VT323','PingFang SC','Hiragino Sans GB','Microsoft YaHei',monospace;
+  --font-h:'Press Start 2P','VT323','PingFang SC','Microsoft YaHei',monospace;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
@@ -270,7 +270,42 @@ button{font-family:var(--font-pix);cursor:pointer;color:var(--txt)}
 #notifyModal .box{background:var(--bg2);border:1px solid var(--green);width:min(430px,100%);padding:22px;text-align:center;box-shadow:0 0 40px rgba(0,255,80,.15)}
 #notifyModal h3{font-family:var(--font-h);font-size:12px;letter-spacing:1px;color:var(--cyan2);margin-bottom:12px}
 #notifyModal p{font-size:15px;color:var(--dim);line-height:1.6;margin-bottom:18px}
-@media(max-width:600px){.pin{width:26px}.radar-widget{transform:scale(.8);transform-origin:bottom right}}
+@media(max-width:600px){
+  .pin{width:26px}
+  .radar-widget{transform:scale(.8);transform-origin:bottom right}
+  body{font-size:14px}
+  #welcome .logo{width:72px;height:72px;margin-bottom:16px}
+  #welcome h1{font-size:19px;letter-spacing:1px}
+  #welcome .sub{font-size:13px;letter-spacing:1px}
+  #welcome .hint{font-size:14px;line-height:1.7}
+  .wbtn{font-size:14px;padding:13px 16px;max-width:100%}
+  .overlay .inner{padding:20px 14px}
+  #ceo .videobox{max-width:100%}
+  #ceo .caption{font-size:14px;line-height:1.6}
+  #ceo .ctrl{gap:8px}
+  #settings h2{font-size:16px}
+  #settings .sub{font-size:13px}
+  #init h2{font-size:14px}
+  #init .pct{font-size:13px}
+  #init .log{font-size:13px}
+  .panel-body{padding:12px}
+  .entry .title{font-size:14px}
+  .helpitem h3{font-size:14px}
+  .helpitem p{font-size:13px}
+  .chatmsg p{font-size:14px}
+  .ww .info p{font-size:13px}
+  .evt p{font-size:13px}
+  .legend{left:10px;bottom:100px;gap:9px}
+  .legend span{font-size:12px}
+  .ticker .track{font-size:13px}
+  #sigModal .m,#reportModal .box,#notifyModal .box{padding:15px}
+  #sigModal .m p{font-size:14px}
+  #reportModal .sub{font-size:13px}
+  .field label{font-size:13px}
+  .field input,.field textarea,.field select{font-size:14px;padding:9px 10px}
+  .pixbtn{font-size:14px;padding:11px}
+  .entry .title,.ww .info p,.helpitem p,.chatmsg p,.evt p,#ceo .caption,#welcome .hint{overflow-wrap:break-word;word-break:break-word}
+}
 </style>
 </head>
 <body>
