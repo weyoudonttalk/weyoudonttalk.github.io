@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MIUI工作室 烈焰 - 卧底的崛起 | AI轻应用与小游戏</title>
+<meta name="description" content="MIUI工作室官网（PRO版）：专注AI轻应用与小游戏研发。代表作悬疑单机游戏《卧底的崛起》、恶魔轮盘赌、末日丧尸射击、3D我的世界等，并提供在线聊天室。">
+<meta name="keywords" content="MIUI工作室,卧底的崛起,悬疑游戏,单机游戏,AI轻应用,小游戏,恶魔轮盘赌,3D我的世界,聊天室">
+<meta name="robots" content="index,follow">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MIUI工作室">
+<meta property="og:title" content="MIUI工作室 烈焰 - 卧底的崛起">
+<meta property="og:url" content="https://weyoudonttalk.github.io/miui-studio/flame.html">
+<style>
+:root{
+  --p:#ef4444;--pd:#f97316;--cy:#facc15;--g:linear-gradient(135deg,#ef4444,#f97316);
+  --bg:#0a0505;--bg2:#160a0a;--card:rgba(255,255,255,.03);--card-b:#241414;
+  --t:#fef2f2;--t2:#d4a1a1;--t3:#8a6060;--b:rgba(255,255,255,.09);
+  --glow:0 0 24px rgba(239,68,68,.35);--shadow:0 10px 40px rgba(0,0,0,.5)
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--t);line-height:1.7;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+/* ====== 粒子背景 ====== */
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+/* 光晕跟随 */
+#glow{position:fixed;width:480px;height:480px;border-radius:50%;z-index:0;pointer-events:none;
+  background:radial-gradient(circle,rgba(239,68,68,.14),rgba(250,204,21,.06) 45%,transparent 70%);
+  transform:translate(-50%,-50%);transition:transform .12s ease-out;filter:blur(10px)}
+
+/* ====== 滚动进度条 ====== */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:1001;background:linear-gradient(90deg,#ef4444,#f97316,#facc15,#ef4444);background-size:300% 100%;animation:flow 4s linear infinite;box-shadow:0 0 14px rgba(239,68,68,.7)}
+@keyframes flow{0%{background-position:0 0}100%{background-position:300% 0}}
+
+/* ====== NAV ====== */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;transition:.35s;background:rgba(7,8,13,.65);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border-bottom:1px solid transparent}
+nav.scrolled{border-bottom-color:var(--b);box-shadow:0 4px 24px rgba(0,0,0,.4)}
+nav .logo{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;color:var(--t);cursor:pointer;text-decoration:none}
+nav .logo span{font-size:26px}
+nav .nl{display:flex;gap:26px;align-items:center}
+nav .nl a{color:var(--t2);font-size:13px;font-weight:500;text-decoration:none;transition:.2s}
+nav .nl a:hover{color:var(--p);text-shadow:0 0 12px rgba(239,68,68,.5)}
+nav .nl .cta-n{padding:8px 20px;border-radius:20px;background:var(--g);color:#fff;font-weight:600;box-shadow:var(--glow)}
+nav .nl .cta-n:hover{background:linear-gradient(135deg,#f87171,#fbbf24);color:#fff}
+nav .nl .theme-link{color:var(--cy);font-weight:700;border:1px solid rgba(250,204,21,.3);padding:6px 14px;border-radius:20px}
+nav .nl .theme-link:hover{background:rgba(250,204,21,.08);color:var(--cy);text-shadow:0 0 12px rgba(250,204,21,.6)}
+@media(max-width:720px){nav{padding:12px 16px}nav .nl a:not(.cta-n):not(.theme-link){display:none}}
+
+/* ====== HERO ====== */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:120px 28px 80px;text-align:center;position:relative;overflow:hidden}
+.hero-inner{position:relative;z-index:2;max-width:760px}
+.hero .badge{display:inline-flex;align-items:center;gap:7px;padding:7px 16px;border-radius:20px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);font-size:11px;color:var(--p);font-weight:600;letter-spacing:2px;margin-bottom:32px;box-shadow:inset 0 0 20px rgba(239,68,68,.08)}
+.hero .badge .dot{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:blink 2s ease infinite;box-shadow:0 0 10px #22c55e}@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.hero h1{font-size:clamp(44px,7.5vw,80px);font-weight:900;line-height:1.05;margin-bottom:22px;letter-spacing:-1.5px}
+.hero h1 .hl{background:linear-gradient(120deg,#ef4444,#fca5a5,#facc15,#ef4444);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 5s linear infinite}
+@keyframes shimmer{0%{background-position:0 0}100%{background-position:300% 0}}
+.hero .hs{font-size:clamp(15px,2vw,17px);color:var(--t2);margin-bottom:40px;line-height:1.9;max-width:560px;margin-left:auto;margin-right:auto;min-height:72px}
+.hero .hs .cursor{display:inline-block;width:2px;height:1.1em;background:var(--p);vertical-align:-2px;margin-left:2px;animation:blink 1s step-end infinite;box-shadow:0 0 10px var(--p)}
+.hero .hbtns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-block;padding:15px 34px;border-radius:28px;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;transition:.3s}
+.btn-p{background:var(--g);color:#fff;box-shadow:0 8px 30px rgba(239,68,68,.4);position:relative;overflow:hidden}
+.btn-p::after{content:'';position:absolute;top:0;left:-80%;width:60%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);animation:sheen 3s ease infinite}
+@keyframes sheen{0%{left:-80%}60%,100%{left:130%}}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(239,68,68,.55)}
+.btn-o{border:1.5px solid var(--b);color:var(--t);background:rgba(255,255,255,.03);backdrop-filter:blur(6px)}
+.btn-o:hover{border-color:var(--p);color:var(--p);box-shadow:0 0 20px rgba(239,68,68,.25)}
+.hero .hstats{display:flex;gap:48px;justify-content:center;margin-top:56px;flex-wrap:wrap}
+.hero .hstats .st{text-align:center}
+.hero .hstats .sn{font-size:36px;font-weight:900;background:var(--g);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;display:block;line-height:1.1}
+.hero .hstats .sl{font-size:12px;color:var(--t3);margin-top:4px;letter-spacing:1px}
+
+/* ====== SECTION ====== */
+.sec{padding:100px 28px;position:relative;z-index:1}
+.sec-gray{background:var(--bg2)}
+.sec-label{text-align:center;font-size:11px;color:var(--p);letter-spacing:4px;font-weight:700;text-transform:uppercase;margin-bottom:14px;text-shadow:0 0 12px rgba(239,68,68,.5)}
+.sec-title{text-align:center;font-size:clamp(26px,3.6vw,40px);font-weight:900;margin-bottom:14px;color:var(--t);line-height:1.25}
+.sec-sub{text-align:center;font-size:14px;color:var(--t2);max-width:520px;margin:0 auto 56px;line-height:1.85}
+
+/* ====== FEATURES ====== */
+.fgrid{display:grid;grid-template-columns:repeat(4,1fr);max-width:1080px;margin:0 auto;gap:16px}
+@media(max-width:800px){.fgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.fgrid{grid-template-columns:1fr}}
+.fcard{padding:36px 24px;text-align:center;transition:.35s;border-radius:16px;position:relative;overflow:hidden;background:var(--card);border:1px solid var(--b);backdrop-filter:blur(8px)}
+.fcard::before{content:'';position:absolute;inset:0;border-radius:16px;padding:1px;background:linear-gradient(135deg,rgba(239,68,68,.5),transparent 40%,transparent 60%,rgba(250,204,21,.5));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:.35s}
+.fcard:hover::before{opacity:1}
+.fcard:hover{transform:translateY(-6px);box-shadow:0 16px 44px rgba(0,0,0,.5),0 0 30px rgba(239,68,68,.15)}
+.fcard .fi{font-size:40px;margin-bottom:16px;display:block;transition:.35s;filter:drop-shadow(0 0 12px rgba(239,68,68,.3))}
+.fcard:hover .fi{transform:translateY(-5px) scale(1.12)}
+.fcard .ft{font-size:15px;font-weight:700;margin-bottom:6px}
+.fcard .fd{font-size:12px;color:var(--t2);line-height:1.7}
+
+/* ====== COUNTERS ====== */
+.counters{max-width:960px;margin:0 auto;display:flex;justify-content:center;flex-wrap:wrap;gap:0}
+.counter{flex:1;min-width:140px;text-align:center;padding:30px 16px;border-right:1px solid var(--b)}
+.counter:last-child{border-right:none}
+.counter .cn{font-size:42px;font-weight:900;background:var(--g);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1;text-shadow:0 0 30px rgba(239,68,68,.2)}
+.counter .cl{font-size:12px;color:var(--t3);margin-top:6px;letter-spacing:1px}
+
+/* ====== PRODUCTS ====== */
+.pgrid{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media(max-width:800px){.pgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.pgrid{grid-template-columns:1fr}}
+.pcard{background:var(--card);border:1px solid var(--b);border-radius:16px;padding:28px;transition:.35s;cursor:pointer;text-decoration:none;color:inherit;display:block;backdrop-filter:blur(8px);position:relative;overflow:hidden}
+.pcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--g);transform:scaleX(0);transform-origin:left;transition:.4s;box-shadow:0 0 16px rgba(239,68,68,.6)}
+.pcard:hover::before{transform:scaleX(1)}
+.pcard:hover{transform:translateY(-6px);border-color:rgba(239,68,68,.35);box-shadow:0 18px 50px rgba(0,0,0,.55),0 0 32px rgba(239,68,68,.12)}
+.pcard .pi{font-size:42px;margin-bottom:14px;display:block;transition:.35s;filter:drop-shadow(0 0 10px rgba(239,68,68,.25))}
+.pcard:hover .pi{transform:scale(1.1) rotate(-4deg)}
+.pcard .pn{font-size:16px;font-weight:700;margin-bottom:8px}
+.pcard .pd{font-size:12px;color:var(--t2);line-height:1.75;margin-bottom:14px}
+.pcard .ptags{display:flex;gap:6px;flex-wrap:wrap}
+.pt{font-size:10px;font-weight:600;padding:3px 9px;border-radius:6px}
+.pt1{background:rgba(239,68,68,.15);color:#fca5a5}
+.pt2{background:rgba(34,197,94,.15);color:#6ee7a0}
+.pt3{background:rgba(250,204,21,.15);color:#7dd3fc}
+
+/* ====== TEAM ====== */
+.tgrid{max-width:960px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
+.tm{width:120px;text-align:center;padding:20px 10px;border-radius:14px;transition:.3s;border:1px solid transparent}
+.tm:hover{background:var(--card);border-color:var(--b);transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.4)}
+.tm .ta{width:60px;height:60px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:28px;background:var(--bg2);border:2px solid var(--b);transition:.3s}
+.tm:hover .ta{transform:scale(1.08);border-color:var(--p);box-shadow:0 0 20px rgba(239,68,68,.3)}
+.tm.featured .ta{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.06);box-shadow:0 0 22px rgba(239,68,68,.2)}
+.tm .tn{font-size:12px;font-weight:600}
+.tm .tr{font-size:10px;color:var(--t3);margin-top:3px;line-height:1.5}
+
+/* ====== TIMELINE ====== */
+.timeline{max-width:600px;margin:0 auto;position:relative;padding-left:28px}
+.timeline::before{content:'';position:absolute;left:9px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--p),rgba(239,68,68,.15))}
+.tl-item{position:relative;padding-bottom:28px}
+.tl-item::before{content:'';position:absolute;left:-23px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--p);border:3px solid var(--bg2);box-shadow:0 0 0 2px var(--b),0 0 14px rgba(239,68,68,.5)}
+.tl-item .tld{font-size:11px;color:var(--p);font-weight:700;margin-bottom:3px}
+.tl-item .tlt{font-size:14px;font-weight:700}
+.tl-item .tlc{font-size:12px;color:var(--t2);margin-top:3px;line-height:1.6}
+
+/* ====== FAQ ====== */
+.faq{max-width:680px;margin:0 auto}
+.faq-item{background:var(--card);border:1px solid var(--b);border-radius:14px;margin-bottom:12px;overflow:hidden;transition:.3s;backdrop-filter:blur(8px)}
+.faq-item.open{border-color:rgba(239,68,68,.35);box-shadow:0 0 30px rgba(239,68,68,.12)}
+.faq-q{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px;cursor:pointer;font-size:14px;font-weight:700;color:var(--t);user-select:none}
+.faq-q .faq-arrow{flex:none;width:24px;height:24px;border-radius:50%;border:1px solid var(--b);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--p);transition:.3s}
+.faq-item.open .faq-arrow{transform:rotate(45deg);background:var(--g);color:#fff;border-color:var(--p);box-shadow:0 0 12px rgba(239,68,68,.4)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease;padding:0 22px;font-size:13px;color:var(--t2);line-height:1.9}
+.faq-item.open .faq-a{max-height:220px;padding-bottom:18px}
+
+/* ====== CTA ====== */
+.cta-sec{text-align:center;padding:100px 28px;position:relative;overflow:hidden;z-index:1}
+.cta-sec::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 130%,rgba(239,68,68,.16),transparent 60%)}
+.cta-inner{max-width:520px;margin:0 auto;position:relative;z-index:1}
+.cta-inner h2{font-size:clamp(26px,3.5vw,38px);font-weight:900;margin-bottom:14px}
+.cta-inner p{color:var(--t2);font-size:13px;line-height:1.9;margin-bottom:28px}
+.cta-inner .cta-btn{display:inline-block;padding:16px 38px;border-radius:28px;font-size:15px;font-weight:700;text-decoration:none;background:var(--g);color:#fff;box-shadow:0 10px 34px rgba(239,68,68,.4);transition:.3s;position:relative;overflow:hidden}
+.cta-inner .cta-btn::after{content:'';position:absolute;top:0;left:-80%;width:60%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);animation:sheen 3s ease infinite}
+.cta-inner .cta-btn:hover{transform:translateY(-2px);box-shadow:0 16px 46px rgba(239,68,68,.55)}
+
+/* ====== CONTACT ====== */
+.cgrid{max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:600px){.cgrid{grid-template-columns:repeat(2,1fr)}}
+.ccard{background:var(--card);border:1px solid var(--b);border-radius:14px;padding:24px 14px;text-align:center;transition:.3s;text-decoration:none;color:inherit;display:block;backdrop-filter:blur(8px)}
+.ccard:hover{transform:translateY(-4px);border-color:rgba(239,68,68,.35);box-shadow:0 0 26px rgba(239,68,68,.15)}
+.ccard .cci{font-size:30px;margin-bottom:8px;display:block}
+.ccard .ccv{font-size:13px;font-weight:700;color:var(--p)}
+.ccard .ccl{font-size:10px;color:var(--t3);margin-top:3px}
+
+/* ====== FOOTER ====== */
+footer{padding:32px 28px;border-top:1px solid var(--b);position:relative;z-index:1}
+.fin{max-width:1080px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+footer .cpy{font-size:11px;color:var(--t3);line-height:1.8}
+footer .soc{display:flex;gap:16px}
+footer .soc a{color:var(--t3);font-size:18px;text-decoration:none;transition:.2s}
+footer .soc a:hover{color:var(--p);text-shadow:0 0 12px rgba(239,68,68,.5)}
+
+/* ====== 返回顶部 ====== */
+#totop{position:fixed;right:24px;bottom:24px;width:46px;height:46px;border-radius:50%;background:var(--g);color:#fff;font-size:20px;border:none;cursor:pointer;z-index:1000;box-shadow:0 8px 26px rgba(239,68,68,.4);opacity:0;pointer-events:none;transform:translateY(16px);transition:.35s}
+#totop.show{opacity:1;pointer-events:auto;transform:translateY(0)}
+#totop:hover{transform:translateY(-3px)}
+
+/* ====== ANIMATIONS ====== */
+.rv{opacity:0;transform:translateY(28px);transition:.7s cubic-bezier(.22,.61,.36,1)}
+.rv.vis{opacity:1;transform:translateY(0)}
+/* ====== CHAT MODAL ====== */
+.chat-mask{position:fixed;inset:0;background:rgba(4,5,10,.75);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:9990;display:none;align-items:center;justify-content:center;padding:20px}
+.chat-mask.open{display:flex}
+.chat-modal{width:min(880px,100%);height:min(86vh,760px);background:var(--bg2);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.7),0 0 40px rgba(239,68,68,.15);border:1px solid var(--b);animation:cmIn .3s cubic-bezier(.22,.61,.36,1)}
+@keyframes cmIn{from{opacity:0;transform:translateY(26px) scale(.97)}to{opacity:1;transform:none}}
+.chat-head{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--b);background:var(--bg2)}
+.chat-head .ch-title{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px}
+.chat-head .ch-title .ch-sub{font-size:11px;color:var(--t3);font-weight:500}
+.chat-head .ch-x{width:32px;height:32px;border-radius:50%;border:1px solid var(--b);background:var(--card);cursor:pointer;font-size:16px;line-height:1;color:var(--t2);display:flex;align-items:center;justify-content:center;transition:.2s}
+.chat-head .ch-x:hover{background:var(--p);color:#fff;border-color:var(--p)}
+.chat-modal iframe{flex:1;border:0;width:100%;display:block;background:var(--bg2)}
+</style>
+</head>
+<body>
+
+<div class="gifbg" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden"><img src="https://media.giphy.com/media/7nTSif6uXrzR8TPWOT/giphy.gif" alt="" style="width:100%;height:100%;object-fit:cover;opacity:.26;filter:blur(9px) saturate(1.3) brightness(.8)"><div style="position:absolute;inset:0;background:linear-gradient(180deg,var(--bg),rgba(0,0,0,.42) 45%,var(--bg))"></div></div>
+<canvas id="bg"></canvas>
+<div id="glow"></div>
+<div id="progress"></div>
+
+<nav id="nav">
+  <a href="#" class="logo"><span>🎮</span>MIUI Studio</a>
+  <div class="nl">
+    <a href="#about">关于</a><a href="#works">作品</a><a href="#team">团队</a><a href="#story">历程</a><a href="#faq">FAQ</a><a href="#" onclick="openChat();return false">聊天室</a><a href="index.html" class="theme-link">☀️ 简约</a><a href="pro.html" class="theme-link">🌑 暗影</a><a href="aurora.html" class="theme-link">🌌 极光</a><a href="#join" class="cta-n">加入我们</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="badge rv"><span class="dot"></span>AI LIGHT APP · MINI GAME · QQ CHANNEL</div>
+    <h1 class="rv">MIUI<span class="hl">工作室</span></h1>
+    <p class="hs rv"><span id="typeText"></span><span class="cursor"></span></p>
+    <div class="hbtns rv">
+      <a href="#works" class="btn btn-p">探索作品</a>
+      <a href="#about" class="btn btn-o">了解更多</a>
+      <a href="#" class="btn btn-o" onclick="openChat();return false">💬 进入聊天室</a>
+    </div>
+    <div class="hstats">
+      <div class="st rv"><span class="sn" data-count="7" data-suffix="+">0</span><span class="sl">线上产品</span></div>
+      <div class="st rv"><span class="sn" data-count="25">0</span><span class="sl">团队精英</span></div>
+      <div class="st rv"><span class="sn" data-count="500" data-suffix="+">0</span><span class="sl">活跃用户</span></div>
+      <div class="st rv"><span class="sn">∞</span><span class="sl">无限可能</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="about">
+  <div class="sec-label rv">CAPABILITIES</div>
+  <h2 class="sec-title rv">我们打造什么</h2>
+  <p class="sec-sub rv">深耕QQ频道生态，以AI为引擎，小游戏为载体</p>
+  <div class="fgrid">
+    <div class="fcard rv"><span class="fi">🤖</span><div class="ft">AI轻应用</div><div class="fd">大语言模型驱动的智能对话系统，24/7自动巡检，为频道提供全套AI能力</div></div>
+    <div class="fcard rv"><span class="fi">🎮</span><div class="ft">小游戏研发</div><div class="fd">Three.js & Canvas引擎，即点即玩，零安装，支持排行榜与多人对战</div></div>
+    <div class="fcard rv"><span class="fi">🎨</span><div class="ft">创意工具</div><div class="fd">文生图、语音合成、表情包工坊，降低创作门槛的一站式工具链</div></div>
+    <div class="fcard rv"><span class="fi">⚡</span><div class="ft">极致性能</div><div class="fd">纯前端架构，零依赖，首屏&lt;500ms，全设备60fps流畅运行</div></div>
+  </div>
+</section>
+
+<section class="sec sec-gray">
+  <div class="sec-label rv">BY THE NUMBERS</div>
+  <h2 class="sec-title rv">数据实力</h2>
+  <p class="sec-sub rv">每一个数字背后，都是团队的汗水与用户的信任</p>
+  <div class="counters">
+    <div class="counter rv"><div class="cn" data-count="7" data-suffix="+">0</div><div class="cl">上线产品</div></div>
+    <div class="counter rv"><div class="cn" data-count="25">0</div><div class="cl">团队成员</div></div>
+    <div class="counter rv"><div class="cn" data-count="500" data-suffix="+">0</div><div class="cl">活跃用户</div></div>
+    <div class="counter rv"><div class="cn" data-count="15" data-suffix="K+">0</div><div class="cl">累计消息</div></div>
+    <div class="counter rv"><div class="cn" data-count="99.9" data-suffix="%" data-dec="1">0</div><div class="cl">在线率</div></div>
+  </div>
+</section>
+
+<section class="sec" id="works">
+  <div class="sec-label rv">FEATURED</div>
+  <h2 class="sec-title rv">旗舰产品矩阵</h2>
+  <p class="sec-sub rv">从群聊到社交，从游戏到工具，持续拓展边界</p>
+  <div class="pgrid">
+    <a class="pcard rv" href="#" onclick="openChat();return false">
+      <span class="pi">💬</span><div class="pn">MIUI聊天室</div><div class="pd">25人在线群聊，AI小Q管理，音乐·表情包·图片视频</div><div class="ptags"><span class="pt pt1">🔥热门</span><span class="pt pt3">AI</span></div>
+    </a>
+    <a class="pcard rv" href="https://weyoudonttalk.github.io/qqapp/" target="_blank">
+      <span class="pi">🐧</span><div class="pn">QQ完全版</div><div class="pd">登录·聊天·AI·二维码·相册头像，完整社交体验</div><div class="ptags"><span class="pt pt2">🆕新上</span><span class="pt pt1">社交</span></div>
+    </a>
+    <a class="pcard rv" href="https://weyoudonttalk.github.io/" target="_blank">
+      <span class="pi">🏠</span><div class="pn">群聊大厅 v6</div><div class="pd">多群一站式管理，技术·科技·娱乐统一入口</div><div class="ptags"><span class="pt pt1">⭐推荐</span></div>
+    </a>
+    <a class="pcard rv" href="https://weyoudonttalk.github.io/minecraft/" target="_blank">
+      <span class="pi">⛏️</span><div class="pn">我的世界 3D</div><div class="pd">Three.js引擎，程序化地形，手机触屏+键鼠双模式</div><div class="ptags"><span class="pt pt2">🎮游戏</span><span class="pt pt1">3D</span></div>
+    </a>
+    <a class="pcard rv" onclick="T('🤖 AI小Q — 24/7守护中')">
+      <span class="pi">🤖</span><div class="pn">AI小Q</div><div class="pd">@召唤秒回，5分钟巡检，多轮对话，24/7在线</div><div class="ptags"><span class="pt pt3">AI</span><span class="pt pt2">24/7</span></div>
+    </a>
+    <a class="pcard rv" href="https://weyoudonttalk.github.io/qq-ks/" target="_blank">
+      <span class="pi">🎬</span><div class="pn">QQ×快手</div><div class="pd">聊天+短视频融合，热门·直播·搞笑·音乐·游戏</div><div class="ptags"><span class="pt pt2">🎬视频</span></div>
+    </a>
+  </div>
+</section>
+
+<section class="sec sec-gray" id="team">
+  <div class="sec-label rv">TEAM</div>
+  <h2 class="sec-title rv">核心团队</h2>
+  <p class="sec-sub rv">25人精锐之师，各司其职，高效协同</p>
+  <div class="tgrid">
+    <div class="tm featured rv"><div class="ta">👑</div><div class="tn">创始人</div><div class="tr">总负责人</div></div>
+    <div class="tm rv"><div class="ta">🤖</div><div class="tn">小Q</div><div class="tr">AI管理员</div></div>
+    <div class="tm rv"><div class="ta">💡</div><div class="tn">灵感创意</div><div class="tr">2人 · 策划</div></div>
+    <div class="tm rv"><div class="ta">🔧</div><div class="tn">工程组</div><div class="tr">2人 · 研发</div></div>
+    <div class="tm rv"><div class="ta">📋</div><div class="tn">任务派发</div><div class="tr">1人 · PM</div></div>
+    <div class="tm rv"><div class="ta">🎨</div><div class="tn">美术组</div><div class="tr">1人 · 设计</div></div>
+    <div class="tm rv"><div class="ta">🚀</div><div class="tn">科技组</div><div class="tr">全员 · 创新</div></div>
+  </div>
+  <p style="text-align:center;font-size:12px;color:var(--t3);margin-top:22px;line-height:2">
+    创始人(1) + 小Q(1) + 灵感创意(2) + 工程(2) + 派发(1) + 美术(1) + 科技组全员 = <b style="color:var(--p);font-size:15px">25人</b>
+  </p>
+</section>
+
+<section class="sec" id="story">
+  <div class="sec-label rv">JOURNEY</div>
+  <h2 class="sec-title rv">发展历程</h2>
+  <p class="sec-sub rv">从第一个群聊到今天的产品矩阵</p>
+  <div class="timeline">
+    <div class="tl-item rv"><div class="tld">2025 · 06</div><div class="tlt">工作室成立</div><div class="tlc">创始人在QQ频道创建MIUI技术交流群，播下第一颗种子</div></div>
+    <div class="tl-item rv"><div class="tld">2025 · 09</div><div class="tlt">群聊大厅 v1.0 发布</div><div class="tlc">首个产品上线，实现多群整合，获首批核心用户</div></div>
+    <div class="tl-item rv"><div class="tld">2025 · 12</div><div class="tlt">小Q AI 诞生</div><div class="tlc">AI助手正式接入，实现@召唤、问答、巡检三大能力</div></div>
+    <div class="tl-item rv"><div class="tld">2026 · 03</div><div class="tlt">产品矩阵成型</div><div class="tlc">聊天室、QQ版、MC 3D密集发布，用户突破500</div></div>
+    <div class="tl-item rv"><div class="tld">2026 · 07</div><div class="tlt">品牌全面升级</div><div class="tlc">旗舰官网上线，明确定位：AI轻应用 × 小游戏</div></div>
+  </div>
+</section>
+
+<section class="sec sec-gray" id="faq">
+  <div class="sec-label rv">FAQ</div>
+  <h2 class="sec-title rv">常见问题</h2>
+  <p class="sec-sub rv">你想知道的，都在这了</p>
+  <div class="faq">
+    <div class="faq-item rv">
+      <div class="faq-q" onclick="toggleFaq(this)">MIUI工作室是做什么的？<span class="faq-arrow">＋</span></div>
+      <div class="faq-a">MIUI工作室是QQ频道官方认证的开发团队，专注AI轻应用与小游戏研发，代表作有悬疑单机游戏《卧底的崛起》、恶魔轮盘赌、3D我的世界等，并提供内置AI小Q的在线聊天室。</div>
+    </div>
+    <div class="faq-item rv">
+      <div class="faq-q" onclick="toggleFaq(this)">聊天室怎么进？收费吗？<span class="faq-arrow">＋</span></div>
+      <div class="faq-a">点击页面任意「进入聊天室」按钮即可弹出聊天室，完全免费，无需下载注册。也可直接加QQ群 1070470498 一起聊。</div>
+    </div>
+    <div class="faq-item rv">
+      <div class="faq-q" onclick="toggleFaq(this)">小Q是什么？<span class="faq-arrow">＋</span></div>
+      <div class="faq-a">小Q是聊天室里的AI管理员，@召唤即可对话，每5分钟自动巡检，支持多轮对话、中英文切换、游戏攻略等，24/7在线守护。</div>
+    </div>
+    <div class="faq-item rv">
+      <div class="faq-q" onclick="toggleFaq(this)">游戏需要下载吗？<span class="faq-arrow">＋</span></div>
+      <div class="faq-a">不用。我们的游戏全部基于浏览器运行，即点即玩、零安装，手机和电脑都能直接打开，支持排行榜与多人对战。</div>
+    </div>
+    <div class="faq-item rv">
+      <div class="faq-q" onclick="toggleFaq(this)">怎么加入工作室？<span class="faq-arrow">＋</span></div>
+      <div class="faq-a">我们欢迎开发者、设计师和创意伙伴加入。进聊天室或QQ群找创始人聊聊，说说你的想法，合适就能一起搞事情。</div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-sec" id="join">
+  <div class="cta-inner rv">
+    <h2>准备好加入我们了吗？</h2>
+    <p>无论你是开发者、设计师，还是对AI与游戏怀抱热情的创造者——MIUI工作室的大门随时为你敞开</p>
+    <a href="#" onclick="openChat();return false" class="cta-btn">🚀 进入 MIUI聊天室</a>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sec-label rv">CONTACT</div>
+  <h2 class="sec-title rv">联系我们</h2>
+  <div class="cgrid" style="margin-top:36px">
+    <a class="ccard rv" href="#" onclick="T('🐧 QQ频道：MIUI工作室');return false"><span class="cci">🐧</span><span class="ccv">QQ频道</span><span class="ccl">MIUI工作室</span></a>
+    <a class="ccard rv" href="#" onclick="copyGroup();return false"><span class="cci">👥</span><span class="ccv">QQ群</span><span class="ccl">1070470498</span></a>
+    <a class="ccard rv" href="https://weyoudonttalk.github.io/" target="_blank"><span class="cci">🌐</span><span class="ccv">官方网站</span><span class="ccl">永久在线</span></a>
+    <a class="ccard rv" href="#" onclick="T('📧 miui-studio@qq.com');return false"><span class="cci">📧</span><span class="ccv">电子邮箱</span><span class="ccl">联系我们</span></a>
+    <a class="ccard rv" href="https://weyoudonttalk.github.io/qqapp/" target="_blank"><span class="cci">💬</span><span class="ccv">QQ完全版</span><span class="ccl">在线聊天</span></a>
+  </div>
+</section>
+
+<footer>
+  <div class="fin">
+    <div class="cpy">© 2026 MIUI Studio · QQ频道官方认证 · AI轻应用 × 小游戏</div>
+    <div class="soc"><a href="#">🐧</a><a href="#">🌐</a><a href="#">📧</a><a href="#">⛏️</a></div>
+  </div>
+</footer>
+
+<button id="totop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="返回顶部">↑</button>
+
+<!-- ====== 聊天室弹窗 ====== -->
+<div class="chat-mask" id="chatMask">
+  <div class="chat-modal" role="dialog" aria-label="MIUI聊天室">
+    <div class="chat-head">
+      <div class="ch-title">💬 MIUI 聊天室 <span class="ch-sub">25人在线 · AI小Q守护</span></div>
+      <button class="ch-x" onclick="closeChat()" aria-label="关闭">✕</button>
+    </div>
+    <iframe id="chatFrame" title="MIUI聊天室" src="about:blank"></iframe>
+  </div>
+</div>
+
+<script>
+// 粒子背景
+(function(){
+  var c=document.getElementById('bg'),ctx=c.getContext('2d');
+  var w,h,ps=[],N=70;
+  function rs(){w=c.width=innerWidth;h=c.height=innerHeight;}
+  rs();addEventListener('resize',rs);
+  for(var i=0;i<N;i++)ps.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,r:Math.random()*1.8+.5,c:Math.random()<.5?'239,68,68':'250,204,21'});
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+    for(var i=0;i<ps.length;i++){
+      var p=ps[i];p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>w)p.vx*=-1;if(p.y<0||p.y>h)p.vy*=-1;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);
+      ctx.fillStyle='rgba('+p.c+',.5)';ctx.fill();
+    }
+    for(var i=0;i<ps.length;i++)for(var j=i+1;j<ps.length;j++){
+      var a=ps[i],b=ps[j],dx=a.x-b.x,dy=a.y-b.y,d=dx*dx+dy*dy;
+      if(d<120*120){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle='rgba(239,68,68,'+(0.12*(1-d/(120*120)))+')';ctx.lineWidth=.5;ctx.stroke();}
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// 光晕跟随
+(function(){
+  var g=document.getElementById('glow');
+  addEventListener('mousemove',function(e){g.style.left=e.clientX+'px';g.style.top=e.clientY+'px';});
+})();
+
+// NAV + 进度条 + 返回顶部
+var nav=document.getElementById('nav'),prog=document.getElementById('progress'),totop=document.getElementById('totop');
+window.addEventListener('scroll',function(){
+  var y=scrollY;
+  nav.classList.toggle('scrolled',y>40);
+  var h=document.documentElement.scrollHeight-innerHeight;
+  prog.style.width=(h>0?(y/h*100):0)+'%';
+  totop.classList.toggle('show',y>600);
+});
+
+// REVEAL
+(function(){
+  var o=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){x.target.classList.add('vis');o.unobserve(x.target)}})},{threshold:.1});
+  document.querySelectorAll('.rv').forEach(function(e){o.observe(e)});
+  setTimeout(function(){document.querySelectorAll('.rv').forEach(function(e){if(e.getBoundingClientRect().top<innerHeight)e.classList.add('vis')})},100);
+})();
+
+// 数字滚动
+function countUp(el){
+  var target=parseFloat(el.getAttribute('data-count'))||0;
+  var suffix=el.getAttribute('data-suffix')||'';
+  var dec=parseInt(el.getAttribute('data-dec'))||0;
+  var dur=1600,start=null;
+  function step(ts){
+    if(!start)start=ts;
+    var p=Math.min((ts-start)/dur,1);
+    var eased=1-Math.pow(1-p,3);
+    var val=target*eased;
+    el.textContent=(dec?val.toFixed(dec):Math.round(val))+suffix;
+    if(p<1)requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+(function(){
+  var o=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){countUp(x.target);o.unobserve(x.target)}})},{threshold:.4});
+  document.querySelectorAll('[data-count]').forEach(function(e){o.observe(e)});
+})();
+
+// 打字机
+(function(){
+  var el=document.getElementById('typeText');
+  if(!el)return;
+  var lines=['QQ频道官方认证开发团队','以AI赋能轻应用与小游戏为核心','致力于创造极致数字体验'];
+  var li=0,ci=0,deleting=false;
+  function tick(){
+    var cur=lines[li];
+    if(!deleting){
+      ci++;
+      el.textContent=cur.slice(0,ci);
+      if(ci===cur.length){deleting=true;setTimeout(tick,1800);return;}
+      setTimeout(tick,55);
+    }else{
+      ci--;
+      el.textContent=cur.slice(0,ci);
+      if(ci===0){deleting=false;li=(li+1)%lines.length;}
+      setTimeout(tick,28);
+    }
+  }
+  tick();
+})();
+
+// FAQ
+function toggleFaq(q){
+  var item=q.parentElement;
+  var wasOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(function(i){i.classList.remove('open')});
+  if(!wasOpen)item.classList.add('open');
+}
+
+// TOAST
+function copyGroup(){
+  var g="1070470498";
+  var ok=function(){T('✅ 已复制QQ群号：'+g)};
+  var no=function(){T('🐧 QQ群号：'+g)};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(g).then(ok,no)}else{no()}
+}
+function T(m){var e=document.createElement('div');e.textContent=m;e.style.cssText='position:fixed;top:24px;left:50%;transform:translateX(-50%);padding:10px 22px;border-radius:18px;font-size:12px;font-weight:600;z-index:9999;background:#1a1a2e;color:#fff;pointer-events:none;opacity:0;transition:.3s';document.body.appendChild(e);requestAnimationFrame(function(){e.style.opacity='1'});setTimeout(function(){e.style.opacity='0';setTimeout(function(){e.remove()},300)},2000)}
+</script>
+<script>
+var CHAT_URL = "https://weyoudonttalk.github.io/miui-chat/";
+function openChat(){
+  var f = document.getElementById("chatFrame");
+  if (f.getAttribute("src") === "about:blank") f.setAttribute("src", CHAT_URL);
+  document.getElementById("chatMask").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+function closeChat(){
+  document.getElementById("chatMask").classList.remove("open");
+  document.body.style.overflow = "";
+}
+document.getElementById("chatMask").addEventListener("click", function(e){ if (e.target === this) closeChat(); });
+document.addEventListener("keydown", function(e){ if (e.key === "Escape") closeChat(); });
+</script>
+</body>
+</html>
