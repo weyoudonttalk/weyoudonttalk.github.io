@@ -205,6 +205,14 @@ button{font-family:var(--font-pix);cursor:pointer;color:var(--txt)}
 .pixbtn{width:100%;padding:12px;background:var(--green);border:none;color:#04121f;font-size:16px;letter-spacing:2px;cursor:pointer;font-weight:bold;font-family:var(--font-pix)}
 .pixbtn:hover{filter:brightness(1.15)}
 
+.devpick{text-align:left;margin-bottom:12px}
+.devpick .gl{font-size:14px;color:var(--cyan2);letter-spacing:1px;margin-bottom:8px;font-family:var(--font-pix)}
+.devrow{display:flex;gap:8px}
+.devbtn{flex:1;padding:10px 4px;border:1px solid rgba(9,164,199,.5);background:rgba(10,22,40,.7);color:var(--txt);font-size:13px;letter-spacing:1px;cursor:pointer;font-family:var(--font-pix);line-height:1.35;transition:.12s}
+.devbtn.on{border-color:var(--green);background:rgba(0,255,80,.16);color:var(--green);box-shadow:0 0 12px rgba(0,255,80,.25)}
+.devbtn:hover{color:var(--green)}
+.wbtn.link{border-style:dashed;border-color:var(--cyan2);background:rgba(9,164,199,.06);color:var(--cyan2)}
+
 /* ============ 覆盖层 ============ */
 .overlay{position:absolute;inset:0;z-index:800;display:flex;align-items:center;justify-content:center;
   background:radial-gradient(1000px 620px at 50% 34%,#0d2a4a,#050d18);transition:opacity .45s}
@@ -279,6 +287,8 @@ button{font-family:var(--font-pix);cursor:pointer;color:var(--txt)}
   #welcome .sub{font-size:13px;letter-spacing:1px}
   #welcome .hint{font-size:14px;line-height:1.7}
   .wbtn{font-size:14px;padding:13px 16px;max-width:100%}
+  .devpick .gl{font-size:12px}
+  .devbtn{font-size:12px;padding:9px 3px}
   .overlay .inner{padding:20px 14px}
   #ceo .videobox{max-width:100%}
   #ceo .caption{font-size:14px;line-height:1.6}
@@ -437,6 +447,15 @@ button{font-family:var(--font-pix);cursor:pointer;color:var(--txt)}
       <h1>MIUI TRACKER</h1>
       <div class="sub">工作室追踪器 · 全球信号</div>
       <div class="hint">与地图互动，查看 <b>MIUI工作室 25 人团队</b> 与 <b>AI 小Q</b> 在全球的信号。<br>追踪已确认动态、传闻情报与里程碑事件。</div>
+      <div class="devpick">
+        <div class="gl">请选择你的设备，自动适配比例（防止文字超格）</div>
+        <div class="devrow">
+          <button class="devbtn" data-d="phone" onclick="setDevice('phone')">📱<br>手机</button>
+          <button class="devbtn" data-d="tablet" onclick="setDevice('tablet')">📱<br>平板</button>
+          <button class="devbtn" data-d="pc" onclick="setDevice('pc')">🖥️<br>电脑</button>
+        </div>
+      </div>
+      <button class="wbtn link" onclick="goSite()">点我进入官网 ↗</button>
       <button class="wbtn primary" onclick="goSettings()">选择设置并开始追踪 <span class="arrow">▶</span></button>
       <button class="wbtn" onclick="goCeo()">观看创始人寄语 <span class="arrow">▶</span></button>
     </div>
@@ -656,7 +675,7 @@ function renderFilters(){
     ['confirmed','c','已确认信号'],['rumored','r','传闻信号'],['event','e','事件']
   ].map(([k,cls,l])=>`<div class="filter ${cls} ${filters[k]?'on':''}" onclick="toggleFilter('${k}')"><span class="sw"></span>${l}</div>`).join('');
 }
-function toggleFilter(k){filters[k]=!filters[k];renderFilters();renderPins();sfxClick();}
+function toggleFilter(k){filters[k]=!filters[k];applyDevice();renderFilters();renderPins();sfxClick();}
 
 /* ============ 活动日志 ============ */
 let actFilter='all';
@@ -729,6 +748,14 @@ function startBGM(){const b=document.getElementById('bgmAudio');if(b&&soundOn){b
 function stopBGM(){const b=document.getElementById('bgmAudio');if(b)b.pause();}
 
 /* ============ 引导流程 ============ */
+function setDevice(d){localStorage.setItem('miui_device',d);applyDevice();sfxClick();}
+function applyDevice(){
+  const d=localStorage.getItem('miui_device')||(window.innerWidth<600?'phone':window.innerWidth<1100?'tablet':'pc');
+  const ZOOM={phone:1,tablet:0.92,pc:0.8};
+  const app=document.getElementById('app');if(app)app.style.zoom=ZOOM[d]||1;
+  document.querySelectorAll('.devbtn').forEach(b=>b.classList.toggle('on',b.getAttribute('data-d')===d));
+}
+function goSite(){window.open('https://weyoudonttalk.github.io/miui-studio/','_blank');}
 function show(id){['welcome','settings','ceo','init'].forEach(n=>document.getElementById(n).classList.add('hide'));document.getElementById(id).classList.remove('hide');}
 function goSettings(){sfxClick();show('settings');}
 function goCeo(){sfxOpen();startBGM();show('ceo');startCeo();}
