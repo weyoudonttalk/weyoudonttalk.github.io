@@ -675,7 +675,7 @@ function renderFilters(){
     ['confirmed','c','已确认信号'],['rumored','r','传闻信号'],['event','e','事件']
   ].map(([k,cls,l])=>`<div class="filter ${cls} ${filters[k]?'on':''}" onclick="toggleFilter('${k}')"><span class="sw"></span>${l}</div>`).join('');
 }
-function toggleFilter(k){filters[k]=!filters[k];applyDevice();renderFilters();renderPins();sfxClick();}
+function toggleFilter(k){filters[k]=!filters[k];renderFilters();renderPins();sfxClick();}
 
 /* ============ 活动日志 ============ */
 let actFilter='all';
@@ -802,7 +802,7 @@ function drawFace(){
 }
 
 /* ============ 启动 ============ */
-renderFilters();renderPins();renderLog();renderWebWatch();renderEvents();renderMsg();renderHelp();renderTicker();render();syncSoundBtn();
+renderFilters();renderPins();renderLog();renderWebWatch();renderEvents();renderMsg();renderHelp();applyDevice();renderTicker();render();syncSoundBtn();
 setTimeout(()=>{document.getElementById('notifyModal').classList.add('show');},600);
 </script>
 </body>
