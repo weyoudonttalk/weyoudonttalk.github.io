@@ -40,7 +40,10 @@ button{font-family:inherit;cursor:pointer}
 #boot .boot-logo{font-size:clamp(24px,6vw,44px);font-weight:900;letter-spacing:2px;background:var(--g);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 #boot .boot-sub{font-size:11px;letter-spacing:5px;color:var(--t3);margin-top:10px}
 #boot .boot-bar{width:min(220px,60vw);height:3px;background:var(--line);border-radius:3px;margin-top:28px;overflow:hidden}
-#boot .boot-fill{height:100%;width:0;background:var(--g);border-radius:3px;transition:width .2s}
+#boot .boot-fill{height:100%;width:0;background:var(--g);border-radius:3px;animation:bootfill 1.3s ease-out forwards}
+@keyframes bootfill{to{width:100%}}
+#boot{animation:boothide .55s ease 1.5s forwards}
+@keyframes boothide{to{opacity:0;visibility:hidden}}
 
 /* 导航 */
 nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px clamp(14px,3vw,34px);display:flex;align-items:center;justify-content:space-between;transition:.35s;background:rgba(5,7,13,.55);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid transparent}
@@ -403,8 +406,8 @@ document.querySelectorAll('.cat').forEach(function(b){
 });
 
 /* ===== 粒子星空 ===== */
-(function(){
-  var cv=document.getElementById('stars');var ctx=cv.getContext('2d');
+(function(){try{
+  var cv=document.getElementById('stars');if(!cv||!cv.getContext)return;var ctx=cv.getContext('2d');
   var W,H,pts=[];
   function size(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
   size();addEventListener('resize',size);
@@ -425,20 +428,19 @@ document.querySelectorAll('.cat').forEach(function(b){
     requestAnimationFrame(loop);
   }
   loop();
+}catch(e){}
 })();
 
 /* ===== 光标辉光 ===== */
-if(matchMedia('(pointer:fine)').matches){
+try{if(matchMedia&&matchMedia('(pointer:fine)').matches){
   var cg=document.getElementById('cursorGlow');
   addEventListener('mousemove',function(e){cg.style.opacity=1;cg.style.left=e.clientX+'px';cg.style.top=e.clientY+'px';});
   addEventListener('mouseleave',function(){cg.style.opacity=0;});
+}catch(e){}
 }
 
-/* ===== 启动动画 ===== */
-(function(){
-  var fill=document.getElementById('bootFill');var p=0;
-  var t=setInterval(function(){p+=Math.random()*18+8;if(p>=100){p=100;clearInterval(t);setTimeout(function(){document.getElementById('boot').classList.add('hide');},380);}fill.style.width=p+'%';},90);
-})();
+/* ===== 启动动画兜底（CSS 动画为主，此为双保险）===== */
+try{setTimeout(function(){var b=document.getElementById('boot');if(b)b.classList.add('hide');},1900);}catch(e){}
 
 /* ===== 导航 ===== */
 var nav=document.getElementById('nav'),totop=document.getElementById('totop');
@@ -455,10 +457,15 @@ document.getElementById('burger').addEventListener('click',function(){
 function closeMenu(){document.getElementById('mMenu').classList.remove('open');document.body.style.overflow='';}
 
 /* ===== Reveal ===== */
-(function(){
-  var o=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){x.target.classList.add('vis');o.unobserve(x.target);}})},{threshold:.08});
-  document.querySelectorAll('.rv').forEach(function(e){o.observe(e)});
-  setTimeout(function(){document.querySelectorAll('.rv').forEach(function(e){if(e.getBoundingClientRect().top<innerHeight)e.classList.add('vis')})},150);
+(function(){try{
+  var all=document.querySelectorAll('.rv');
+  var force=function(){for(var i=0;i<all.length;i++)all[i].classList.add('vis')};
+  if('IntersectionObserver' in window){
+    var o=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){x.target.classList.add('vis');o.unobserve(x.target);}})},{threshold:.08});
+    for(var i=0;i<all.length;i++)o.observe(all[i]);
+  }else{force();}
+  setTimeout(force,700);
+}catch(e){var a2=document.querySelectorAll('.rv');for(var j=0;j<a2.length;j++)a2[j].classList.add('vis');}
 })();
 
 /* ===== 数字滚动 ===== */
@@ -469,9 +476,13 @@ function countUp(el){
   function step(ts){if(!start)start=ts;var p=Math.min((ts-start)/dur,1);var e=1-Math.pow(1-p,3);el.textContent=Math.round(target*e)+suffix;if(p<1)requestAnimationFrame(step);}
   requestAnimationFrame(step);
 }
-(function(){
-  var o=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){countUp(x.target);o.unobserve(x.target);}})},{threshold:.4});
-  document.querySelectorAll('[data-count]').forEach(function(e){o.observe(e)});
+(function(){try{
+  var els=document.querySelectorAll('[data-count]');
+  if('IntersectionObserver' in window){
+    var o=new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting){countUp(x.target);o.unobserve(x.target);}})},{threshold:.4});
+    for(var i=0;i<els.length;i++)o.observe(els[i]);
+  }else{for(var j=0;j<els.length;j++)countUp(els[j]);}
+}catch(e){var a3=document.querySelectorAll('[data-count]');for(var k=0;k<a3.length;k++)countUp(a3[k]);}
 })();
 
 /* ===== 打字机 ===== */
