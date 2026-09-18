@@ -436,8 +436,7 @@ try{if(matchMedia&&matchMedia('(pointer:fine)').matches){
   var cg=document.getElementById('cursorGlow');
   addEventListener('mousemove',function(e){cg.style.opacity=1;cg.style.left=e.clientX+'px';cg.style.top=e.clientY+'px';});
   addEventListener('mouseleave',function(){cg.style.opacity=0;});
-}catch(e){}
-}
+}}catch(e){}
 
 /* ===== 启动动画兜底（CSS 动画为主，此为双保险）===== */
 try{setTimeout(function(){var b=document.getElementById('boot');if(b)b.classList.add('hide');},1900);}catch(e){}
