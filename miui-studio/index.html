@@ -32,6 +32,17 @@ button{font-family:inherit;cursor:pointer}
 /* 粒子层 */
 #stars{position:fixed;inset:0;z-index:0;pointer-events:none}
 /* 光标辉光 */
+/* 背景音乐控制条 */
+#bgmCtrl{position:fixed;left:20px;bottom:20px;z-index:95;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:rgba(13,19,34,.82);backdrop-filter:blur(14px);border:1px solid var(--line2);box-shadow:0 8px 28px rgba(0,0,0,.4);max-width:min(78vw,320px)}
+#bgmCtrl .bgm-ic{font-size:20px;animation:spin 4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#bgmCtrl .bgm-meta{flex:1;min-width:0;line-height:1.25}
+#bgmCtrl .bgm-t{font-size:12px;font-weight:700;color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#bgmCtrl .bgm-s{font-size:10px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#bgmCtrl #bgmToggle{width:34px;height:34px;border-radius:50%;border:none;background:var(--g);color:#fff;font-size:14px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:.2s}
+#bgmCtrl #bgmToggle:hover{transform:scale(1.06)}
+#bgmCtrl #bgmVol{width:60px;height:4px;accent-color:#7b5cff;cursor:pointer;flex-shrink:0}
+@media(max-width:600px){#bgmCtrl .bgm-meta{display:none}#bgmCtrl #bgmVol{display:none}}
 #cursorGlow{position:fixed;width:520px;height:520px;border-radius:50%;pointer-events:none;z-index:0;background:radial-gradient(circle,rgba(123,92,255,.12),rgba(0,212,255,.06),transparent 70%);transform:translate(-50%,-50%);transition:opacity .3s;opacity:0}
 
 /* 启动动画 */
@@ -192,6 +203,16 @@ footer .soc a:hover{color:var(--t)}
 <body>
 
 <div id="stars"></div>
+<audio id="siteBgm" src="wdt.mp3" loop preload="auto"></audio>
+<div id="bgmCtrl" title="背景音乐：We Don't Talk Anymore">
+  <span class="bgm-ic">🎵</span>
+  <div class="bgm-meta">
+    <div class="bgm-t">We Don't Talk Anymore</div>
+    <div class="bgm-s">Charlie Puth ft. Selena Gomez</div>
+  </div>
+  <button id="bgmToggle" aria-label="播放/暂停">▶</button>
+  <input id="bgmVol" type="range" min="0" max="100" value="55" aria-label="音量">
+</div>
 <div id="cursorGlow"></div>
 
 <!-- 启动动画 -->
@@ -511,6 +532,75 @@ function closeChat(){
 }
 document.getElementById('chatMask').addEventListener('click',function(e){if(e.target===this)closeChat();});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeChat();});
+
+/* ===== 背景音乐控制 ===== */
+(function(){
+  var bgm=document.getElementById('siteBgm'),btn=document.getElementById('bgmToggle'),vol=document.getElementById('bgmVol');
+  if(!bgm)return;
+  var playing=false;
+  bgm.volume=(vol?vol.value:55)/100;
+  function play(){bgm.play().then(function(){playing=true;btn.textContent='⏸';}).catch(function(){});}
+  function pause(){bgm.pause();playing=false;btn.textContent='▶';}
+  function toggle(){playing?pause():play();}
+  btn.addEventListener('click',function(e){e.stopPropagation();toggle();});
+  vol&&vol.addEventListener('input',function(){bgm.volume=vol.value/100;});
+  // 首次任意交互后自动尝试播放（绕过自动播放限制）
+  var autostart=function(){play();document.removeEventListener('click',autostart);document.removeEventListener('touchstart',autostart);};
+  document.addEventListener('click',autostart);
+  document.addEventListener('touchstart',autostart);
+  window._siteBgm={play:play,pause:pause,toggle:toggle};
+})();
+
+/* ===== 互动彩蛋 ===== */
+(function(){
+  // 彩蛋1：Konami 密码 ↑↑↓↓←→←→BA
+  var seq=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  var buf=[];
+  document.addEventListener('keydown',function(e){
+    buf.push(e.key.length===1?e.key.toLowerCase():e.key);
+    if(buf.length>seq.length)buf.shift();
+    if(JSON.stringify(buf)===JSON.stringify(seq)){konami();buf=[];}
+  });
+  function konami(){
+    toast('🎉 秘籍解锁：开发者模式！');
+    var overlay=document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(5,7,13,.9);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;cursor:pointer;transition:opacity .3s';
+    overlay.innerHTML='<div style="font-size:54px">👾</div><div style="font-size:18px;font-weight:800;color:#00d4ff">开发者模式已激活</div><div style="font-size:12px;color:#9aa7c7">点击任意处关闭</div>';
+    document.body.appendChild(overlay);
+    overlay.onclick=function(){overlay.style.opacity='0';setTimeout(function(){overlay.remove()},300);document.body.style.overflow='';};
+    document.body.style.overflow='hidden';
+  }
+  // 彩蛋2：连点 Logo 5 次 → 撒花
+  var logo=document.querySelector('nav .logo'),logoCnt=0,logoT=null;
+  if(logo)logo.addEventListener('click',function(){
+    logoCnt++;clearTimeout(logoT);logoT=setTimeout(function(){logoCnt=0;},1200);
+    if(logoCnt>=5){logoCnt=0;confetti();toast('🎊 你发现了隐藏彩蛋！');}
+  });
+  // 彩蛋3：标题连点 3 次 → 切换霓虹色
+  var heroH=document.querySelector('.hero h1'),hCnt=0,hT=null,neon=0;
+  var NEONS=['linear-gradient(135deg,#7b5cff,#00d4ff)','linear-gradient(135deg,#ff5ea8,#ffb86c)','linear-gradient(135deg,#22e07e,#00d4ff)','linear-gradient(135deg,#ffd700,#ff5ea8)'];
+  if(heroH)heroH.addEventListener('click',function(){
+    hCnt++;clearTimeout(hT);hT=setTimeout(function(){hCnt=0;},1000);
+    if(hCnt>=3){hCnt=0;neon=(neon+1)%NEONS.length;
+      heroH.querySelectorAll('.hl,.hl2').forEach(function(el){el.style.background=NEONS[neon];el.style.webkitBackgroundClip='text';el.style.backgroundClip='text';el.style.webkitTextFillColor='transparent';});
+      toast('🌈 主题切换 '+neon);}
+  });
+  // 彩蛋4：输入 "miui" 触发
+  var typeBuf='';
+  document.addEventListener('keydown',function(e){
+    if(e.key.length===1){typeBuf+=e.key.toLowerCase();if(typeBuf.length>4)typeBuf=typeBuf.slice(-4);if(typeBuf==='miui'){typeBuf='';confetti();toast('🚀 MIUI 工作室永不为奴！');}}
+  });
+  function confetti(){
+    var colors=['#7b5cff','#00d4ff','#ff5ea8','#ffb86c','#22e07e'];
+    for(var i=0;i<60;i++){
+      var c=document.createElement('div');
+      c.style.cssText='position:fixed;z-index:9997;width:8px;height:8px;background:'+colors[i%5]+';left:'+(Math.random()*100)+'vw;top:-10px;pointer-events:none;border-radius:2px;transition:transform 1.6s cubic-bezier(.2,.6,.4,1),opacity 1.6s';
+      document.body.appendChild(c);
+      requestAnimationFrame(function(){c.style.transform='translateY('+(100+Math.random()*20)+'vh) rotate('+(Math.random()*720)+'deg)';c.style.opacity='0';});
+      setTimeout(function(){c.remove();},1700);
+    }
+  }
+})();
 
 /* ===== Toast ===== */
 function toast(m){
