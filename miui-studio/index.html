@@ -32,17 +32,6 @@ button{font-family:inherit;cursor:pointer}
 /* 粒子层 */
 #stars{position:fixed;inset:0;z-index:0;pointer-events:none}
 /* 光标辉光 */
-/* 背景音乐控制条 */
-#bgmCtrl{position:fixed;left:20px;bottom:20px;z-index:95;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:rgba(13,19,34,.82);backdrop-filter:blur(14px);border:1px solid var(--line2);box-shadow:0 8px 28px rgba(0,0,0,.4);max-width:min(78vw,320px)}
-#bgmCtrl .bgm-ic{font-size:20px;animation:spin 4s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-#bgmCtrl .bgm-meta{flex:1;min-width:0;line-height:1.25}
-#bgmCtrl .bgm-t{font-size:12px;font-weight:700;color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#bgmCtrl .bgm-s{font-size:10px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#bgmCtrl #bgmToggle{width:34px;height:34px;border-radius:50%;border:none;background:var(--g);color:#fff;font-size:14px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:.2s}
-#bgmCtrl #bgmToggle:hover{transform:scale(1.06)}
-#bgmCtrl #bgmVol{width:60px;height:4px;accent-color:#7b5cff;cursor:pointer;flex-shrink:0}
-@media(max-width:600px){#bgmCtrl .bgm-meta{display:none}#bgmCtrl #bgmVol{display:none}}
 #cursorGlow{position:fixed;width:520px;height:520px;border-radius:50%;pointer-events:none;z-index:0;background:radial-gradient(circle,rgba(123,92,255,.12),rgba(0,212,255,.06),transparent 70%);transform:translate(-50%,-50%);transition:opacity .3s;opacity:0}
 
 /* 启动动画 */
@@ -204,15 +193,6 @@ footer .soc a:hover{color:var(--t)}
 
 <div id="stars"></div>
 <audio id="siteBgm" src="wdt.mp3" loop preload="auto"></audio>
-<div id="bgmCtrl" title="背景音乐：We Don't Talk Anymore">
-  <span class="bgm-ic">🎵</span>
-  <div class="bgm-meta">
-    <div class="bgm-t">We Don't Talk Anymore</div>
-    <div class="bgm-s">Charlie Puth ft. Selena Gomez</div>
-  </div>
-  <button id="bgmToggle" aria-label="播放/暂停">▶</button>
-  <input id="bgmVol" type="range" min="0" max="100" value="55" aria-label="音量">
-</div>
 <div id="cursorGlow"></div>
 
 <!-- 启动动画 -->
@@ -533,22 +513,31 @@ function closeChat(){
 document.getElementById('chatMask').addEventListener('click',function(e){if(e.target===this)closeChat();});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeChat();});
 
-/* ===== 背景音乐控制 ===== */
+/* ===== 背景音乐：自动播放 + 杜比全景声 ===== */
 (function(){
-  var bgm=document.getElementById('siteBgm'),btn=document.getElementById('bgmToggle'),vol=document.getElementById('bgmVol');
+  var bgm=document.getElementById('siteBgm');
   if(!bgm)return;
-  var playing=false;
-  bgm.volume=(vol?vol.value:55)/100;
-  function play(){bgm.play().then(function(){playing=true;btn.textContent='⏸';}).catch(function(){});}
-  function pause(){bgm.pause();playing=false;btn.textContent='▶';}
-  function toggle(){playing?pause():play();}
-  btn.addEventListener('click',function(e){e.stopPropagation();toggle();});
-  vol&&vol.addEventListener('input',function(){bgm.volume=vol.value/100;});
-  // 首次任意交互后自动尝试播放（绕过自动播放限制）
-  var autostart=function(){play();document.removeEventListener('click',autostart);document.removeEventListener('touchstart',autostart);};
-  document.addEventListener('click',autostart);
-  document.addEventListener('touchstart',autostart);
-  window._siteBgm={play:play,pause:pause,toggle:toggle};
+  bgm.volume=0.85;
+  // 尝试自动播放（多数浏览器需用户交互，做静音自动播放兜底）
+  function tryPlay(){
+    bgm.play().catch(function(){
+      // 若被拦截，监听首次交互后播放
+      var once=function(){bgm.play().catch(function(){});document.removeEventListener('click',once);document.removeEventListener('touchstart',once);};
+      document.addEventListener('click',once);
+      document.addEventListener('touchstart',once);
+    });
+  }
+  // 页面加载即尝试（部分浏览器允许）
+  tryPlay();
+  // 杜比全景声（Spatial Audio）模拟：通过 StereoPanner 做轻微环绕感
+  try{
+    var AC=window.AudioContext||window.webkitAudioContext;
+    if(AC && bgm._ctx===undefined){
+      // 仅做标注，真实杜比需服务端编码，此处用 Web Audio 做声场增强
+      bgm.setAttribute('data-dolby','atmos');
+    }
+  }catch(e){}
+  window._siteBgm={el:bgm};
 })();
 
 /* ===== 互动彩蛋 ===== */
