@@ -186,6 +186,24 @@ footer .soc a:hover{color:var(--t)}
 .rv.vis{opacity:1;transform:translateY(0)}
 
 /* Toast */
+/* 开发者模式面板 */
+#devPanel{position:fixed;top:88px;right:14px;z-index:9996;width:290px;max-width:92vw;background:rgba(13,19,34,.96);backdrop-filter:blur(16px);border:1px solid var(--line2);border-radius:16px;padding:18px 18px 16px;box-shadow:0 20px 60px rgba(0,0,0,.6);display:none;font-size:13px}
+#devPanel.open{display:block}
+#devPanel h3{font-size:14px;font-weight:800;margin-bottom:12px;color:#00d4ff}
+#devPanel .devx{position:absolute;top:12px;right:14px;cursor:pointer;color:var(--t3);font-size:16px}
+#devPanel .dv{margin-bottom:12px}
+#devPanel label{display:block;font-size:11px;color:var(--t2);margin-bottom:5px}
+#devPanel input[type=text]{width:100%;padding:8px 10px;border-radius:8px;background:var(--card);border:1px solid var(--line);color:var(--t);font-size:12px;font-family:inherit}
+#devPanel .swrow{display:flex;gap:6px;flex-wrap:wrap}
+#devPanel .sw{width:30px;height:30px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:.15s}
+#devPanel .sw.on{border-color:#fff;transform:scale(1.08)}
+#devPanel .tog{display:flex;align-items:center;font-size:12px;color:var(--t);margin-bottom:8px}
+#devPanel .tog button{margin-left:auto;padding:4px 12px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--t);font-size:11px;cursor:pointer}
+#devPanel .devact{display:flex;gap:8px;margin-top:4px}
+#devPanel .devact button{flex:1;padding:9px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer}
+#devPanel .devsave{background:var(--g);color:#fff}
+#devPanel .devreset{background:var(--card);color:var(--t2);border:1px solid var(--line)}
+
 #toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);padding:11px 24px;border-radius:18px;font-size:13px;font-weight:600;z-index:9999;background:#111a2e;color:#fff;box-shadow:0 8px 30px rgba(0,0,0,.5);opacity:0;transition:.3s;pointer-events:none;max-width:90vw;text-align:center}
 </style>
 </head>
@@ -489,6 +507,7 @@ function countUp(el){
 (function(){
   var el=document.getElementById('typeText');if(!el)return;
   var lines=['独立游戏与 AI 应用开发团队','30+ 即点即玩的轻应用与小游戏','用创意点亮每一个连接'];
+  if(window.__DEV_SUB)lines=[window.__DEV_SUB];
   var li=0,ci=0,del=false;
   function tick(){
     var cur=lines[li];
@@ -540,55 +559,143 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeChat();
   window._siteBgm={el:bgm};
 })();
 
-/* ===== 互动彩蛋 ===== */
+/* ===== 互动彩蛋 + 开发者模式 ===== */
 (function(){
-  // 彩蛋1：Konami 密码 ↑↑↓↓←→←→BA
-  var seq=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
-  var buf=[];
-  document.addEventListener('keydown',function(e){
-    buf.push(e.key.length===1?e.key.toLowerCase():e.key);
-    if(buf.length>seq.length)buf.shift();
-    if(JSON.stringify(buf)===JSON.stringify(seq)){konami();buf=[];}
-  });
-  function konami(){
-    toast('🎉 秘籍解锁：开发者模式！');
-    var overlay=document.createElement('div');
-    overlay.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(5,7,13,.9);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;cursor:pointer;transition:opacity .3s';
-    overlay.innerHTML='<div style="font-size:54px">👾</div><div style="font-size:18px;font-weight:800;color:#00d4ff">开发者模式已激活</div><div style="font-size:12px;color:#9aa7c7">点击任意处关闭</div>';
-    document.body.appendChild(overlay);
-    overlay.onclick=function(){overlay.style.opacity='0';setTimeout(function(){overlay.remove()},300);document.body.style.overflow='';};
-    document.body.style.overflow='hidden';
+  var DEV_KEY='miui_dev_cfg';
+  var THEMES=[
+    {n:'紫蓝',g:'linear-gradient(135deg,#7b5cff,#00d4ff)',c1:'#7b5cff',c2:'#00d4ff'},
+    {n:'粉橙',g:'linear-gradient(135deg,#ff5ea8,#ffb86c)',c1:'#ff5ea8',c2:'#ffb86c'},
+    {n:'绿青',g:'linear-gradient(135deg,#22e07e,#00d4ff)',c1:'#22e07e',c2:'#00d4ff'},
+    {n:'金粉',g:'linear-gradient(135deg,#ffd700,#ff5ea8)',c1:'#ffd700',c2:'#ff5ea8'},
+    {n:'红黑',g:'linear-gradient(135deg,#ff4d4d,#1a1a2e)',c1:'#ff4d4d',c2:'#1a1a2e'}
+  ];
+  var CUSTOM_SUB=null;
+  function applyTheme(t){var r=document.documentElement.style;r.setProperty('--g',t.g);r.setProperty('--c1',t.c1);r.setProperty('--c2',t.c2);}
+  function setTitle(t){var h=document.querySelector('.hero h1');if(h)h.innerHTML=t;}
+  function setSub(t){CUSTOM_SUB=t;window.__DEV_SUB=t;var el=document.getElementById('typeText');if(el)el.textContent=t;}
+  function save(cfg){try{localStorage.setItem(DEV_KEY,JSON.stringify(cfg));}catch(e){}}
+  function load(){try{return JSON.parse(localStorage.getItem(DEV_KEY)||'null');}catch(e){return null;}}
+  function restore(){
+    var cfg=load();if(!cfg)return;
+    if(cfg.theme)applyTheme(cfg.theme);
+    if(cfg.title)setTitle(cfg.title);
+    if(cfg.sub)setSub(cfg.sub);
+    var el=window._siteBgm&&window._siteBgm.el;
+    if(cfg.music===false&&el)el.pause();
+    if(cfg.particles===false){var st=document.getElementById('stars');if(st)st.style.display='none';}
   }
-  // 彩蛋2：连点 Logo 5 次 → 撒花
-  var logo=document.querySelector('nav .logo'),logoCnt=0,logoT=null;
-  if(logo)logo.addEventListener('click',function(){
-    logoCnt++;clearTimeout(logoT);logoT=setTimeout(function(){logoCnt=0;},1200);
-    if(logoCnt>=5){logoCnt=0;confetti();toast('🎊 你发现了隐藏彩蛋！');}
-  });
-  // 彩蛋3：标题连点 3 次 → 切换霓虹色
-  var heroH=document.querySelector('.hero h1'),hCnt=0,hT=null,neon=0;
-  var NEONS=['linear-gradient(135deg,#7b5cff,#00d4ff)','linear-gradient(135deg,#ff5ea8,#ffb86c)','linear-gradient(135deg,#22e07e,#00d4ff)','linear-gradient(135deg,#ffd700,#ff5ea8)'];
-  if(heroH)heroH.addEventListener('click',function(){
-    hCnt++;clearTimeout(hT);hT=setTimeout(function(){hCnt=0;},1000);
-    if(hCnt>=3){hCnt=0;neon=(neon+1)%NEONS.length;
-      heroH.querySelectorAll('.hl,.hl2').forEach(function(el){el.style.background=NEONS[neon];el.style.webkitBackgroundClip='text';el.style.backgroundClip='text';el.style.webkitTextFillColor='transparent';});
-      toast('🌈 主题切换 '+neon);}
-  });
-  // 彩蛋4：输入 "miui" 触发
-  var typeBuf='';
-  document.addEventListener('keydown',function(e){
-    if(e.key.length===1){typeBuf+=e.key.toLowerCase();if(typeBuf.length>4)typeBuf=typeBuf.slice(-4);if(typeBuf==='miui'){typeBuf='';confetti();toast('🚀 MIUI 工作室永不为奴！');}}
-  });
   function confetti(){
     var colors=['#7b5cff','#00d4ff','#ff5ea8','#ffb86c','#22e07e'];
     for(var i=0;i<60;i++){
       var c=document.createElement('div');
       c.style.cssText='position:fixed;z-index:9997;width:8px;height:8px;background:'+colors[i%5]+';left:'+(Math.random()*100)+'vw;top:-10px;pointer-events:none;border-radius:2px;transition:transform 1.6s cubic-bezier(.2,.6,.4,1),opacity 1.6s';
       document.body.appendChild(c);
-      requestAnimationFrame(function(){c.style.transform='translateY('+(100+Math.random()*20)+'vh) rotate('+(Math.random()*720)+'deg)';c.style.opacity='0';});
+      (function(cc){requestAnimationFrame(function(){cc.style.transform='translateY('+(100+Math.random()*20)+'vh) rotate('+(Math.random()*720)+'deg)';cc.style.opacity='0';});})(c);
       setTimeout(function(){c.remove();},1700);
     }
   }
+  // 彩蛋1：Konami
+  var seq=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  var buf=[];
+  document.addEventListener('keydown',function(e){
+    buf.push(e.key.length===1?e.key.toLowerCase():e.key);
+    if(buf.length>seq.length)buf.shift();
+    if(JSON.stringify(buf)===JSON.stringify(seq)){buf=[];toast('🎉 秘籍解锁：开发者模式！');openDev();}
+  });
+  // 彩蛋2：连点 Logo（5次撒花 / 8次开发者模式）
+  var logo=document.querySelector('nav .logo'),logoCnt=0,logoT=null;
+  if(logo)logo.addEventListener('click',function(){
+    logoCnt++;clearTimeout(logoT);logoT=setTimeout(function(){logoCnt=0;},1200);
+    if(logoCnt>=8){logoCnt=0;openDev();}
+    else if(logoCnt>=5){logoCnt=0;confetti();toast('🎊 隐藏彩蛋！');}
+  });
+  // 手机：长按 Logo 1秒
+  if(logo){
+    var lpT=null;
+    logo.addEventListener('touchstart',function(){lpT=setTimeout(function(){confetti();toast('📱 手机彩蛋：长按解锁！');},1000);},{passive:true});
+    logo.addEventListener('touchend',function(){clearTimeout(lpT);});
+    logo.addEventListener('touchmove',function(){clearTimeout(lpT);});
+  }
+  // 彩蛋3：标题连点3次换主题
+  var heroH=document.querySelector('.hero h1'),hCnt=0,hT=null,neon=0;
+  if(heroH)heroH.addEventListener('click',function(){
+    hCnt++;clearTimeout(hT);hT=setTimeout(function(){hCnt=0;},1000);
+    if(hCnt>=3){hCnt=0;applyTheme(THEMES[neon]);toast('🌈 主题：'+THEMES[neon].n);neon=(neon+1)%THEMES.length;}
+  });
+  // 彩蛋4：输入 miui / dev
+  var typeBuf='';
+  document.addEventListener('keydown',function(e){
+    if(e.key.length===1){typeBuf+=e.key.toLowerCase();if(typeBuf.length>4)typeBuf=typeBuf.slice(-4);if(typeBuf==='miui'){typeBuf='';confetti();toast('🚀 MIUI 工作室永不为奴！');}}
+  });
+  var devBuf='';
+  document.addEventListener('keydown',function(e){
+    if(e.key.length===1){devBuf+=e.key.toLowerCase();if(devBuf.length>3)devBuf=devBuf.slice(-3);if(devBuf==='dev'){devBuf='';openDev();}}
+  });
+  // 手机：双指捏合
+  var pinch=null;
+  document.addEventListener('touchmove',function(e){
+    if(e.touches&&e.touches.length===2){
+      var dx=e.touches[0].clientX-e.touches[1].clientX,dy=e.touches[0].clientY-e.touches[1].clientY;
+      var d=Math.sqrt(dx*dx+dy*dy);
+      if(pinch===null)pinch=d;else if(pinch-d>60){pinch=null;confetti();toast('🤏 双指彩蛋触发！');}
+    }
+  },{passive:true});
+  document.addEventListener('touchend',function(){pinch=null;});
+  // 手机/桌面：连点页面10次
+  var tapCnt=0,tapT=null;
+  document.addEventListener('click',function(){
+    tapCnt++;clearTimeout(tapT);tapT=setTimeout(function(){tapCnt=0;},1500);
+    if(tapCnt>=10){tapCnt=0;confetti();toast('🎯 十连击！你真闲～');}
+  });
+  // 开发者模式面板
+  function openDev(){
+    var p=document.getElementById('devPanel');
+    if(!p){
+      p=document.createElement('div');p.id='devPanel';
+      p.innerHTML='<span class="devx" id="devX">✕</span>'+
+        '<h3>🛠️ 开发者模式</h3>'+
+        '<div class="dv"><label>大标题（可带HTML）</label><input id="devTitle" type="text" placeholder="MIUI&lt;span&gt;工作室&lt;/span&gt;"></div>'+
+        '<div class="dv"><label>副标题文字</label><input id="devSub" type="text" placeholder="独立游戏与AI应用开发团队"></div>'+
+        '<div class="dv"><label>主题色</label><div class="swrow" id="devSw"></div></div>'+
+        '<div class="dv"><div class="tog">背景音乐<button id="devMusic">开关</button></div>'+
+        '<div class="tog">粒子背景<button id="devStar">开关</button></div></div>'+
+        '<div class="devact"><button class="devsave" id="devSave">💾 保存</button><button class="devreset" id="devReset">↺ 重置</button></div>';
+      document.body.appendChild(p);
+      document.getElementById('devX').onclick=function(){p.classList.remove('open');};
+      var sw=document.getElementById('devSw');
+      THEMES.forEach(function(t){
+        var b=document.createElement('div');b.className='sw';b.style.background=t.g;b.title=t.n;
+        b.onclick=function(){applyTheme(t);document.querySelectorAll('#devSw .sw').forEach(function(x){x.classList.remove('on')});b.classList.add('on');};
+        sw.appendChild(b);
+      });
+      document.getElementById('devMusic').onclick=function(){
+        var el=window._siteBgm&&window._siteBgm.el;if(!el)return;
+        if(el.paused){el.play();toast('🎵 音乐开');}else{el.pause();toast('🔇 音乐关');}
+      };
+      document.getElementById('devStar').onclick=function(){
+        var st=document.getElementById('stars');if(!st)return;
+        st.style.display=st.style.display==='none'?'block':'none';toast('✨ 粒子'+(st.style.display==='none'?'关':'开'));
+      };
+      document.getElementById('devSave').onclick=function(){
+        var curG=getComputedStyle(document.documentElement).getPropertyValue('--g').trim();
+        var tm=THEMES.find(function(t){return t.g===curG;})||THEMES[0];
+        var el=window._siteBgm&&window._siteBgm.el;
+        var st=document.getElementById('stars');
+        var cfg={theme:tm,title:document.getElementById('devTitle').value||null,sub:document.getElementById('devSub').value||null,music:el?!el.paused:true,particles:st?!st.style.display==='none':true};
+        if(cfg.title)setTitle(cfg.title);
+        if(cfg.sub)setSub(cfg.sub);
+        save(cfg);toast('💾 已保存，刷新仍生效');
+      };
+      document.getElementById('devReset').onclick=function(){
+        try{localStorage.removeItem(DEV_KEY);}catch(e){}
+        toast('↺ 已重置，刷新恢复默认');
+      };
+    }
+    var h=document.querySelector('.hero h1');if(h)document.getElementById('devTitle').value=h.innerHTML;
+    var stx=document.getElementById('typeText');if(stx)document.getElementById('devSub').value=CUSTOM_SUB||stx.textContent;
+    p.classList.add('open');
+  }
+  restore();
 })();
 
 /* ===== Toast ===== */
