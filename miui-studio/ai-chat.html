@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AI 助手 · 多引擎 · MIUI 工作室</title>
-<meta name="description" content="MIUI 工作室多引擎免费 AI 聚合聊天页，内置多个免密钥/免费大模型接口。" />
+<title>AI 助手 · 多引擎自动降级 · MIUI 工作室</title>
+<meta name="description" content="MIUI 工作室多引擎免费 AI 聚合，发消息自动轮询可用免费大模型。" />
 <style>
   :root{
     --qq:#12B7F5; --qq-d:#0a8fd0; --bg:#0a0e1a; --bg2:#10162a;
@@ -25,7 +25,6 @@
   .hactions{margin-left:auto;display:flex;gap:8px}
   .hbtn{background:var(--card);border:1px solid var(--line);color:var(--sub);padding:6px 13px;border-radius:20px;font-size:12.5px;cursor:pointer;transition:.2s}
   .hbtn:hover{color:var(--txt);border-color:var(--qq)}
-  /* 引擎栏 */
   .eng{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
   .eng select,.eng input{background:var(--bg2);border:1px solid var(--line);color:var(--txt);padding:7px 10px;border-radius:9px;font-size:13px;outline:none;font-family:inherit}
   .eng select:focus,.eng input:focus{border-color:var(--qq)}
@@ -43,6 +42,7 @@
   .bubble{padding:11px 15px;border-radius:16px;font-size:14.5px;line-height:1.65;word-break:break-word;white-space:pre-wrap}
   .msg.ai .bubble{background:var(--card);border:1px solid var(--line);border-top-left-radius:4px}
   .msg.me .bubble{background:linear-gradient(135deg,var(--qq),var(--qq-d));color:#fff;border-top-right-radius:4px}
+  .msg.ai .bubble .src{display:block;margin-top:6px;font-size:11px;color:var(--sub)}
   .typing{display:flex;gap:4px;padding:14px 16px}.typing span{width:7px;height:7px;border-radius:50%;background:var(--sub);animation:bl 1.2s infinite}
   .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
   @keyframes bl{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
@@ -62,7 +62,7 @@
     <div class="av">Q</div>
     <div class="hinfo">
       <h1>小Q · 多引擎 AI</h1>
-      <div class="st"><span class="dot-live"></span><span id="modelname">就绪</span></div>
+      <div class="st"><span class="dot-live"></span><span id="modelname">就绪 · 发送自动选引擎</span></div>
     </div>
     <div class="hactions">
       <button class="hbtn" onclick="goHome()">← 官网</button>
@@ -70,7 +70,7 @@
     </div>
   </div>
   <div class="eng">
-    <span class="tag">引擎：</span>
+    <span class="tag">优先引擎：</span>
     <select id="eng" onchange="onEngChange()"></select>
     <select id="model"></select>
     <input class="key" id="apikey" placeholder="免费 key（免密引擎留空）" oninput="saveKey()">
@@ -79,24 +79,24 @@
 </header>
 
 <div id="log">
-  <div class="msg ai"><div class="mav">Q</div><div class="bubble">👋 我是 MIUI 工作室 AI 小Q。上面切换不同免费引擎，挑一个能聊的就行～</div></div>
+  <div class="msg ai"><div class="mav">Q</div><div class="bubble">👋 我是 MIUI 工作室 AI 小Q。发消息我就会自动挑一个能用的免费引擎回复你，不用管它挂没挂～</div></div>
 </div>
 
 <div class="composer">
   <textarea id="in" placeholder="输入消息，Enter 发送，Shift+Enter 换行" onkeydown="onKey(event)"></textarea>
   <button id="send" onclick="send()">发送</button>
 </div>
-<div class="hint">多个免费大模型聚合 · 免密引擎直接聊 · 需 key 的填自己的免费额度 · 群 1070470498</div>
+<div class="hint">多个免费大模型自动降级 · 免密引擎优先 · 需 key 的填自己额度 · 群 1070470498</div>
 
 <script>
 const SYS="你是 MIUI 工作室的官方 AI 助手小Q，语气活泼亲切、简洁直接，像朋友聊天。用简体中文回答，避免长篇大论。";
 
 // ===== 多个免费 AI API 引擎 =====
 const ENGINES={
-  ovh:{name:'OVH Mistral（免密）',free:true,url:'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions',
-    models:['Mistral-Small-3.2-24B-Instruct-2506','gpt-oss-20b','Qwen3-32B'],hdr:()=>({}),fix:(b)=>b},
   pollinations:{name:'Pollinations（免密）',free:true,url:'https://text.pollinations.ai/openai',
     models:['openai','mistral','llama','gpt','claude','gemini'],hdr:()=>({}),fix:(b)=>b},
+  ovh:{name:'OVH Mistral（免密）',free:true,url:'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions',
+    models:['Mistral-Small-3.2-24B-Instruct-2506','gpt-oss-20b','Qwen3-32B'],hdr:()=>({}),fix:(b)=>b},
   groq:{name:'Groq（填免费key）',free:false,url:'https://api.groq.com/openai/v1/chat/completions',
     models:['llama3-8b-8192','mixtral-8x7b-32768','gemma2-9b-it'],hdr:(k)=>({'Authorization':'Bearer '+k}),fix:(b)=>b},
   openrouter:{name:'OpenRouter（填免费key）',free:false,url:'https://openrouter.ai/api/v1/chat/completions',
@@ -104,18 +104,17 @@ const ENGINES={
   deepseek:{name:'DeepSeek（填免费key）',free:false,url:'https://api.deepseek.com/chat/completions',
     models:['deepseek-chat'],hdr:(k)=>({'Authorization':'Bearer '+k}),fix:(b)=>b},
 };
+// 免密引擎的自动轮询顺序（优先靠前的）
+const FREE_CHAIN=['pollinations','ovh'];
 
 const log=document.getElementById('log'),sendBtn=document.getElementById('send'),input=document.getElementById('in');
 const engSel=document.getElementById('eng'),modelSel=document.getElementById('model'),keyIn=document.getElementById('apikey');
 const DEFAULT_ENG='pollinations';
 let busy=false,curEngine=DEFAULT_ENG,curModel='';
 
-// 初始化引擎下拉
 Object.keys(ENGINES).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=ENGINES[k].name;engSel.appendChild(o);});
-// 迁移：旧版默认 ovh 易限流，自动切到 pollinations
-let stored=localStorage.eng;
-if(stored==='ovh')stored=DEFAULT_ENG;
-if(stored&&ENGINES[stored])engSel.value=stored; else engSel.value=DEFAULT_ENG;
+let stored=localStorage.eng; if(stored==='ovh')stored=DEFAULT_ENG;
+engSel.value=(stored&&ENGINES[stored])?stored:DEFAULT_ENG;
 loadKey();onEngChange();
 
 function goHome(){location.href='index.html';}
@@ -135,50 +134,65 @@ function onEngChange(){
 function saveKey(){localStorage['key_'+curEngine]=keyIn.value.trim();}
 function loadKey(){if(localStorage.eng&&ENGINES[localStorage.eng]){keyIn.value=localStorage['key_'+localStorage.eng]||'';}}
 
-function addMsg(role,text){const m=document.createElement('div');m.className='msg '+role;const av=role==='me'?'你':'Q';m.innerHTML=`<div class="mav">${av}</div><div class="bubble">${escapeHtml(text)}</div>`;log.appendChild(m);scroll();return m;}
+function addMsg(role,text,src){const m=document.createElement('div');m.className='msg '+role;const av=role==='me'?'你':'Q';
+  m.innerHTML=`<div class="mav">${av}</div><div class="bubble">${escapeHtml(text)}${src?`<span class="src">via ${escapeHtml(src)}</span>`:''}</div>`;
+  log.appendChild(m);scroll();return m;}
 function addTyping(){const m=document.createElement('div');m.className='msg ai';m.id='typing';m.innerHTML=`<div class="mav">Q</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;log.appendChild(m);scroll();return m;}
-function clearChat(){log.innerHTML='';addMsg('ai','已清空，换个引擎继续聊～');}
+function clearChat(){log.innerHTML='';addMsg('ai','已清空，继续聊～');}
 
-async function callEngine(text){
-  const e=ENGINES[curEngine];curModel=modelSel.value;
-  const key=keyIn.value.trim();
+// 调用指定引擎
+async function callEngine(ek, model, text){
+  const e=ENGINES[ek];
+  const key=localStorage['key_'+ek]||'';
   if(!e.free&&!key)throw new Error('该引擎需要免费 key');
   const msgs=[{role:'system',content:SYS},{role:'user',content:text}];
-  const body=e.fix({model:curModel,messages:msgs,temperature:0.7,max_tokens:800});
+  const body=e.fix({model,messages:msgs,temperature:0.7,max_tokens:800});
   const r=await fetch(e.url,{method:'POST',headers:Object.assign({'Content-Type':'application/json'},e.hdr(key)),body:JSON.stringify(body)});
-  if(!r.ok)throw new Error('HTTP '+r.status+(e.free?'':'（检查key）'));
+  if(!r.ok)throw new Error('HTTP '+r.status);
   const d=await r.json();
   let c=d.choices?.[0]?.message?.content;
   if(!c&&d.choices?.[0]?.message?.reasoning)c=d.choices[0].message.reasoning;
-  if(!c&&d.generated_text)c=d.generated_text;            // HF 兜底
-  if(!c&&typeof d==='string')c=d;                          // 纯文本兜底
+  if(!c&&d.generated_text)c=d.generated_text;
+  if(!c&&typeof d==='string')c=d;
   if(!c)c=d.error?.message||'空返回';
   return c.replace(/<think>[\s\S]*?<\/think>/g,'');
+}
+
+// 自动选引擎：优先用户所选(若有key) -> 免密链 -> 有key的其它引擎
+function buildCandidates(){
+  const list=[];
+  const sel=engSel.value;
+  if(ENGINES[sel].free || (localStorage['key_'+sel]||'').trim()) list.push(sel);
+  FREE_CHAIN.forEach(e=>{ if(!list.includes(e)) list.push(e); });
+  Object.keys(ENGINES).forEach(e=>{ if(!ENGINES[e].free && (localStorage['key_'+e]||'').trim() && !list.includes(e)) list.push(e); });
+  return list;
 }
 
 async function send(){
   const text=input.value.trim();if(!text||busy)return;
   input.value='';input.style.height='46px';addMsg('me',text);
   busy=true;sendBtn.disabled=true;const t=addTyping();
-  document.getElementById('modelname').textContent=curEngine+' · '+curModel;
-  try{
-    const ans=await callEngine(text);t.remove();addMsg('ai',ans);
-  }catch(err){
-    t.remove();
-    addMsg('ai','⚠️ 这个引擎挂了：'+escapeHtml(err.message||err)+'\n换个引擎试试，或者群 1070470498 找我。');
-  }finally{busy=false;sendBtn.disabled=false;input.focus();}
+  document.getElementById('modelname').textContent='正在选择可用引擎…';
+  const cands=buildCandidates();
+  let ans=null,used=null,lastErr=null;
+  for(const ek of cands){
+    try{
+      const mk=ENGINES[ek].models[0];
+      ans=await callEngine(ek,mk,text);used=ek;break;
+    }catch(err){lastErr=err;continue;}
+  }
+  t.remove();
+  if(ans){
+    const label=ENGINES[used].name.split('（')[0];
+    addMsg('ai',ans,label);
+    document.getElementById('modelname').textContent='已用：'+label;
+  }else{
+    addMsg('ai','⚠️ 试了一圈免费引擎都没连上（'+(lastErr?escapeHtml(lastErr.message):'未知')+'）。\n稍等几秒再发，或去 QQ 群 1070470498 找我。');
+    document.getElementById('modelname').textContent='全部引擎暂不可用';
+  }
+  busy=false;sendBtn.disabled=false;input.focus();
 }
 input.addEventListener('input',()=>{input.style.height='46px';input.style.height=Math.min(input.scrollHeight,120)+'px';});
-
-// 启动轻量探测：成功显示就绪，失败也不报“离线”，发送时再连
-(async()=>{
-  try{
-    await callEngine('你好');
-    document.getElementById('modelname').textContent=curEngine+' · '+curModel+' 已就绪';
-  }catch(e){
-    document.getElementById('modelname').textContent='就绪 · 发送时自动连接';
-  }
-})();
 </script>
 </body>
 </html>
