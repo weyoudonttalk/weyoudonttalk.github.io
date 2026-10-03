@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>创作工坊 · MIUI 工作室</title>
+<meta name="description" content="MIUI 工作室创作工坊：免费 AI 写代码、做小游戏、做动画、做电影视频的工具合集，墙内可用。" />
+<link rel="stylesheet" href="style.css" />
+<style>
+  .filters{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:6px 0 30px}
+  .filters button{background:var(--card);border:1px solid var(--line);color:var(--sub);padding:9px 20px;border-radius:24px;font-size:14px;cursor:pointer;transition:.2s;font-family:inherit}
+  .filters button:hover{color:var(--txt);border-color:var(--qq)}
+  .filters button.active{background:linear-gradient(135deg,var(--qq),var(--qq-d));color:#fff;border-color:transparent}
+  .group{margin-bottom:42px}
+  .group h2{font-size:22px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+  .group .desc{color:var(--sub);font-size:14px;margin-bottom:18px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:18px}
+  .card .ic{font-size:30px;margin-bottom:10px}
+  .card p{color:var(--sub);font-size:13.5px;min-height:42px}
+  .card .meta{display:inline-block;font-size:11px;padding:3px 10px;border-radius:20px;margin:8px 0 4px;background:rgba(61,220,132,.12);color:var(--ok);border:1px solid rgba(61,220,132,.3)}
+  .card .meta.need{background:rgba(255,180,84,.12);color:var(--warn);border-color:rgba(255,180,84,.3)}
+  .card a.go{display:inline-block;margin-top:12px;color:var(--qq);font-size:13px;font-weight:600}
+  .badge{font-size:11px;color:var(--qq);border:1px solid var(--qq);padding:2px 8px;border-radius:20px;margin-left:6px}
+</style>
+</head>
+<body>
+<nav>
+  <div class="brand"><div class="logo">M</div>MIUI 工作室</div>
+  <button class="menu-btn" onclick="document.querySelector('.navlinks').classList.toggle('open')">☰</button>
+  <div class="navlinks">
+    <a href="index.html">首页</a>
+    <a href="ai-chat.html">AI 助手</a>
+    <a href="api-hub.html">API 中心</a>
+    <a href="create.html" class="active">创作工坊</a>
+    <a href="tools.html">工具箱</a>
+    <a href="about.html">关于</a>
+    <a href="ai-chat.html" class="btn primary" style="padding:8px 18px">进入对话</a>
+  </div>
+</nav>
+
+<section class="wrap">
+  <div class="sec-h"><div class="ey">CREATION LAB</div><h2>🎨 创作工坊</h2>
+    <p>免费 AI 写代码、做游戏、做动画、做电影——零基础也能当创作者。墙内优先，全部免费额度可用。</p></div>
+
+  <div class="filters">
+    <button class="active" onclick="filter('all',this)">全部</button>
+    <button onclick="filter('code',this)">💻 写代码/做应用</button>
+    <button onclick="filter('game',this)">🎮 做小游戏</button>
+    <button onclick="filter('anim',this)">✨ 做动画</button>
+    <button onclick="filter('movie',this)">🎬 做视频/电影</button>
+  </div>
+
+  <!-- 写代码/做应用 -->
+  <div class="group" data-cat="code">
+    <h2>💻 AI 写代码 / 做应用 <span class="badge">一句话出产品</span></h2>
+    <div class="desc">自然语言描述想法，AI 直接生成可运行网页/工具/应用，部分免登录。</div>
+    <div class="grid">
+      <div class="card"><div class="ic">🍜</div><h3>NoCode（美团）</h3><span class="meta">免费额度</span><p>美团旗下零代码平台，"一句话呈所想"，生成网站/工具/小游戏，支持可视化编辑与一键部署分享。</p><a class="go" href="https://nocode.meituan.com/" target="_blank">去试试 →</a></div>
+      <div class="card"><div class="ic">🌐</div><h3>Literally Anything</h3><span class="meta">免费</span><p>文本描述即生成网页应用/游戏/微件并自动托管部署，完全无代码，公共作品库可抄灵感。</p><a class="go" href="https://literallyanything.io/" target="_blank">去试试 →</a></div>
+      <div class="card"><div class="ic">💜</div><h3>Lovable</h3><span class="meta need">有免费档</span><p>对话式生成完整前端+后端应用，内置 Claude，可做可上线的产品原型，开发者最爱。</p><a class="go" href="https://lovable.dev/" target="_blank">去试试 →</a></div>
+      <div class="card"><div class="ic">🐦</div><h3>Grok（xAI）</h3><span class="meta need">注册免费</span><p>免费版可生成 HTML/JS 小游戏代码，几秒出可玩版，直接在浏览器运行，可迭代修改。</p><a class="go" href="https://grok.com/" target="_blank">去试试 →</a></div>
+    </div>
+  </div>
+
+  <!-- 做小游戏 -->
+  <div class="group" data-cat="game">
+    <h2>🎮 AI 做小游戏 <span class="badge">零代码出游戏</span></h2>
+    <div class="desc">输入一句设定，AI 自动生成可玩 HTML5 游戏，支持平台/射击/解谜/赛车等。</div>
+    <div class="grid">
+      <div class="card"><div class="ic">🍺</div><h3>sitebrew</h3><span class="meta">免费档</span><p>聊天式生成可玩游戏与谜题，社区画廊可玩可 Remix，几秒从想法到原型，支持多类型。</p><a class="go" href="https://www.sitebrew.ai/" target="_blank">去试试 →</a></div>
+      <div class="card"><div class="ic">🎲</div><h3>AI Game Generator</h3><span class="meta need">免费计划</span><p>文本转可玩 HTML5 游戏，多模型引擎，可导出干净 HTML 自行托管，支持 3D。</p><a class="go" href="https://aiforeveryone.org/ai-game-generator" target="_blank">去试试 →</a></div>
+      <div class="card"><div class="ic">🌌</div><h3>Dreamlab</h3><span class="meta">免费</span><p>纯文本提示生成游戏代码/画面/玩法，支持多人协作与联机对战，零成本。</p><a class="go" href="https://dreamlab.gg/" target="_blank">去试试 →</a></div>
+      <div class="card"><div class="ic">⚡</div><h3>Grok + Lovable 组合</h3><span class="meta need">注册免费</span><p>用 Grok 设计游戏方案与代码，再丢给 Lovable 变可玩成品，30 分钟做出射击游戏。</p><a class="go" href="https://grok.com/" target="_blank">去试试 →</a></div>
+    </div>
+  </div>
+
+  <!-- 做动画 -->
+  <div class="group" data-cat="anim">
+    <h2>✨ AI 做动画 <span class="badge">打字就出片</span></h2>
+    <div class="desc">文字/图片转动态动画，角色口型、运镜、3D 视差一键生成。</div>
+    <div class="grid">
+      <div class="card"><div class="ic">🌊</div><h3>Pika Labs</h3><span class="meta">免费档</span><p>输入文字 30 秒出高清动画，支持图生视频、对口型，短视频创作者批量出片神器。</p><a class="go" href="https://pika.art/" target="_blank">去试试 →</a></div>
+      <div class="card"><div class="ic">🎬</div><h3>Runway</h3><span class="meta need">免费额度</span><p>好莱坞级 AI 视频/动画，Text to Video、绿幕抠像、动作追踪，独立电影人标配。</p><a class="go" href="https://runwayml.com/" target="_blank">去试试 →</a></div>
+      <div class="card"><div class="ic">🐳</div><h3>海螺 AI（MiniMax）</h3><span class="meta">国内免费</span><p>国内完全免费，720P 电影级运镜，角色小动作细腻，做 6 秒爆款抖音够用。</p><a class="go" href="https://hailuoai.video/" target="_blank">去试试 →</a></div>
+      <div class="card"><div class="ic">🕺</div><h3>Viggle AI</h3><span class="meta">免费体验</span><p>上传照片+动作描述，一键让静态人物动起来跳舞走动，社交短视频爆款制造机。</p><a class="go" href="https://viggle.ai/" target="_blank">去试试 →</a></div>
+      <div class="card"><div class="ic">🧸</div><h3>Animaker</h3><span class="meta need">有限免费</span><p>拖拽式 2D 动画，海量模板/角色/配音，AI 自动生成场景骨架，几分钟出教学/宣传片。</p><a class="go" href="https://animaker.com/" target="_blank">去试试 →</a></div>
+      <div class="card"><div class="ic">🌀</div><h3>Mootion AI</h3><span class="meta">免费额度</span><p>文本生图超快输出 2D/3D 动画，自媒体/短视频友好，中文支持好。</p><a class="go" href="https://mootion.com/" target="_blank">去试试 →</a></div>
+    </div>
+  </div>
+
+  <!-- 做视频/电影 -->
+  <div class="group" data-cat="movie">
+    <h2>🎬 AI 做视频 / 电影 <span class="badge">文字直接出 MP4</span></h2>
+    <div class="desc">粘贴文案或中文描述，自动生成画面+字幕+BGM+配音，导出无水印 MP4。</div>
+    <div class="grid">
+      <div class="card"><div class="ic">🎨</div><h3>即梦 AI（剪映）</h3><span class="meta">每日免费</span><p>字节系，每日 3 次高清无水印，自带运镜与自动旁白字幕，想做电影感横竖版都行。</p><a class="go" href="https://jimeng.jianying.com/" target="_blank">去试试 →</a></div>
+      <div class="card"><div class="ic">⚡</div><h3>可灵 AI（快手）</h3><span class="meta">每日积分</span><p>可出 2 分钟 1080P，物理模拟真实，电影级镜头运动，积分次日刷新，可商用。</p><a class="go" href="https://klingai.com/" target="_blank">去试试 →</a></div>
+      <div class="card"><div class="ic">✂️</div><h3>剪小映（字节）</h3><span class="meta">完全免费</span><p>抖音号登录，文字成片一键出 1080P 无水印，自动画面+字幕+BGM+配音，竖版神器。</p><a class="go" href="https://jianying.tv/" target="_blank">去试试 →</a></div>
+      <div class="card"><div class="ic">🔥</div><h3>Haiper</h3><span class="meta">完全免费</span><p>无需注册无限次生成 2-8 秒视频，文生/图生视频，九种特效风格，媲美 Sora 的免费工具。</p><a class="go" href="https://haiper.ai/" target="_blank">去试试 →</a></div>
+      <div class="card"><div class="ic">🌟</div><h3>PixVerse</h3><span class="meta">每日免费</span><p>文/图生视频最高 8K，运动笔刷精准控制，病毒式短视频与特效模板生成利器。</p><a class="go" href="https://pixverse.ai/" target="_blank">去试试 →</a></div>
+      <div class="card"><div class="ic">🌀</div><h3>智谱清影</h3><span class="meta">免费不限次</span><p>30 秒生成 6 秒视频，文/图生视频，电影感/油画多风格，加 BGM，创意短片随意玩。</p><a class="go" href="https://chatglm.cn/main/tool?type=video" target="_blank">去试试 →</a></div>
+      <div class="card"><div class="ic">☁️</div><h3>RecCloud</h3><span class="meta">基础免费</span><p>文字生成多风格视频（二次元/3D），自动脚本+配音+字幕，无水印，新手极简。</p><a class="go" href="https://reccloud.com/" target="_blank">去试试 →</a></div>
+      <div class="card"><div class="ic">🎥</div><h3>智影（腾讯）</h3><span class="meta">新用户赠送</span><p>腾讯系，日漫风格一键生成，角色场景台词自动搭，新用户送 10 条免费视频。</p><a class="go" href="https://zenvideo.qq.com/" target="_blank">去试试 →</a></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>官方 QQ 群：1070470498</div>
+  <div style="margin-top:8px">以上工具均为第三方公开免费服务，链接指向官方站点，使用请以各平台最新政策为准。</div>
+</footer>
+
+<script>
+function filter(cat,btn){
+  document.querySelectorAll('.filters button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.group').forEach(g=>{
+    g.style.display=(cat==='all'||g.dataset.cat===cat)?'block':'none';
+  });
+}
+</script>
+</body>
+</html>
