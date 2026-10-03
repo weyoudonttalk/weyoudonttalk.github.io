@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>聊天专区 · 小Q AI · MIUI 工作室</title>
-<meta name="description" content="MIUI 工作室聊天专区：免密 AI 小Q 即开即聊，支持多国内大模型升级。" />
+<title>角色扮演专区 · MIUI 工作室</title>
+<meta name="description" content="MIUI 工作室角色扮演专区：自定义角色卡，AI 按你的人设即场开演，免密即用。" />
 <link rel="stylesheet" href="style.css" />
 <link rel="stylesheet" href="zone-style.css" />
 <style>
@@ -14,18 +14,19 @@
   .av{width:38px;height:38px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;box-shadow:var(--glow)}
   .hinfo h1{font-size:16px}.hinfo .st{font-size:12px;color:var(--t2);display:flex;align-items:center;gap:6px}
   .dot-live{width:7px;height:7px;border-radius:50%;background:#22e07e;box-shadow:0 0 8px #22e07e}
-  .hactions{margin-left:auto;display:flex;gap:8px}
+  .hactions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
   .hbtn{background:var(--card);border:1px solid var(--line);color:var(--t2);padding:6px 13px;border-radius:20px;font-size:12.5px;cursor:pointer}
   .hbtn:hover{color:var(--t);border-color:var(--c1)}
   .keybtn{background:var(--g);border:none;color:#fff;padding:6px 16px;border-radius:20px;font-size:12.5px;cursor:pointer;font-weight:700}
-  .eng{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
-  .eng select,.eng input{background:var(--bg2);border:1px solid var(--line);color:var(--t);padding:7px 10px;border-radius:9px;font-size:13px;outline:none}
-  .eng select:focus,.eng input:focus{border-color:var(--c2)}
-  .eng input.key{width:220px}
-  .eng .tag{font-size:11px;color:var(--t2)}
-  .eng .tag b{color:#22e07e}
-  .note{font-size:11.5px;color:var(--t3);padding:4px 16px 0}
-  #log{flex:1;overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;gap:14px;min-height:0;position:relative;z-index:1}
+  /* 角色卡面板 */
+  .rp-set{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:10px 16px 0;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .rp-set .full{grid-column:1/3}
+  .rp-set label{display:block;font-size:11px;color:var(--t2);margin-bottom:4px}
+  .rp-set input,.rp-set textarea{width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--t);border-radius:9px;padding:9px 11px;font-size:13.5px;outline:none;font-family:inherit;resize:vertical}
+  .rp-set input:focus,.rp-set textarea:focus{border-color:var(--c2)}
+  .rp-set .apply{background:var(--g);border:none;color:#fff;padding:9px 18px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;justify-self:end}
+  .rp-note{font-size:11px;color:var(--t3);padding:6px 16px 0}
+  #log{flex:1;overflow-y:auto;padding:16px 16px;display:flex;flex-direction:column;gap:14px;min-height:0;position:relative;z-index:1}
   #log::-webkit-scrollbar{width:8px}#log::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:8px}
   .msg{display:flex;gap:10px;max-width:82%;animation:fade .3s ease}
   @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -46,7 +47,6 @@
   #send{background:var(--g);border:none;color:#fff;padding:0 22px;height:46px;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;flex-shrink:0}
   #send:disabled{opacity:.5;cursor:not-allowed}
   .hint{text-align:center;color:var(--t3);font-size:11.5px;padding:5px 0 0}
-  /* 一键填 Key 弹窗（精简） */
   .mask{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:200;padding:16px}
   .mask.open{display:flex}
   .modal{background:var(--card2);border:1px solid var(--line);border-radius:18px;max-width:540px;width:100%;max-height:86vh;overflow:auto;padding:22px}
@@ -57,6 +57,7 @@
   .modal textarea{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--t);border-radius:10px;padding:10px;font-size:13px;outline:none;resize:vertical;font-family:monospace}
   .modal .acts{display:flex;gap:10px;margin-top:12px}
   .closex{float:right;cursor:pointer;color:var(--t2);font-size:22px}
+  @media(max-width:680px){.rp-set{grid-template-columns:1fr}.rp-set .full{grid-column:1}}
 </style>
 </head>
 <body>
@@ -65,20 +66,17 @@
   <button id="burger" onclick="mMenu()">☰</button>
   <div class="nl">
     <a href="index.html">首页</a>
-    <a href="ai-chat.html">AI助手</a>
-    <a href="chat.html" class="on">聊天专区</a>
-    <a href="rp.html">角色扮演</a>
+    <a href="chat.html">聊天专区</a>
+    <a href="rp.html" class="on">角色扮演</a>
     <a href="ai-video.html">AI视频专区</a>
     <a href="ai-movie.html">电影专区</a>
     <a href="ai-game.html">AI游戏专区</a>
     <a href="create.html">创作工坊</a>
-    <a href="api-hub.html">API中心</a>
     <a href="about.html" class="cta-n">加入我们</a>
   </div>
 </nav>
 <div id="mMenu" style="display:none;position:fixed;inset:0;z-index:99;background:rgba(5,7,13,.96);backdrop-filter:blur(20px);flex-direction:column;align-items:center;justify-content:center;gap:6px">
-  <a href="index.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">首页</a>
-  <a href="chat.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🤖 聊天专区</a>
+  <a href="chat.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">💬 聊天专区</a>
   <a href="rp.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🎭 角色扮演</a>
   <a href="ai-video.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🎬 AI视频专区</a>
   <a href="ai-movie.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🎥 电影专区</a>
@@ -89,39 +87,40 @@
 <header class="chathead">
   <div class="top1">
     <div class="av">Q</div>
-    <div class="hinfo"><h1>小Q · 聊天专区</h1>
-      <div class="st"><span class="dot-live"></span><span id="modelname">免密模式 · 打开即聊</span></div></div>
+    <div class="hinfo"><h1>🎭 角色扮演专区</h1>
+      <div class="st"><span class="dot-live"></span><span id="modelname">免密模式 · 填角色卡即开演</span></div></div>
     <div class="hactions">
       <button class="keybtn" onclick="openKeyModal()">🔑 升级模型</button>
       <button class="hbtn" onclick="goHome()">← 官网</button>
       <button class="hbtn" onclick="clearChat()">清空</button>
     </div>
   </div>
-  <div class="eng">
-    <span class="tag">引擎：</span>
-    <select id="eng" onchange="onEngChange()"></select>
-    <select id="model"></select>
-    <input class="key" id="apikey" placeholder="升级模型才需填 key" oninput="saveKey()">
-    <span class="tag" id="engtag"></span>
-  </div>
 </header>
 
-<div id="log">
-  <div class="msg ai"><div class="mav">Q</div><div class="bubble">👋 我是 MIUI 工作室 AI 小Q。默认免密模式打开就能聊，不用填任何东西！想换更稳的国内大模型，点右上「🔑 升级模型」填个免费 key 就行（可选）。</div></div>
+<!-- 角色卡设置 -->
+<div class="rp-set" id="rpSet">
+  <div><label>角色名</label><input id="rpName" value="星野" placeholder="如：傲娇学妹、侦探、AI女友"></div>
+  <div><label>关系 / 身份</label><input id="rpRole" value="你的专属虚拟伙伴" placeholder="如：同班同学、搭档、宠物"></div>
+  <div class="full"><label>人设设定（你来决定 TA 是谁、怎么说话）</label>
+    <textarea id="rpPersona" rows="3" placeholder="描述性格、背景、说话风格、禁忌或偏好等。例如：活泼话少、爱用颜文字、喜欢科幻、会用简短口语回复。">活泼话少，爱用颜文字，喜欢科幻和猫，回复简短口语化，偶尔傲娇。</textarea></div>
+  <button class="apply" onclick="applyCard()">✔ 应用角色卡</button>
 </div>
+<div class="rp-note">💡 这只是<b>虚拟角色创作工具</b>：你给设定，AI 按设定演。合规设定完全自由；若某引擎拒绝你的设定，是它自身的内容策略，可换引擎继续。默认免密即开演。</div>
+
+<div id="log"></div>
 
 <div class="composer">
-  <textarea id="in" placeholder="输入消息，Enter 发送，Shift+Enter 换行" onkeydown="onKey(event)"></textarea>
+  <textarea id="in" placeholder="对 TA 说点什么…（Enter 发送，Shift+Enter 换行）" onkeydown="onKey(event)"></textarea>
   <button id="send" onclick="send()">发送</button>
 </div>
-<div class="hint">免密模式默认可聊 · 升级国内模型可选填 key · 多模型自动降级 · 群 1070470498</div>
+<div class="hint">免密默认 · 升级国内模型可选填 key · 多引擎自动降级 · 群 1070470498</div>
 
 <!-- 升级模型弹窗 -->
 <div class="mask" id="keyMask" onclick="if(event.target===this)closeKeyModal()">
   <div class="modal">
     <span class="closex" onclick="closeKeyModal()">×</span>
     <h3>🔑 升级模型（可选）</h3>
-    <div class="sub">免密模式已能用。想要更稳的国内大模型，去下面平台申请免费 key（推荐智谱 GLM-4-Flash 永久免费），复制回来批量粘贴即可。</div>
+    <div class="sub">免密模式已能演。想要更稳的国内大模型，去下面平台申请免费 key（推荐智谱 GLM-4-Flash 永久免费），复制回来批量粘贴即可。</div>
     <div id="keyRows"></div>
     <div style="margin-top:14px;font-size:13px;color:var(--t)">批量导入（每行 <code style="color:var(--c2)">引擎ID:KEY</code>）：</div>
     <textarea id="batchKeys" rows="4" placeholder="zhipu:你的智谱key&#10;deepseek:你的deepseek key"></textarea>
@@ -134,77 +133,63 @@
 </div>
 
 <script>
-const SYS="你是 MIUI 工作室的官方 AI 助手小Q，语气活泼亲切、简洁直接，像朋友聊天。用简体中文回答，避免长篇大论。";
-// 引擎：免密默认，国内需key可升级
+// 角色卡 → system prompt
+function buildSystem(){
+  const name=document.getElementById('rpName').value.trim()||'角色';
+  const role=document.getElementById('rpRole').value.trim();
+  const persona=document.getElementById('rpPersona').value.trim();
+  return `你是「${name}」${role?('，'+role):''}。\n人设：${persona||'一个普通虚拟角色'}。\n请完全代入这个角色用第一人称回复，保持人设一致，不要跳出角色，不要以助手/系统的口吻说话。用简体中文、自然的口语化语气。`;
+}
+// 引擎（与聊天专区一致）
 const ENGINES={
-  blockrun:{name:'BlockRun 免密（默认·免密）',free:true,url:'https://blockrun.ai/api/v1/chat/completions',
-    models:['nvidia/gpt-oss-120b','nvidia/deepseek-v4-flash','nvidia/mistral-nemotron'],hdr:()=>({'Authorization':'Bearer not-needed'}),fix:b=>b},
-  pollinations:{name:'Pollinations（免密·需联网）',free:true,url:'https://text.pollinations.ai/openai',
-    models:['openai','mistral','llama'],hdr:()=>({}),fix:b=>b},
-  zhipu:{name:'智谱 GLM-4-Flash（升级·免费key）',free:false,url:'https://open.bigmodel.cn/api/paas/v4/chat/completions',
-    models:['glm-4-flash'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://open.bigmodel.cn/'},
-  deepseek:{name:'DeepSeek（升级·免费key）',free:false,url:'https://api.deepseek.com/chat/completions',
-    models:['deepseek-chat'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://platform.deepseek.com/'},
-  siliconflow:{name:'硅基流动（升级·免费key）',free:false,url:'https://api.siliconflow.cn/v1/chat/completions',
-    models:['Qwen/Qwen2.5-7B-Instruct','deepseek-ai/DeepSeek-V3'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://cloud.siliconflow.cn/'},
-  qwen:{name:'通义千问（升级·免费key）',free:false,url:'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
-    models:['qwen-plus'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://dashscope.aliyun.com/'},
-  moonshot:{name:'Kimi（升级·免费key）',free:false,url:'https://api.moonshot.cn/v1/chat/completions',
-    models:['moonshot-v1-8k'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://platform.moonshot.cn/'},
+  blockrun:{name:'BlockRun 免密（默认·免密）',free:true,url:'https://blockrun.ai/api/v1/chat/completions',models:['nvidia/gpt-oss-120b','nvidia/deepseek-v4-flash'],hdr:()=>({'Authorization':'Bearer not-needed'}),fix:b=>b},
+  pollinations:{name:'Pollinations（免密·需联网）',free:true,url:'https://text.pollinations.ai/openai',models:['openai','mistral','llama'],hdr:()=>({}),fix:b=>b},
+  zhipu:{name:'智谱 GLM-4-Flash（升级·免费key）',free:false,url:'https://open.bigmodel.cn/api/paas/v4/chat/completions',models:['glm-4-flash'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://open.bigmodel.cn/'},
+  deepseek:{name:'DeepSeek（升级·免费key）',free:false,url:'https://api.deepseek.com/chat/completions',models:['deepseek-chat'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://platform.deepseek.com/'},
+  siliconflow:{name:'硅基流动（升级·免费key）',free:false,url:'https://api.siliconflow.cn/v1/chat/completions',models:['Qwen/Qwen2.5-7B-Instruct','deepseek-ai/DeepSeek-V3'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://cloud.siliconflow.cn/'},
+  qwen:{name:'通义千问（升级·免费key）',free:false,url:'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',models:['qwen-plus'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://dashscope.aliyun.com/'},
+  moonshot:{name:'Kimi（升级·免费key）',free:false,url:'https://api.moonshot.cn/v1/chat/completions',models:['moonshot-v1-8k'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://platform.moonshot.cn/'},
 };
 const FREE_CHAIN=['blockrun','pollinations'];
 const CN_CHAIN=['zhipu','deepseek','siliconflow','qwen','moonshot'];
 const log=document.getElementById('log'),sendBtn=document.getElementById('send'),input=document.getElementById('in');
-const engSel=document.getElementById('eng'),modelSel=document.getElementById('model'),keyIn=document.getElementById('apikey');
+const engSel=document.getElementById('eng2')||null;
 const DEFAULT_ENG='blockrun';let busy=false,curEngine=DEFAULT_ENG,curModel='';
-Object.keys(ENGINES).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=ENGINES[k].name;engSel.appendChild(o);});
-let stored=localStorage.eng;engSel.value=(stored&&ENGINES[stored])?stored:DEFAULT_ENG;loadKey();onEngChange();
+// 引擎选择用 prompt()，简单复用：这里直接内置免密优先
+Object.keys(ENGINES).forEach(k=>{});
 function goHome(){location.href='index.html';}
 function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
 function scroll(){log.scrollTop=log.scrollHeight;}
-function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
 function mMenu(){const m=document.getElementById('mMenu');m.style.display=m.style.display==='flex'?'none':'flex';}
-function onEngChange(){curEngine=engSel.value;localStorage.eng=curEngine;const e=ENGINES[curEngine];
-  modelSel.innerHTML='';e.models.forEach(m=>{const o=document.createElement('option');o.value=m;modelSel.appendChild(o);});
-  keyIn.style.display=e.free?'none':'inline-block';
-  document.getElementById('engtag').innerHTML=e.free?'<b>无需 key</b>':'需要 key';curModel=e.models[0];}
-function saveKey(){localStorage['key_'+curEngine]=keyIn.value.trim();}
-function loadKey(){if(localStorage.eng&&ENGINES[localStorage.eng])keyIn.value=localStorage['key_'+localStorage.eng]||'';}
-function addMsg(role,text,src){const m=document.createElement('div');m.className='msg '+role;const av=role==='me'?'你':'Q';
+function addMsg(role,text,src){const m=document.createElement('div');m.className='msg '+role;const av=role==='me'?'你':'★';
   m.innerHTML=`<div class="mav">${av}</div><div class="bubble">${esc(text)}${src?`<span class="src">via ${esc(src)}</span>`:''}</div>`;log.appendChild(m);scroll();return m;}
-function addTyping(){const m=document.createElement('div');m.className='msg ai';m.id='typing';m.innerHTML=`<div class="mav">Q</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;log.appendChild(m);scroll();return m;}
-function clearChat(){log.innerHTML='';addMsg('ai','已清空，继续聊～');}
-async function callEngine(ek,model,text){const e=ENGINES[ek];const key=localStorage['key_'+ek]||'';
+function addTyping(){const m=document.createElement('div');m.className='msg ai';m.id='typing';m.innerHTML=`<div class="mav">★</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;log.appendChild(m);scroll();return m;}
+function clearChat(){log.innerHTML='';const nm=document.getElementById('rpName').value.trim()||'TA';addMsg('ai',`（已清空对话。你正在和「${nm}」扮演，直接说话即可开场～）`);}
+function applyCard(){const nm=document.getElementById('rpName').value.trim()||'TA';const op=document.getElementById('rpPersona').value.trim();log.innerHTML='';addMsg('ai',`✅ 角色卡已应用：「${nm}」\n${op?('设定：'+op):''}\n\n（开场白你来定，发句话 TA 就接上～）`);}
+async function callEngine(ek,model,sys,text){const e=ENGINES[ek];const key=localStorage['key_'+ek]||'';
   if(!e.free&&!key)throw new Error('该引擎需要免费 key');
-  const body=e.fix({model,messages:[{role:'system',content:SYS},{role:'user',content:text}],temperature:0.7,max_tokens:800});
+  const body=e.fix({model,messages:[{role:'system',content:sys},{role:'user',content:text}],temperature:0.9,max_tokens:800});
   const r=await fetch(e.url,{method:'POST',headers:Object.assign({'Content-Type':'application/json'},e.hdr(key)),body:JSON.stringify(body)});
   if(!r.ok)throw new Error('HTTP '+r.status);
   const d=await r.json();let c=d.choices?.[0]?.message?.content;if(!c&&d.choices?.[0]?.message?.reasoning)c=d.choices[0].message.reasoning;if(!c&&typeof d==='string')c=d;if(!c)c=d.error?.message||'空返回';
   return c.replace(/<think>[\s\S]*?<\/think>/g,'');}
-function buildCandidates(){const list=[];const sel=engSel.value;
-  if(ENGINES[sel].free||(localStorage['key_'+sel]||'').trim())list.push(sel);
-  FREE_CHAIN.forEach(e=>{if(ENGINES[e].free&&!list.includes(e))list.push(e);});
-  CN_CHAIN.forEach(e=>{if(!list.includes(e)&&(localStorage['key_'+e]||'').trim())list.push(e);});
-  return list;}
+function buildCandidates(){const list=FREE_CHAIN.slice();CN_CHAIN.forEach(e=>{if((localStorage['key_'+e]||'').trim())list.push(e);});return list;}
 async function send(){const text=input.value.trim();if(!text||busy)return;input.value='';input.style.height='46px';addMsg('me',text);
-  busy=true;sendBtn.disabled=true;const t=addTyping();document.getElementById('modelname').textContent='正在选择可用引擎…';
-  const cands=buildCandidates();let ans=null,used=null,lastErr=null;
-  for(const ek of cands){try{const mk=ENGINES[ek].models[0];ans=await callEngine(ek,mk,text);used=ek;break;}catch(err){lastErr=err;continue;}}
+  busy=true;sendBtn.disabled=true;const t=addTyping();document.getElementById('modelname').textContent='TA 正在组织语言…';
+  const sys=buildSystem();const cands=buildCandidates();let ans=null,used=null,lastErr=null;
+  for(const ek of cands){try{const mk=ENGINES[ek].models[0];ans=await callEngine(ek,mk,sys,text);used=ek;break;}catch(err){lastErr=err;continue;}}
   t.remove();
   if(ans){const label=ENGINES[used].name.split('（')[0];addMsg('ai',ans,label);document.getElementById('modelname').textContent='已用：'+label;}
-  else{addMsg('ai','⚠️ 试了一圈都没连上（'+(lastErr?esc(lastErr.message):'未知')+'）。\n免密引擎可能受网络限制；升级国内模型点右上「🔑 升级模型」填个智谱免费 key 即可。');document.getElementById('modelname').textContent='全部引擎暂不可用';}
+  else{addMsg('ai','⚠️ 试了一圈引擎都没连上（'+(lastErr?esc(lastErr.message):'未知')+'）。\n免密引擎可能受网络限制；升级国内模型点右上「🔑 升级模型」填个智谱免费 key 即可。');document.getElementById('modelname').textContent='全部引擎暂不可用';}
   busy=false;sendBtn.disabled=false;input.focus();}
 input.addEventListener('input',()=>{input.style.height='46px';input.style.height=Math.min(input.scrollHeight,120)+'px';});
-// 升级弹窗
-function openKeyModal(){const rows=document.getElementById('keyRows');rows.innerHTML='';
-  CN_CHAIN.forEach(k=>{const e=ENGINES[k];const r=document.createElement('div');r.className='row';r.innerHTML=`<b>${e.name.split('（')[0]}</b><span>ID: ${k}</span><a class="go" href="${e.apply}" target="_blank">去申请 →</a>`;rows.appendChild(r);});
-  document.getElementById('keyMsg').textContent='';document.getElementById('keyMask').classList.add('open');}
+// 升级弹窗（与聊天专区一致）
+function openKeyModal(){const rows=document.getElementById('keyRows');rows.innerHTML='';CN_CHAIN.forEach(k=>{const e=ENGINES[k];const r=document.createElement('div');r.className='row';r.innerHTML=`<b>${e.name.split('（')[0]}</b><span>ID: ${k}</span><a class="go" href="${e.apply}" target="_blank">去申请 →</a>`;rows.appendChild(r);});document.getElementById('keyMsg').textContent='';document.getElementById('keyMask').classList.add('open');}
 function closeKeyModal(){document.getElementById('keyMask').classList.remove('open');}
-function importKeys(){const raw=document.getElementById('batchKeys').value.trim();if(!raw){document.getElementById('keyMsg').textContent='请输入内容';document.getElementById('keyMsg').style.color='#ff6b6b';return;}
-  let ok=0,fail=0;raw.split('\n').forEach(line=>{const i=line.indexOf(':');if(i<1)return;const id=line.slice(0,i).trim();const key=line.slice(i+1).trim();if(ENGINES[id]&&key){localStorage['key_'+id]=key;ok++;}else if(key)fail++;});
-  const m=document.getElementById('keyMsg');m.style.color='#22e07e';m.textContent=`✅ 成功导入 ${ok} 个${fail?`，${fail} 个未知ID已忽略`:''}。关闭后选对应引擎即可。`;
-  if(ENGINES[engSel.value]&&!ENGINES[engSel.value].free)keyIn.value=localStorage['key_'+engSel.value]||'';}
+function importKeys(){const raw=document.getElementById('batchKeys').value.trim();if(!raw){document.getElementById('keyMsg').textContent='请输入内容';document.getElementById('keyMsg').style.color='#ff6b6b';return;}let ok=0,fail=0;raw.split('\n').forEach(line=>{const i=line.indexOf(':');if(i<1)return;const id=line.slice(0,i).trim();const key=line.slice(i+1).trim();if(ENGINES[id]&&key){localStorage['key_'+id]=key;ok++;}else if(key)fail++;});const m=document.getElementById('keyMsg');m.style.color='#22e07e';m.textContent=`✅ 成功导入 ${ok} 个${fail?`，${fail} 个未知ID已忽略`:''}。`;}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeKeyModal();});
+// 开场
+clearChat();
 </script>
 </body>
 </html>
