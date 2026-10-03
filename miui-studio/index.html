@@ -169,6 +169,14 @@ footer .soc a:hover{color:var(--t)}
 /* 返回顶部 */
 #totop{position:fixed;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;background:var(--g);color:#fff;font-size:18px;border:none;z-index:90;box-shadow:0 8px 24px rgba(123,92,255,.4);opacity:0;pointer-events:none;transform:translateY(14px);transition:.35s}
 #totop.show{opacity:1;pointer-events:auto;transform:translateY(0)}
+/* 悬浮 AI 助手按钮 */
+#aiFab{position:fixed;left:20px;bottom:22px;z-index:92;width:56px;height:56px;border-radius:50%;background:var(--g);color:#fff;font-size:24px;text-decoration:none;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 28px rgba(123,92,255,.5);transition:.3s;animation:aiPulse 2.6s infinite}
+#aiFab:hover{transform:scale(1.12)}
+#aiFab .lbl{position:absolute;right:64px;white-space:nowrap;background:var(--card);border:1px solid var(--line2);color:var(--t);font-size:12px;font-weight:700;padding:6px 12px;border-radius:18px;opacity:0;transform:translateX(8px);transition:.25s;pointer-events:none}
+#aiFab:hover .lbl{opacity:1;transform:translateX(0)}
+@keyframes aiPulse{0%,100%{box-shadow:0 8px 28px rgba(123,92,255,.5)}50%{box-shadow:0 8px 30px rgba(0,212,255,.75)}}
+@media(max-width:820px){#aiFab{bottom:18px;left:18px;width:52px;height:52px}}
+
 
 /* 聊天弹窗 */
 .chat-mask{position:fixed;inset:0;background:rgba(3,4,10,.7);backdrop-filter:blur(6px);z-index:9990;display:none;align-items:center;justify-content:center;padding:16px}
@@ -242,6 +250,7 @@ footer .soc a:hover{color:var(--t)}
   <a href="#apps" onclick="closeMenu()">🎮 轻应用</a>
   <a href="#trackers" onclick="closeMenu()">📍 追踪器</a>
   <a href="#" onclick="closeMenu();openChat();return false">💬 聊天室</a>
+  <a href="ai-chat.html" onclick="closeMenu()">🤖 AI助手</a>
   <a href="#about" onclick="closeMenu()">关于</a>
   <a href="#join" onclick="closeMenu()">加入我们</a>
 </div>
@@ -253,7 +262,8 @@ footer .soc a:hover{color:var(--t)}
     <h1 class="rv">MIUI<span class="hl">工作室</span><br>点亮你的<span class="hl2">数字创意</span></h1>
     <p class="hs rv"><span id="typeText"></span><span class="cursor"></span></p>
     <div class="hbtns rv">
-      <a href="#apps" class="btn btn-p">🚀 探索轻应用</a>
+      <a href="ai-chat.html" class="btn btn-p">🤖 跟小Q聊 AI</a>
+      <a href="#apps" class="btn btn-g">🚀 探索轻应用</a>
       <a href="#" class="btn btn-g" onclick="openChat();return false">💬 进入聊天室</a>
       <a href="#trackers" class="btn btn-g">📍 打开追踪器</a>
     </div>
@@ -334,6 +344,7 @@ footer .soc a:hover{color:var(--t)}
 </footer>
 
 <button id="totop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="返回顶部">↑</button>
+<a href="ai-chat.html" id="aiFab" aria-label="AI助手">🤖<span class="lbl">跟小Q聊 AI</span></a>
 
 <!-- 聊天弹窗 -->
 <div class="chat-mask" id="chatMask">
