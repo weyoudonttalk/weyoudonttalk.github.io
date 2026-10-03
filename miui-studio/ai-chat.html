@@ -107,11 +107,15 @@ const ENGINES={
 
 const log=document.getElementById('log'),sendBtn=document.getElementById('send'),input=document.getElementById('in');
 const engSel=document.getElementById('eng'),modelSel=document.getElementById('model'),keyIn=document.getElementById('apikey');
-let busy=false,curEngine='ovh',curModel='';
+const DEFAULT_ENG='pollinations';
+let busy=false,curEngine=DEFAULT_ENG,curModel='';
 
 // 初始化引擎下拉
 Object.keys(ENGINES).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=ENGINES[k].name;engSel.appendChild(o);});
-if(localStorage.eng&&ENGINES[localStorage.eng])engSel.value=localStorage.eng;
+// 迁移：旧版默认 ovh 易限流，自动切到 pollinations
+let stored=localStorage.eng;
+if(stored==='ovh')stored=DEFAULT_ENG;
+if(stored&&ENGINES[stored])engSel.value=stored; else engSel.value=DEFAULT_ENG;
 loadKey();onEngChange();
 
 function goHome(){location.href='index.html';}
