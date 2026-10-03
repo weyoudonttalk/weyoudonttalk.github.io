@@ -143,6 +143,8 @@ function buildSystem(){
 // 引擎（与聊天专区一致）
 const ENGINES={
   blockrun:{name:'BlockRun 免密（默认·免密）',free:true,url:'https://blockrun.ai/api/v1/chat/completions',models:['nvidia/gpt-oss-120b','nvidia/deepseek-v4-flash'],hdr:()=>({'Authorization':'Bearer not-needed'}),fix:b=>b},
+  keylessai:{name:'keylessai（Cloudflare·免密免注册）',free:true,url:'https://keylessai.thryx.workers.dev/v1/chat/completions',models:['openai','gpt-4o','gpt-4o-mini'],hdr:()=>({'Authorization':'Bearer not-needed'}),fix:b=>b},
+  devsdocode:{name:'DevsDoCode（HF空间·免密）',free:true,url:'https://devsdocode-openai.hf.space/v1/chat/completions',models:['gpt-4-turbo-2024-04-09','gpt-3.5-turbo'],hdr:()=>({'Authorization':'Bearer not-needed'}),fix:b=>b},
   pollinations:{name:'Pollinations（免密·需联网）',free:true,url:'https://text.pollinations.ai/openai',models:['openai','mistral','llama','gpt'],hdr:()=>({}),fix:b=>b},
   cups:{name:'公益站 cups.moe（GitHub登录·无审查）',free:false,url:'https://free-llm.cups.moe/v1/chat/completions',models:['gpt-4.1-mini','deepseek-chat','gemini-2.5-flash'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://free-llm.cups.moe'},
   chatanywhere:{name:'ChatAnywhere（国内直连·绑GitHub免费）',free:false,url:'https://api.chatanywhere.tech/v1/chat/completions',models:['deepseek-chat','gpt-3.5-turbo'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://github.com/chatanywhere/GPT_API_free'},
@@ -152,7 +154,7 @@ const ENGINES={
   qwen:{name:'通义千问（升级·免费key）',free:false,url:'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',models:['qwen-plus'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://dashscope.aliyun.com/'},
   moonshot:{name:'Kimi（升级·免费key）',free:false,url:'https://api.moonshot.cn/v1/chat/completions',models:['moonshot-v1-8k'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://platform.moonshot.cn/'},
 };
-const FREE_CHAIN=['pollinations','blockrun'];
+const FREE_CHAIN=['pollinations','keylessai','devsdocode','blockrun'];
 const CN_CHAIN=['cups','chatanywhere','zhipu','deepseek','siliconflow','qwen','moonshot'];
 const log=document.getElementById('log'),sendBtn=document.getElementById('send'),input=document.getElementById('in');
 const engSel=document.getElementById('eng2')||null;
