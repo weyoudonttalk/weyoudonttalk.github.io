@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>聊天专区 · 小Q AI · MIUI 工作室</title>
+<meta name="description" content="MIUI 工作室聊天专区：免密 AI 小Q 即开即聊，支持多国内大模型升级。" />
+<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="zone-style.css" />
+<style>
+  body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  .chathead{padding:11px 16px;border-bottom:1px solid var(--line);background:rgba(5,7,13,.8);backdrop-filter:blur(10px);flex-shrink:0;position:relative;z-index:2}
+  .top1{display:flex;align-items:center;gap:12px}
+  .av{width:38px;height:38px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;box-shadow:var(--glow)}
+  .hinfo h1{font-size:16px}.hinfo .st{font-size:12px;color:var(--t2);display:flex;align-items:center;gap:6px}
+  .dot-live{width:7px;height:7px;border-radius:50%;background:#22e07e;box-shadow:0 0 8px #22e07e}
+  .hactions{margin-left:auto;display:flex;gap:8px}
+  .hbtn{background:var(--card);border:1px solid var(--line);color:var(--t2);padding:6px 13px;border-radius:20px;font-size:12.5px;cursor:pointer}
+  .hbtn:hover{color:var(--t);border-color:var(--c1)}
+  .keybtn{background:var(--g);border:none;color:#fff;padding:6px 16px;border-radius:20px;font-size:12.5px;cursor:pointer;font-weight:700}
+  .eng{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+  .eng select,.eng input{background:var(--bg2);border:1px solid var(--line);color:var(--t);padding:7px 10px;border-radius:9px;font-size:13px;outline:none}
+  .eng select:focus,.eng input:focus{border-color:var(--c2)}
+  .eng input.key{width:220px}
+  .eng .tag{font-size:11px;color:var(--t2)}
+  .eng .tag b{color:#22e07e}
+  .note{font-size:11.5px;color:var(--t3);padding:4px 16px 0}
+  #log{flex:1;overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;gap:14px;min-height:0;position:relative;z-index:1}
+  #log::-webkit-scrollbar{width:8px}#log::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:8px}
+  .msg{display:flex;gap:10px;max-width:82%;animation:fade .3s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .msg .mav{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  .msg.ai .mav{background:var(--g);color:#fff}
+  .msg.me{align-self:flex-end;flex-direction:row-reverse}
+  .msg.me .mav{background:linear-gradient(135deg,#ff8a3d,#ff5d73);color:#fff}
+  .bubble{padding:11px 15px;border-radius:16px;font-size:14.5px;line-height:1.65;word-break:break-word;white-space:pre-wrap}
+  .msg.ai .bubble{background:var(--card);border:1px solid var(--line);border-top-left-radius:4px}
+  .msg.me .bubble{background:var(--g);color:#fff;border-top-right-radius:4px}
+  .msg.ai .bubble .src{display:block;margin-top:6px;font-size:11px;color:var(--t2)}
+  .typing{display:flex;gap:4px;padding:14px 16px}.typing span{width:7px;height:7px;border-radius:50%;background:var(--t2);animation:bl 1.2s infinite}
+  .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+  @keyframes bl{0%,60%,100%{opacity:.3}30%{opacity:1;transform:translateY(-4px)}}
+  .composer{flex-shrink:0;padding:12px 16px;border-top:1px solid var(--line);background:rgba(5,7,13,.8);display:flex;gap:10px;align-items:flex-end;position:relative;z-index:2}
+  textarea#in{flex:1;resize:none;max-height:120px;min-height:46px;background:var(--bg2);border:1px solid var(--line);color:var(--t);border-radius:14px;padding:12px 14px;font-size:14.5px;outline:none;line-height:1.5}
+  textarea#in:focus{border-color:var(--c2)}
+  #send{background:var(--g);border:none;color:#fff;padding:0 22px;height:46px;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;flex-shrink:0}
+  #send:disabled{opacity:.5;cursor:not-allowed}
+  .hint{text-align:center;color:var(--t3);font-size:11.5px;padding:5px 0 0}
+  /* 一键填 Key 弹窗（精简） */
+  .mask{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:200;padding:16px}
+  .mask.open{display:flex}
+  .modal{background:var(--card2);border:1px solid var(--line);border-radius:18px;max-width:540px;width:100%;max-height:86vh;overflow:auto;padding:22px}
+  .modal h3{font-size:18px;margin-bottom:6px}.modal .sub{color:var(--t2);font-size:13px;margin-bottom:14px}
+  .modal .row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .modal .row b{font-size:14px;flex:1}.modal .row span{font-size:11px;color:var(--t3);flex:1}
+  .modal .go{background:var(--card);border:1px solid var(--line);color:var(--c2);padding:6px 12px;border-radius:18px;font-size:12px;cursor:pointer;white-space:nowrap}
+  .modal textarea{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--t);border-radius:10px;padding:10px;font-size:13px;outline:none;resize:vertical;font-family:monospace}
+  .modal .acts{display:flex;gap:10px;margin-top:12px}
+  .closex{float:right;cursor:pointer;color:var(--t2);font-size:22px}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo" onclick="location.href='index.html'"><div class="lg-ic">M</div>MIUI 工作室</div>
+  <button id="burger" onclick="mMenu()">☰</button>
+  <div class="nl">
+    <a href="index.html">首页</a>
+    <a href="ai-chat.html">AI助手</a>
+    <a href="chat.html" class="on">聊天专区</a>
+    <a href="ai-video.html">AI视频专区</a>
+    <a href="ai-movie.html">电影专区</a>
+    <a href="ai-game.html">AI游戏专区</a>
+    <a href="create.html">创作工坊</a>
+    <a href="api-hub.html">API中心</a>
+    <a href="about.html" class="cta-n">加入我们</a>
+  </div>
+</nav>
+<div id="mMenu" style="display:none;position:fixed;inset:0;z-index:99;background:rgba(5,7,13,.96);backdrop-filter:blur(20px);flex-direction:column;align-items:center;justify-content:center;gap:6px">
+  <a href="index.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">首页</a>
+  <a href="chat.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🤖 聊天专区</a>
+  <a href="ai-video.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🎬 AI视频专区</a>
+  <a href="ai-movie.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🎥 电影专区</a>
+  <a href="ai-game.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🎮 AI游戏专区</a>
+  <a href="about.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">关于</a>
+</div>
+
+<header class="chathead">
+  <div class="top1">
+    <div class="av">Q</div>
+    <div class="hinfo"><h1>小Q · 聊天专区</h1>
+      <div class="st"><span class="dot-live"></span><span id="modelname">免密模式 · 打开即聊</span></div></div>
+    <div class="hactions">
+      <button class="keybtn" onclick="openKeyModal()">🔑 升级模型</button>
+      <button class="hbtn" onclick="goHome()">← 官网</button>
+      <button class="hbtn" onclick="clearChat()">清空</button>
+    </div>
+  </div>
+  <div class="eng">
+    <span class="tag">引擎：</span>
+    <select id="eng" onchange="onEngChange()"></select>
+    <select id="model"></select>
+    <input class="key" id="apikey" placeholder="升级模型才需填 key" oninput="saveKey()">
+    <span class="tag" id="engtag"></span>
+  </div>
+</header>
+
+<div id="log">
+  <div class="msg ai"><div class="mav">Q</div><div class="bubble">👋 我是 MIUI 工作室 AI 小Q。默认免密模式打开就能聊，不用填任何东西！想换更稳的国内大模型，点右上「🔑 升级模型」填个免费 key 就行（可选）。</div></div>
+</div>
+
+<div class="composer">
+  <textarea id="in" placeholder="输入消息，Enter 发送，Shift+Enter 换行" onkeydown="onKey(event)"></textarea>
+  <button id="send" onclick="send()">发送</button>
+</div>
+<div class="hint">免密模式默认可聊 · 升级国内模型可选填 key · 多模型自动降级 · 群 1070470498</div>
+
+<!-- 升级模型弹窗 -->
+<div class="mask" id="keyMask" onclick="if(event.target===this)closeKeyModal()">
+  <div class="modal">
+    <span class="closex" onclick="closeKeyModal()">×</span>
+    <h3>🔑 升级模型（可选）</h3>
+    <div class="sub">免密模式已能用。想要更稳的国内大模型，去下面平台申请免费 key（推荐智谱 GLM-4-Flash 永久免费），复制回来批量粘贴即可。</div>
+    <div id="keyRows"></div>
+    <div style="margin-top:14px;font-size:13px;color:var(--t)">批量导入（每行 <code style="color:var(--c2)">引擎ID:KEY</code>）：</div>
+    <textarea id="batchKeys" rows="4" placeholder="zhipu:你的智谱key&#10;deepseek:你的deepseek key"></textarea>
+    <div class="acts">
+      <button class="btn" style="background:var(--g);color:#fff;border:none;padding:9px 20px;font-size:14px;cursor:pointer" onclick="importKeys()">⚡ 一键导入</button>
+      <button class="btn" style="background:var(--card);color:var(--t);border:1px solid var(--line);padding:9px 20px;font-size:14px;cursor:pointer" onclick="closeKeyModal()">关闭</button>
+    </div>
+    <div id="keyMsg" style="margin-top:10px;font-size:13px;color:#22e07e"></div>
+  </div>
+</div>
+
+<script>
+const SYS="你是 MIUI 工作室的官方 AI 助手小Q，语气活泼亲切、简洁直接，像朋友聊天。用简体中文回答，避免长篇大论。";
+// 引擎：免密默认，国内需key可升级
+const ENGINES={
+  blockrun:{name:'BlockRun 免密（默认·免密）',free:true,url:'https://blockrun.ai/api/v1/chat/completions',
+    models:['nvidia/gpt-oss-120b','nvidia/deepseek-v4-flash','nvidia/mistral-nemotron'],hdr:()=>({'Authorization':'Bearer not-needed'}),fix:b=>b},
+  pollinations:{name:'Pollinations（免密·需联网）',free:true,url:'https://text.pollinations.ai/openai',
+    models:['openai','mistral','llama'],hdr:()=>({}),fix:b=>b},
+  zhipu:{name:'智谱 GLM-4-Flash（升级·免费key）',free:false,url:'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+    models:['glm-4-flash'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://open.bigmodel.cn/'},
+  deepseek:{name:'DeepSeek（升级·免费key）',free:false,url:'https://api.deepseek.com/chat/completions',
+    models:['deepseek-chat'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://platform.deepseek.com/'},
+  siliconflow:{name:'硅基流动（升级·免费key）',free:false,url:'https://api.siliconflow.cn/v1/chat/completions',
+    models:['Qwen/Qwen2.5-7B-Instruct','deepseek-ai/DeepSeek-V3'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://cloud.siliconflow.cn/'},
+  qwen:{name:'通义千问（升级·免费key）',free:false,url:'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+    models:['qwen-plus'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://dashscope.aliyun.com/'},
+  moonshot:{name:'Kimi（升级·免费key）',free:false,url:'https://api.moonshot.cn/v1/chat/completions',
+    models:['moonshot-v1-8k'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://platform.moonshot.cn/'},
+};
+const FREE_CHAIN=['blockrun','pollinations'];
+const CN_CHAIN=['zhipu','deepseek','siliconflow','qwen','moonshot'];
+const log=document.getElementById('log'),sendBtn=document.getElementById('send'),input=document.getElementById('in');
+const engSel=document.getElementById('eng'),modelSel=document.getElementById('model'),keyIn=document.getElementById('apikey');
+const DEFAULT_ENG='blockrun';let busy=false,curEngine=DEFAULT_ENG,curModel='';
+Object.keys(ENGINES).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=ENGINES[k].name;engSel.appendChild(o);});
+let stored=localStorage.eng;engSel.value=(stored&&ENGINES[stored])?stored:DEFAULT_ENG;loadKey();onEngChange();
+function goHome(){location.href='index.html';}
+function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+function scroll(){log.scrollTop=log.scrollHeight;}
+function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
+function mMenu(){const m=document.getElementById('mMenu');m.style.display=m.style.display==='flex'?'none':'flex';}
+function onEngChange(){curEngine=engSel.value;localStorage.eng=curEngine;const e=ENGINES[curEngine];
+  modelSel.innerHTML='';e.models.forEach(m=>{const o=document.createElement('option');o.value=m;modelSel.appendChild(o);});
+  keyIn.style.display=e.free?'none':'inline-block';
+  document.getElementById('engtag').innerHTML=e.free?'<b>无需 key</b>':'需要 key';curModel=e.models[0];}
+function saveKey(){localStorage['key_'+curEngine]=keyIn.value.trim();}
+function loadKey(){if(localStorage.eng&&ENGINES[localStorage.eng])keyIn.value=localStorage['key_'+localStorage.eng]||'';}
+function addMsg(role,text,src){const m=document.createElement('div');m.className='msg '+role;const av=role==='me'?'你':'Q';
+  m.innerHTML=`<div class="mav">${av}</div><div class="bubble">${esc(text)}${src?`<span class="src">via ${esc(src)}</span>`:''}</div>`;log.appendChild(m);scroll();return m;}
+function addTyping(){const m=document.createElement('div');m.className='msg ai';m.id='typing';m.innerHTML=`<div class="mav">Q</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;log.appendChild(m);scroll();return m;}
+function clearChat(){log.innerHTML='';addMsg('ai','已清空，继续聊～');}
+async function callEngine(ek,model,text){const e=ENGINES[ek];const key=localStorage['key_'+ek]||'';
+  if(!e.free&&!key)throw new Error('该引擎需要免费 key');
+  const body=e.fix({model,messages:[{role:'system',content:SYS},{role:'user',content:text}],temperature:0.7,max_tokens:800});
+  const r=await fetch(e.url,{method:'POST',headers:Object.assign({'Content-Type':'application/json'},e.hdr(key)),body:JSON.stringify(body)});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const d=await r.json();let c=d.choices?.[0]?.message?.content;if(!c&&d.choices?.[0]?.message?.reasoning)c=d.choices[0].message.reasoning;if(!c&&typeof d==='string')c=d;if(!c)c=d.error?.message||'空返回';
+  return c.replace(/<think>[\s\S]*?<\/think>/g,'');}
+function buildCandidates(){const list=[];const sel=engSel.value;
+  if(ENGINES[sel].free||(localStorage['key_'+sel]||'').trim())list.push(sel);
+  FREE_CHAIN.forEach(e=>{if(ENGINES[e].free&&!list.includes(e))list.push(e);});
+  CN_CHAIN.forEach(e=>{if(!list.includes(e)&&(localStorage['key_'+e]||'').trim())list.push(e);});
+  return list;}
+async function send(){const text=input.value.trim();if(!text||busy)return;input.value='';input.style.height='46px';addMsg('me',text);
+  busy=true;sendBtn.disabled=true;const t=addTyping();document.getElementById('modelname').textContent='正在选择可用引擎…';
+  const cands=buildCandidates();let ans=null,used=null,lastErr=null;
+  for(const ek of cands){try{const mk=ENGINES[ek].models[0];ans=await callEngine(ek,mk,text);used=ek;break;}catch(err){lastErr=err;continue;}}
+  t.remove();
+  if(ans){const label=ENGINES[used].name.split('（')[0];addMsg('ai',ans,label);document.getElementById('modelname').textContent='已用：'+label;}
+  else{addMsg('ai','⚠️ 试了一圈都没连上（'+(lastErr?esc(lastErr.message):'未知')+'）。\n免密引擎可能受网络限制；升级国内模型点右上「🔑 升级模型」填个智谱免费 key 即可。');document.getElementById('modelname').textContent='全部引擎暂不可用';}
+  busy=false;sendBtn.disabled=false;input.focus();}
+input.addEventListener('input',()=>{input.style.height='46px';input.style.height=Math.min(input.scrollHeight,120)+'px';});
+// 升级弹窗
+function openKeyModal(){const rows=document.getElementById('keyRows');rows.innerHTML='';
+  CN_CHAIN.forEach(k=>{const e=ENGINES[k];const r=document.createElement('div');r.className='row';r.innerHTML=`<b>${e.name.split('（')[0]}</b><span>ID: ${k}</span><a class="go" href="${e.apply}" target="_blank">去申请 →</a>`;rows.appendChild(r);});
+  document.getElementById('keyMsg').textContent='';document.getElementById('keyMask').classList.add('open');}
+function closeKeyModal(){document.getElementById('keyMask').classList.remove('open');}
+function importKeys(){const raw=document.getElementById('batchKeys').value.trim();if(!raw){document.getElementById('keyMsg').textContent='请输入内容';document.getElementById('keyMsg').style.color='#ff6b6b';return;}
+  let ok=0,fail=0;raw.split('\n').forEach(line=>{const i=line.indexOf(':');if(i<1)return;const id=line.slice(0,i).trim();const key=line.slice(i+1).trim();if(ENGINES[id]&&key){localStorage['key_'+id]=key;ok++;}else if(key)fail++;});
+  const m=document.getElementById('keyMsg');m.style.color='#22e07e';m.textContent=`✅ 成功导入 ${ok} 个${fail?`，${fail} 个未知ID已忽略`:''}。关闭后选对应引擎即可。`;
+  if(ENGINES[engSel.value]&&!ENGINES[engSel.value].free)keyIn.value=localStorage['key_'+engSel.value]||'';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeKeyModal();});
+</script>
+</body>
+</html>

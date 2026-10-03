@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI 视频专区 · MIUI 工作室</title>
+<meta name="description" content="MIUI 工作室 AI 视频专区：免费文生视频、图生视频工具合集，墙内可用。" />
+<link rel="stylesheet" href="zone-style.css" />
+</head>
+<body>
+<nav>
+  <div class="logo" onclick="location.href='index.html'"><div class="lg-ic">M</div>MIUI 工作室</div>
+  <button id="burger" onclick="mMenu()">☰</button>
+  <div class="nl">
+    <a href="index.html">首页</a>
+    <a href="chat.html">聊天专区</a>
+    <a href="ai-video.html" class="on">AI视频专区</a>
+    <a href="ai-movie.html">电影专区</a>
+    <a href="ai-game.html">AI游戏专区</a>
+    <a href="create.html">创作工坊</a>
+    <a href="api-hub.html">API中心</a>
+    <a href="about.html" class="cta-n">加入我们</a>
+  </div>
+</nav>
+<div id="mMenu" style="display:none;position:fixed;inset:0;z-index:99;background:rgba(5,7,13,.96);backdrop-filter:blur(20px);flex-direction:column;align-items:center;justify-content:center;gap:6px">
+  <a href="chat.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🤖 聊天专区</a>
+  <a href="ai-video.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🎬 AI视频专区</a>
+  <a href="ai-movie.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🎥 电影专区</a>
+  <a href="ai-game.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🎮 AI游戏专区</a>
+  <a href="about.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">关于</a>
+</div>
+
+<section class="zhero">
+  <div class="badge"><span class="dot"></span>AI VIDEO ZONE</div>
+  <h1>🎬 <span class="hl">AI 视频专区</span></h1>
+  <p>打字就能出视频！下面全是免费文生视频 / 图生视频工具，国内优先，注册就能白嫖额度。</p>
+</section>
+
+<section class="zsec">
+  <div class="zgrid">
+    <div class="zcard"><div class="ic">🎨</div><h3>即梦 AI（剪映）</h3><span class="meta">每日免费</span><p>字节系，每日 3 次高清无水印，自带运镜与自动旁白字幕，电影感横竖版都行。</p><a class="go" href="https://jimeng.jianying.com/" target="_blank">去生成 →</a></div>
+    <div class="zcard"><div class="ic">⚡</div><h3>可灵 AI（快手）</h3><span class="meta">每日积分</span><p>可出 2 分钟 1080P，物理模拟真实，电影级镜头运动，积分次日刷新，可商用。</p><a class="go" href="https://klingai.com/" target="_blank">去生成 →</a></div>
+    <div class="zcard"><div class="ic">🔥</div><h3>Haiper</h3><span class="meta">完全免费</span><p>无需注册无限次生成 2-8 秒视频，文生/图生视频，九种特效风格，媲美 Sora 的免费工具。</p><a class="go" href="https://haiper.ai/" target="_blank">去生成 →</a></div>
+    <div class="zcard"><div class="ic">🌟</div><h3>PixVerse</h3><span class="meta">每日免费</span><p>文/图生视频最高 8K，运动笔刷精准控制，病毒式短视频与特效模板生成利器。</p><a class="go" href="https://pixverse.ai/" target="_blank">去生成 →</a></div>
+    <div class="zcard"><div class="ic">🌀</div><h3>智谱清影</h3><span class="meta">免费不限次</span><p>30 秒生成 6 秒视频，文/图生视频，电影感/油画多风格，加 BGM，创意短片随意玩。</p><a class="go" href="https://chatglm.cn/main/tool?type=video" target="_blank">去生成 →</a></div>
+    <div class="zcard"><div class="ic">🐳</div><h3>海螺 AI（MiniMax）</h3><span class="meta">国内免费</span><p>720P 电影级运镜，角色小动作细腻，做 6 秒爆款抖音够用，中文支持好。</p><a class="go" href="https://hailuoai.video/" target="_blank">去生成 →</a></div>
+    <div class="zcard"><div class="ic">☁️</div><h3>RecCloud</h3><span class="meta">基础免费</span><p>文字生成多风格视频（二次元/3D），自动脚本+配音+字幕，无水印，新手极简。</p><a class="go" href="https://reccloud.com/" target="_blank">去生成 →</a></div>
+    <div class="zcard"><div class="ic">🎥</div><h3>智影（腾讯）</h3><span class="meta">新用户赠送</span><p>腾讯系，日漫风格一键生成，角色场景台词自动搭，新用户送 10 条免费视频。</p><a class="go" href="https://zenvideo.qq.com/" target="_blank">去生成 →</a></div>
+  </div>
+</section>
+
+<footer>官方 QQ 群：1070470498 ｜ 以上为第三方免费服务，使用以各平台政策为准</footer>
+<script>function mMenu(){const m=document.getElementById('mMenu');m.style.display=m.style.display==='flex'?'none':'flex';}</script>
+</body>
+</html>

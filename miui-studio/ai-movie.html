@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>电影专区 · MIUI 工作室</title>
+<meta name="description" content="MIUI 工作室电影专区：用 AI 做短片/电影的工具合集，从剧本到成片的免费流水线。" />
+<link rel="stylesheet" href="zone-style.css" />
+</head>
+<body>
+<nav>
+  <div class="logo" onclick="location.href='index.html'"><div class="lg-ic">M</div>MIUI 工作室</div>
+  <button id="burger" onclick="mMenu()">☰</button>
+  <div class="nl">
+    <a href="index.html">首页</a>
+    <a href="chat.html">聊天专区</a>
+    <a href="ai-video.html">AI视频专区</a>
+    <a href="ai-movie.html" class="on">电影专区</a>
+    <a href="ai-game.html">AI游戏专区</a>
+    <a href="create.html">创作工坊</a>
+    <a href="api-hub.html">API中心</a>
+    <a href="about.html" class="cta-n">加入我们</a>
+  </div>
+</nav>
+<div id="mMenu" style="display:none;position:fixed;inset:0;z-index:99;background:rgba(5,7,13,.96);backdrop-filter:blur(20px);flex-direction:column;align-items:center;justify-content:center;gap:6px">
+  <a href="chat.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🤖 聊天专区</a>
+  <a href="ai-video.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🎬 AI视频专区</a>
+  <a href="ai-movie.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🎥 电影专区</a>
+  <a href="ai-game.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🎮 AI游戏专区</a>
+  <a href="about.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">关于</a>
+</div>
+
+<section class="zhero">
+  <div class="badge"><span class="dot"></span>MOVIE ZONE</div>
+  <h1>🎥 <span class="hl">电影专区</span></h1>
+  <p>从一句创意到成片，AI 帮你写剧本、出分镜、生成画面配音。这里是从 0 到 1 拍"电影"的免费流水线。</p>
+</section>
+
+<section class="zsec">
+  <div class="zgrid">
+    <div class="zcard"><div class="ic">📝</div><h3>剧本：DeepSeek / 智谱</h3><span class="meta">免费</span><p>让 AI 写分镜脚本、对白、人物小传，聊天专区里直接说"帮我写个 3 分钟悬疑短片剧本"即可。</p><a class="go" href="chat.html">去聊天专区写剧本 →</a></div>
+    <div class="zcard"><div class="ic">🖼️</div><h3>分镜：即梦 / 可灵</h3><span class="meta">每日免费</span><p>把每段剧本丢进去，文生视频出分镜画面，自带运镜与镜头语言，电影感拉满。</p><a class="go" href="https://jimeng.jianying.com/" target="_blank">去即梦 →</a></div>
+    <div class="zcard"><div class="ic">🎙️</div><h3>配音：剪映 / 魔音工坊</h3><span class="meta">免费档</span><p>AI 配音员上百种，情绪/方言/角色音任选，自动对口型，告别自己录音。</p><a class="go" href="https://jianying.tv/" target="_blank">去剪映 →</a></div>
+    <div class="zcard"><div class="ic">✂️</div><h3>剪辑：剪小映 / 智影</h3><span class="meta">免费</span><p>文字成片一键出 1080P，自动画面+字幕+BGM+配音，竖版短视频神器。</p><a class="go" href="https://zenvideo.qq.com/" target="_blank">去智影 →</a></div>
+    <div class="zcard"><div class="ic">🌐</div><h3>国际大片感：Runway</h3><span class="meta need">免费额度</span><p>好莱坞级 AI 视频，Text to Video、绿幕抠像、动作追踪，独立电影人标配。</p><a class="go" href="https://runwayml.com/" target="_blank">去 Runway →</a></div>
+    <div class="zcard"><div class="ic">🎬</div><h3>动画电影：Pika</h3><span class="meta">免费档</span><p>输入文字 30 秒出高清动画，对口型与图生视频，做动画短片/动画电影够用。</p><a class="go" href="https://pika.art/" target="_blank">去 Pika →</a></div>
+    <div class="zcard"><div class="ic">📚</div><h3>公版片源：Public Domain</h3><span class="meta">合法免费</span><p>想二创/拉片学习？Internet Archive、公版老电影库，版权过期可自由使用。</p><a class="go" href="https://archive.org/details/movies" target="_blank">去片库 →</a></div>
+    <div class="zcard"><div class="ic">💡</div><h3>小白模板：RecCloud</h3><span class="meta">基础免费</span><p>粘贴文案自动生成多风格视频，脚本+配音+字幕一条龙，新手第一支"电影"从这开始。</p><a class="go" href="https://reccloud.com/" target="_blank">去生成 →</a></div>
+  </div>
+</section>
+
+<footer>官方 QQ 群：1070470498 ｜ 本专区提供创作工具与合法公版素材，请勿用于侵权内容</footer>
+<script>function mMenu(){const m=document.getElementById('mMenu');m.style.display=m.style.display==='flex'?'none':'flex';}</script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI 游戏专区 · MIUI 工作室</title>
+<meta name="description" content="MIUI 工作室 AI 游戏专区：免费 AI 做小游戏、文字冒险、Roguelike 工具合集。" />
+<link rel="stylesheet" href="zone-style.css" />
+</head>
+<body>
+<nav>
+  <div class="logo" onclick="location.href='index.html'"><div class="lg-ic">M</div>MIUI 工作室</div>
+  <button id="burger" onclick="mMenu()">☰</button>
+  <div class="nl">
+    <a href="index.html">首页</a>
+    <a href="chat.html">聊天专区</a>
+    <a href="ai-video.html">AI视频专区</a>
+    <a href="ai-movie.html">电影专区</a>
+    <a href="ai-game.html" class="on">AI游戏专区</a>
+    <a href="create.html">创作工坊</a>
+    <a href="api-hub.html">API中心</a>
+    <a href="about.html" class="cta-n">加入我们</a>
+  </div>
+</nav>
+<div id="mMenu" style="display:none;position:fixed;inset:0;z-index:99;background:rgba(5,7,13,.96);backdrop-filter:blur(20px);flex-direction:column;align-items:center;justify-content:center;gap:6px">
+  <a href="chat.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🤖 聊天专区</a>
+  <a href="ai-video.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🎬 AI视频专区</a>
+  <a href="ai-movie.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🎥 电影专区</a>
+  <a href="ai-game.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🎮 AI游戏专区</a>
+  <a href="about.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">关于</a>
+</div>
+
+<section class="zhero">
+  <div class="badge"><span class="dot"></span>AI GAME ZONE</div>
+  <h1>🎮 <span class="hl">AI 游戏专区</span></h1>
+  <p>一句设定，AI 直接生成可玩小游戏。不需写代码，几秒从想法到能玩。下面全是免费额度可用。</p>
+</section>
+
+<section class="zsec">
+  <div class="zgrid">
+    <div class="zcard"><div class="ic">🍺</div><h3>sitebrew</h3><span class="meta">免费档</span><p>聊天式生成可玩游戏与谜题，社区画廊可玩可 Remix，几秒从想法到原型，支持多类型。</p><a class="go" href="https://www.sitebrew.ai/" target="_blank">去生成 →</a></div>
+    <div class="zcard"><div class="ic">🎲</div><h3>AI Game Generator</h3><span class="meta need">免费计划</span><p>文本转可玩 HTML5 游戏，多模型引擎，可导出干净 HTML 自行托管，支持 3D。</p><a class="go" href="https://aiforeveryone.org/ai-game-generator" target="_blank">去生成 →</a></div>
+    <div class="zcard"><div class="ic">🌌</div><h3>Dreamlab</h3><span class="meta">免费</span><p>纯文本提示生成游戏代码/画面/玩法，支持多人协作与联机对战，零成本。</p><a class="go" href="https://dreamlab.gg/" target="_blank">去生成 →</a></div>
+    <div class="zcard"><div class="ic">⚡</div><h3>Grok + Lovable</h3><span class="meta need">注册免费</span><p>用 Grok 设计游戏方案与代码，再丢给 Lovable 变可玩成品，30 分钟做出射击游戏。</p><a class="go" href="https://grok.com/" target="_blank">去 Grok →</a></div>
+    <div class="zcard"><div class="ic">📖</div><h3>AI Dungeon</h3><span class="meta">免费档</span><p>经典文字冒险游戏，AI 实时续写剧情，无限分支，一个人也能玩出 RPG 大作。</p><a class="go" href="https://aidungeon.com/" target="_blank">去玩 →</a></div>
+    <div class="zcard"><div class="ic">🐦</div><h3>Grok 写游戏代码</h3><span class="meta need">注册免费</span><p>免费版可直接生成 HTML/JS 小游戏代码，几秒出可玩版，浏览器打开即玩，可迭代。</p><a class="go" href="https://grok.com/" target="_blank">去生成 →</a></div>
+    <div class="zcard"><div class="ic">🌐</div><h3>Literally Anything</h3><span class="meta">免费</span><p>描述即生成网页小游戏/微件并自动托管部署，无需代码，公共作品库可抄灵感。</p><a class="go" href="https://literallyanything.io/" target="_blank">去生成 →</a></div>
+    <div class="zcard"><div class="ic">🍜</div><h3>NoCode（美团）</h3><span class="meta">免费额度</span><p>"一句话呈所想"，生成网页/工具/小游戏，可视化编辑 + 一键部署分享。</p><a class="go" href="https://nocode.meituan.com/" target="_blank">去生成 →</a></div>
+  </div>
+</section>
+
+<footer>官方 QQ 群：1070470498 ｜ 以上为第三方免费服务，使用以各平台政策为准</footer>
+<script>function mMenu(){const m=document.getElementById('mMenu');m.style.display=m.style.display==='flex'?'none':'flex';}</script>
+</body>
+</html>
