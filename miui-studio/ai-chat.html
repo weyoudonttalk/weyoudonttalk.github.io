@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>AI 助手 · MIUI 工作室</title>
-<meta name="description" content="MIUI 工作室 AI 助手：国内大模型（智谱/DeepSeek/硅基流动/通义）多引擎聚合，填免费 key 即聊。" />
+<meta name="description" content="MIUI 工作室 AI 助手：免 key 零配置引擎 + 国内大模型多引擎聚合，一键填 key。" />
 <link rel="stylesheet" href="style.css" />
 <style>
   html,body{height:100%}
@@ -15,9 +15,11 @@
   .av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--qq),var(--pur));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;box-shadow:0 0 16px rgba(18,183,245,.5)}
   .hinfo h1{font-size:16px}.hinfo .st{font-size:12px;color:var(--sub);display:flex;align-items:center;gap:6px}
   .dot-live{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
-  .hactions{margin-left:auto;display:flex;gap:8px}
+  .hactions{margin-left:auto;display:flex;gap:8px;align-items:center}
   .hbtn{background:var(--card);border:1px solid var(--line);color:var(--sub);padding:6px 13px;border-radius:20px;font-size:12.5px;cursor:pointer}
   .hbtn:hover{color:var(--txt);border-color:var(--qq)}
+  .keybtn{background:linear-gradient(135deg,var(--qq),var(--qq-d));border:none;color:#fff;padding:6px 16px;border-radius:20px;font-size:12.5px;cursor:pointer;font-weight:700}
+  .keybtn:hover{transform:translateY(-1px)}
   .eng{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
   .eng select,.eng input{background:var(--bg2);border:1px solid var(--line);color:var(--txt);padding:7px 10px;border-radius:9px;font-size:13px;outline:none}
   .eng select:focus,.eng input:focus{border-color:var(--qq)}
@@ -48,6 +50,21 @@
   #send:disabled{opacity:.5;cursor:not-allowed}
   .hint{text-align:center;color:var(--sub);font-size:11.5px;padding:5px 0 0}
   a{color:var(--qq);text-decoration:none}
+  /* 模态框 */
+  .mask{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:200;padding:16px}
+  .mask.open{display:flex}
+  .modal{background:var(--bg2);border:1px solid var(--line);border-radius:18px;max-width:560px;width:100%;max-height:86vh;overflow:auto;padding:24px}
+  .modal h3{font-size:18px;margin-bottom:6px}
+  .modal .sub{color:var(--sub);font-size:13px;margin-bottom:16px}
+  .modal .row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .modal .row b{font-size:14px;flex:1}
+  .modal .row span{font-size:11px;color:var(--sub);flex:1}
+  .modal .go{background:var(--card);border:1px solid var(--line);color:var(--qq);padding:6px 12px;border-radius:18px;font-size:12px;cursor:pointer;white-space:nowrap}
+  .modal .go:hover{border-color:var(--qq)}
+  .modal textarea{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:10px;font-size:13px;outline:none;resize:vertical;font-family:monospace}
+  .modal textarea:focus{border-color:var(--qq)}
+  .modal .acts{display:flex;gap:10px;margin-top:14px}
+  .closex{float:right;cursor:pointer;color:var(--sub);font-size:22px;line-height:1}
 </style>
 </head>
 <body>
@@ -57,6 +74,7 @@
     <div class="hinfo"><h1>小Q · 多引擎 AI</h1>
       <div class="st"><span class="dot-live"></span><span id="modelname">就绪 · 发送自动选引擎</span></div></div>
     <div class="hactions">
+      <button class="keybtn" onclick="openKeyModal()">🔑 一键填 Key</button>
       <button class="hbtn" onclick="goHome()">← 官网</button>
       <button class="hbtn" onclick="clearChat()">清空</button>
     </div>
@@ -71,52 +89,71 @@
 </header>
 
 <div class="tip" id="tip">
-  💡 <b>国内大模型需填免费 key（30 秒申请）</b>：推荐
-  <a href="https://open.bigmodel.cn/" target="_blank">智谱 GLM-4-Flash</a>（注册→控制台复制 API Key，免费）→
-  上方选「智谱」粘贴即可聊。其他可选
-  <a href="https://platform.deepseek.com/" target="_blank">DeepSeek</a>、
-  <a href="https://cloud.siliconflow.cn/" target="_blank">硅基流动</a>、
-  <a href="https://dashscope.console.aliyun.com/" target="_blank">通义千问</a>。
-  填过会存在本地，下次免填。
+  💡 <b>不想填 key？</b>默认引擎 <b>BlockRun（免密）</b> 打开就能聊，零配置。<br/>
+  想要更稳的国内模型 → 点右上角 <b>「🔑 一键填 Key」</b>，批量粘贴或一键去申请（推荐
+  <a href="https://open.bigmodel.cn/" target="_blank">智谱 GLM-4-Flash 永久免费</a>）。
 </div>
 
 <div class="chatwrap">
   <div id="log">
-    <div class="msg ai"><div class="mav">Q</div><div class="bubble">👋 我是 MIUI 工作室 AI 小Q。选个国内引擎、粘贴免费 key，发消息我就自动挑能用的模型回你～</div></div>
+    <div class="msg ai"><div class="mav">Q</div><div class="bubble">👋 我是 MIUI 工作室 AI 小Q。默认免密引擎直接能聊；想用国内大模型，点右上「🔑 一键填 Key」即可，发消息我会自动挑能用的模型回你～</div></div>
   </div>
   <div class="composer">
     <textarea id="in" placeholder="输入消息，Enter 发送，Shift+Enter 换行" onkeydown="onKey(event)"></textarea>
     <button id="send" onclick="send()">发送</button>
   </div>
-  <div class="hint">多免费大模型自动降级 · 国内引擎需免费 key · 群 1070470498</div>
+  <div class="hint">免密引擎优先 · 国内引擎填 key 即用 · 多模型自动降级 · 群 1070470498</div>
+</div>
+
+<!-- 一键填 Key 模态框 -->
+<div class="mask" id="keyMask" onclick="if(event.target===this)closeKeyModal()">
+  <div class="modal">
+    <span class="closex" onclick="closeKeyModal()">×</span>
+    <h3>🔑 一键填 Key</h3>
+    <div class="sub">国内大模型需免费 key。下面点「去申请」拿 key，复制回来；或直接在底部批量粘贴，一次填完所有引擎。</div>
+
+    <div id="keyRows"></div>
+
+    <div style="margin-top:16px;font-size:13px;color:var(--txt)">批量导入（每行一个，格式 <code style="color:var(--qq)">引擎ID:KEY</code>）：</div>
+    <textarea id="batchKeys" rows="5" placeholder="zhipu:你的智谱key&#10;deepseek:你的deepseek key&#10;siliconflow:你的硅基流动key&#10;qwen:你的通义key&#10;moonshot:你的kimi key"></textarea>
+    <div class="acts">
+      <button class="btn primary" style="padding:9px 20px;font-size:14px" onclick="importKeys()">⚡ 一键导入</button>
+      <button class="btn ghost" style="padding:9px 20px;font-size:14px" onclick="closeKeyModal()">关闭</button>
+    </div>
+    <div id="keyMsg" style="margin-top:10px;font-size:13px;color:var(--ok)"></div>
+  </div>
 </div>
 
 <script>
 const SYS="你是 MIUI 工作室的官方 AI 助手小Q，语气活泼亲切、简洁直接，像朋友聊天。用简体中文回答，避免长篇大论。";
 
-// ===== 引擎（国内为主，免密国外标"需代理"）=====
+// ===== 引擎 =====
 const ENGINES={
-  zhipu:{name:'智谱 GLM-4-Flash（免费key）',free:false,url:'https://open.bigmodel.cn/api/paas/v4/chat/completions',
-    models:['glm-4-flash','glm-4-plus'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b},
-  deepseek:{name:'DeepSeek（免费key）',free:false,url:'https://api.deepseek.com/chat/completions',
-    models:['deepseek-chat'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b},
-  siliconflow:{name:'硅基流动 SiliconFlow（免费key）',free:false,url:'https://api.siliconflow.cn/v1/chat/completions',
-    models:['Qwen/Qwen2.5-7B-Instruct','deepseek-ai/DeepSeek-V3','Qwen/Qwen2.5-14B-Instruct'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b},
-  qwen:{name:'通义千问（免费key）',free:false,url:'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
-    models:['qwen-plus','qwen-turbo','qwen-max'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b},
-  moonshot:{name:'Kimi Moonshot（免费key）',free:false,url:'https://api.moonshot.cn/v1/chat/completions',
-    models:['moonshot-v1-8k'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b},
-  pollinations:{name:'Pollinations（免密·需代理）',free:true,url:'https://text.pollinations.ai/openai',
+  blockrun:{name:'BlockRun 免密（零配置）',free:true,url:'https://blockrun.ai/api/v1/chat/completions',
+    models:['nvidia/gpt-oss-120b','nvidia/deepseek-v4-flash','nvidia/mistral-nemotron'],hdr:()=>({'Authorization':'Bearer not-needed'}),fix:b=>b},
+  pollinations:{name:'Pollinations（免密·需联网）',free:true,url:'https://text.pollinations.ai/openai',
     models:['openai','mistral','llama'],hdr:()=>({}),fix:b=>b},
-  ovh:{name:'OVH Mistral（免密·需代理）',free:true,url:'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions',
+  ovh:{name:'OVH Mistral（免密·需联网）',free:true,url:'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions',
     models:['Mistral-Small-3.2-24B-Instruct-2506'],hdr:()=>({}),fix:b=>b},
+  zhipu:{name:'智谱 GLM-4-Flash（免费key）',free:false,url:'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+    models:['glm-4-flash','glm-4-plus'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://open.bigmodel.cn/'},
+  deepseek:{name:'DeepSeek（免费key）',free:false,url:'https://api.deepseek.com/chat/completions',
+    models:['deepseek-chat'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://platform.deepseek.com/'},
+  siliconflow:{name:'硅基流动 SiliconFlow（免费key）',free:false,url:'https://api.siliconflow.cn/v1/chat/completions',
+    models:['Qwen/Qwen2.5-7B-Instruct','deepseek-ai/DeepSeek-V3','THUDM/glm-4-9b-chat'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://cloud.siliconflow.cn/'},
+  qwen:{name:'通义千问（免费key）',free:false,url:'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+    models:['qwen-plus','qwen-turbo','qwen-max'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://dashscope.aliyun.com/'},
+  moonshot:{name:'Kimi Moonshot（免费key）',free:false,url:'https://api.moonshot.cn/v1/chat/completions',
+    models:['moonshot-v1-8k'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://platform.moonshot.cn/'},
 };
-// 国内引擎（有 key 即自动尝试）优先顺序
+// 免密引擎（零配置优先）
+const FREE_CHAIN=['blockrun','pollinations','ovh'];
+// 国内需 key 引擎顺序
 const CN_CHAIN=['zhipu','deepseek','siliconflow','qwen','moonshot'];
 
 const log=document.getElementById('log'),sendBtn=document.getElementById('send'),input=document.getElementById('in');
 const engSel=document.getElementById('eng'),modelSel=document.getElementById('model'),keyIn=document.getElementById('apikey');
-const DEFAULT_ENG='zhipu';
+const DEFAULT_ENG='blockrun';
 let busy=false,curEngine=DEFAULT_ENG,curModel='';
 
 Object.keys(ENGINES).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=ENGINES[k].name;engSel.appendChild(o);});
@@ -164,9 +201,8 @@ async function callEngine(ek, model, text){
 function buildCandidates(){
   const list=[];const sel=engSel.value;
   if(ENGINES[sel].free||(localStorage['key_'+sel]||'').trim())list.push(sel);
+  FREE_CHAIN.forEach(e=>{if(ENGINES[e].free&&!list.includes(e))list.push(e);});
   CN_CHAIN.forEach(e=>{if(!list.includes(e)&&(localStorage['key_'+e]||'').trim())list.push(e);});
-  // 免密国外引擎（需代理）放最后
-  ['pollinations','ovh'].forEach(e=>{if(ENGINES[e].free&&!list.includes(e))list.push(e);});
   return list;
 }
 
@@ -179,7 +215,7 @@ async function send(){
   let ans=null,used=null,lastErr=null;
   if(cands.length===0){
     t.remove();
-    addMsg('ai','⚠️ 还没有任何可用引擎。请在上方选一个国内引擎（推荐智谱），去对应平台申请免费 key 粘贴进来，就能聊了。\n申请入口见上方提示框。');
+    addMsg('ai','⚠️ 还没有任何可用引擎。点右上「🔑 一键填 Key」填一个国内免费 key（推荐智谱，永久免费），就能聊了。');
     busy=false;sendBtn.disabled=false;input.focus();return;
   }
   for(const ek of cands){
@@ -188,10 +224,41 @@ async function send(){
   }
   t.remove();
   if(ans){const label=ENGINES[used].name.split('（')[0];addMsg('ai',ans,label);document.getElementById('modelname').textContent='已用：'+label;}
-  else{addMsg('ai','⚠️ 试了一圈都没连上（'+(lastErr?escapeHtml(lastErr.message):'未知')+'）。\n检查 key 是否正确，或换个引擎；群 1070470498 也能帮你。');document.getElementById('modelname').textContent='全部引擎暂不可用';}
+  else{addMsg('ai','⚠️ 试了一圈都没连上（'+(lastErr?escapeHtml(lastErr.message):'未知')+'）。\n免密引擎可能受网络/CORS 影响；建议填个国内免费 key（智谱最稳）。群 1070470498 也能帮你。');document.getElementById('modelname').textContent='全部引擎暂不可用';}
   busy=false;sendBtn.disabled=false;input.focus();
 }
 input.addEventListener('input',()=>{input.style.height='46px';input.style.height=Math.min(input.scrollHeight,120)+'px';});
+
+// ===== 一键填 Key 模态框 =====
+function openKeyModal(){
+  const rows=document.getElementById('keyRows');rows.innerHTML='';
+  CN_CHAIN.forEach(k=>{
+    const e=ENGINES[k];
+    const r=document.createElement('div');r.className='row';
+    r.innerHTML=`<b>${e.name.split('（')[0]}</b><span>引擎ID: ${k}</span><a class="go" href="${e.apply}" target="_blank">去申请 →</a>`;
+    rows.appendChild(r);
+  });
+  document.getElementById('keyMsg').textContent='';
+  document.getElementById('keyMask').classList.add('open');
+}
+function closeKeyModal(){document.getElementById('keyMask').classList.remove('open');}
+function importKeys(){
+  const raw=document.getElementById('batchKeys').value.trim();
+  if(!raw){document.getElementById('keyMsg').textContent='请输入内容';document.getElementById('keyMsg').style.color='var(--err)';return;}
+  let ok=0,fail=0;
+  raw.split('\n').forEach(line=>{
+    const i=line.indexOf(':');if(i<1)return;
+    const id=line.slice(0,i).trim();const key=line.slice(i+1).trim();
+    if(ENGINES[id]&&key){localStorage['key_'+id]=key;ok++;}else if(key)fail++;
+  });
+  const msg=document.getElementById('keyMsg');
+  msg.style.color='var(--ok)';
+  msg.textContent=`✅ 成功导入 ${ok} 个 key${fail?`，${fail} 个未知引擎ID已忽略`:''}。关闭后在上方选对应引擎即可。`;
+  // 同步单引擎输入框
+  if(ENGINES[engSel.value]&&!ENGINES[engSel.value].free)keyIn.value=localStorage['key_'+engSel.value]||'';
+}
+// ESC 关闭
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeKeyModal();});
 </script>
 </body>
 </html>
