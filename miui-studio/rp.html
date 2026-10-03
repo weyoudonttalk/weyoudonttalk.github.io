@@ -90,7 +90,7 @@
     <div class="hinfo"><h1>🎭 角色扮演专区</h1>
       <div class="st"><span class="dot-live"></span><span id="modelname">免密模式 · 填角色卡即开演</span></div></div>
     <div class="hactions">
-      <button class="keybtn" onclick="openKeyModal()">🔑 升级模型</button>
+      <button class="keybtn" onclick="openKeyModal()" style="font-size:13.5px;padding:8px 18px">🔑 升级模型(点我填key)</button>
       <button class="hbtn" onclick="goHome()">← 官网</button>
       <button class="hbtn" onclick="clearChat()">清空</button>
     </div>
@@ -120,7 +120,7 @@
   <div class="modal">
     <span class="closex" onclick="closeKeyModal()">×</span>
     <h3>🔑 升级模型（可选）</h3>
-    <div class="sub">免密模式已能演。想要更稳的国内大模型，去下面平台申请免费 key（推荐智谱 GLM-4-Flash 永久免费），复制回来批量粘贴即可。</div>
+    <div class="sub">免密引擎可能被墙。最省事：去 ChatAnywhere 绑 GitHub 即送每日额度（国内直连、免实名），拿 key 粘贴即可聊 GPT/DeepSeek；也可填智谱等。</div>
     <div id="keyRows"></div>
     <div style="margin-top:14px;font-size:13px;color:var(--t)">批量导入（每行 <code style="color:var(--c2)">引擎ID:KEY</code>）：</div>
     <textarea id="batchKeys" rows="4" placeholder="zhipu:你的智谱key&#10;deepseek:你的deepseek key"></textarea>
@@ -144,6 +144,7 @@ function buildSystem(){
 const ENGINES={
   blockrun:{name:'BlockRun 免密（默认·免密）',free:true,url:'https://blockrun.ai/api/v1/chat/completions',models:['nvidia/gpt-oss-120b','nvidia/deepseek-v4-flash'],hdr:()=>({'Authorization':'Bearer not-needed'}),fix:b=>b},
   pollinations:{name:'Pollinations（免密·需联网）',free:true,url:'https://text.pollinations.ai/openai',models:['openai','mistral','llama'],hdr:()=>({}),fix:b=>b},
+  chatanywhere:{name:'ChatAnywhere（国内直连·绑GitHub免费）',free:false,url:'https://api.chatanywhere.tech/v1/chat/completions',models:['deepseek-chat','gpt-3.5-turbo'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://github.com/chatanywhere/GPT_API_free'},
   zhipu:{name:'智谱 GLM-4-Flash（升级·免费key）',free:false,url:'https://open.bigmodel.cn/api/paas/v4/chat/completions',models:['glm-4-flash'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://open.bigmodel.cn/'},
   deepseek:{name:'DeepSeek（升级·免费key）',free:false,url:'https://api.deepseek.com/chat/completions',models:['deepseek-chat'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://platform.deepseek.com/'},
   siliconflow:{name:'硅基流动（升级·免费key）',free:false,url:'https://api.siliconflow.cn/v1/chat/completions',models:['Qwen/Qwen2.5-7B-Instruct','deepseek-ai/DeepSeek-V3'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://cloud.siliconflow.cn/'},
@@ -151,7 +152,7 @@ const ENGINES={
   moonshot:{name:'Kimi（升级·免费key）',free:false,url:'https://api.moonshot.cn/v1/chat/completions',models:['moonshot-v1-8k'],hdr:k=>({'Authorization':'Bearer '+k}),fix:b=>b,apply:'https://platform.moonshot.cn/'},
 };
 const FREE_CHAIN=['blockrun','pollinations'];
-const CN_CHAIN=['zhipu','deepseek','siliconflow','qwen','moonshot'];
+const CN_CHAIN=['chatanywhere','zhipu','deepseek','siliconflow','qwen','moonshot'];
 const log=document.getElementById('log'),sendBtn=document.getElementById('send'),input=document.getElementById('in');
 const engSel=document.getElementById('eng2')||null;
 const DEFAULT_ENG='blockrun';let busy=false,curEngine=DEFAULT_ENG,curModel='';
@@ -184,7 +185,7 @@ async function send(){const text=input.value.trim();if(!text||busy)return;input.
   busy=false;sendBtn.disabled=false;input.focus();}
 input.addEventListener('input',()=>{input.style.height='46px';input.style.height=Math.min(input.scrollHeight,120)+'px';});
 // 升级弹窗（与聊天专区一致）
-function openKeyModal(){const rows=document.getElementById('keyRows');rows.innerHTML='';CN_CHAIN.forEach(k=>{const e=ENGINES[k];const r=document.createElement('div');r.className='row';r.innerHTML=`<b>${e.name.split('（')[0]}</b><span>ID: ${k}</span><a class="go" href="${e.apply}" target="_blank">去申请 →</a>`;rows.appendChild(r);});document.getElementById('keyMsg').textContent='';document.getElementById('keyMask').classList.add('open');}
+function openKeyModal(){const rows=document.getElementById('keyRows');rows.innerHTML='';const ca=ENGINES['chatanywhere'];if(ca){var r0=document.createElement('div');r0.className='row';r0.style.borderColor='rgba(34,224,126,.4)';r0.innerHTML='<b style="color:#22e07e">★ '+ca.name.split('（')[0]+'</b><span>国内直连·免实名·绑GitHub免费</span><a class="go" href="'+ca.apply+'" target="_blank">去绑定 →</a>';rows.appendChild(r0);}CN_CHAIN.forEach(k=>{const e=ENGINES[k];const r=document.createElement('div');r.className='row';r.innerHTML=`<b>${e.name.split('（')[0]}</b><span>ID: ${k}</span><a class="go" href="${e.apply}" target="_blank">去申请 →</a>`;rows.appendChild(r);});document.getElementById('keyMsg').textContent='';document.getElementById('keyMask').classList.add('open');}
 function closeKeyModal(){document.getElementById('keyMask').classList.remove('open');}
 function importKeys(){const raw=document.getElementById('batchKeys').value.trim();if(!raw){document.getElementById('keyMsg').textContent='请输入内容';document.getElementById('keyMsg').style.color='#ff6b6b';return;}let ok=0,fail=0;raw.split('\n').forEach(line=>{const i=line.indexOf(':');if(i<1)return;const id=line.slice(0,i).trim();const key=line.slice(i+1).trim();if(ENGINES[id]&&key){localStorage['key_'+id]=key;ok++;}else if(key)fail++;});const m=document.getElementById('keyMsg');m.style.color='#22e07e';m.textContent=`✅ 成功导入 ${ok} 个${fail?`，${fail} 个未知ID已忽略`:''}。`;}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeKeyModal();});
