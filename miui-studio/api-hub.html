@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>免费 API 中心 · MIUI 工作室</title>
+<meta name="description" content="MIUI 工作室免费 API 中心，聚合一言、壁纸、天气、翻译、IP、二维码、AI 对话等大量免密钥公开接口。" />
+<style>
+  :root{
+    --qq:#12B7F5; --qq-d:#0a8fd0; --bg:#0a0e1a; --bg2:#10162a;
+    --card:rgba(255,255,255,.05); --line:rgba(255,255,255,.1);
+    --txt:#e8edf7; --sub:#8b97b3; --ok:#3ddc84; --err:#ff6b6b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:radial-gradient(1200px 600px at 70% -10%,rgba(18,183,245,.18),transparent),
+               radial-gradient(900px 500px at 0% 100%,rgba(120,80,255,.14),transparent),var(--bg);
+    color:var(--txt);min-height:100vh;padding:28px 16px 60px;
+  }
+  .wrap{max-width:1180px;margin:0 auto}
+  header{text-align:center;margin-bottom:26px}
+  .logo{font-size:14px;color:var(--qq);letter-spacing:3px;font-weight:700}
+  h1{font-size:32px;margin:8px 0 6px;background:linear-gradient(90deg,#fff,var(--qq));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .desc{color:var(--sub);font-size:14px}
+  .bar{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:18px 0 24px}
+  .btn{
+    background:linear-gradient(135deg,var(--qq),var(--qq-d));border:none;color:#fff;
+    padding:10px 20px;border-radius:30px;font-size:14px;cursor:pointer;font-weight:600;
+    transition:.2s;box-shadow:0 6px 18px rgba(18,183,245,.32)
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(18,183,245,.45)}
+  .btn.ghost{background:var(--card);border:1px solid var(--line);box-shadow:none;color:var(--txt)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:18px;backdrop-filter:blur(12px);position:relative;overflow:hidden;
+    transition:.25s;min-height:170px;display:flex;flex-direction:column
+  }
+  .card:hover{border-color:rgba(18,183,245,.5);transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.35)}
+  .card h3{font-size:16px;display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .card h3 .dot{width:8px;height:8px;border-radius:50%;background:var(--qq);box-shadow:0 0 10px var(--qq)}
+  .card .body{flex:1;font-size:14px;color:var(--sub);line-height:1.6;word-break:break-word;overflow:auto}
+  .card .body img{max-width:100%;border-radius:10px;display:block;margin:0 auto}
+  .card .body .big{font-size:18px;color:var(--txt);font-style:italic}
+  .card .foot{display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap}
+  .mini{background:var(--bg2);border:1px solid var(--line);color:var(--txt);padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;transition:.2s}
+  .mini:hover{border-color:var(--qq);color:var(--qq)}
+  .inp{background:var(--bg2);border:1px solid var(--line);color:var(--txt);padding:7px 10px;border-radius:8px;font-size:13px;flex:1;min-width:120px;outline:none}
+  .inp:focus{border-color:var(--qq)}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--qq);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .tag{position:absolute;top:10px;right:12px;font-size:10px;color:var(--sub);opacity:.6}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1c2440;border:1px solid var(--line);padding:12px 22px;border-radius:30px;font-size:14px;opacity:0;transition:.3s;pointer-events:none;z-index:99}
+  .toast.show{opacity:1}
+  footer{text-align:center;color:var(--sub);font-size:12px;margin-top:36px;line-height:1.8}
+  a{color:var(--qq);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">MIUI STUDIO · API HUB</div>
+    <h1>免费 API 中心</h1>
+    <div class="desc">14+ 个免密钥公开接口 · 实时调用 · 全部前端直连</div>
+    <div class="bar">
+      <button class="btn" onclick="refreshAll()">🚀 全部刷新</button>
+      <button class="btn ghost" onclick="location.reload()">重置</button>
+    </div>
+  </header>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    MIUI 工作室 · 免费 API 中心<br/>
+    接口均来自公开免费服务，若某服务不稳定会优雅降级（单卡不影响其他）。<br/>
+    需要更多接口或对接后端？联系官方 QQ 群 1070470498
+  </footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const QQ_GROUP = "1070470498";
+const AI_URL = "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions";
+const AI_MODEL = "Mistral-Small-3.2-24B-Instruct-2506";
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// 每个 API 卡片定义
+const CARDS=[
+  {id:'hitokoto',title:'一言',api:'Hitokoto',
+   load:async(b)=>{
+     const r=await fetch('https://v1.hitokoto.cn/');const d=await r.json();
+     b.innerHTML=`<div class="big">「${esc(d.hitokoto)}」</div><div style="margin-top:8px">— ${esc(d.from||'')} ${esc(d.from_who||'')}</div>`;
+   }},
+  {id:'poem',title:'每日诗词',api:'Hitokoto·诗词',
+   load:async(b)=>{
+     const r=await fetch('https://v1.hitokoto.cn/?c=d&c=i&c=j');const d=await r.json();
+     b.innerHTML=`<div class="big">${esc(d.hitokoto)}</div><div style="margin-top:8px">— ${esc(d.from||'佚名')}</div>`;
+   }},
+  {id:'quote',title:'英文名言',api:'Quotable',
+   load:async(b)=>{
+     const r=await fetch('https://api.quotable.io/random');const d=await r.json();
+     b.innerHTML=`<div class="big">"${esc(d.content)}"</div><div style="margin-top:8px">— ${esc(d.author)}</div>`;
+   }},
+  {id:'bing',title:'必应每日壁纸',api:'Bing Wallpaper',
+   load:async(b)=>{
+     const r=await fetch('https://bing.biturl.top/?resolution=1920&format=json&index=0&mkt=zh-CN');const d=await r.json();
+     b.innerHTML=`<img src="${esc(d.url)}" alt="bing" onerror="this.parentNode.innerHTML='图片加载失败'">`;
+   }},
+  {id:'dog',title:'随机狗狗',api:'Dog CEO',
+   load:async(b)=>{
+     const r=await fetch('https://dog.ceo/api/breeds/image/random');const d=await r.json();
+     b.innerHTML=`<img src="${esc(d.message)}" alt="dog" onerror="this.parentNode.innerHTML='加载失败'">`;
+   }},
+  {id:'cat',title:'随机猫咪',api:'Cataas',
+   load:async(b)=>{
+     const u='https://cataas.com/cat?width=400&t='+Date.now();
+     b.innerHTML=`<img src="${u}" alt="cat" onerror="this.parentNode.innerHTML='加载失败'">`;
+   }},
+  {id:'picsum',title:'随机美图',api:'Picsum',
+   load:async(b)=>{
+     const u='https://picsum.photos/seed/'+Math.floor(Math.random()*9999)+'/400/280';
+     b.innerHTML=`<img src="${u}" alt="pic" onerror="this.parentNode.innerHTML='加载失败'">`;
+   }},
+  {id:'avatar',title:'随机头像',api:'DiceBear',
+   load:async(b)=>{
+     const u='https://api.dicebear.com/7.x/thumbs/svg?seed='+Math.random().toString(36).slice(2);
+     b.innerHTML=`<img src="${u}" width="120" height="120" style="border-radius:16px" onerror="this.parentNode.innerHTML='加载失败'">`;
+   }},
+  {id:'qr',title:'二维码生成',api:'QR Server',
+   body:`<input class="inp" id="qr_in" placeholder="输入文字或链接" value="https://weyoudonttalk.github.io/miui-studio/">
+         <div id="qr_out" style="margin-top:10px;text-align:center"></div>`,
+   load:async(b)=>{
+     const v=document.getElementById('qr_in').value.trim()||'MIUI STUDIO';
+     document.getElementById('qr_out').innerHTML=`<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(v)}" onerror="this.parentNode.innerHTML='生成失败'">`;
+   }},
+  {id:'ip',title:'IP 归属地',api:'ipapi.co',
+   load:async(b)=>{
+     const r=await fetch('https://ipapi.co/json/');const d=await r.json();
+     b.innerHTML=`IP：<b style="color:var(--txt)">${esc(d.ip)}</b><br>位置：${esc(d.city||'')} · ${esc(d.region||'')} · ${esc(d.country_name||'')}<br>运营商：${esc(d.org||'未知')}`;
+   }},
+  {id:'weather',title:'天气查询',api:'Open-Meteo',
+   body:`<input class="inp" id="w_in" placeholder="城市，如 北京" value="北京">
+         <div id="w_out" style="margin-top:10px"></div>`,
+   load:async(b)=>{
+     const city=document.getElementById('w_in').value.trim()||'北京';
+     const g=await fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(city)+'&count=1&language=zh');
+     const gd=await g.json();
+     if(!gd.results)throw new Error('城市未找到');
+     const {latitude,longitude}=gd.results[0];
+     const w=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code`);
+     const wd=await w.json();const c=wd.current;
+     const code={0:'晴',1:'大致晴朗',2:'局部多云',3:'阴',45:'雾',48:'雾凇',51:'毛毛雨',61:'小雨',63:'中雨',65:'大雨',71:'小雪',73:'中雪',75:'大雪',80:'阵雨',95:'雷阵雨'};
+     document.getElementById('w_out').innerHTML=`🌡 ${c.temperature_2m}℃ · ${code[c.weather_code]||'未知'}<br>💧 湿度 ${c.relative_humidity_2m}% · 💨 风速 ${c.wind_speed_10m} km/h`;
+   }},
+  {id:'trans',title:'实时翻译',api:'MyMemory',
+   body:`<input class="inp" id="t_in" placeholder="输入要翻译的文字" value="你好，世界">
+         <select id="t_to" class="inp" style="max-width:110px">
+           <option value="en">中→英</option><option value="zh-CN">英→中</option><option value="ja">中→日</option><option value="ko">中→韩</option><option value="fr">中→法</option>
+         </select>
+         <div id="t_out" style="margin-top:10px;color:var(--txt)"></div>`,
+   load:async(b)=>{
+     const q=document.getElementById('t_in').value.trim();const to=document.getElementById('t_to').value;
+     const from=to==='zh-CN'?'en':'zh-CN';
+     const u=`https://api.mymemory.translated.net/get?q=${encodeURIComponent(q)}&langpair=${from}|${to}`;
+     const r=await fetch(u);const d=await r.json();
+     document.getElementById('t_out').textContent=d.responseData?d.responseData.translatedText:'翻译失败';
+   }},
+  {id:'ts',title:'时间戳转换',api:'本地计算',
+   body:`<input class="inp" id="ts_in" placeholder="时间戳(秒) 或 日期" value="">
+         <div id="ts_out" style="margin-top:10px;color:var(--txt)"></div>`,
+   load:async(b)=>{
+     const v=document.getElementById('ts_in').value.trim();
+     let out='';
+     if(/^\d{10,13}$/.test(v)){
+       const ms=v.length===10?+v*1000:+v;const d=new Date(ms);
+       out=`📅 ${d.toLocaleString('zh-CN')}`;
+     }else if(v){
+       const t=Date.parse(v);out=t?`⏱ ${Math.floor(t/1000)} (秒)\n${t} (毫秒)`:'无法解析';
+     }else{
+       const n=Date.now();out=`当前时间戳\n⏱ ${Math.floor(n/1000)} 秒\n${n} 毫秒`;
+     }
+     document.getElementById('ts_out').innerHTML=out.replace(/\n/g,'<br>');
+   }},
+  {id:'ai',title:'AI 智能对话',api:'OVH · '+AI_MODEL,
+   body:`
+     <div id="ai_out" style="color:var(--txt);min-height:40px;max-height:160px;overflow:auto;font-size:13px"></div>
+     <div class="foot">
+       <input class="inp" id="ai_in" placeholder="问点什么…">
+       <button class="mini" onclick="aiSend()">发送</button>
+     </div>`,
+   load:async()=>{document.getElementById('ai_out').innerHTML='👋 我是工作室 AI，输入点什么试试～';}},
+];
+
+// 渲染卡片
+const grid=document.getElementById('grid');
+CARDS.forEach(c=>{
+  const el=document.createElement('div');el.className='card';
+  el.innerHTML=`<span class="tag">${esc(c.api)}</span>
+    <h3><span class="dot"></span>${esc(c.title)}</h3>
+    <div class="body" id="body_${c.id}">${c.body||'<span class="spin"></span> 加载中…'}</div>
+    <div class="foot"><button class="mini" onclick="runCard('${c.id}')">↻ 刷新</button></div>`;
+  grid.appendChild(el);
+});
+
+async function runCard(id){
+  const c=CARDS.find(x=>x.id===id);const b=document.getElementById('body_'+id);
+  if(!c.body)b.innerHTML='<span class="spin"></span> 加载中…';
+  try{await c.load(b);}
+  catch(e){b.innerHTML=`<span style="color:var(--err)">⚠ 接口暂不可用</span><br><span style="font-size:11px">${esc(e.message||e)}</span>`;}
+}
+
+async function refreshAll(){for(const c of CARDS)runCard(c.id);}
+
+// AI 对话
+let aiBusy=false;
+async function aiSend(){
+  if(aiBusy)return;const inp=document.getElementById('ai_in');const out=document.getElementById('ai_out');
+  const q=inp.value.trim();if(!q)return;inp.value='';
+  out.innerHTML+=`<div style="margin:6px 0;color:var(--qq)">你：${esc(q)}</div><div id="ai_typing" style="color:var(--sub)"><span class="spin"></span> 思考中…</div>`;
+  out.scrollTop=out.scrollHeight;aiBusy=true;
+  try{
+    const r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:AI_MODEL,messages:[{role:'user',content:q}],temperature:0.7,max_tokens:400})});
+    const d=await r.json();
+    const txt=(d.choices&&d.choices[0].message.content)||d.error?.message||'（无返回）';
+    document.getElementById('ai_typing').outerHTML=`<div style="margin:4px 0;color:var(--txt)">AI：${esc(txt.replace(/<think>[\s\S]*?<\/think>/g,''))}</div>`;
+  }catch(e){document.getElementById('ai_typing').outerHTML=`<div style="color:var(--err)">⚠ 调用失败：${esc(e.message||e)}</div>`;}
+  aiBusy=false;out.scrollTop=out.scrollHeight;
+}
+
+// 首屏加载
+window.addEventListener('load',()=>setTimeout(refreshAll,300));
+</script>
+</body>
+</html>
