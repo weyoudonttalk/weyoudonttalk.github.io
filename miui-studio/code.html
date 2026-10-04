@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>代码专区 · 免Key AI写代码 · MIUI 工作室</title>
+<meta name="description" content="MIUI 工作室代码专区：免Key AI写代码，支持 HTML/JS/Python/C++/Java 等，代码高亮+一键复制+在线运行。" />
+<link rel="stylesheet" href="zone-style.css" />
+<style>
+  body{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  .chathead{padding:11px 16px;border-bottom:1px solid var(--line);background:rgba(5,7,13,.8);backdrop-filter:blur(10px);flex-shrink:0;position:relative;z-index:2}
+  .top1{display:flex;align-items:center;gap:12px}
+  .av{width:38px;height:38px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;box-shadow:var(--glow)}
+  .hinfo h1{font-size:16px}.hinfo .st{font-size:12px;color:var(--t2);display:flex;align-items:center;gap:6px}
+  .dot{width:7px;height:7px;border-radius:50%;background:#22e07e;box-shadow:0 0 8px #22e07e}
+  .hactions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .hbtn{background:var(--card);border:1px solid var(--line);color:var(--t2);padding:6px 13px;border-radius:20px;font-size:12.5px;cursor:pointer}
+  .hbtn:hover{color:var(--t);border-color:var(--c1)}
+  .keybtn{background:var(--g);border:none;color:#fff;padding:6px 16px;border-radius:20px;font-size:12.5px;cursor:pointer;font-weight:700}
+  .langs{display:flex;gap:9px;flex-wrap:wrap;padding:9px 16px;border-bottom:1px solid var(--line);background:rgba(5,7,13,.3)}
+  .langs .tag{font-size:11px;color:var(--t2)}
+  .langs button{background:var(--card);border:1px solid var(--line);color:var(--t2);padding:6px 13px;border-radius:18px;font-size:12.5px;cursor:pointer}
+  .langs button.on{background:var(--g);color:#fff;border:none}
+  #log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;min-height:0;position:relative;z-index:1}
+  #log::-webkit-scrollbar{width:8px}#log::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:8px}
+  .msg{display:flex;gap:10px;max-width:90%;animation:fa .3s ease}
+  @keyframes fa{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .msg .mav{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  .msg.ai .mav{background:var(--g);color:#fff}
+  .msg.me{align-self:flex-end;flex-direction:row-reverse}
+  .msg.me .mav{background:linear-gradient(135deg,#ff8a3d,#ff5d73);color:#fff}
+  .bubble{padding:12px 15px;border-radius:15px;font-size:14.5px;line-height:1.65;word-break:break-word}
+  .msg.ai .bubble{background:var(--card);border:1px solid var(--line);border-top-left-radius:4px}
+  .msg.me .bubble{background:var(--g);color:#fff;border-top-right-radius:4px}
+  .bubble h2,.bubble h3,.bubble h4{margin:10px 0 6px;color:#fff}
+  .bubble ul{margin:6px 0 6px 20px}.bubble li{margin:3px 0}
+  .bubble b{color:#fff}
+  pre.cb{position:relative;background:#0a0e1a;border:1px solid var(--line);border-radius:11px;padding:14px 14px 12px;margin:10px 0;overflow:auto;font-size:13px;line-height:1.5}
+  pre.cb code{font-family:'SFMono-Regular',Consolas,monospace;color:#cfe3ff;white-space:pre}
+  .cpy{position:absolute;top:8px;right:8px;background:var(--card);border:1px solid var(--line);color:var(--c2);padding:4px 11px;border-radius:14px;font-size:11px;cursor:pointer}
+  code.ic{background:rgba(123,92,255,.16);color:#c4b5ff;padding:1px 6px;border-radius:6px;font-family:monospace;font-size:13px}
+  .run{display:inline-block;margin:6px 0 2px;background:var(--c2);color:#04212b;font-weight:700;padding:5px 14px;border-radius:14px;font-size:12px;cursor:pointer;border:none}
+  .typing{display:flex;gap:4px;padding:14px 16px}.typing span{width:7px;height:7px;border-radius:50%;background:var(--t2);animation:bl 1.2s infinite}
+  .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+  @keyframes bl{0%,60%,100%{opacity:.3}30%{opacity:1;transform:translateY(-4px)}}
+  .composer{flex-shrink:0;padding:12px 16px;border-top:1px solid var(--line);background:rgba(5,7,13,.8);display:flex;gap:10px;align-items:flex-end;position:relative;z-index:2}
+  textarea#in{flex:1;resize:none;max-height:120px;min-height:46px;background:var(--bg2);border:1px solid var(--line);color:var(--t);border-radius:14px;padding:12px 14px;font-size:14.5px;outline:none;line-height:1.5;font-family:inherit}
+  textarea#in:focus{border-color:var(--c2)}
+  #send{background:var(--g);border:none;color:#fff;padding:0 22px;height:46px;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;flex-shrink:0}
+  #send:disabled{opacity:.5}
+    .warnbar{margin:10px 16px 0;padding:11px 15px;border-radius:12px;background:rgba(255,180,84,.1);border:1px solid rgba(255,180,84,.35);font-size:12.5px;color:#ffd9a3;line-height:1.65}
+  .warnbar b{color:#ffb454}
+
+  .hint{text-align:center;color:var(--t3);font-size:11.5px;padding:5px 0 0}
+  .mask{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:200;padding:16px}
+  .mask.open{display:flex}
+  .modal{background:var(--card2);border:1px solid var(--line);border-radius:18px;max-width:540px;width:100%;max-height:86vh;overflow:auto;padding:22px}
+  .modal h3{font-size:18px;margin-bottom:6px}.modal .sub{color:var(--t2);font-size:13px;margin-bottom:14px}
+  .modal .row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .modal .row b{font-size:14px;flex:1}.modal .row span{font-size:11px;color:var(--t3);flex:1}
+  .modal .go{background:var(--card);border:1px solid var(--line);color:var(--c2);padding:6px 12px;border-radius:18px;font-size:12px;cursor:pointer;white-space:nowrap}
+  .modal textarea{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--t);border-radius:10px;padding:10px;font-size:13px;outline:none;resize:vertical;font-family:monospace}
+  .modal .acts{display:flex;gap:10px;margin-top:12px}
+  .closex{float:right;cursor:pointer;color:var(--t2);font-size:22px}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo" onclick="location.href='index.html'"><div class="lg-ic">M</div>MIUI 工作室</div>
+  <button id="burger" onclick="mMenu()">☰</button>
+  <div class="nl">
+    <a href="index.html">首页</a>
+    <a href="chat.html">聊天专区</a>
+    <a href="rp.html">角色扮演</a>
+    <a href="deepq.html">深度小Q</a>
+    <a href="code.html" class="on">代码专区</a>
+    <a href="video-gen.html">视频生成</a>
+    <a href="ai-movie.html">电影</a>
+    <a href="ai-game.html">游戏</a>
+    <a href="about.html" class="cta-n">加入我们</a>
+  </div>
+</nav>
+<div id="mMenu" style="display:none;position:fixed;inset:0;z-index:99;background:rgba(5,7,13,.96);backdrop-filter:blur(20px);flex-direction:column;align-items:center;justify-content:center;gap:6px">
+  <a href="chat.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">💬 聊天专区</a>
+  <a href="rp.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🎭 角色扮演</a>
+  <a href="deepq.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🧠 深度小Q</a>
+  <a href="code.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">💻 代码专区</a>
+  <a href="video-gen.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">🎬 视频生成</a>
+  <a href="about.html" style="font-size:18px;font-weight:700;padding:12px 0" onclick="mMenu()">关于</a>
+</div>
+
+<header class="chathead">
+  <div class="top1">
+    <div class="av">Q</div>
+    <div class="hinfo"><h1>💻 代码专区（免Key）</h1><div class="st"><span class="dot"></span><span id="mn">免密模式 · 打开即写</span></div></div>
+    <div class="hactions">
+      <button class="keybtn" onclick="openKeyModal()">🔑 升级模型</button>
+      <button class="hbtn" onclick="goHome()">← 官网</button>
+      <button class="hbtn" onclick="clearChat()">清空</button>
+    </div>
+  </div>
+</header>
+<div class="langs" id="langs"><span class="tag">语言：</span></div>
+
+<div class="warnbar">⚠️ <b>合规声明：</b>本专区可写各类代码（含教学性的安全/逆向/脚本示例），但<b>绝不输出可直接用于非法侵害他人（如勒索、入侵、破坏）的成品武器化代码</b>。涉及危险主题时，AI 会先讲清风险、给防御视角或教学示意，并提醒：<b>代码只用于学习、授权测试与防护，非法用途后果自负。</b></div>
+
+<div id="log"></div>
+
+<div class="composer">
+  <textarea id="in" placeholder="描述你要的代码，例如：用Python写个批量重命名文件的脚本" onkeydown="onKey(event)"></textarea>
+  <button id="send" onclick="send()">生成</button>
+</div>
+<div class="hint">免Key即写 · 升级填智谱/DeepSeek等免费key更稳 · 群 1070470498</div>
+
+<div class="mask" id="keyMask" onclick="if(event.target===this)closeKeyModal()">
+  <div class="modal">
+    <span class="closex" onclick="closeKeyModal()">×</span>
+    <h3>🔑 升级模型（可选）</h3>
+    <div class="sub">免密引擎（Pollinations等）已能写代码。想要更稳更强，填个免费 key：推荐智谱 GLM（手机号注册免身份证）或 DeepSeek/硅基流动。</div>
+    <div id="keyRows"></div>
+    <div style="margin-top:14px;font-size:13px;color:var(--t)">批量导入（每行 <code style="color:var(--c2)">引擎ID:KEY</code>）：</div>
+    <textarea id="batchKeys" rows="4" placeholder="zhipu:你的智谱key&#10;deepseek:你的deepseek key"></textarea>
+    <div class="acts">
+      <button style="background:var(--g);color:#fff;border:none;padding:9px 20px;font-size:14px;cursor:pointer;border-radius:11px;font-weight:700" onclick="importKeys()">⚡ 一键导入</button>
+      <button style="background:var(--card);color:var(--t);border:1px solid var(--line);padding:9px 20px;font-size:14px;cursor:pointer;border-radius:11px" onclick="closeKeyModal()">关闭</button>
+    </div>
+    <div id="keyMsg" style="margin-top:10px;font-size:13px;color:#22e07e"></div>
+  </div>
+</div>
+
+<script src="e.js"></script>
+<script>
+const LANGS=['Python','JavaScript','HTML','CSS','Java','C++','Go','Rust','SQL','Shell'];
+let curLang='Python';
+const log=document.getElementById('log'),sendBtn=document.getElementById('send'),input=document.getElementById('in');
+let busy=false;
+// 语言按钮
+const langsBox=document.getElementById('langs');
+LANGS.forEach((l,i)=>{const b=document.createElement('button');b.textContent=l;b.className=i===0?'on':'';b.onclick=()=>{curLang=l;document.querySelectorAll('#langs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');};langsBox.appendChild(b);});
+function goHome(){location.href='index.html';}
+function mMenu(){const m=document.getElementById('mMenu');m.style.display=m.style.display==='flex'?'none':'flex';}
+function addMsg(role,html,raw){const m=document.createElement('div');m.className='msg '+role;const av=role==='me'?'你':'Q';
+  m.innerHTML=`<div class="mav">${av}</div><div class="bubble">${role==='me'?QA.md(input.value):html}</div>`;log.appendChild(m);log.scrollTop=log.scrollHeight;
+  if(role==='ai')attachRun(m);return m;}
+function clearChat(){log.innerHTML='';addMsg('ai','💻 代码专区已就绪，<b>免Key 即写</b>！选好语言描述需求就出代码，支持一键复制、HTML/JS 直接「运行」。\n\n试试：「用'+curLang+'写个贪吃蛇」「写个爬虫抓天气」「做个会动的按钮」。\n\n⚠️ 危险/双用途主题会从教学+防御角度讲并提醒合法使用，不产出可直接作恶的成品代码。');}
+function buildSys(){return `你是 MIUI 工作室的代码助手小Q，用户要 ${curLang} 代码。
+规则：
+1) 优先给完整可运行代码，用 ` + '```' + `lang 代码块` + '```' + ` 包裹，关键行加中文注释，简短说明怎么跑。
+2) 涉及双用途/危险主题（勒索、病毒、入侵、提权、破坏性脚本、未授权扫描等）：先明确声明“仅用于教学/授权安全测试，禁止非法使用”，从防御或原理示意角度讲，不输出可直接部署伤害他人的成品武器化代码；把风险与法律责任说清楚。
+3) 用简体中文，口语直接，别端着。`;}
+
+function attachRun(msg){msg.querySelectorAll('pre.cb').forEach(pre=>{const code=pre.querySelector('code').innerText;const lang=pre.dataset.lang||'';
+  if(lang==='html'||lang==='javascript'||lang==='js'){const b=document.createElement('button');b.className='run';b.textContent='▶ 运行';b.onclick=()=>{const w=window.open('','_blank');w.document.write('<!DOCTYPE html><meta charset=utf-8><title>运行</title><style>body{font-family:sans-serif;padding:16px}</style>'+code);};pre.appendChild(b);}});}
+async function send(){const text=input.value.trim();if(!text||busy)return;input.value='';input.style.height='46px';addMsg('me',null);
+  busy=true;sendBtn.disabled=true;const t=document.createElement('div');t.className='msg ai';t.innerHTML=`<div class="mav">Q</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;log.appendChild(t);log.scrollTop=log.scrollHeight;
+  const sys=buildSys();const res=await QA.ask(sys,text+'\n（用'+curLang+'写）');
+  t.remove();
+  if(res){addMsg('ai',QA.md(res.text),res.text);document.getElementById('mn').textContent='已用：'+QA.ENGINES[res.eng].name.split('（')[0];}
+  else{addMsg('ai','⚠️ 免密引擎连不上（你网络可能挡了国外站）。点右上「🔑 升级模型」填个智谱免费 key（手机号注册、免身份证）即可墙内直连稳写。');document.getElementById('mn').textContent='全部引擎不可用';}
+  busy=false;sendBtn.disabled=false;input.focus();}
+function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}
+input.addEventListener('input',()=>{input.style.height='46px';input.style.height=Math.min(input.scrollHeight,120)+'px';});
+function openKeyModal(){const rows=document.getElementById('keyRows');rows.innerHTML='';['zhipu','deepseek','siliconflow','qwen','moonshot','cups','chatanywhere'].forEach(k=>{const e=QA.ENGINES[k];const r=document.createElement('div');r.className='row';r.innerHTML=`<b>${e.name.split('（')[0]}</b><span>ID: ${k}</span>${e.apply?`<a class="go" href="${e.apply}" target="_blank">去拿key →</a>`:''}`;rows.appendChild(r);});document.getElementById('keyMsg').textContent='';document.getElementById('keyMask').classList.add('open');}
+function closeKeyModal(){document.getElementById('keyMask').classList.remove('open');}
+function importKeys(){const raw=document.getElementById('batchKeys').value.trim();if(!raw){document.getElementById('keyMsg').textContent='请输入内容';document.getElementById('keyMsg').style.color='#ff6b6b';return;}let ok=0,fail=0;raw.split('\n').forEach(line=>{const i=line.indexOf(':');if(i<1)return;const id=line.slice(0,i).trim();const key=line.slice(i+1).trim();if(QA.ENGINES[id]&&key){localStorage['key_'+id]=key;ok++;}else if(key)fail++;});const m=document.getElementById('keyMsg');m.style.color='#22e07e';m.textContent=`✅ 导入 ${ok} 个${fail?`，${fail} 个未知ID忽略`:''}。`;}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeKeyModal();});
+clearChat();
+</script>
+</body>
+</html>
