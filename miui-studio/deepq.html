@@ -195,11 +195,15 @@ async function callEngine(ek,model,sys,text){const e=ENGINES[ek];const key=local
   return c.replace(/<think>[\s\S]*?<\/think>/g,'');}
 function buildCandidates(){const list=FREE_CHAIN.slice();PAID_CHAIN.forEach(e=>{if((localStorage['key_'+e]||'').trim())list.push(e);});return list;}
 async function send(){const text=input.value.trim();if(!text||busy)return;input.value='';input.style.height='46px';addMsg('me',text);
+  // 快路径：问候/闲聊本地秒回，零网络零模型
+  const greet=KB.matchGreeting(text);
+  if(greet){addMsg('me',text);addMsg('ai',greet);busy=false;sendBtn.disabled=false;input.focus();return;}
   busy=true;sendBtn.disabled=true;const t=addTyping();
-  // 先尝试本地/联网直接答
+  // 先尝试本地知识直接答
   let pre=null;
   if(tKB.checked)pre=localAnswer(text);
-  if(!pre&&tWeb.checked)pre=await webSearch(text);
+  const needWeb=tWeb.checked&&!pre&&/[?？]\?|什么|怎么|为什么|如何|几岁|多少|最高|最大|最快|纪录|是谁|哪国|何时|哪年|多长|多重|多大/.test(text);
+  if(needWeb)pre=await webSearch(text);
   const sys=buildSystem();const cands=buildCandidates();let ans=null,used=null,lastErr=null;
   for(const ek of cands){try{const mk=ENGINES[ek].models[0];ans=await callEngine(ek,mk,sys,text);used=ek;break;}catch(err){lastErr=err;continue;}}
   t.remove();
