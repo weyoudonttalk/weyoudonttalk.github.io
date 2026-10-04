@@ -152,22 +152,23 @@ function mMenu(){const m=document.getElementById('mMenu');m.style.display=m.styl
 function syncMode(){const m=[];if(tDeep.checked)m.push('深度思考');if(tTone.checked)m.push('语气匹配');if(tWeb.checked)m.push('联网');if(tKB.checked)m.push('知识库');document.getElementById('modelname').textContent='免密模式 · '+(m.join('+')||'全关');}
 function addMsg(role,text,src){const m=document.createElement('div');m.className='msg '+role;const av=role==='me'?'你':'Q';m.innerHTML=`<div class="mav">${av}</div><div class="bubble">${esc(text)}${src?`<span class="src">via ${esc(src)}</span>`:''}</div>`;log.appendChild(m);scroll();return m;}
 function addTyping(){const m=document.createElement('div');m.className='msg ai';m.id='typing';m.innerHTML=`<div class="mav">Q</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;log.appendChild(m);scroll();return m;}
-function clearChat(){log.innerHTML='';addMsg('ai','🧠 深度小Q 已就绪。我集成了：免密大模型 + 深度思考 + 语气匹配 + 联网检索 + 本地知识库（吉尼斯纪录 / 生活 FAQ）。直接聊，或试试「吉尼斯最高的人」「感冒怎么办」「用网络用语吐槽一下周一」。');}
+function clearChat(){log.innerHTML='';addMsg('ai','🧠 深度小Q 上线啦！站长一个字一个字给你们编出来的全能小助手——啥都能跟你唠：\n\n· 免密大模型直接聊（不用注册！打开就答）\n· 深度思考：你问啥我先想明白再回\n· 语气匹配：你用啥梗我接啥梗，不端着\n· 联网检索：维基直连，事实类我现查现答\n· 本地知识库：网络用语+吉尼斯纪录+生活百科+AI模型百科，全塞进去了\n\n直接开聊！试试：「吉尼斯最高的人」「感冒了咋办」「推荐个国产大模型」「用网络语吐槽下周一」');}
 // 自调 system 提示
 function buildSystem(){const deep=tDeep.checked,tone=tTone.checked;
-  let p="你是 MIUI 工作室的官方 AI 助手「深度小Q」，由站长亲自调教，目标是像一个全能又有个性的真人朋友。\n";
-  p+="【基本要求】用简体中文，回答要准确、实用、有温度；涉及健康/法律/金钱给出提醒而非绝对建议。\n";
-  if(deep)p+="【深度思考】回答前先在内部理清：用户真实意图、隐含情绪、所需信息、最佳结构；复杂问题分点但别啰嗦，必要时给步骤。\n";
-  if(tone)p+="【语气匹配】识别用户语气（口语/吐槽/卖萌/严肃/网络梗）并自然跟上，不端着；可用适度 emoji，但不过度。\n";
-  p+="【知识】你已接入本地知识库（常见网络用语、吉尼斯世界纪录、生活 FAQ）和联网检索；若问题命中知识库或需要事实，优先给出准确信息。\n";
-  p+="【边界】你是助手不是用户嘴替，不输出违法、色情、暴力、仇恨内容；但正常创作/角色扮演/吐槽都自由。\n";
+  let p="你是 MIUI 工作室的官方 AI 助手「深度小Q」，站长一个字一个字手调出来的，宗旨就一句：服务人类，用户问啥我都尽力答，像个全能又有个性的真朋友。\n";
+  p+="【态度】用简体中文，口语、接地气、有温度；能答的认真答，不会的诚实说并帮着找方向，别瞎编。健康/法律/金钱给提醒不当绝对结论。\n";
+  if(deep)p+="【深度思考】先内部想清楚：用户到底想问啥、啥情绪、要哪些信息、怎么组织最清楚；复杂的分点但别啰嗦，必要时给步骤。\n";
+  if(tone)p+="【语气匹配】抓用户语气（口语/吐槽/卖萌/严肃/网络梗），自然跟上，不端着；emoji适度，别刷屏。\n";
+  p+="【知识】你接了本地知识库（网络用语、吉尼斯纪录、生活百科、AI模型百科）和维基联网检索；命中就直接给准信。\n";
+  p+="【边界】你是助手不是嘴替，不输出违法色情暴力仇恨内容；但正常创作、角色扮演、吐槽、提需求都随便。\n";
   return p;}
 // 本地知识预检索（不调模型，先拼进 prompt 或先答）
 function localAnswer(q){
-  if(tKB.checked){
-    const g=KB.matchGuinness(q); if(g) return '【本地知识库·吉尼斯】\n'+g;
-    const l=KB.matchLife(q); if(l) return '【本地知识库·生活】\n'+l;
-  }
+  if(!tKB.checked)return null;
+  const g=KB.matchGuinness(q); if(g) return g;
+  const l=KB.matchLife(q); if(l) return l;
+  const a=KB.matchAI(q); if(a) return a;
+  const c=KB.matchCold(q); if(c) return c;
   return null;
 }
 // 联网检索（Wikipedia REST，CORS 可用，用户浏览器直连）
@@ -203,7 +204,7 @@ async function send(){const text=input.value.trim();if(!text||busy)return;input.
   for(const ek of cands){try{const mk=ENGINES[ek].models[0];ans=await callEngine(ek,mk,sys,text);used=ek;break;}catch(err){lastErr=err;continue;}}
   t.remove();
   let srcLabel=ENGINES[used]?ENGINES[used].name.split('（')[0]:'';
-  if(ans){let out=ans;if(pre&&pre.indexOf('本地知识库')<0&&pre.indexOf('联网检索')<0)out=pre+'\n\n'+ans;else if(pre)out=pre+'\n\n'+ans;addMsg('ai',out,srcLabel);document.getElementById('modelname').textContent='已用：'+srcLabel;}
+  if(ans){let out=ans;if(pre)out=pre+'\n\n'+ans;addMsg('ai',out,srcLabel);document.getElementById('modelname').textContent='已用：'+srcLabel;}
   else{addMsg('ai','⚠️ 免密引擎都连不上（'+(lastErr?esc(lastErr.message):'网络')+'）。\n点右上「🔑 用智谱强模型」填个智谱免费 key（手机号注册、免身份证）即可墙内直连稳聊。');document.getElementById('modelname').textContent='全部引擎暂不可用';}
   busy=false;sendBtn.disabled=false;input.focus();}
 input.addEventListener('input',()=>{input.style.height='46px';input.style.height=Math.min(input.scrollHeight,120)+'px';});
