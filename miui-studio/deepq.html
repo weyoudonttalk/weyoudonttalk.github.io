@@ -171,45 +171,53 @@ function localAnswer(q){
   const c=KB.matchCold(q); if(c) return c;
   return null;
 }
-// 联网检索（Wikipedia REST，CORS 可用，用户浏览器直连）
+// 带超时的 fetch（默认8秒放弃，绝不卡死）
+function fetchTO(url,opts,t){const ctl=new AbortController();const id=setTimeout(()=>ctl.abort(),t||8000);return fetch(url,Object.assign({signal:ctl.signal},opts)).finally(()=>clearTimeout(id));}
+// 联网检索（维基，带超时）
 async function webSearch(q){
   if(!tWeb.checked)return null;
   try{
     const url='https://zh.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(q.slice(0,20));
-    const r=await fetch(url,{headers:{'Accept':'application/json'}});
+    const r=await fetchTO(url,{headers:{'Accept':'application/json'}},7000);
     if(!r.ok)return null;
     const d=await r.json();
     if(d&&d.extract)return '【联网检索·维基】\n'+d.extract;
   }catch(e){}
   return null;
 }
-async function callEngine(ek,model,sys,text){const e=ENGINES[ek];const key=localStorage['key_'+ek]||'';
-  if(!e.free&&!key)throw new Error('该引擎需要免费 key');
-  const msgs=[{role:'system',content:sys}];
-  const extra=localAnswer(text); if(extra)msgs.push({role:'system',content:'参考（来自本地知识库，可引用）：\n'+extra});
-  msgs.push({role:'user',content:text});
-  const body=e.fix({model,messages:msgs,temperature:0.8,max_tokens:900});
-  const r=await fetch(e.url,{method:'POST',headers:Object.assign({'Content-Type':'application/json'},e.hdr(key)),body:JSON.stringify(body)});
+// 单个引擎尝试（带超时，连不上8秒放弃）
+async function oneEngine(ek,sys,text){const e=ENGINES[ek];const key=localStorage['key_'+ek]||'';
+  if(!e.free&&!key)throw new Error('需要key');
+  const body=e.fix({model:e.models[0],messages:[{role:'system',content:sys},{role:'user',content:text}],temperature:0.8,max_tokens:900});
+  const r=await fetchTO(e.url,{method:'POST',headers:Object.assign({'Content-Type':'application/json'},e.hdr(key)),body:JSON.stringify(body)},8000);
   if(!r.ok)throw new Error('HTTP '+r.status);
   const d=await r.json();let c=d.choices?.[0]?.message?.content;if(!c&&d.choices?.[0]?.message?.reasoning)c=d.choices[0].message.reasoning;if(!c&&typeof d==='string')c=d;if(!c)c=d.error?.message||'空返回';
-  return c.replace(/<think>[\s\S]*?<\/think>/g,'');}
+  return c?c.replace(/<think>[\s\S]*?<\/think>/g,''):'';}
+// 并行竞速：所有可用引擎同时发，第一个成功即用，秒回不卡
+function raceEngines(sys,text){
+  const list=buildCandidates();
+  const ps=list.map(ek=>oneEngine(ek,sys,text).then(c=>({c,ek})).catch(e=>{throw e;}));
+  return Promise.any(ps).catch(()=>null);
+}
 function buildCandidates(){const list=FREE_CHAIN.slice();PAID_CHAIN.forEach(e=>{if((localStorage['key_'+e]||'').trim())list.push(e);});return list;}
-async function send(){const text=input.value.trim();if(!text||busy)return;input.value='';input.style.height='46px';addMsg('me',text);
-  // 快路径：问候/闲聊本地秒回，零网络零模型
+async function send(){const text=input.value.trim();if(!text||busy)return;input.value='';input.style.height='46px';
+  // 问候/闲聊 本地秒回，零网络零模型
   const greet=KB.matchGreeting(text);
-  if(greet){addMsg('me',text);addMsg('ai',greet);busy=false;sendBtn.disabled=false;input.focus();return;}
+  if(greet){addMsg('me',text);addMsg('ai',greet);input.focus();return;}
+  // 本地知识库命中（吉尼斯/生活/模型/冷知识）→ 直接秒答，不调模型
+  const pre=tKB.checked?localAnswer(text):null;
+  if(pre){addMsg('me',text);addMsg('ai',pre,'本地知识库');input.focus();return;}
   busy=true;sendBtn.disabled=true;const t=addTyping();
-  // 先尝试本地知识直接答
-  let pre=null;
-  if(tKB.checked)pre=localAnswer(text);
-  const needWeb=tWeb.checked&&!pre&&/[?？]\?|什么|怎么|为什么|如何|几岁|多少|最高|最大|最快|纪录|是谁|哪国|何时|哪年|多长|多重|多大/.test(text);
-  if(needWeb)pre=await webSearch(text);
-  const sys=buildSystem();const cands=buildCandidates();let ans=null,used=null,lastErr=null;
-  for(const ek of cands){try{const mk=ENGINES[ek].models[0];ans=await callEngine(ek,mk,sys,text);used=ek;break;}catch(err){lastErr=err;continue;}}
+  const sys=buildSystem();
+  const needWeb=tWeb.checked&&/[?？]\?|什么|怎么|为什么|如何|几岁|多少|最高|最大|最快|纪录|是谁|哪国|何时|哪年|多长|多重|多大/.test(text);
+  const modelP=raceEngines(sys,text);
+  const webP=needWeb?webSearch(text):Promise.resolve(null);
+  let mres=null,wres=null;
+  try{[mres,wres]=await Promise.all([modelP,webP]);}catch(e){}
   t.remove();
-  let srcLabel=ENGINES[used]?ENGINES[used].name.split('（')[0]:'';
-  if(ans){let out=ans;if(pre)out=pre+'\n\n'+ans;addMsg('ai',out,srcLabel);document.getElementById('modelname').textContent='已用：'+srcLabel;}
-  else{addMsg('ai','⚠️ 免密引擎都连不上（'+(lastErr?esc(lastErr.message):'网络')+'）。\n点右上「🔑 用智谱强模型」填个智谱免费 key（手机号注册、免身份证）即可墙内直连稳聊。');document.getElementById('modelname').textContent='全部引擎暂不可用';}
+  if(mres&&mres.c&&mres.c.trim()){addMsg('ai',mres.c,ENGINES[mres.ek].name.split('（')[0]);document.getElementById('modelname').textContent='已用：'+ENGINES[mres.ek].name.split('（')[0];}
+  else if(wres){addMsg('ai',wres,'维基联网');}
+  else{addMsg('ai','⚠️ 免密引擎都连不上（你的网络可能挡了国外站，干等也没用）。\n最快解法：右上「🔑 用智谱强模型」填个智谱免费 key（手机号注册、免身份证）即可墙内直连秒回。');document.getElementById('modelname').textContent='全部引擎暂不可用';}
   busy=false;sendBtn.disabled=false;input.focus();}
 input.addEventListener('input',()=>{input.style.height='46px';input.style.height=Math.min(input.scrollHeight,120)+'px';});
 // 升级弹窗
