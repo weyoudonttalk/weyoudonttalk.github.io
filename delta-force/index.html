@@ -12,35 +12,39 @@
   #hud{position:absolute;top:10px;left:12px;color:#cfe;font-size:14px;text-shadow:0 1px 2px #000;line-height:1.6}
   #hud b{color:#ffd166}
   #tip{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#9ab;font-size:12px;text-shadow:0 1px 2px #000}
-  #over{position:absolute;inset:0;background:rgba(0,0,0,.8);display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center}
+  #over{position:absolute;inset:0;background:rgba(0,0,0,.8);display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;z-index:50}
   #over h1{font-size:28px;margin-bottom:8px}
   #over button{margin-top:16px;padding:10px 26px;border:0;border-radius:24px;background:linear-gradient(135deg,#ff5ea8,#7b5cff);color:#fff;font-size:16px;cursor:pointer}
 
-  /* ====== 开始页（带哈夫克二创视频） ====== */
-  #start{position:fixed;inset:0;z-index:99;background:radial-gradient(circle at 50% 30%,#16203a,#05070d 75%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;overflow:auto}
-  #start h1{font-size:clamp(26px,7vw,40px);font-weight:800;letter-spacing:5px;margin-bottom:4px;
-    background:linear-gradient(90deg,#ff6a3d,#ff3d6e,#7b5cff,#5ef0ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;background-size:220% auto;animation:tg 4s linear infinite}
-  @keyframes tg{to{background-position:220% center}}
-  #start .sub{color:#8aa6c8;font-size:13px;margin-bottom:14px;text-align:center;line-height:1.6}
-  #videoWrap{position:relative;width:min(560px,92vw);aspect-ratio:16/9;border-radius:14px;overflow:hidden;border:1px solid #2a3a5a;box-shadow:0 0 40px #000a;background:#000}
-  #videoWrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-  #videoWrap .vlabel{position:absolute;left:10px;bottom:8px;z-index:3;font-size:11px;color:#cfe;background:#0009;padding:3px 8px;border-radius:8px;text-shadow:0 1px 2px #000}
-  #videoWrap a.vlink{position:absolute;right:10px;bottom:8px;z-index:3;font-size:11px;color:#5ef0ff;text-decoration:none;background:#0009;padding:3px 8px;border-radius:8px}
-  /* 视频加载失败回退：战术 HUD 启动动画 */
-  #fallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#05070d}
-  #fallback .rings{position:relative;width:160px;height:160px}
+  /* ====== 开始页：CODMW 全屏开屏 ====== */
+  #start{position:fixed;inset:0;z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;background:#000}
+  /* 视频铺满全屏（cover 技巧，16:9 不被裁切也填满） */
+  #bgVideo{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:100vw;height:56.25vw;min-height:100vh;min-width:177.78vh;border:0;}
+  #start .scrim{position:absolute;inset:0;background:
+    linear-gradient(180deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.15) 38%,rgba(0,0,0,.65) 100%);}
+  #start .content{position:relative;z-index:3;text-align:center;padding:20px}
+  #start h1{font-size:clamp(30px,9vw,64px);font-weight:900;letter-spacing:6px;margin-bottom:6px;color:#fff;
+    text-shadow:0 2px 24px #000,0 0 40px #ff6a3d55;animation:flick 5s infinite}
+  @keyframes flick{0%,97%,100%{opacity:1}98%{opacity:.6}99%{opacity:.85}}
+  #start .sub{color:#ffb98a;font-size:clamp(13px,3.4vw,17px);letter-spacing:3px;margin-bottom:26px;text-shadow:0 1px 6px #000}
+  #enterBtn{position:relative;z-index:3;padding:14px 50px;border:1px solid #ff8a4d;border-radius:30px;font-size:19px;font-weight:800;letter-spacing:2px;color:#fff;
+    background:rgba(255,106,61,.18);backdrop-filter:blur(4px);cursor:pointer;box-shadow:0 0 30px #ff6a3d44;transition:.2s}
+  #enterBtn:active{transform:scale(.96);background:rgba(255,106,61,.4)}
+  #start .credit{position:absolute;bottom:12px;left:0;right:0;z-index:3;text-align:center;color:#caa;font-size:11px;text-shadow:0 1px 4px #000}
+  #start .credit a{color:#ff9a6a;text-decoration:none}
+  #start .orig{position:absolute;top:12px;right:12px;z-index:3;font-size:11px;color:#ff9a6a;text-decoration:none;background:#0008;padding:4px 10px;border-radius:8px}
+  /* 视频失败回退：全屏战术 HUD */
+  #fallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 45%,#1a1208,#000 75%)}
+  #fallback .rings{position:relative;width:min(60vw,260px);height:min(60vw,260px)}
   #fallback .rings b{position:absolute;border-radius:50%;border:2px solid transparent;left:50%;top:50%;transform:translate(-50%,-50%)}
-  #fallback .rings b:nth-child(1){width:150px;height:150px;margin:-75px 0 0 -75px;border-top-color:#ff6a3d;border-right-color:#ff6a3d;animation:r1 1.6s linear infinite;box-shadow:0 0 16px #ff6a3d44}
-  #fallback .rings b:nth-child(2){width:110px;height:110px;margin:-55px 0 0 -55px;border-bottom-color:#7b5cff;border-left-color:#7b5cff;animation:r2 2.3s linear infinite}
-  #fallback .rings b:nth-child(3){width:74px;height:74px;margin:-37px 0 0 -37px;border-top-color:#5ef0ff;border-bottom-color:#5ef0ff;animation:r1 1.1s linear infinite}
+  #fallback .rings b:nth-child(1){width:100%;height:100%;margin:-50% 0 0 -50%;border-top-color:#ff6a3d;border-right-color:#ff6a3d;animation:r1 1.6s linear infinite;box-shadow:0 0 24px #ff6a3d55}
+  #fallback .rings b:nth-child(2){width:72%;height:72%;margin:-36% 0 0 -36%;border-bottom-color:#7b5cff;border-left-color:#7b5cff;animation:r2 2.3s linear infinite}
+  #fallback .rings b:nth-child(3){width:46%;height:46%;margin:-23% 0 0 -23%;border-top-color:#5ef0ff;border-bottom-color:#5ef0ff;animation:r1 1.1s linear infinite}
   @keyframes r1{to{transform:translate(-50%,-50%) rotate(360deg)}}
   @keyframes r2{to{transform:translate(-50%,-50%) rotate(-360deg)}}
-  #fallback .ft{position:absolute;bottom:14px;width:100%;text-align:center;color:#ff9a6a;font-size:12px;letter-spacing:2px}
-  #enterBtn{margin-top:18px;padding:13px 44px;border:0;border-radius:26px;font-size:18px;font-weight:800;color:#fff;
-    background:linear-gradient(135deg,#ff5ea8,#7b5cff);box-shadow:0 8px 26px #7b5cff55;cursor:pointer}
-  #enterBtn:active{transform:scale(.96)}
-  #start .credit{margin-top:12px;color:#566;font-size:11px;text-align:center}
-  #start .credit a{color:#6a86b8;text-decoration:none}
+  #fallback .ft{position:absolute;bottom:18%;width:100%;text-align:center;color:#ff9a6a;font-size:clamp(14px,4vw,20px);letter-spacing:4px;text-shadow:0 0 12px #ff6a3d}
+  #muteHint{position:absolute;bottom:40px;left:0;right:0;z-index:3;text-align:center;color:#9ab;font-size:11px}
 </style>
 </head>
 <body>
@@ -51,25 +55,26 @@
   <div id="over"><h1 id="ot"></h1><div id="os"></div><button onclick="restart()">再战一局</button></div>
 </div>
 
-<!-- 开始页 -->
+<!-- 开始页（CODMW 全屏开屏） -->
 <div id="start">
-  <h1>三角洲行动</h1>
-  <div class="sub">MIUI STUDIO · 战术竞技 · 玩家二创开屏</div>
-  <div id="videoWrap">
-    <iframe id="bili" src="https://player.bilibili.com/player.html?bvid=BV1JTooBPEt9&page=1&high_quality=1&danmaku=0&autoplay=0&width=100%25&height=100%25" allowfullscreen="true" scrolling="no" frameborder="0" onerror="videoFail()"></iframe>
-    <div id="fallback">
-      <div class="rings"><b></b><b></b><b></b></div>
-      <div class="ft">哈夫克 启动中…</div>
-    </div>
-    <div class="vlabel">玩家二创 ·《哈夫典狱》哈夫克阵营</div>
-    <a class="vlink" href="https://www.bilibili.com/video/BV1JTooBPEt9/" target="_blank" rel="noopener">原视频↗</a>
+  <iframe id="bgVideo" src="https://player.bilibili.com/player.html?bvid=BV11s411s7Jd&page=1&high_quality=1&danmaku=0&autoplay=0&width=100%25&height=100%25" allowfullscreen="true" scrolling="no" frameborder="0" onerror="videoFail()"></iframe>
+  <div id="fallback">
+    <div class="rings"><b></b><b></b><b></b></div>
+    <div class="ft">将军南下 · 捉虫行动中…</div>
   </div>
-  <button id="enterBtn" onclick="startGame()">▶ 进入战场</button>
-  <div class="credit">视频来源：B站 UP 主二创作品《哈夫典狱》（哈夫克/阿萨拉阵营），仅供展示 · 点右上角可看原片</div>
+  <div class="scrim"></div>
+  <a class="orig" href="https://www.bilibili.com/video/BV11s411s7Jd/" target="_blank" rel="noopener">原片↗</a>
+  <div class="content">
+    <h1>使命召唤 4</h1>
+    <div class="sub">MODERN WARFARE · 将军南下 · 捉虫行动</div>
+    <button id="enterBtn" onclick="startGame()">▶ 进入战场</button>
+    <div id="muteHint">（B站嵌入默认静音·点「原片」可看带声版本）</div>
+  </div>
+  <div class="credit">开屏视频：B站 UP 主《使命召唤4全过场CG剪辑》· 仅供展示</div>
 </div>
 
 <script>
-function videoFail(){ document.getElementById('bili').style.display='none'; document.getElementById('fallback').style.display='flex'; }
+function videoFail(){ document.getElementById('bgVideo').style.display='none'; document.getElementById('fallback').style.display='flex'; }
 
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 let W,H;function resize(){W=cv.width=Math.min(innerWidth,900);H=cv.height=Math.min(innerHeight,640);}resize();addEventListener('resize',resize);
