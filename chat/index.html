@@ -35,8 +35,9 @@
       <span class="room">技术聊天室</span>
     </div>
     <div class="right">
-      <span id="online">🟢 连接中…</span>
+      <span id="online">🟡 连接中…</span>
       <span id="me"></span>
+      <button id="setBtn" title="机器人设置">⚙</button>
       <button id="logout">退出</button>
     </div>
   </header>
@@ -53,9 +54,29 @@
   </div>
 </div>
 
+<!-- 设置弹窗 -->
+<div id="modal" class="modal" style="display:none">
+  <div class="modalbox">
+    <h3>🤖 机器人设置（免费）</h3>
+    <p class="mtip">机器人由 <b>OpenRouter 免费模型</b> 驱动，<b>完全不用花钱、不用绑卡</b>。去 <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a> 用邮箱注册 → 创建 Key（免费），粘到下面即可。</p>
+    <label>API Key（免费）</label>
+    <input id="setKey" placeholder="sk-or-..." autocomplete="off">
+    <label>模型（默认免费模型，不用改）</label>
+    <select id="setModel">
+      <option value="meta-llama/llama-3.1-8b-instruct:free">Llama 3.1 8B（免费）</option>
+      <option value="google/gemma-2-9b-it:free">Gemma 2 9B（免费）</option>
+      <option value="mistralai/mistral-7b-instruct:free">Mistral 7B（免费）</option>
+    </select>
+    <div id="setMsg" class="setmsg"></div>
+    <div class="mrow">
+      <button id="setSave">保存</button>
+      <button id="setClose">关闭</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast" class="toast"></div>
 <script src="lib/mqtt.min.js"></script>
 <script src="app.js"></script>
-<!-- build trigger -->
 </body>
 </html>
