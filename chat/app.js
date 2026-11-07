@@ -9,7 +9,10 @@ const BOTS = [
   { name: '克劳德', color: '#ff8c42', persona: '你是Claude风格的中文助手（由AI驱动）。回答准确、有结构、有礼貌，善于推理与长文写作，分点清晰。' },
 ];
 const PROVIDERS = {
-  siliconflow: { label: '硅基流动（国内直连·推荐）', base: 'https://api.siliconflow.cn/v1/chat/completions',
+  kimi: { label: 'Kimi 月之暗面（国内·手机可实名·送15元）', base: 'https://api.moonshot.cn/v1/chat/completions',
+    models: ['moonshot-v1-8k', 'kimi-k2', 'moonshot-v1-32k'],
+    modelsLabel: ['moonshot-v1-8k（免费额度可用）', 'kimi-k2（免费额度可用）', 'moonshot-v1-32k'] },
+  siliconflow: { label: '硅基流动（需电脑实名）', base: 'https://api.siliconflow.cn/v1/chat/completions',
     models: ['Qwen/Qwen2.5-7B-Instruct', 'deepseek-ai/DeepSeek-V2.5', 'THUDM/glm-4-9b-chat'],
     modelsLabel: ['Qwen2.5-7B（免费）', 'DeepSeek-V2.5（免费）', 'GLM-4-9B（免费）'] },
   openrouter: { label: 'OpenRouter（国外·备用）', base: 'https://openrouter.ai/api/v1/chat/completions',
@@ -22,7 +25,7 @@ const authEl = $('#auth'), appEl = $('#app'), msgsEl = $('#msgs'), inputEl = $('
 const onlineEl = $('#online'), meEl = $('#me'), typingEl = $('#typing');
 // 默认：硅基流动 + Qwen2.5-7B；用户可在⚙里换服务商/模型/填key
 let me = '', client = null, connected = false, knownNames = [],
-    aiCfg = { provider: 'siliconflow', key: '', model: 'Qwen/Qwen2.5-7B-Instruct' };
+    aiCfg = { provider: 'kimi', key: '', model: 'moonshot-v1-8k' };
 
 // ---------- 账号 ----------
 let mode = 'login';
