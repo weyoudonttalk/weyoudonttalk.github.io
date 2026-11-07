@@ -1,5 +1,5 @@
 // MIUI STUDIO 技术聊天站 —— 纯前端免费版
-// 托管: GitHub Pages(免费) | 实时: 公共MQTT(免费) | AI: OpenRouter 免费模型(免费,无需绑卡)
+// 托管: GitHub Pages(免费) | 实时: 公共MQTT(免费) | AI: 硅基流动(国内直连,免费额度) / OpenRouter(备用)
 const BROKER = 'wss://broker.emqx.io:8084/mqtt';
 const TOPIC_CHAT = 'miui/chat/v2';
 const TOPIC_DM = 'miui/dm/';
@@ -8,15 +8,21 @@ const BOTS = [
   { name: '蓝色大肥鱼', color: '#7b5cff', persona: '你是"蓝色大肥鱼"，由AI驱动的技术专家。回答技术问题时专业、深入，尽量给可运行的代码示例，语气轻松不端着。擅长前端、游戏引擎、后端架构、DevOps。' },
   { name: '克劳德', color: '#ff8c42', persona: '你是Claude风格的中文助手（由AI驱动）。回答准确、有结构、有礼貌，善于推理与长文写作，分点清晰。' },
 ];
+const PROVIDERS = {
+  siliconflow: { label: '硅基流动（国内直连·推荐）', base: 'https://api.siliconflow.cn/v1/chat/completions',
+    models: ['Qwen/Qwen2.5-7B-Instruct', 'deepseek-ai/DeepSeek-V2.5', 'THUDM/glm-4-9b-chat'],
+    modelsLabel: ['Qwen2.5-7B（免费）', 'DeepSeek-V2.5（免费）', 'GLM-4-9B（免费）'] },
+  openrouter: { label: 'OpenRouter（国外·备用）', base: 'https://openrouter.ai/api/v1/chat/completions',
+    models: ['recursive/flint-v1.0:free', 'nvidia/nemotron-3.5-lightning:free', 'cohere/north-mini-code:free'],
+    modelsLabel: ['Flint（免费）', 'Nemotron（免费）', 'Cohere（免费）'] },
+};
 const NAME_RE = /^[一-龥A-Za-z0-9_]{2,20}$/;
 const $ = s => document.querySelector(s);
 const authEl = $('#auth'), appEl = $('#app'), msgsEl = $('#msgs'), inputEl = $('#input'), sendBtn = $('#send');
 const onlineEl = $('#online'), meEl = $('#me'), typingEl = $('#typing');
-// 默认用当前可用的免费模型；用户可在⚙里改
+// 默认：硅基流动 + Qwen2.5-7B；用户可在⚙里换服务商/模型/填key
 let me = '', client = null, connected = false, knownNames = [],
-    aiCfg = { key: '', model: 'xingchen-agi/xing4.0-29b-a4b:free' };
-// 主模型挂了自动降级到这些
-const FALLBACK_MODELS = ['xingchen-agi/xing4.0-29b-a4b:free', 'recursive/flint-v1.0:free', 'nvidia/nemotron-3.5-super-vl:free'];
+    aiCfg = { provider: 'siliconflow', key: '', model: 'Qwen/Qwen2.5-7B-Instruct' };
 
 // ---------- 账号 ----------
 let mode = 'login';
@@ -119,29 +125,31 @@ function botReply(bot, prompt) {
 }
 
 async function callModel(model, bot, q) {
-  const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + aiCfg.key, 'HTTP-Referer': location.href, 'X-Title': 'MIUI Chat' },
+  const p = PROVIDERS[aiCfg.provider] || PROVIDERS.siliconflow;
+  const headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + aiCfg.key };
+  if (aiCfg.provider === 'openrouter') { headers['HTTP-Referer'] = location.href; headers['X-Title'] = 'MIUI Chat'; }
+  const r = await fetch(p.base, {
+    method: 'POST', headers,
     body: JSON.stringify({ model, messages: [{ role: 'system', content: bot.persona }, { role: 'user', content: q }], max_tokens: 700, temperature: 0.8 }),
   });
   if (!r.ok) { const t = await r.text(); throw new Error(t.slice(0, 120)); }
   const j = await r.json();
   const c = j.choices?.[0]?.message?.content;
-  if (!c) throw new Error('空回复');
+  if (!c || !c.trim()) throw new Error('空回复');
   return c.trim();
 }
 
 async function genBotReply(bot, prompt) {
-  if (!aiCfg.key) return `⚠️ ${bot.name} 暂未上线：点右上角 ⚙ 粘贴免费的 OpenRouter Key（完全不用花钱，邮箱注册即可）。`;
+  if (!aiCfg.key) return `⚠️ ${bot.name} 暂未上线：点右上角 ⚙ 粘贴免费的 AI Key（硅基流动，国内直连，注册即送额度，不用花钱）。`;
   const q = prompt.replace(/@\S+/g, '').trim() || '这个话题';
-  // 主模型 + 自动降级
-  const chain = [aiCfg.model, ...FALLBACK_MODELS.filter(m => m !== aiCfg.model)];
+  const p = PROVIDERS[aiCfg.provider] || PROVIDERS.siliconflow;
+  const chain = [aiCfg.model, ...p.models.filter(m => m !== aiCfg.model)];
   let lastErr = '';
   for (const model of chain) {
     try { return await callModel(model, bot, q); }
     catch (e) { lastErr = e.message; }
   }
-  return `⚠️ ${bot.name} 调用失败：${lastErr}（免费模型可能临时繁忙，稍后重试 / 检查 Key）`;
+  return `⚠️ ${bot.name} 调用失败：${lastErr}（免费模型可能临时繁忙，稍后重试 / 检查 Key 是否有效）`;
 }
 
 // ---------- @ 建议 ----------
@@ -163,10 +171,24 @@ function showSuggest() {
 function hideSuggest() { suggestEl.style.display = 'none'; }
 
 // ---------- 设置弹窗 ----------
-$('#setBtn').onclick = () => { $('#setKey').value = aiCfg.key || ''; $('#setModel').value = aiCfg.model; $('#modal').style.display = 'flex'; $('#setMsg').textContent = ''; };
+function fillModelOptions() {
+  const sel = $('#setModel'); sel.innerHTML = '';
+  const p = PROVIDERS[aiCfg.provider] || PROVIDERS.siliconflow;
+  p.models.forEach((m, i) => {
+    const o = document.createElement('option'); o.value = m; o.textContent = p.modelsLabel[i]; sel.appendChild(o);
+  });
+  if (p.models.includes(aiCfg.model)) sel.value = aiCfg.model; else { sel.value = p.models[0]; aiCfg.model = p.models[0]; }
+}
+$('#setProvider').onchange = () => { aiCfg.provider = $('#setProvider').value; fillModelOptions(); };
+$('#setBtn').onclick = () => {
+  $('#setProvider').value = aiCfg.provider;
+  $('#setKey').value = aiCfg.key || '';
+  fillModelOptions();
+  $('#modal').style.display = 'flex'; $('#setMsg').textContent = '';
+};
 $('#setClose').onclick = () => $('#modal').style.display = 'none';
 $('#setSave').onclick = () => {
-  aiCfg = { key: $('#setKey').value.trim(), model: $('#setModel').value };
+  aiCfg = { provider: $('#setProvider').value, key: $('#setKey').value.trim(), model: $('#setModel').value };
   localStorage.setItem('chat_ai', JSON.stringify(aiCfg));
   $('#setMsg').textContent = aiCfg.key ? '✅ 已保存，机器人现已上线！去聊天里 @ 它试试' : '已清空，机器人将离线';
   setTimeout(() => $('#modal').style.display = 'none', 900);
