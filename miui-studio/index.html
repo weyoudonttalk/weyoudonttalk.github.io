@@ -214,19 +214,22 @@ footer .soc a:hover{color:var(--t)}
 
 #toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);padding:11px 24px;border-radius:18px;font-size:13px;font-weight:600;z-index:9999;background:#111a2e;color:#fff;box-shadow:0 8px 30px rgba(0,0,0,.5);opacity:0;transition:.3s;pointer-events:none;max-width:90vw;text-align:center}
 </style>
+
 <style>
-/* ===== COD4 全屏开屏 ===== */
+/* ===== COD4 全屏开屏（自动播放·播完自动进官网） ===== */
 #splash{position:fixed;inset:0;z-index:9999;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center}
 #splash iframe{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100vw;height:56.25vw;min-height:100vh;min-width:177.78vh;border:0}
-#splash .scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.5),rgba(0,0,0,.12) 40%,rgba(0,0,0,.62));z-index:2}
-#splash .cnt{position:relative;z-index:3;text-align:center;padding:20px}
-#splash h1{font-size:clamp(30px,9vw,64px);font-weight:900;letter-spacing:6px;color:#fff;text-shadow:0 2px 24px #000,0 0 40px #ff6a3d55;animation:flick 5s infinite}
+#splash .scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,.1) 38%,rgba(0,0,0,.6));z-index:2}
+#splash .cnt{position:absolute;z-index:3;text-align:center;padding:20px;bottom:9%;left:0;right:0}
+#splash h1{font-size:clamp(28px,8vw,60px);font-weight:900;letter-spacing:6px;color:#fff;text-shadow:0 2px 24px #000,0 0 40px #ff6a3d55;animation:flick 5s infinite}
 @keyframes flick{0%,97%,100%{opacity:1}98%{opacity:.6}99%{opacity:.85}}
-#splash .sub{color:#ffb98a;font-size:clamp(13px,3.4vw,17px);letter-spacing:3px;margin:6px 0 26px;text-shadow:0 1px 6px #000}
-#splash .enter{padding:14px 50px;border:1px solid #ff8a4d;border-radius:30px;font-size:19px;font-weight:800;letter-spacing:2px;color:#fff;background:rgba(255,106,61,.18);backdrop-filter:blur(4px);cursor:pointer;box-shadow:0 0 30px #ff6a3d44;transition:.2s}
-#splash .enter:active{transform:scale(.96);background:rgba(255,106,61,.4)}
-#splash .orig{position:absolute;top:12px;right:12px;z-index:3;font-size:11px;color:#ff9a6a;text-decoration:none;background:#0008;padding:4px 10px;border-radius:8px}
-#splash .credit{position:absolute;bottom:12px;left:0;right:0;z-index:3;text-align:center;color:#caa;font-size:11px;text-shadow:0 1px 4px #000}
+#splash .sub{color:#ffb98a;font-size:clamp(12px,3.2vw,16px);letter-spacing:3px;margin:6px 0 14px;text-shadow:0 1px 6px #000}
+/* 倒计时条（自动进入） */
+#splash .timer{display:inline-block;font-size:13px;color:#cfe;letter-spacing:1px;background:#0009;padding:6px 16px;border-radius:20px;border:1px solid rgba(255,138,77,.4)}
+#splash .timer b{color:#ffd166}
+#splash .skip{position:absolute;top:14px;right:14px;z-index:4;font-size:12px;color:#ff9a6a;text-decoration:none;background:#0008;padding:5px 12px;border-radius:8px;cursor:pointer}
+#splash .orig{position:absolute;top:14px;left:14px;z-index:4;font-size:11px;color:#ff9a6a;text-decoration:none;background:#0008;padding:4px 10px;border-radius:8px}
+#splash .credit{position:absolute;bottom:10px;left:0;right:0;z-index:3;text-align:center;color:#caa;font-size:11px;text-shadow:0 1px 4px #000}
 #splash .fallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 45%,#1a1208,#000 75%);z-index:1}
 #splash .fallback .rings{position:relative;width:min(60vw,260px);height:min(60vw,260px)}
 #splash .fallback .rings b{position:absolute;border-radius:50%;border:2px solid transparent;left:50%;top:50%;transform:translate(-50%,-50%)}
@@ -240,17 +243,20 @@ footer .soc a:hover{color:var(--t)}
 </head>
 <body>
 <div id="splash">
-  <iframe id="splashVideo" src="https://player.bilibili.com/player.html?bvid=BV11s411s7Jd&page=1&high_quality=1&danmaku=0&autoplay=0&width=100%25&height=100%25" allowfullscreen="true" scrolling="no" frameborder="0" onerror="splashVideoFail()"></iframe>
+  <iframe id="splashVideo" src="https://player.bilibili.com/player.html?bvid=BV11s411s7Jd&page=1&high_quality=1&danmaku=0&autoplay=1&mute=1&width=100%25&height=100%25" allowfullscreen="true" scrolling="no" frameborder="0" allow="autoplay" onerror="splashVideoFail()"></iframe>
   <div class="fallback" id="splashFallback"><div class="rings"><b></b><b></b><b></b></div><div class="ft">将军南下 · 捉虫行动中…</div></div>
   <div class="scrim"></div>
-  <a class="orig" href="https://www.bilibili.com/video/BV11s411s7Jd/" target="_blank" rel="noopener">原片↗</a>
+  <a class="orig" href="https://www.bilibili.com/video/BV11s411s7Jd/" target="_blank" rel="noopener">原片↗（带声）</a>
+  <div class="skip" onclick="enterSite()">跳过 ⏭</div>
   <div class="cnt">
     <h1>使命召唤 4</h1>
     <div class="sub">MODERN WARFARE · 将军南下 · 捉虫行动</div>
-    <button class="enter" onclick="enterSite()">▶ 进入官网</button>
+    <div class="timer"><b id="splashSec">18</b> 秒后自动进入官网（将军抬手即高潮）</div>
   </div>
   <div class="credit">开屏视频：B站 UP 主《使命召唤4全过场CG剪辑》· 仅供展示</div>
 </div>
+
+
 
 
 <div id="stars"></div>
@@ -795,9 +801,15 @@ function copyGroup(){
   else{toast('🐧 QQ群号：'+g);}
 }
 </script>
+
 <script>
-function splashVideoFail(){var v=document.getElementById('splashVideo');if(v)v.style.display='none';var f=document.getElementById('splashFallback');if(f)f.style.display='flex';}
-function enterSite(){var s=document.getElementById('splash');if(s)s.style.display='none';}
+var _splashLeft=18;
+function splashVideoFail(){var v=document.getElementById('splashVideo');if(v)v.style.display='none';var f=document.getElementById('splashFallback');if(f)f.style.display='flex';clearInterval(_splashTimer);}
+function enterSite(){var s=document.getElementById('splash');if(s)s.style.display='none';clearInterval(_splashTimer);}
+var _splashTimer=setInterval(function(){
+  _splashLeft--;var e=document.getElementById('splashSec');if(e)e.textContent=_splashLeft;
+  if(_splashLeft<=0){enterSite();}
+},1000);
 </script>
 </body>
 </html>
