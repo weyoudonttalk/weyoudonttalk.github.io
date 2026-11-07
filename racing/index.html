@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>极速赛车 · MIUI STUDIO</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:#05070d;overflow:hidden;font-family:-apple-system,"PingFang SC",sans-serif;user-select:none}
+  #wrap{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center}
+  canvas{background:#1a1a22;display:block;touch-action:none}
+  #hud{position:absolute;top:10px;left:12px;color:#cfe;font-size:14px;text-shadow:0 1px 2px #000;line-height:1.6}
+  #hud b{color:#5ef0ff}
+  #tip{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#9ab;font-size:12px;text-shadow:0 1px 2px #000}
+  #over{position:absolute;inset:0;background:rgba(0,0,0,.8);display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center}
+  #over h1{font-size:28px;margin-bottom:8px}
+  #over button{margin-top:16px;padding:10px 26px;border:0;border-radius:24px;background:linear-gradient(135deg,#00d4ff,#7b5cff);color:#fff;font-size:16px;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c"></canvas>
+  <div id="hud"></div>
+  <div id="tip">← → 或 A/D 移动 · 触摸左右滑动 · 躲开对向来车，活得越久分越高</div>
+  <div id="over"><h1 id="ot"></h1><div id="os"></div><button onclick="restart()">再跑一局</button></div>
+</div>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+let W,H;function resize(){W=cv.width=Math.min(innerWidth,720);H=cv.height=Math.min(innerHeight,640);}resize();addEventListener('resize',resize);
+const keys={};addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+let touchX=null;cv.addEventListener('touchmove',e=>{touchX=e.touches[0].clientX-cv.getBoundingClientRect().left;},{passive:true});cv.addEventListener('touchstart',e=>{touchX=e.touches[0].clientX-cv.getBoundingClientRect().left;},{passive:true});
+
+let player,cars,score,spd,alive,timer;
+function restart(){player={x:W/2,y:H-70,w:34,h:54};cars=[];score=0;spd=3.2;alive=true;timer=0;document.getElementById('over').style.display='none';}
+function spawn(){const lanes=Math.floor(W/70);const l=Math.floor(Math.random()*lanes);cars.push({x:20+l*70+20,y:-60,w:34,h:54,c:'#'+['e0556b','ffd166','7fffa0','ff8c42','9b8cff'][Math.floor(Math.random()*5)]});}
+function loop(){
+  if(!alive){requestAnimationFrame(loop);return;}
+  if(keys['a']||keys['arrowleft'])player.x-=5;if(keys['d']||keys['arrowright'])player.x+=5;
+  if(touchX!=null)player.x+=(touchX-player.x)*0.3;
+  player.x=Math.max(20,Math.min(W-54,player.x));
+  timer++;if(timer%28===0)spawn();spd=3.2+score/600;
+  for(const c of cars)c.y+=spd;
+  for(const c of cars)if(c.y+ c.h>player.y&&c.y<player.y+player.h&&Math.abs(c.x-player.x)<26){alive=false;over();}
+  cars=cars.filter(c=>c.y<H+70);score+=1;
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle='#2d2d38';for(let x=35;x<W;x+=70){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  ctx.fillStyle='#0e0e14';for(const c of cars){ctx.fillRect(c.x,c.y,c.w,c.h);ctx.fillStyle='#0008';ctx.fillRect(c.x+6,c.y+10,c.w-12,8);ctx.fillStyle=c.c;}
+  ctx.fillStyle='#5ef0ff';ctx.fillRect(player.x,player.y,player.w,player.h);ctx.fillStyle='#0009';ctx.fillRect(player.x+6,player.y+10,player.w-12,8);
+  document.getElementById('hud').innerHTML='<b>得分 '+Math.floor(score/10)+'</b> &nbsp; 车速 <b>'+spd.toFixed(1)+'</b>';
+  requestAnimationFrame(loop);
+}
+function over(){const o=document.getElementById('over');o.style.display='flex';document.getElementById('ot').textContent='💥 撞车了';document.getElementById('os').textContent='得分 '+Math.floor(score/10);}
+restart();loop();
+</script>
+</body>
+</html>
