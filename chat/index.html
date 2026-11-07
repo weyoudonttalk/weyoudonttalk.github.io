@@ -58,14 +58,14 @@
 <div id="modal" class="modal" style="display:none">
   <div class="modalbox">
     <h3>🤖 机器人设置（免费）</h3>
-    <p class="mtip">机器人由 <b>OpenRouter 免费模型</b> 驱动，<b>完全不用花钱、不用绑卡</b>。去 <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a> 用邮箱注册 → 创建 Key（免费），粘到下面即可。</p>
+    <p class="mtip">机器人由 <b>OpenRouter 免费模型</b> 驱动，<b>完全不用花钱、不用绑卡</b>。去 <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a> 用邮箱注册 → 创建 Key（免费），粘到下面即可。默认已选好能用的免费模型，不用改。</p>
     <label>API Key（免费）</label>
     <input id="setKey" placeholder="sk-or-..." autocomplete="off">
     <label>模型（默认免费模型，不用改）</label>
     <select id="setModel">
-      <option value="meta-llama/llama-3.1-8b-instruct:free">Llama 3.1 8B（免费）</option>
-      <option value="google/gemma-2-9b-it:free">Gemma 2 9B（免费）</option>
-      <option value="mistralai/mistral-7b-instruct:free">Mistral 7B（免费）</option>
+      <option value="xingchen-agi/xing4.0-29b-a4b:free">星尘 29B（免费，中文强，推荐）</option>
+      <option value="recursive/flint-v1.0:free">Flint（免费，备用）</option>
+      <option value="nvidia/nemotron-3.5-super-vl:free">Nemotron（免费，备选）</option>
     </select>
     <div id="setMsg" class="setmsg"></div>
     <div class="mrow">
