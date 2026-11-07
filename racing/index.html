@@ -17,22 +17,28 @@
   #steer{position:fixed;inset:0;z-index:5;pointer-events:auto}
   /* 加速按钮 */
   #gas{position:fixed;right:22px;bottom:max(80px,calc(env(safe-area-inset-bottom) + 80px));width:96px;height:96px;border-radius:50%;background:radial-gradient(circle,#ffd166,#d98324);border:3px solid #fff3;z-index:7;pointer-events:auto;display:flex;align-items:center;justify-content:center;color:#5a3a00;font-size:16px;font-weight:800;box-shadow:0 4px 16px #0008}
-  /* 加载动画 + 真实进度条 */
-  #start{position:fixed;inset:0;background:#04060a;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#dfe;text-align:center;padding:0 24px}
-  #start h1{font-size:28px;color:#5ef0ff;letter-spacing:3px;margin-bottom:12px}
-  .cube-wrap{width:90px;height:90px;perspective:420px;margin:4px 0 20px}
-  .cube{width:100%;height:100%;position:relative;transform-style:preserve-3d;animation:spin 3.4s linear infinite}
-  .cube div{position:absolute;width:90px;height:90px;background:rgba(91,140,255,.16);border:2px solid #5b8cff;box-shadow:0 0 18px #5b8cff55 inset}
-  .cube .f1{transform:translateZ(45px)}.cube .f2{transform:rotateY(180deg) translateZ(45px)}
-  .cube .f3{transform:rotateY(90deg) translateZ(45px)}.cube .f4{transform:rotateY(-90deg) translateZ(45px)}
-  .cube .f5{transform:rotateX(90deg) translateZ(45px)}.cube .f6{transform:rotateX(-90deg) translateZ(45px)}
-  @keyframes spin{0%{transform:rotateX(-20deg) rotateY(0)}100%{transform:rotateX(-20deg) rotateY(360deg)}}
-  #pct{font-size:22px;font-weight:800;color:#5ef0ff;margin-top:6px}
-  #bar{width:min(300px,78vw);height:14px;border:1px solid #5ef0ff66;border-radius:10px;overflow:hidden;background:#0009;margin-top:10px}
-  #barfill{height:100%;width:0;background:linear-gradient(90deg,#7b5cff,#00d4ff);transition:width .2s}
-  #lmsg{font-size:12px;color:#9ab;margin-top:8px;min-height:16px}
-  #startBtn{margin-top:22px;padding:14px 40px;border:0;border-radius:28px;background:linear-gradient(135deg,#7b5cff,#00d4ff);color:#fff;font-size:17px;cursor:pointer;opacity:.4;pointer-events:none;transition:opacity .3s}
-  #startBtn.on{opacity:1;pointer-events:auto}
+  /* 加载动画 + 真实进度条（大厂风） */
+  #start{position:fixed;inset:0;background:rgba(4,7,13,.66);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#dfe;text-align:center;padding:0 24px;backdrop-filter:blur(2px)}
+  #start h1{font-size:27px;letter-spacing:5px;margin-bottom:16px;font-weight:800;background:linear-gradient(90deg,#8aa0ff,#5ef0ff,#8aa0ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;background-size:220% auto;animation:tg 3s linear infinite;text-shadow:0 0 22px #5b8cff55}
+  @keyframes tg{to{background-position:220% center}}
+  #stage{position:relative;width:200px;height:200px;margin-bottom:14px}
+  #stage canvas{position:absolute;inset:0;width:200px!important;height:200px!important;opacity:0;transition:opacity .6s}
+  #rings{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transition:opacity .5s}
+  #rings b{position:absolute;border-radius:50%;border:2px solid transparent}
+  #rings b:nth-child(1){width:172px;height:172px;border-top-color:#5ef0ff;border-right-color:#5ef0ff;animation:r1 1.6s linear infinite;box-shadow:0 0 16px #5ef0ff44}
+  #rings b:nth-child(2){width:132px;height:132px;border-bottom-color:#7b5cff;border-left-color:#7b5cff;animation:r2 2.3s linear infinite}
+  #rings b:nth-child(3){width:94px;height:94px;border-top-color:#5b8cff;border-bottom-color:#5b8cff;animation:r1 1.1s linear infinite}
+  @keyframes r1{to{transform:rotate(360deg)}}
+  @keyframes r2{to{transform:rotate(360deg)}}
+  #pct{font-size:24px;font-weight:800;color:#5ef0ff;text-shadow:0 0 12px #5ef0ff66;margin-top:2px}
+  #bar{width:min(300px,78vw);height:8px;border-radius:6px;overflow:hidden;background:#ffffff14;margin-top:14px}
+  #barfill{height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,#7b5cff,#5ef0ff,#8aa0ff,#5ef0ff);background-size:300% 100%;animation:flow 1.2s linear infinite;box-shadow:0 0 12px #5ef0ff88}
+  @keyframes flow{to{background-position:300% 0}}
+  #lmsg{font-size:12px;color:#8aa;margin-top:12px;min-height:16px;letter-spacing:1px}
+  #startBtn{margin-top:22px;padding:13px 42px;border:0;border-radius:28px;background:linear-gradient(135deg,#7b5cff,#00d4ff);color:#fff;font-size:17px;font-weight:700;cursor:pointer;opacity:.35;pointer-events:none;transition:opacity .3s,transform .15s;box-shadow:0 6px 20px #5ef0ff44}
+  #startBtn.on{opacity:1;pointer-events:auto;animation:bp 2s ease-in-out infinite}
+  #startBtn.on:active{transform:scale(.96)}
+  @keyframes bp{50%{box-shadow:0 6px 30px #5ef0ffaa}}
 
   #over{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:60;display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center}
   #over h1{font-size:34px;color:#ff6b6b;margin-bottom:8px}
@@ -51,7 +57,10 @@
 
 <div id="start">
   <h1>极速赛车</h1>
-  <div class="cube-wrap"><div class="cube"><div class="f1"></div><div class="f2"></div><div class="f3"></div><div class="f4"></div><div class="f5"></div><div class="f6"></div></div></div>
+  <div id="stage">
+    <div id="rings"><b></b><b></b><b></b></div>
+    <canvas id="preview"></canvas>
+  </div>
   <div id="pct">0%</div>
   <div id="bar"><div id="barfill"></div></div>
   <div id="lmsg">正在启动引擎…</div>
@@ -70,7 +79,7 @@
   var b=document.getElementById('barfill'),p=document.getElementById('pct'),m=document.getElementById('lmsg');
   if(m)m.textContent='正在启动引擎…';
   window.__boot=setInterval(function(){
-    var f=Math.min(0.9,(performance.now()-window.__pageStart)/20000);
+    var f=Math.min(0.99,(performance.now()-window.__pageStart)/24000);
     if(b)b.style.width=(f*100).toFixed(0)+'%';
     if(p)p.textContent=Math.floor(f*100)+'%';
   },150);
@@ -84,12 +93,24 @@
 </script>
 <script type="module">
 import * as THREE from 'three';
-if(window.__boot)clearInterval(window.__boot);
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const cv=document.getElementById('cv');
 const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+if(window.__boot)clearInterval(window.__boot);
+let previewOn=false;
+const previewScene=new THREE.Scene();previewScene.background=new THREE.Color(0x060a11);
+const previewCam=new THREE.PerspectiveCamera(42,1,0.1,100);previewCam.position.set(0,1.0,4.6);
+previewScene.add(new THREE.HemisphericLight(0xbfd8ff,0x223044,1.3));
+const pdl=new THREE.DirectionalLight(0xffffff,1.6);pdl.position.set(3,5,4);previewScene.add(pdl);
+const pCore=new THREE.Mesh(new THREE.IcosahedronGeometry(1.05,1),new THREE.MeshStandardMaterial({color:0x5b8cff,emissive:0x2244aa,emissiveIntensity:0.7,flatShading:true,metalness:0.3,roughness:0.4}));
+const pWire=new THREE.Mesh(new THREE.IcosahedronGeometry(1.4,1),new THREE.MeshBasicMaterial({color:0x5ef0ff,wireframe:true,transparent:true,opacity:0.45}));
+previewScene.add(pCore,pWire);
+let pModel=null;
+function setPreviewModel(gltf){if(!gltf)return;try{const m=gltf.scene;const box=new THREE.Box3().setFromObject(m);const c=box.getCenter(new THREE.Vector3());const sz=box.getSize(new THREE.Vector3());const maxd=Math.max(sz.x,sz.y,sz.z)||1;const sc=3.2/maxd;m.scale.setScalar(sc);m.position.set(-c.x*sc,-c.y*sc,-c.z*sc);if(pModel)previewScene.remove(pModel);previewScene.remove(pCore,pWire);previewScene.add(m);pModel=m;document.getElementById('preview').style.opacity='1';document.getElementById('rings').style.opacity='0';}catch(e){}}
+function renderPreview(){if(!previewOn)return;requestAnimationFrame(renderPreview);pCore.rotation.y+=0.012;pCore.rotation.x+=0.006;pWire.rotation.y-=0.01;if(pModel)pModel.rotation.y+=0.01;renderer.render(previewScene,previewCam);}
+previewOn=true;renderPreview();
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x9fc7e8);
@@ -132,15 +153,15 @@ function prep(m){
 }
 function tint(m,col){m.traverse(o=>{if(o.isMesh&&o.material){const mm=o.material.clone();mm.color=new THREE.Color(col);o.material=mm;}});}
 const _bar=document.getElementById('barfill'),_pct=document.getElementById('pct'),_msg=document.getElementById('lmsg'),_btn=document.getElementById('startBtn');
-let _real=0;const _startT=window.__pageStart||performance.now();
-function _set(p){p=Math.max(0,Math.min(1,p));_bar.style.width=(p*100).toFixed(0)+'%';_pct.textContent=Math.floor(p*100)+'%';}
-const _iv=setInterval(()=>{const fake=Math.min(0.9,(performance.now()-_startT)/22000);_set(Math.max(fake,_real));},150);
+const _pageStart=window.__pageStart||performance.now();
+function _set(p){p=Math.max(0,Math.min(0.99,p));_bar.style.width=(p*100).toFixed(0)+'%';_pct.textContent=Math.floor(p*100)+'%';}
+const _iv=setInterval(()=>{const f=Math.min(0.99,(performance.now()-_pageStart)/26000);const cur=parseFloat(_bar.style.width||'0')||0;if(f*100>cur)_set(f);},150);
 loader.load('./models/ferrari.glb',g=>{
   playerCar=g.scene;prep(playerCar);scene.add(playerCar);
   for(let i=0;i<7;i++){const a=g.scene.clone(true);prep(a);tint(a,AICOL[i%AICOL.length]);scene.add(a);aiCars.push({m:a,active:false,z:0,x:0});}
   clearInterval(_iv);_set(1);_msg.textContent='加载完成 · 准备就绪';_btn.classList.add('on');_btn.textContent='开始竞速';
-  ready=true;
-},xhr=>{if(xhr&&xhr.total)_real=xhr.loaded/xhr.total;},()=>{clearInterval(_iv);_msg.textContent='模型加载失败，请刷新重试';});
+  setPreviewModel(g);ready=true;
+},xhr=>{if(xhr&&xhr.total)_set(xhr.loaded/xhr.total);},()=>{clearInterval(_iv);_msg.textContent='模型加载失败，请刷新重试';});
 
 const S={x:0,z:0,speed:18,dist:0,best:0,gas:false,steer:0,alive:true,started:false};
 const distEl=document.getElementById('d'),bestEl=document.getElementById('b'),spdEl=document.getElementById('spd');
@@ -196,12 +217,13 @@ function crash(){
   document.getElementById('ot').textContent='💥 撞车了';
   document.getElementById('os').textContent='里程 '+Math.floor(S.dist)+' m · 最佳 '+Math.floor(S.best)+' m';
 }
-function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);}
+function resize(){const w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();previewCam.aspect=w/h;previewCam.updateProjectionMatrix();renderer.setSize(w,h);}
 addEventListener('resize',resize);resize();
 
 let ready=false,loopOn=false;
 document.getElementById('startBtn').addEventListener('click',()=>{
   if(!ready)return;
+  previewOn=false;
   document.getElementById('start').style.display='none';
   reset();S.started=true;
   if(!loopOn){loopOn=true;loop();}
