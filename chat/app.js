@@ -12,7 +12,11 @@ const NAME_RE = /^[一-龥A-Za-z0-9_]{2,20}$/;
 const $ = s => document.querySelector(s);
 const authEl = $('#auth'), appEl = $('#app'), msgsEl = $('#msgs'), inputEl = $('#input'), sendBtn = $('#send');
 const onlineEl = $('#online'), meEl = $('#me'), typingEl = $('#typing');
-let me = '', client = null, connected = false, knownNames = [], aiCfg = { key: '', model: 'meta-llama/llama-3.1-8b-instruct:free' };
+// 默认用当前可用的免费模型；用户可在⚙里改
+let me = '', client = null, connected = false, knownNames = [],
+    aiCfg = { key: '', model: 'xingchen-agi/xing4.0-29b-a4b:free' };
+// 主模型挂了自动降级到这些
+const FALLBACK_MODELS = ['xingchen-agi/xing4.0-29b-a4b:free', 'recursive/flint-v1.0:free', 'nvidia/nemotron-3.5-super-vl:free'];
 
 // ---------- 账号 ----------
 let mode = 'login';
@@ -113,21 +117,31 @@ function botReply(bot, prompt) {
     }, 500);
   }, 200);
 }
+
+async function callModel(model, bot, q) {
+  const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + aiCfg.key, 'HTTP-Referer': location.href, 'X-Title': 'MIUI Chat' },
+    body: JSON.stringify({ model, messages: [{ role: 'system', content: bot.persona }, { role: 'user', content: q }], max_tokens: 700, temperature: 0.8 }),
+  });
+  if (!r.ok) { const t = await r.text(); throw new Error(t.slice(0, 120)); }
+  const j = await r.json();
+  const c = j.choices?.[0]?.message?.content;
+  if (!c) throw new Error('空回复');
+  return c.trim();
+}
+
 async function genBotReply(bot, prompt) {
   if (!aiCfg.key) return `⚠️ ${bot.name} 暂未上线：点右上角 ⚙ 粘贴免费的 OpenRouter Key（完全不用花钱，邮箱注册即可）。`;
   const q = prompt.replace(/@\S+/g, '').trim() || '这个话题';
-  try {
-    const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + aiCfg.key, 'HTTP-Referer': location.href, 'X-Title': 'MIUI Chat' },
-      body: JSON.stringify({ model: aiCfg.model, messages: [{ role: 'system', content: bot.persona }, { role: 'user', content: q }], max_tokens: 700, temperature: 0.8 }),
-    });
-    if (!r.ok) { const t = await r.text(); throw new Error(t.slice(0, 120)); }
-    const j = await r.json();
-    return (j.choices?.[0]?.message?.content || '').trim() || '(空回复)';
-  } catch (e) {
-    return `⚠️ ${bot.name} 调用失败：${e.message}（检查 Key 是否有效/余额）`;
+  // 主模型 + 自动降级
+  const chain = [aiCfg.model, ...FALLBACK_MODELS.filter(m => m !== aiCfg.model)];
+  let lastErr = '';
+  for (const model of chain) {
+    try { return await callModel(model, bot, q); }
+    catch (e) { lastErr = e.message; }
   }
+  return `⚠️ ${bot.name} 调用失败：${lastErr}（免费模型可能临时繁忙，稍后重试 / 检查 Key）`;
 }
 
 // ---------- @ 建议 ----------
