@@ -143,17 +143,21 @@ ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
 // 加载器 + 真实进度条
 const loader=new GLTFLoader();
 const M={};let loaded=0,total=4;
-const _files=[['Soldier.glb','soldier'],['rifle.glb','rifle'],['house.glb','house'],['supply.glb','supply']];
+const _files=[['Soldier.glb','士兵模型','soldier'],['rifle.glb','武器模型','rifle'],['house.glb','建筑模型','house'],['supply.glb','物资模型','supply']];
 const _prog=new Array(total).fill(0);
 const _bar=document.getElementById('barfill'),_pct=document.getElementById('pct'),_msg=document.getElementById('lmsg'),_btn=document.getElementById('startBtn');
-function _updateBar(){const p=_prog.reduce((a,b)=>a+b,0)/total;_bar.style.width=(p*100).toFixed(0)+'%';_pct.textContent=Math.floor(p*100)+'%';}
-function done(i,g){M[_files[i][1]]=g;loaded++;_prog[i]=1;_updateBar();if(loaded>=total)ready();}
-_files.forEach(([f,k],i)=>{
+const _startT=performance.now();
+function _realP(){return _prog.reduce((a,b)=>a+b,0)/total;}
+function _updateBar(){const p=Math.max(_realP(),Math.min(0.9,(performance.now()-_startT)/22000));_bar.style.width=(p*100).toFixed(0)+'%';_pct.textContent=Math.floor(p*100)+'%';}
+const _iv=setInterval(_updateBar,150);
+function done(i,g){M[_files[i][2]]=g;loaded++;_prog[i]=1;_updateBar();if(loaded>=total)ready();}
+_files.forEach(([f,name,key],i)=>{
+  _msg.textContent='正在加载 '+name+' …';
   loader.load('./models/'+f,g=>done(i,g),
-    xhr=>{if(xhr.total){_prog[i]=xhr.loaded/xhr.total;_updateBar();}},
+    xhr=>{if(xhr&&xhr.total){_prog[i]=xhr.loaded/xhr.total;_updateBar();}},
     ()=>done(i,null));
 });
-function ready(){_prog.fill(1);_updateBar();_pct.textContent='100%';_msg.textContent='加载完成 · 准备就绪';_btn.classList.add('on');_btn.textContent='进入战场';build();}
+function ready(){clearInterval(_iv);_prog.fill(1);_updateBar();_pct.textContent='100%';_msg.textContent='加载完成 · 准备就绪';_btn.classList.add('on');_btn.textContent='进入战场';build();}
 
 const P={hp:100,am:30,amMax:30,kills:0,alive:true,reloadAt:0,lastShot:0};
 const enemies=[],loots=[],houses=[];
