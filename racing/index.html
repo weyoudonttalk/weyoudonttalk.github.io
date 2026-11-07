@@ -64,6 +64,18 @@
   <button onclick="location.reload()">再来一局</button>
 </div>
 
+<script>
+(function(){
+  window.__pageStart=performance.now();
+  var b=document.getElementById('barfill'),p=document.getElementById('pct'),m=document.getElementById('lmsg');
+  if(m)m.textContent='正在启动引擎…';
+  window.__boot=setInterval(function(){
+    var f=Math.min(0.9,(performance.now()-window.__pageStart)/20000);
+    if(b)b.style.width=(f*100).toFixed(0)+'%';
+    if(p)p.textContent=Math.floor(f*100)+'%';
+  },150);
+})();
+</script>
 <script type="importmap">
 { "imports": {
   "three": "./lib/three.module.js",
@@ -72,6 +84,7 @@
 </script>
 <script type="module">
 import * as THREE from 'three';
+if(window.__boot)clearInterval(window.__boot);
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const cv=document.getElementById('cv');
@@ -119,7 +132,7 @@ function prep(m){
 }
 function tint(m,col){m.traverse(o=>{if(o.isMesh&&o.material){const mm=o.material.clone();mm.color=new THREE.Color(col);o.material=mm;}});}
 const _bar=document.getElementById('barfill'),_pct=document.getElementById('pct'),_msg=document.getElementById('lmsg'),_btn=document.getElementById('startBtn');
-let _real=0;const _startT=performance.now();
+let _real=0;const _startT=window.__pageStart||performance.now();
 function _set(p){p=Math.max(0,Math.min(1,p));_bar.style.width=(p*100).toFixed(0)+'%';_pct.textContent=Math.floor(p*100)+'%';}
 const _iv=setInterval(()=>{const fake=Math.min(0.9,(performance.now()-_startT)/22000);_set(Math.max(fake,_real));},150);
 loader.load('./models/ferrari.glb',g=>{
