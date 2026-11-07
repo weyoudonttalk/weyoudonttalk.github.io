@@ -156,6 +156,7 @@ function build(){
   // 敌人
   spawnWave(5);
   started=true;
+  if(document.getElementById('start').style.display==='none' && !window.__loopStarted){window.__loopStarted=true;loop();}
 }
 
 function spawnLoot(x,z){
@@ -262,13 +263,12 @@ function die(win){document.getElementById('dead').style.display='flex';document.
 function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);}
 addEventListener('resize',resize);resize();
 
+window.__loopStarted=false;
 document.getElementById('startBtn').addEventListener('click',()=>{
   document.getElementById('start').style.display='none';
-  if(!started){/* 等待模型 */const t=setInterval(()=>{if(started){clearInterval(t);loop();}},200);}
-  else loop();
+  if(started && !window.__loopStarted){window.__loopStarted=true;loop();}
+  else if(!started){const t=setInterval(()=>{if(started&&!window.__loopStarted){clearInterval(t);window.__loopStarted=true;loop();}},200);}
 });
-// 若模型已加载完，直接进入循环由 start 触发
-let _guard=setInterval(()=>{if(started&&document.getElementById('start').style.display==='none'&&!window._loopStarted){window._loopStarted=true;loop();clearInterval(_guard);}},300);
 </script>
 </body>
 </html>
