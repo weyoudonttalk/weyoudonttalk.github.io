@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<title>MIUI STUDIO 技术聊天站</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- 登录 / 注册 -->
+<div id="auth">
+  <div class="authbox">
+    <h1>MIUI STUDIO</h1>
+    <div class="sub">技术聊天站 · 实时开聊 · @机器人问答</div>
+    <div class="tabs">
+      <button class="tab on" data-tab="login">登录</button>
+      <button class="tab" data-tab="reg">注册</button>
+    </div>
+    <input id="au" placeholder="用户名（中英文/数字，2-20位）" maxlength="20" autocomplete="off">
+    <input id="ap" type="password" placeholder="密码（至少6位）" autocomplete="off">
+    <button id="go">进入聊天室</button>
+    <div id="aerr"></div>
+    <div class="hint">
+      💡 在聊天里 <b>@小Q</b> 找小Q · <b>@蓝色大肥鱼</b> 问技术 · <b>@克劳德</b> 找克劳德<br>
+      也可以 @ 任意在线好友，对方会收到提醒
+    </div>
+  </div>
+</div>
+
+<!-- 聊天主界面 -->
+<div id="app" style="display:none">
+  <header>
+    <div class="left">
+      <span class="logo">MIUI STUDIO</span>
+      <span class="room">技术聊天室</span>
+    </div>
+    <div class="right">
+      <span id="online">🟢 连接中…</span>
+      <span id="me"></span>
+      <button id="logout">退出</button>
+    </div>
+  </header>
+
+  <div id="msgs"></div>
+  <div id="typing" class="typing"></div>
+
+  <div id="composer">
+    <div id="suggest" class="suggest"></div>
+    <div class="row">
+      <input id="input" placeholder="说点什么… 输入 @ 可提及人或机器人" maxlength="2000" autocomplete="off">
+      <button id="send">发送</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="lib/mqtt.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
