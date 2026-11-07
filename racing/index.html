@@ -2,55 +2,184 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>极速赛车 · MIUI STUDIO</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<title>极速赛车 · 3D · MIUI STUDIO</title>
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  html,body{height:100%;background:#05070d;overflow:hidden;font-family:-apple-system,"PingFang SC",sans-serif;user-select:none}
-  #wrap{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center}
-  canvas{background:#1a1a22;display:block;touch-action:none}
-  #hud{position:absolute;top:10px;left:12px;color:#cfe;font-size:14px;text-shadow:0 1px 2px #000;line-height:1.6}
-  #hud b{color:#5ef0ff}
-  #tip{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#9ab;font-size:12px;text-shadow:0 1px 2px #000}
-  #over{position:absolute;inset:0;background:rgba(0,0,0,.8);display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center}
-  #over h1{font-size:28px;margin-bottom:8px}
-  #over button{margin-top:16px;padding:10px 26px;border:0;border-radius:24px;background:linear-gradient(135deg,#00d4ff,#7b5cff);color:#fff;font-size:16px;cursor:pointer}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-apple-system,"PingFang SC",sans-serif;touch-action:none;overscroll-behavior:none}
+  #cv{width:100%;height:100%;display:block}
+  #hud{position:fixed;inset:0;pointer-events:none;z-index:4;color:#fff;font-size:13px;text-shadow:0 1px 3px #000}
+  #spd{position:absolute;right:18px;top:max(16px,env(safe-area-inset-top));font-size:30px;font-weight:800;color:#5ef0ff}
+  #spd small{font-size:13px;font-weight:400;color:#9ef}
+  #dist{position:absolute;left:18px;top:max(16px,env(safe-area-inset-top));font-size:14px;color:#cfe}
+  #best{position:absolute;left:18px;top:calc(max(16px,env(safe-area-inset-top)) + 22px);font-size:12px;color:#9ab}
+  /* 转向区 */
+  #steer{position:fixed;inset:0;z-index:5;pointer-events:auto}
+  /* 加速按钮 */
+  #gas{position:fixed;right:22px;bottom:max(80px,calc(env(safe-area-inset-bottom) + 80px));width:96px;height:96px;border-radius:50%;background:radial-gradient(circle,#ffd166,#d98324);border:3px solid #fff3;z-index:7;pointer-events:auto;display:flex;align-items:center;justify-content:center;color:#5a3a00;font-size:16px;font-weight:800;box-shadow:0 4px 16px #0008}
+  /* 开始/结束 */
+  #start{position:fixed;inset:0;background:#04060a;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#dfe;text-align:center;padding:0 24px}
+  #start h1{font-size:30px;color:#5ef0ff;letter-spacing:3px;margin-bottom:10px}
+  #start p{font-size:13px;color:#9ab;line-height:2}
+  #start button{margin-top:24px;padding:14px 40px;border:0;border-radius:28px;background:linear-gradient(135deg,#7b5cff,#00d4ff);color:#fff;font-size:17px}
+  #loadbar{margin-top:16px;font-size:12px;color:#5ef0ff}
+  #over{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:60;display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center}
+  #over h1{font-size:34px;color:#ff6b6b;margin-bottom:8px}
+  #over button{margin-top:20px;padding:12px 30px;border:0;border-radius:24px;background:linear-gradient(135deg,#7b5cff,#00d4ff);color:#fff;font-size:16px}
 </style>
 </head>
 <body>
-<div id="wrap">
-  <canvas id="c"></canvas>
-  <div id="hud"></div>
-  <div id="tip">← → 或 A/D 移动 · 触摸左右滑动 · 躲开对向来车，活得越久分越高</div>
-  <div id="over"><h1 id="ot"></h1><div id="os"></div><button onclick="restart()">再跑一局</button></div>
+<canvas id="cv"></canvas>
+<div id="hud">
+  <div id="dist">里程 <span id="d">0</span> m</div>
+  <div id="best">最佳 <span id="b">0</span> m</div>
+  <div id="spd">0<small> km/h</small></div>
 </div>
-<script>
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-let W,H;function resize(){W=cv.width=Math.min(innerWidth,720);H=cv.height=Math.min(innerHeight,640);}resize();addEventListener('resize',resize);
-const keys={};addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
-let touchX=null;cv.addEventListener('touchmove',e=>{touchX=e.touches[0].clientX-cv.getBoundingClientRect().left;},{passive:true});cv.addEventListener('touchstart',e=>{touchX=e.touches[0].clientX-cv.getBoundingClientRect().left;},{passive:true});
+<div id="steer"></div>
+<div id="gas">加速</div>
 
-let player,cars,score,spd,alive,timer;
-function restart(){player={x:W/2,y:H-70,w:34,h:54};cars=[];score=0;spd=3.2;alive=true;timer=0;document.getElementById('over').style.display='none';}
-function spawn(){const lanes=Math.floor(W/70);const l=Math.floor(Math.random()*lanes);cars.push({x:20+l*70+20,y:-60,w:34,h:54,c:'#'+['e0556b','ffd166','7fffa0','ff8c42','9b8cff'][Math.floor(Math.random()*5)]});}
-function loop(){
-  if(!alive){requestAnimationFrame(loop);return;}
-  if(keys['a']||keys['arrowleft'])player.x-=5;if(keys['d']||keys['arrowright'])player.x+=5;
-  if(touchX!=null)player.x+=(touchX-player.x)*0.3;
-  player.x=Math.max(20,Math.min(W-54,player.x));
-  timer++;if(timer%28===0)spawn();spd=3.2+score/600;
-  for(const c of cars)c.y+=spd;
-  for(const c of cars)if(c.y+ c.h>player.y&&c.y<player.y+player.h&&Math.abs(c.x-player.x)<26){alive=false;over();}
-  cars=cars.filter(c=>c.y<H+70);score+=1;
-  ctx.clearRect(0,0,W,H);
-  ctx.strokeStyle='#2d2d38';for(let x=35;x<W;x+=70){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-  ctx.fillStyle='#0e0e14';for(const c of cars){ctx.fillRect(c.x,c.y,c.w,c.h);ctx.fillStyle='#0008';ctx.fillRect(c.x+6,c.y+10,c.w-12,8);ctx.fillStyle=c.c;}
-  ctx.fillStyle='#5ef0ff';ctx.fillRect(player.x,player.y,player.w,player.h);ctx.fillStyle='#0009';ctx.fillRect(player.x+6,player.y+10,player.w-12,8);
-  document.getElementById('hud').innerHTML='<b>得分 '+Math.floor(score/10)+'</b> &nbsp; 车速 <b>'+spd.toFixed(1)+'</b>';
-  requestAnimationFrame(loop);
+<div id="start">
+  <h1>极速赛车</h1>
+  <p>真实 3D 赛车 · 法拉利车模<br><br>
+  📱 手机操作：<br>
+  按住屏幕<b>左半边</b>向左变道 · <b>右半边</b>向右变道<br>
+  右下「加速」按钮提速冲榜<br>
+  躲避迎面车流，里程越远分越高</p>
+  <button id="startBtn">开始竞速</button>
+  <div id="loadbar">正在加载赛车模型…</div>
+</div>
+
+<div id="over">
+  <h1 id="ot">撞车了</h1>
+  <div id="os" style="color:#9ab;margin-top:6px"></div>
+  <button onclick="location.reload()">再来一局</button>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "./lib/three.module.js",
+  "three/addons/": "./lib/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const cv=document.getElementById('cv');
+const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x9fc7e8);
+scene.fog=new THREE.Fog(0x9fc7e8,60,220);
+
+const camera=new THREE.PerspectiveCamera(70,1,0.1,1000);
+scene.add(camera);
+
+const hemi=new THREE.HemisphericLight(0xcfe8ff,0x445533,1.0);scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xffffff,1.3);
+sun.position.set(30,80,40);sun.castShadow=true;
+sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-60;sun.shadow.camera.right=60;sun.shadow.camera.top=60;sun.shadow.camera.bottom=-60;sun.shadow.camera.far=200;
+scene.add(sun);
+
+// 公路（canvas 纹理：边线+中线虚线）
+function roadTex(){
+  const c=document.createElement('canvas');c.width=128;c.height=512;const x=c.getContext('2d');
+  x.fillStyle='#2a2d33';x.fillRect(0,0,128,512);
+  x.fillStyle='#e8e8e8';x.fillRect(10,0,5,512);x.fillRect(113,0,5,512);
+  for(let y=0;y<512;y+=70){x.fillRect(61,y,6,38);}
+  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1,30);return t;
 }
-function over(){const o=document.getElementById('over');o.style.display='flex';document.getElementById('ot').textContent='💥 撞车了';document.getElementById('os').textContent='得分 '+Math.floor(score/10);}
-restart();loop();
+const roadMat=new THREE.MeshStandardMaterial({map:roadTex(),roughness:0.9});
+const road=new THREE.Mesh(new THREE.PlaneGeometry(22,1200),roadMat);
+road.rotation.x=-Math.PI/2;road.position.set(0,-0.01,-400);road.receiveShadow=true;scene.add(road);
+// 路边草地
+const grass=new THREE.Mesh(new THREE.PlaneGeometry(400,1200),new THREE.MeshStandardMaterial({color:0x4a6b3a}));
+grass.rotation.x=-Math.PI/2;grass.position.set(0,-0.05,-400);grass.receiveShadow=true;scene.add(grass);
+
+// 加载法拉利
+const loader=new GLTFLoader();
+let playerCar=null, aiCars=[];
+const LANES=[-7.5,-3.75,0,3.75,7.5];
+const AICOL=['#e74c3c','#3498db','#2ecc71','#9b59b6','#f39c12','#1abc9c'];
+function prep(m){
+  const box=new THREE.Box3().setFromObject(m);const s=new THREE.Vector3();box.getSize(s);
+  const k=4.2/s.z; m.scale.setScalar(k);
+  const b2=new THREE.Box3().setFromObject(m); m.position.y-=b2.min.y;
+  m.traverse(o=>{if(o.isMesh){o.castShadow=true;}});
+}
+function tint(m,col){m.traverse(o=>{if(o.isMesh&&o.material){const mm=o.material.clone();mm.color=new THREE.Color(col);o.material=mm;}});}
+loader.load('./models/ferrari.glb',g=>{
+  playerCar=g.scene;prep(playerCar);scene.add(playerCar);
+  for(let i=0;i<7;i++){const a=g.scene.clone(true);prep(a);tint(a,AICOL[i%AICOL.length]);scene.add(a);aiCars.push({m:a,active:false,z:0,x:0});}
+  document.getElementById('loadbar').textContent='加载完成';
+  ready=true;
+},undefined,()=>{document.getElementById('loadbar').textContent='模型加载失败';});
+
+const S={x:0,z:0,speed:18,dist:0,best:0,gas:false,steer:0,alive:true,started:false};
+const distEl=document.getElementById('d'),bestEl=document.getElementById('b'),spdEl=document.getElementById('spd');
+
+function reset(){
+  S.x=0;S.z=0;S.speed=18;S.dist=0;S.alive=true;
+  aiCars.forEach((a,i)=>{a.active=true;a.x=LANES[i%LANES.length];a.z=-60-i*55;});
+}
+function spawnAI(a){
+  a.active=true;
+  a.x=LANES[Math.floor(Math.random()*LANES.length)];
+  a.z=S.z-200-Math.random()*120;
+}
+
+// 控制
+const steer=document.getElementById('steer');
+let stId=null,stSide=0;
+steer.addEventListener('touchstart',e=>{e.preventDefault();const t=e.changedTouches[0];stSide=t.clientX<innerWidth/2?-1:1;},{passive:false});
+steer.addEventListener('touchend',e=>{e.preventDefault();stSide=0;},{passive:false});
+document.getElementById('gas').addEventListener('touchstart',e=>{e.preventDefault();S.gas=true;});
+document.getElementById('gas').addEventListener('touchend',e=>{e.preventDefault();S.gas=false;});
+
+function loop(){
+  requestAnimationFrame(loop);
+  const dt=0.016;
+  if(S.started&&S.alive){
+    S.speed += (S.gas?16:6)*dt; if(S.speed>60)S.speed=60; if(!S.gas&&S.speed>18)S.speed-=8*dt;
+    S.z -= S.speed*dt; S.dist = -S.z;
+    S.x += stSide*9*dt; S.x=Math.max(-8.6,Math.min(8.6,S.x));
+    if(playerCar){playerCar.position.set(S.x,0,S.z);playerCar.rotation.y=stSide*-0.12;}
+    // AI
+    for(const a of aiCars){
+      if(!a.active){if(Math.random()<0.01)spawnAI(a);continue;}
+      a.m.position.set(a.x,0,a.z);
+      if(Math.abs(a.z-S.z)<4.5 && Math.abs(a.x-S.x)<2.3){S.alive=false;crash();}
+      if(a.z>S.z+30){a.active=false;} // 已驶过
+    }
+    // 相机第三人称
+    camera.position.set(S.x*0.4,4.2,S.z+9);
+    camera.lookAt(S.x*0.2,1.0,S.z-12);
+    // 公路纹理滚动
+    roadMat.map.offset.y = S.dist*0.02;
+    // HUD
+    distEl.textContent=Math.floor(S.dist);
+    if(S.dist>S.best)S.best=S.dist;
+    bestEl.textContent=Math.floor(S.best);
+    spdEl.innerHTML=Math.floor(S.speed*3.0)+'<small> km/h</small>';
+  }
+  renderer.render(scene,camera);
+}
+function crash(){
+  document.getElementById('over').style.display='flex';
+  document.getElementById('ot').textContent='💥 撞车了';
+  document.getElementById('os').textContent='里程 '+Math.floor(S.dist)+' m · 最佳 '+Math.floor(S.best)+' m';
+}
+function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);}
+addEventListener('resize',resize);resize();
+
+let ready=false,loopOn=false;
+document.getElementById('startBtn').addEventListener('click',()=>{
+  if(!ready)return;
+  document.getElementById('start').style.display='none';
+  reset();S.started=true;
+  if(!loopOn){loopOn=true;loop();}
+});
 </script>
 </body>
 </html>
