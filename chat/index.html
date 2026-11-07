@@ -58,15 +58,16 @@
 <div id="modal" class="modal" style="display:none">
   <div class="modalbox">
     <h3>🤖 机器人设置（免费）</h3>
-    <p class="mtip">机器人由 <b>OpenRouter 免费模型</b> 驱动，<b>完全不用花钱、不用绑卡</b>。去 <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a> 用邮箱注册 → 创建 Key（免费），粘到下面即可。默认已选好能用的免费模型，不用改。</p>
-    <label>API Key（免费）</label>
-    <input id="setKey" placeholder="sk-or-..." autocomplete="off">
-    <label>模型（默认免费模型，不用改）</label>
-    <select id="setModel">
-      <option value="xingchen-agi/xing4.0-29b-a4b:free">星尘 29B（免费，中文强，推荐）</option>
-      <option value="recursive/flint-v1.0:free">Flint（免费，备用）</option>
-      <option value="nvidia/nemotron-3.5-super-vl:free">Nemotron（免费，备选）</option>
+    <p class="mtip">机器人由 <b>硅基流动（国内直连·免费额度）</b> 驱动，不用绑卡、不花钱。去 <a href="https://cloud.siliconflow.cn/i/QiVR5l2s" target="_blank" rel="noopener">cloud.siliconflow.cn</a> 用手机号/邮箱注册 → 左侧「API密钥」新建一个 → 粘到下面即可。默认已选好国内免费模型，不用改。</p>
+    <label>服务商</label>
+    <select id="setProvider">
+      <option value="siliconflow">硅基流动（国内直连·推荐）</option>
+      <option value="openrouter">OpenRouter（国外·备用）</option>
     </select>
+    <label>API Key（免费）</label>
+    <input id="setKey" placeholder="sk-..." autocomplete="off">
+    <label>模型（默认免费模型，不用改）</label>
+    <select id="setModel"></select>
     <div id="setMsg" class="setmsg"></div>
     <div class="mrow">
       <button id="setSave">保存</button>
