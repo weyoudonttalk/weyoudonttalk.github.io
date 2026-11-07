@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<title>街机破解 · ARCADE CRACK</title>
+<style>
+  :root{ --neon:#5ef0ff; --gold:#ffd166; --red:#ff4d6d; --bg:#05070d; }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+  html,body{height:100%;overflow:hidden;background:var(--bg);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:#dfe6f0}
+  #game{position:fixed;inset:0;display:block;background:radial-gradient(circle at 50% 0%,#0d1830,#05070d 70%)}
+  /* 顶部 HUD */
+  #hud{position:fixed;top:max(8px,env(safe-area-inset-top));left:0;right:0;display:flex;justify-content:space-between;padding:10px 16px;pointer-events:none;font-size:clamp(13px,3.4vw,18px);z-index:5;text-shadow:0 0 8px #000}
+  #hud .box{background:#0b1220cc;border:1px solid #233149;border-radius:12px;padding:6px 12px}
+  #score{color:var(--neon);font-weight:800}
+  #combo{color:var(--gold);font-weight:800}
+  #lives{color:var(--red);font-weight:800;letter-spacing:2px}
+  #lvl{color:#9fb0c8}
+  /* 覆盖层（开始/结束） */
+  .overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:#05070ddd;z-index:10;text-align:center;padding:24px}
+  .overlay.hidden{display:none}
+  .title{font-size:clamp(28px,8vw,52px);font-weight:900;letter-spacing:2px;
+    background:linear-gradient(90deg,#5ef0ff,#7b5cff,#ff4d6d);-webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 30px #5ef0ff44}
+  .sub{color:#8aa;font-size:clamp(13px,3.6vw,16px);line-height:1.7;max-width:520px}
+  .btn{pointer-events:auto;padding:14px 40px;border:0;border-radius:14px;font-size:clamp(16px,4.4vw,20px);font-weight:800;
+    background:linear-gradient(135deg,#7b5cff,#00d4ff);color:#fff;box-shadow:0 8px 30px #00d4ff44}
+  .btn:active{transform:scale(.96)}
+  .big{font-size:clamp(40px,12vw,80px);font-weight:900;color:var(--gold);text-shadow:0 0 30px #ffd16666}
+  .links{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+  .links a{pointer-events:auto;font-size:12px;color:#9fb0c8;text-decoration:none;border:1px solid #233149;border-radius:10px;padding:6px 12px;background:#0b1220}
+  .links a:active{border-color:var(--neon);color:var(--neon)}
+  .tag{position:fixed;bottom:max(8px,env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:#566;font-size:11px;z-index:5;pointer-events:none}
+  .pause{position:fixed;top:max(8px,env(safe-area-inset-top));right:16px;z-index:6}
+  #pauseBtn{pointer-events:auto;background:#0b1220cc;border:1px solid #233149;color:#9fb0c8;border-radius:10px;padding:6px 12px;font-size:13px}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="hud">
+  <div class="box">分数 <span id="score">0</span></div>
+  <div class="box">连击 <span id="combo">x1</span></div>
+  <div class="box">关卡 <span id="lvl">1</span></div>
+  <div class="box">生命 <span id="lives">♥♥♥</span></div>
+</div>
+<div class="pause"><button id="pauseBtn">⏸</button></div>
+
+<!-- 开始 -->
+<div id="startScreen" class="overlay">
+  <div class="title">街机破解</div>
+  <div class="sub">ARCADE&nbsp;CRACK — 霓虹黑客街机<br>
+  节点亮起 → <b>点它</b>完成破解，攒连击拿高分<br>
+  节点超时未破 → 掉血；血空即结束<br>
+  📱 手机/平板直接点屏幕，无需键盘</div>
+  <button class="btn" id="startBtn">▶ 开始破解</button>
+  <div class="links">
+    <a href="../delta-force/">🎯 三角洲</a>
+    <a href="../pubg/">🔫 吃鸡</a>
+    <a href="../racing/">🏎️ 赛车</a>
+    <a href="../chat/">💬 聊天站</a>
+  </div>
+</div>
+
+<!-- 结束 -->
+<div id="overScreen" class="overlay hidden">
+  <div class="title" style="color:var(--red);-webkit-text-fill-color:initial">SYSTEM LOCKED</div>
+  <div class="big" id="finalScore">0</div>
+  <div class="sub">本局最高连击 <b id="finalCombo">x1</b> · 历史最高 <b id="best">0</b></div>
+  <button class="btn" id="retryBtn">↻ 再来一局</button>
+  <div class="links">
+    <a href="../delta-force/">🎯 三角洲</a>
+    <a href="../pubg/">🔫 吃鸡</a>
+    <a href="../racing/">🏎️ 赛车</a>
+    <a href="../chat/">💬 聊天站</a>
+  </div>
+</div>
+
+<div class="tag">MIUI STUDIO · 街机破解 v1.0 · 触屏适配</div>
+
+<script>
+(() => {
+  const cv = document.getElementById('game');
+  const ctx = cv.getContext('2d');
+  let W=0, H=0, DPR=1;
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio||1, 2.5);
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W*DPR; cv.height = H*DPR;
+    cv.style.width = W+'px'; cv.style.height = H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  window.addEventListener('resize', resize); resize();
+
+  // ---- 音效（WebAudio 生成，无外部资源）----
+  let actx=null;
+  function beep(freq, dur=0.08, type='square', vol=0.05){
+    try{
+      actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+      const o=actx.createOscillator(), g=actx.createGain();
+      o.type=type; o.frequency.value=freq; g.gain.value=vol;
+      o.connect(g); g.connect(actx.destination);
+      o.start(); setTimeout(()=>o.stop(), dur*1000);
+    }catch(e){}
+  }
+
+  // ---- 游戏状态 ----
+  const state = { running:false, paused:false, score:0, combo:0, maxCombo:1, lives:3, level:1,
+    spawnT:0, spawnGap:1.1, nodes:[], parts:[], floats:[], t0:0, elapsed:0 };
+
+  const TYPES = {
+    normal:{ color:'#5ef0ff', r:34, pts:10, life:2.4 },
+    gold:{   color:'#ffd166', r:30, pts:30, life:1.8 },
+    red:{    color:'#ff4d6d', r:38, pts:20, life:1.4 },
+  };
+
+  function rand(a,b){ return a+Math.random()*(b-a); }
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  const HEX='0123456789ABCDEF';
+  function hex(n){ let s=''; for(let i=0;i<n;i++) s+=HEX[Math.floor(Math.random()*16)]; return s; }
+
+  function spawnNode(){
+    const roll=Math.random();
+    const type = roll<0.15?'gold':(roll<0.4?'red':'normal');
+    const t=TYPES[type];
+    const margin = t.r+14;
+    const x = rand(margin, W-margin);
+    const y = rand(margin+70, H-margin-90); // 避开顶部HUD和底部
+    const life = Math.max(0.7, t.life - state.level*0.06);
+    state.nodes.push({ x,y, type, r:t.r, color:t.color, pts:t.pts, life, maxLife:life, born:performance.now() });
+  }
+
+  function crack(n){
+    state.combo++;
+    state.maxCombo=Math.max(state.maxCombo, state.combo);
+    const mult = 1 + Math.floor(state.combo/5)*0.5;
+    const gain = Math.round(n.pts * mult);
+    state.score += gain;
+    beep(n.type==='gold'?1320:880, 0.07, 'square', 0.06);
+    // 粒子
+    for(let i=0;i<14;i++){
+      const a=rand(0,Math.PI*2), sp=rand(1,5);
+      state.parts.push({x:n.x,y:n.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:rand(0.3,0.7),color:n.color});
+    }
+    // 漂浮文字
+    state.floats.push({x:n.x,y:n.y, text:'+'+gain+(state.combo>1?' x'+state.combo:''), life:0.8, color:n.color});
+  }
+
+  function miss(n){
+    state.combo=0;
+    state.lives--;
+    beep(160,0.18,'sawtooth',0.07);
+    state.floats.push({x:n.x,y:n.y,text:'MISS',life:0.9,color:'#ff4d6d'});
+    if(state.lives<=0) gameOver();
+  }
+
+  // ---- 输入：触摸/鼠标 ----
+  function hit(px,py){
+    if(!state.running||state.paused) return;
+    // 从后往前（最上层优先）
+    for(let i=state.nodes.length-1;i>=0;i--){
+      const n=state.nodes[i];
+      const dx=px-n.x, dy=py-n.y;
+      if(dx*dx+dy*dy <= (n.r+10)*(n.r+10)){
+        crack(n); state.nodes.splice(i,1); return;
+      }
+    }
+  }
+  cv.addEventListener('touchstart', e=>{
+    e.preventDefault();
+    if(actx&&actx.state==='suspended') actx.resume();
+    for(const t of e.changedTouches) hit(t.clientX, t.clientY);
+  }, {passive:false});
+  cv.addEventListener('mousedown', e=>{ if(actx&&actx.state==='suspended') actx.resume(); hit(e.clientX,e.clientY); });
+
+  // ---- 循环 ----
+  let last=performance.now();
+  function loop(now){
+    const dt=Math.min(0.05,(now-last)/1000); last=now;
+    if(state.running && !state.paused) update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function update(dt){
+    state.elapsed+=dt;
+    // 关卡随分数提升
+    state.level = 1 + Math.floor(state.score/300);
+    state.spawnGap = Math.max(0.45, 1.1 - state.level*0.07);
+    state.spawnT-=dt;
+    if(state.spawnT<=0){ spawnNode(); if(Math.random()<0.3+state.level*0.03) spawnNode(); state.spawnT=state.spawnGap; }
+
+    for(let i=state.nodes.length-1;i>=0;i--){
+      const n=state.nodes[i];
+      n.life-=dt;
+      if(n.life<=0){ miss(n); state.nodes.splice(i,1); }
+    }
+    for(let i=state.parts.length-1;i>=0;i--){
+      const p=state.parts[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.life-=dt; if(p.life<=0) state.parts.splice(i,1);
+    }
+    for(let i=state.floats.length-1;i>=0;i--){
+      const f=state.floats[i]; f.y-=0.6; f.life-=dt; if(f.life<=0) state.floats.splice(i,1);
+    }
+    // HUD
+    document.getElementById('score').textContent=state.score;
+    document.getElementById('combo').textContent='x'+(1+Math.floor(state.combo/5)*0.5).toFixed(1).replace('.0','');
+    document.getElementById('lvl').textContent=state.level;
+    document.getElementById('lives').textContent='♥'.repeat(Math.max(0,state.lives))||'—';
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    // 网格背景
+    ctx.strokeStyle='#0e1830'; ctx.lineWidth=1;
+    const gs=Math.max(40,Math.min(W,H)/12);
+    for(let x=0;x<W;x+=gs){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=0;y<H;y+=gs){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+    // 节点
+    for(const n of state.nodes){
+      const prog=1-(n.life/n.maxLife); // 0->1 越接近1越紧急
+      // 外环（时间环）
+      ctx.beginPath();
+      ctx.arc(n.x,n.y,n.r+8,-Math.PI/2,-Math.PI/2+Math.PI*2*(n.life/n.maxLife));
+      ctx.strokeStyle = prog>0.7?'#ff4d6d':n.color;
+      ctx.lineWidth=4; ctx.stroke();
+      // 主体
+      ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
+      ctx.fillStyle=n.color+'22'; ctx.fill();
+      ctx.strokeStyle=n.color; ctx.lineWidth=2.5; ctx.stroke();
+      // 闪烁核心
+      const pulse=0.6+0.4*Math.sin(performance.now()/120+prog*6);
+      ctx.beginPath(); ctx.arc(n.x,n.y,n.r*0.4*pulse,0,Math.PI*2);
+      ctx.fillStyle=n.color; ctx.shadowColor=n.color; ctx.shadowBlur=18; ctx.fill(); ctx.shadowBlur=0;
+      // 类型标记
+      ctx.fillStyle='#fff'; ctx.font='bold 14px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(n.type==='gold'?'★':(n.type==='red'?'⚠':'✦'), n.x, n.y);
+    }
+    // 粒子
+    for(const p of state.parts){
+      ctx.globalAlpha=Math.max(0,p.life*1.5); ctx.fillStyle=p.color;
+      ctx.fillRect(p.x-2,p.y-2,4,4);
+    }
+    ctx.globalAlpha=1;
+    // 漂浮文字
+    ctx.textAlign='center';
+    for(const f of state.floats){
+      ctx.globalAlpha=Math.min(1,f.life*1.4); ctx.fillStyle=f.color;
+      ctx.font='bold 18px sans-serif'; ctx.fillText(f.text,f.x,f.y);
+    }
+    ctx.globalAlpha=1;
+  }
+
+  // ---- 流程 ----
+  function start(){
+    Object.assign(state,{running:true,paused:false,score:0,combo:0,maxCombo:1,lives:3,level:1,spawnT:0.3,spawnGap:1.1,nodes:[],parts:[],floats:[],elapsed:0});
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('overScreen').classList.add('hidden');
+    if(actx&&actx.state==='suspended') actx.resume();
+  }
+  function gameOver(){
+    state.running=false;
+    const best=Math.max(state.score, parseInt(localStorage.getItem('arcade_best')||'0',10));
+    localStorage.setItem('arcade_best',best);
+    document.getElementById('finalScore').textContent=state.score;
+    document.getElementById('finalCombo').textContent='x'+state.maxCombo;
+    document.getElementById('best').textContent=best;
+    document.getElementById('overScreen').classList.remove('hidden');
+    beep(220,0.3,'sawtooth',0.06);
+  }
+  document.getElementById('startBtn').onclick=start;
+  document.getElementById('retryBtn').onclick=start;
+  document.getElementById('pauseBtn').onclick=()=>{
+    if(!state.running) return;
+    state.paused=!state.paused;
+    document.getElementById('pauseBtn').textContent=state.paused?'▶':'⏸';
+  };
+  document.addEventListener('visibilitychange',()=>{ if(document.hidden&&state.running){state.paused=true;document.getElementById('pauseBtn').textContent='▶';}});
+
+  // 初始显示历史最高
+  document.getElementById('best').textContent=localStorage.getItem('arcade_best')||'0';
+
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
