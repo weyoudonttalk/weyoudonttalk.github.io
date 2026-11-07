@@ -243,10 +243,22 @@ footer .soc a:hover{color:var(--t)}
 #splash .hint{position:absolute;bottom:7%;left:0;right:0;text-align:center;color:#9ab;font-size:12px;z-index:3;opacity:0;animation:fu 1s ease 2.2s forwards}
 #splash .hint b{color:#ff9a6a}
 #splash .credit{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#655;font-size:10px;z-index:3}
+
+#splash.hasvideo .bg,#splash.hasvideo .scan,#splash.hasvideo .map,#splash.hasvideo .boom,#splash.hasvideo .cnt{display:none}
+#splash video.vlocal{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#000}
+#splash .vbtn{position:absolute;z-index:5;font-size:12px;color:#ff9a6a;background:#0009;padding:5px 12px;border-radius:8px;cursor:pointer;border:0}
+#splash .usevid{top:14px;left:14px}
+#splash .clrvid{top:14px;right:14px}
+#splash .unmute{bottom:9%;left:50%;transform:translateX(-50%);display:none}
 </style>
 </head>
 <body>
 <div id="splash" onclick="enterSite()">
+  <button class="vbtn usevid" onclick="pickVideo(event)">🎬 使用我的视频</button>
+  <button class="vbtn clrvid" onclick="clearVideo(event)" style="display:none">✕ 换视频</button>
+  <button class="vbtn unmute" id="unmuteBtn" onclick="unmuteVideo(event)">🔊 开启声音</button>
+  <input id="vidInput" type="file" accept="video/*" style="display:none" onchange="onVideoPicked(event)">
+
   <div class="bg"></div>
   <div class="scan"></div>
   <div class="map"></div>
@@ -806,6 +818,24 @@ function copyGroup(){
 <script>
 function enterSite(){var s=document.getElementById('splash');if(s){s.style.opacity='0';s.style.transition='opacity .5s';setTimeout(function(){s.style.display='none';},500);}clearTimeout(_splashAuto);}
 var _splashAuto=setTimeout(enterSite,5000);
+function pickVideo(e){e.stopPropagation();document.getElementById('vidInput').click();}
+function onVideoPicked(e){var f=e.target.files&&e.target.files[0];if(!f)return;var url=URL.createObjectURL(f);applyVideo(url,false);saveVid(f);document.querySelector('#splash .clrvid').style.display='inline-block';}
+function applyVideo(url,fromCache){
+  var sp=document.getElementById('splash');sp.classList.add('hasvideo');
+  var v=document.createElement('video');v.className='vlocal';v.src=url;v.autoplay=true;v.loop=true;v.muted=!!fromCache;v.setAttribute('playsinline','');sp.insertBefore(v,sp.firstChild);
+  v.play().catch(function(){});
+  var ub=document.getElementById('unmuteBtn');
+  if(fromCache){ub.style.display='inline-block';}else{ub.style.display='none';}
+  document.querySelector('#splash .usevid').style.display='none';
+  clearTimeout(_splashAuto);
+  if(fromCache){_splashAuto=setTimeout(enterSite,15000);}
+}
+function unmuteVideo(e){e.stopPropagation();var v=document.querySelector('#splash video.vlocal');if(v){v.muted=false;v.play();}document.getElementById('unmuteBtn').style.display='none';}
+function clearVideo(e){e.stopPropagation();try{indexedDB.deleteDatabase('miuiSplash');}catch(_){}location.reload();}
+function openDB(){return new Promise(function(res,rej){var r=indexedDB.open('miuiSplash',1);r.onupgradeneeded=function(){r.result.createObjectStore('vid');};r.onsuccess=function(){res(r.result);};r.onerror=function(){rej(r.error);};});}
+function saveVid(blob){openDB().then(function(db){db.transaction('vid','readwrite').objectStore('vid').put(blob,'splash');}).catch(function(){});}
+function getVid(){return openDB().then(function(db){return new Promise(function(res){var tx=db.transaction('vid','readonly').objectStore('vid').get('splash');tx.onsuccess=function(){res(tx.result||null);};tx.onerror=function(){res(null);};});}).catch(function(){return null;});}
+document.addEventListener('DOMContentLoaded',function(){getVid().then(function(b){if(b){applyVideo(URL.createObjectURL(b),true);document.querySelector('#splash .clrvid').style.display='inline-block';}});});
 </script>
 </body>
 </html>
