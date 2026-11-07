@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>我的世界 · MIUI STUDIO</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:#0b0f16;overflow:hidden;font-family:-apple-system,"PingFang SC",sans-serif;user-select:none}
+  #wrap{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center}
+  canvas{background:#87ceeb;display:block;touch-action:none}
+  #hud{position:absolute;top:10px;left:12px;color:#123;font-size:13px;text-shadow:0 1px 2px #fff;line-height:1.6}
+  #tip{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#234;font-size:12px;text-shadow:0 1px 2px #fff}
+  .bar{position:absolute;top:10px;right:12px;display:flex;gap:6px}
+  .bar button{padding:6px 12px;border:0;border-radius:18px;font-size:13px;cursor:pointer;background:#fff;box-shadow:0 2px 6px #0003}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c"></canvas>
+  <div id="hud">点击放方块 · 右键/长按挖掉 · 选方块在右上角切换</div>
+  <div class="bar">
+    <button data-t="grass" style="background:#6ab04c">草</button>
+    <button data-t="stone" style="background:#95a5a6">石</button>
+    <button data-t="wood" style="background:#c89b3c">木</button>
+    <button data-t="brick" style="background:#b0552f">砖</button>
+  </div>
+</div>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+let W,H,S=32;function resize(){W=cv.width=Math.min(innerWidth,900);H=cv.height=Math.min(innerHeight,640);}resize();addEventListener('resize',resize);
+let cur='grass';
+const colors={grass:'#6ab04c',stone:'#95a5a6',wood:'#c89b3c',brick:'#b0552f',air:null};
+let grid={};
+document.querySelectorAll('.bar button').forEach(b=>b.onclick=()=>cur=b.dataset.t);
+function cell(x,y){return x+','+y;}
+cv.addEventListener('mousedown',e=>{const r=cv.getBoundingClientRect();place(e.clientX-r.left,e.clientY-r.top,e.button===2);});
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+cv.addEventListener('touchstart',e=>{const t=e.touches[0],r=cv.getBoundingClientRect();place(t.clientX-r.left,t.clientY-r.top,false);},{passive:true});
+function place(px,py,erase){
+  const cx=Math.floor(px/S),cy=Math.floor(py/S);
+  if(erase)delete grid[cell(cx,cy)];else grid[cell(cx,cy)]=colors[cur];
+  draw();
+}
+function draw(){
+  ctx.fillStyle='#87ceeb';ctx.fillRect(0,0,W,H);
+  for(const k in grid){const [x,y]=k.split(',').map(Number);const c=grid[k];if(!c)continue;
+    ctx.fillStyle=c;ctx.fillRect(x*S,y*S,S,S);ctx.strokeStyle='#0002';ctx.strokeRect(x*S,y*S,S,S);}
+}
+draw();
+</script>
+</body>
+</html>
