@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<title>三角洲行动 · 手机版 3D · MIUI STUDIO</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:-apple-system,"PingFang SC",sans-serif;touch-action:none;overscroll-behavior:none}
+  #cv{width:100%;height:100%;display:block}
+  /* 准星 */
+  #cross{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:26px;height:26px;pointer-events:none;z-index:5}
+  #cross:before,#cross:after{content:"";position:absolute;background:#5ef0ff;box-shadow:0 0 4px #000}
+  #cross:before{left:50%;top:0;width:2px;height:100%;transform:translateX(-50%)}
+  #cross:after{top:50%;left:0;height:2px;width:100%;transform:translateY(-50%)}
+  /* HUD */
+  #hud{position:fixed;inset:0;pointer-events:none;z-index:4;color:#dff;font-size:13px;text-shadow:0 1px 3px #000}
+  #top{position:absolute;top:max(14px,env(safe-area-inset-top));right:14px;text-align:right;font-size:12px;color:#9fe}
+  #bottom{position:absolute;left:14px;bottom:max(16px,env(safe-area-inset-bottom));width:46%}
+  .bar{height:12px;border:1px solid #5ef0ff66;border-radius:7px;overflow:hidden;margin-bottom:5px;background:#0009}
+  .bar>i{display:block;height:100%;background:linear-gradient(90deg,#ff5e5e,#ffb15e);width:100%;transition:width .15s}
+  .bar.a>i{background:linear-gradient(90deg,#5ef0ff,#7b5cff)}
+  #btxt{font-size:12px;color:#bfe}
+  /* 虚拟摇杆 */
+  #stick{position:fixed;left:0;bottom:0;width:45%;height:45%;z-index:6;pointer-events:auto}
+  #stickBase{position:absolute;width:110px;height:110px;border:2px solid #5ef0ff55;border-radius:50%;left:30px;bottom:30px;display:none}
+  #stickKnob{position:absolute;width:50px;height:50px;border-radius:50%;background:#5ef0ff33;border:2px solid #5ef0ff;left:30px;bottom:30px;display:none}
+  /* 右侧视角区 */
+  #look{position:fixed;right:0;bottom:0;width:55%;height:55%;z-index:6;pointer-events:auto}
+  /* 按钮 */
+  #fire{position:fixed;right:24px;bottom:max(90px,calc(env(safe-area-inset-bottom) + 90px));width:84px;height:84px;border-radius:50%;background:radial-gradient(circle,#ff5e5e,#b02a2a);border:3px solid #ffd1d1;z-index:7;pointer-events:auto;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;box-shadow:0 4px 14px #0008}
+  #bag{position:fixed;right:22px;top:max(14px,env(safe-area-inset-top));width:52px;height:52px;border-radius:14px;background:#0d1626cc;border:1px solid #5ef0ff66;z-index:7;pointer-events:auto;display:flex;align-items:center;justify-content:center;font-size:22px;color:#5ef0ff}
+  #pick{position:fixed;left:50%;bottom:34%;transform:translateX(-50%);background:#000b;border:1px solid #5ef0ff66;color:#cff;padding:8px 18px;border-radius:24px;font-size:14px;z-index:7;display:none;pointer-events:auto}
+  #hit{position:fixed;left:50%;top:46%;transform:translate(-50%,-50%);color:#ff6b6b;font-size:24px;font-weight:800;opacity:0;transition:opacity .12s;z-index:5;text-shadow:0 2px 6px #000}
+  /* 背包面板 */
+  #bagPanel{position:fixed;inset:0;background:rgba(4,8,14,.9);z-index:20;display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:8vh;color:#dfe}
+  #bagPanel h2{font-size:22px;color:#5ef0ff;letter-spacing:3px;margin-bottom:4px}
+  #bagPanel .sub{font-size:12px;color:#8ab;margin-bottom:18px}
+  #grid{width:min(560px,92vw);display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .slot{background:#0d1626;border:1px solid #2a3a5a;border-radius:12px;padding:14px;text-align:center}
+  .slot .ic{font-size:32px}.slot .nm{font-size:13px;margin-top:6px;color:#cde}.slot .ct{font-size:12px;color:#5ef0ff;margin-top:2px}
+  .slot.e{opacity:.3}
+  #bagPanel .close{margin-top:24px;padding:10px 30px;border:0;border-radius:24px;background:#1a2a44;color:#9cf;font-size:15px}
+  /* 加载/开场 */
+  #start{position:fixed;inset:0;background:#04060a;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#dfe;text-align:center;padding:0 24px}
+  #start h1{font-size:30px;color:#5ef0ff;letter-spacing:3px;margin-bottom:10px}
+  #start p{font-size:13px;color:#9ab;line-height:2;max-width:420px}
+  #start button{margin-top:24px;padding:14px 40px;border:0;border-radius:28px;background:linear-gradient(135deg,#7b5cff,#00d4ff);color:#fff;font-size:17px;cursor:pointer}
+  #loadbar{margin-top:18px;font-size:12px;color:#5ef0ff}
+  #dead{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:60;display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center}
+  #dead h1{font-size:34px;color:#ff6b6b;margin-bottom:8px}
+  #dead button{margin-top:20px;padding:12px 30px;border:0;border-radius:24px;background:linear-gradient(135deg,#7b5cff,#00d4ff);color:#fff;font-size:16px}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="cross"></div>
+<div id="hud">
+  <div id="top">击杀 <span id="kills">0</span> · 残敌 <span id="enemyN">0</span></div>
+  <div id="bottom">
+    <div class="bar"><i id="hp"></i></div>
+    <div class="bar a"><i id="am"></i></div>
+    <div id="btxt"><span id="hpt">HP 100</span> · <span id="amt">弹药 30</span></div>
+  </div>
+</div>
+
+<div id="stick"></div>
+<div id="stickBase"></div><div id="stickKnob"></div>
+<div id="look"></div>
+<div id="fire">射击</div>
+<div id="bag">🎒</div>
+<div id="pick">点击拾取</div>
+<div id="hit">命中！</div>
+
+<div id="bagPanel">
+  <h2>战 术 背 包</h2>
+  <div class="sub">共 <span id="cap">0</span> 类物资</div>
+  <div id="grid"></div>
+  <button class="close" onclick="closeBag()">关闭</button>
+</div>
+
+<div id="start">
+  <h1>三角洲行动</h1>
+  <p>第一人称 3D 战术射击 · 真实建模<br><br>
+  📱 手机操作：<br>
+  左下角摇杆移动 · 右下区域滑动转视角<br>
+  红色「射击」按钮开火 · 右上🎒查看背包<br>
+  靠近发光物资点击拾取 · 清剿所有敌人获胜</p>
+  <button id="startBtn">进入战场</button>
+  <div id="loadbar">正在加载 3D 模型…</div>
+</div>
+
+<div id="dead">
+  <h1 id="deadT">阵亡</h1>
+  <div id="deadS" style="color:#9ab;margin-top:6px"></div>
+  <button onclick="location.reload()">重新部署</button>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { clone as skeClone } from 'three/addons/utils/SkeletonUtils.js';
+
+const cv=document.getElementById('cv');
+const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x88ccee);
+scene.fog=new THREE.Fog(0x88ccee,40,140);
+
+const camera=new THREE.PerspectiveCamera(78,1,0.1,800);
+camera.position.set(0,1.7,0);
+scene.add(camera);
+
+// 光照
+const hemi=new THREE.HemisphericLight(0xbfe3ff,0x4a553f,1.0);scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xffffff,1.4);
+sun.position.set(40,80,20);sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-120;sun.shadow.camera.right=120;sun.shadow.camera.top=120;sun.shadow.camera.bottom=-120;sun.shadow.camera.far=300;
+scene.add(sun);
+
+// 地面
+const groundMat=new THREE.MeshStandardMaterial({color:0x4f6138,roughness:1});
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(240,240),groundMat);
+ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
+
+// 加载器
+const loader=new GLTFLoader();
+const M={};let loaded=0,total=4;
+function done(k,g){M[k]=g;loaded++;document.getElementById('loadbar').textContent=`正在加载 3D 模型 ${loaded}/${total}`;if(loaded>=total)build();}
+loader.load('./models/Soldier.glb',g=>done('soldier',g),undefined,()=>done('soldier',null));
+loader.load('./models/rifle.glb',g=>done('rifle',g),undefined,()=>done('rifle',null));
+loader.load('./models/house.glb',g=>done('house',g),undefined,()=>done('house',null));
+loader.load('./models/supply.glb',g=>done('supply',g),undefined,()=>done('supply',null));
+
+const P={hp:100,am:30,amMax:30,kills:0,alive:true,reloadAt:0,lastShot:0};
+const enemies=[],loots=[],houses=[];
+const bag={med:0,ammo:0,armor:0,food:0};
+const bagMeta={med:{ic:'💊',nm:'医疗包'},ammo:{ic:'🔫',nm:'弹药包'},armor:{ic:'🛡️',nm:'护甲片'},food:{ic:'🍱',nm:'口粮'}};
+
+function build(){
+  document.getElementById('loadbar').textContent='加载完成';
+  // 房屋
+  if(M.house)for(let i=0;i<6;i++){const h=M.house.scene.clone();const s=1.4;h.scale.set(s,s,s);h.position.set((Math.random()-0.5)*150,(0), (Math.random()-0.5)*150);h.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});scene.add(h);houses.push(h);}
+  // 武器挂相机
+  if(M.rifle){const w=M.rifle.scene;w.scale.set(8,8,8);w.position.set(0.32,-0.28,0.55);w.rotation.set(0,Math.PI,0);camera.add(w);window._w=w;}
+  // 物资点
+  for(let i=0;i<6;i++)spawnLoot((Math.random()-0.5)*120,(Math.random()-0.5)*120);
+  // 敌人
+  spawnWave(5);
+  started=true;
+}
+
+function spawnLoot(x,z){
+  if(!M.supply){loots.push({mesh:mkBox(x,z),type:randType()});return;}
+  const m=M.supply.scene.clone();m.scale.set(2,2,2);m.position.set(x,0.6,z);m.traverse(o=>{if(o.isMesh)o.castShadow=true;});
+  scene.add(m);loots.push({mesh:m,type:randType()});
+}
+function mkBox(x,z){const b=new THREE.Mesh(new THREE.BoxGeometry(0.8,0.6,0.8),new THREE.MeshStandardMaterial({color:0xffcc33,emissive:0x553300}));b.position.set(x,0.3,z);scene.add(b);return b;}
+function randType(){const k=Object.keys(bagMeta);return k[Math.floor(Math.random()*k.length)];}
+
+function spawnWave(n){
+  for(let i=0;i<n;i++){
+    let x,z;do{x=(Math.random()-0.5)*160;z=(Math.random()-0.5)*160;}while(Math.hypot(x-camera.position.x,z-camera.position.z)<35);
+    if(!M.soldier){const d=new THREE.Mesh(new THREE.CapsuleGeometry(0.4,1.2,4,8),new THREE.MeshStandardMaterial({color:0xc0392b}));d.position.set(x,1,z);scene.add(d);enemies.push({root:d,mixer:null,hp:60,sp:1.6});continue;}
+    const root=skeClone(M.soldier.scene);
+    root.scale.set(0.9,0.9,0.9);
+    root.position.set(x,0,z);root.traverse(o=>{if(o.isMesh)o.castShadow=true;});
+    scene.add(root);
+    const mixer=new THREE.AnimationMixer(root);
+    const walk=M.soldier.animations.find(a=>a.name==='Walk')||M.soldier.animations[1];
+    if(walk)mixer.clipAction(walk).play();
+    enemies.push({root,mixer,hp:60,sp:1.6+Math.random()*0.6});
+  }
+  updateHUD();
+}
+
+// 射击
+const ray=new THREE.Raycaster();
+function shoot(){
+  if(!P.alive||P.am<=0||performance.now()-P.lastShot<150)return;
+  P.lastShot=performance.now();P.am--;updateHUD();
+  if(window._w){window._w.position.z=0.45;setTimeout(()=>window._w.position.z=0.55,70);}
+  ray.setFromCamera({x:0,y:0},camera);
+  let best=1e9,hit=null;
+  for(const e of enemies){const m=e.root;const hits=ray.intersectObject(m,true);if(hits.length&&hits[0].distance<best){best=hits[0].distance;hit=e;}}
+  if(hit){hit.hp-=24;flashHit();if(hit.hp<=0){const p=hit.root.position.clone();scene.remove(hit.root);enemies.splice(enemies.indexOf(hit),1);P.kills++;if(Math.random()<0.6)spawnLoot(p.x,p.z);spawnWave(1);}}
+  updateHUD();
+}
+
+// 触摸控制
+let yaw=0,pitch=0;
+const stick=document.getElementById('stick'),base=document.getElementById('stickBase'),knob=document.getElementById('stickKnob');
+let stickId=null,sx=0,sy=0,mx=0,my=0;
+stick.addEventListener('touchstart',e=>{e.preventDefault();const t=e.changedTouches[0];stickId=t.identifier;sx=t.clientX;sy=t.clientY;base.style.display=knob.style.display='block';base.style.left=knob.style.left=(t.clientX-55)+'px';base.style.bottom=knob.style.bottom=(innerHeight-t.clientY-55)+'px';},{passive:false});
+stick.addEventListener('touchmove',e=>{e.preventDefault();for(const t of e.changedTouches)if(t.identifier===stickId){let dx=t.clientX-sx,dy=t.clientY-sy;const d=Math.hypot(dx,dy),max=45;if(d>max){dx*=max/d;dy*=max/d;}knob.style.left=(parseFloat(base.style.left)+55+dx-25)+'px';knob.style.bottom=(parseFloat(base.style.bottom)+55+dy-25)+'px';mx=dx/max;my=dy/max;}},{passive:false});
+stick.addEventListener('touchend',e=>{for(const t of e.changedTouches)if(t.identifier===stickId){stickId=null;mx=my=0;base.style.display=knob.style.display='none';}},{passive:false});
+
+const look=document.getElementById('look');
+let lookId=null,lx=0,ly=0;
+look.addEventListener('touchstart',e=>{e.preventDefault();const t=e.changedTouches[0];lookId=t.identifier;lx=t.clientX;ly=t.clientY;},{passive:false});
+look.addEventListener('touchmove',e=>{e.preventDefault();for(const t of e.changedTouches)if(t.identifier===lookId){const dx=(t.clientX-lx)*0.004,dy=(t.clientY-ly)*0.004;yaw-=dx;pitch=Math.max(-1.2,Math.min(1.2,pitch-dy));lx=t.clientX;ly=t.clientY;}},{passive:false});
+look.addEventListener('touchend',e=>{for(const t of e.changedTouches)if(t.identifier===lookId)lookId=null;},{passive:false});
+
+document.getElementById('fire').addEventListener('touchstart',e=>{e.preventDefault();shoot();});
+document.getElementById('bag').addEventListener('touchstart',e=>{e.preventDefault();openBag();});
+document.getElementById('pick').addEventListener('touchstart',e=>{e.preventDefault();doPick();});
+
+let nearLoot=null;
+function doPick(){if(nearLoot){bag[nearLoot.type]++;scene.remove(nearLoot.mesh);loots.splice(loots.indexOf(nearLoot),1);nearLoot=null;renderBag();flashHit('#5ef0ff','+1');}}
+
+// 背包
+const bagPanel=document.getElementById('bagPanel'),grid=document.getElementById('grid'),capEl=document.getElementById('cap');
+function openBag(){bagPanel.style.display='flex';renderBag();}
+window.closeBag=()=>bagPanel.style.display='none';
+function renderBag(){let n=0;grid.innerHTML='';for(const k in bagMeta){if(bag[k]>0){n++;const s=document.createElement('div');s.className='slot';s.innerHTML=`<div class="ic">${bagMeta[k].ic}</div><div class="nm">${bagMeta[k].nm}</div><div class="ct">x${bag[k]}</div>`;grid.appendChild(s);}}capEl.textContent=n;}
+
+// HUD
+const hpEl=document.getElementById('hp'),amEl=document.getElementById('am'),hpt=document.getElementById('hpt'),amt=document.getElementById('amt'),killsEl=document.getElementById('kills'),enemyN=document.getElementById('enemyN'),hitEl=document.getElementById('hit'),pickEl=document.getElementById('pick');
+function updateHUD(){hpEl.style.width=Math.max(0,P.hp)+'%';amEl.style.width=(P.am/P.amMax*100)+'%';hpt.textContent='HP '+Math.ceil(P.hp);amt.textContent='弹药 '+P.am;killsEl.textContent=P.kills;enemyN.textContent=enemies.length;}
+let hitT=0;function flashHit(c='#ff6b6b',t='命中！'){hitEl.style.color=c;hitEl.textContent=t;hitEl.style.opacity=1;hitT=performance.now()+250;}
+
+// 主循环
+let started=false,last=performance.now();
+function loop(){
+  requestAnimationFrame(loop);
+  const now=performance.now(),dt=Math.min(0.05,(now-last)/1000);last=now;
+  if(started&&P.alive){
+    // 移动
+    const fwd=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw));
+    const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
+    const move=new THREE.Vector3();
+    move.addScaledVector(fwd,-my);move.addScaledVector(right,mx);
+    if(move.length()>1)move.normalize();
+    camera.position.addScaledVector(move,4.5*dt);
+    camera.position.y=1.7;
+    camera.position.x=Math.max(-118,Math.min(118,camera.position.x));
+    camera.position.z=Math.max(-118,Math.min(118,camera.position.z));
+    camera.rotation.set(pitch,yaw,0,'YXZ');
+    // 敌人
+    for(const e of enemies){const dx=camera.position.x-e.root.position.x,dz=camera.position.z-e.root.position.z;const l=Math.hypot(dx,dz);if(l>0.1){e.root.position.x+=dx/l*e.sp*dt;e.root.position.z+=dz/l*e.sp*dt;e.root.rotation.y=Math.atan2(dx,dz);}if(e.mixer)e.mixer.update(dt);if(l<2&&now-e._dmg>700){P.hp-=6;e._dmg=now;updateHUD();}}
+    // 换弹
+    if(P.reloadAt&&now>P.reloadAt){P.am=P.amMax;P.reloadAt=0;updateHUD();}
+    // 物资
+    nearLoot=null;let bd=2.4;for(const l of loots){l.mesh.rotation.y+=dt*1.5;const d=Math.hypot(camera.position.x-l.mesh.position.x,camera.position.z-l.mesh.position.z);if(d<bd){bd=d;nearLoot=l;}}
+    pickEl.style.display=nearLoot?'block':'none';
+    if(hitT&&now>hitT){hitEl.style.opacity=0;hitT=0;}
+    if(P.hp<=0){P.alive=false;die(false);}
+    if(enemies.length===0)die(true);
+  }
+  renderer.render(scene,camera);
+}
+function die(win){document.getElementById('dead').style.display='flex';document.getElementById('deadT').textContent=win?'🎖 任务完成':'💀 阵亡';document.getElementById('deadS').textContent='击杀 '+P.kills;}
+
+function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);}
+addEventListener('resize',resize);resize();
+
+document.getElementById('startBtn').addEventListener('click',()=>{
+  document.getElementById('start').style.display='none';
+  if(!started){/* 等待模型 */const t=setInterval(()=>{if(started){clearInterval(t);loop();}},200);}
+  else loop();
+});
+// 若模型已加载完，直接进入循环由 start 触发
+let _guard=setInterval(()=>{if(started&&document.getElementById('start').style.display==='none'&&!window._loopStarted){window._loopStarted=true;loop();clearInterval(_guard);}},300);
+</script>
+</body>
+</html>
