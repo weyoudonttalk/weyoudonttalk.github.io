@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>机甲激战3D · MIUI STUDIO</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:#04060a;overflow:hidden;font-family:-apple-system,"PingFang SC",sans-serif;user-select:none}
+  #wrap{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center}
+  canvas{background:radial-gradient(circle at 50% 40%,#15233a,#04060a);display:block;touch-action:none}
+  #hud{position:absolute;top:10px;left:12px;color:#cfe;font-size:14px;text-shadow:0 1px 2px #000;line-height:1.6}
+  #hud b{color:#5ef0ff}
+  #tip{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#9ab;font-size:12px;text-shadow:0 1px 2px #000}
+  #over{position:absolute;inset:0;background:rgba(0,0,0,.82);display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center}
+  #over h1{font-size:28px;margin-bottom:8px}
+  #over button{margin-top:16px;padding:10px 26px;border:0;border-radius:24px;background:linear-gradient(135deg,#00d4ff,#7b5cff);color:#fff;font-size:16px;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c"></canvas>
+  <div id="hud"></div>
+  <div id="tip">WASD 移动 · 鼠标瞄准 · 点击/空格射击 · 驾驶机甲清场</div>
+  <div id="over"><h1 id="ot"></h1><div id="os"></div><button onclick="restart()">重新出击</button></div>
+</div>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+let W,H;function resize(){W=cv.width=Math.min(innerWidth,900);H=cv.height=Math.min(innerHeight,640);}resize();addEventListener('resize',resize);
+const keys={},mouse={x:W/2,y:H/2};
+addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key===' ')shoot();});
+addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+cv.addEventListener('mousemove',e=>{const r=cv.getBoundingClientRect();mouse.x=e.clientX-r.left;mouse.y=e.clientY-r.top;});
+cv.addEventListener('mousedown',()=>shoot());
+cv.addEventListener('touchstart',e=>{const t=e.touches[0],r=cv.getBoundingClientRect();mouse.x=t.clientX-r.left;mouse.y=t.clientY-r.top;shoot();},{passive:true});
+let mech,bullets,foes,score,alive,last;
+function restart(){mech={x:W/2,y:H/2,r:18,hp:120,ang:0,sp:3.4};bullets=[];foes=[];score=0;alive=true;last=0;for(let i=0;i<6;i++)foe();}
+function foe(){let x,y;do{x=Math.random()*W;y=Math.random()*H;}while(Math.hypot(x-mech.x,y-mech.y)<180);foes.push({x,y,r:15,hp:40,sp:1+Math.random()});}
+function shoot(){if(!alive||performance.now()-last<120)return;last=performance.now();bullets.push({x:mech.x,y:mech.y,a:mech.ang,sp:11,dmg:18});}
+function loop(){
+  if(!alive){requestAnimationFrame(loop);return;}
+  let dx=0,dy=0;if(keys['w']||keys['arrowup'])dy-=1;if(keys['s']||keys['arrowdown'])dy+=1;if(keys['a']||keys['arrowleft'])dx-=1;if(keys['d']||keys['arrowright'])dx+=1;
+  if(dx||dy){const l=Math.hypot(dx,dy);mech.x+=dx/l*mech.sp;mech.y+=dy/l*mech.sp;}
+  mech.x=Math.max(mech.r,Math.min(W-mech.r,mech.x));mech.y=Math.max(mech.r,Math.min(H-mech.r,mech.y));
+  mech.ang=Math.atan2(mouse.y-mech.y,mouse.x-mech.x);
+  for(const b of bullets){b.x+=Math.cos(b.a)*b.sp;b.y+=Math.sin(b.a)*b.sp;}
+  bullets=bullets.filter(b=>b.x>=-10&&b.x<=W+10&&b.y>=-10&&b.y<=H+10);
+  for(const f of foes){const a=Math.atan2(mech.y-f.y,mech.x-f.x);f.x+=Math.cos(a)*f.sp;f.y+=Math.sin(a)*f.sp;if(Math.hypot(f.x-mech.x,f.y-mech.y)<f.r+mech.r)mech.hp-=0.5;}
+  for(const b of bullets)for(const f of foes)if(Math.hypot(b.x-f.x,b.y-f.y)<f.r){f.hp-=b.dmg;b.dead=true;}
+  bullets=bullets.filter(b=>!b.dead);for(const f of foes)if(f.hp<=0){f.dead=true;score+=10;foe();}foes=foes.filter(f=>!f.dead);
+  if(mech.hp<=0){alive=false;over(false);}if(foes.length===0)over(true);
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#ff4d6d';for(const f of foes){ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,7);ctx.fill();}
+  ctx.fillStyle='#5ef0ff';for(const b of bullets){ctx.beginPath();ctx.arc(b.x,b.y,3.5,0,7);ctx.fill();}
+  ctx.save();ctx.translate(mech.x,mech.y);ctx.rotate(mech.ang);
+  ctx.fillStyle='#3a86ff';ctx.beginPath();ctx.arc(0,0,mech.r,0,7);ctx.fill();
+  ctx.fillStyle='#aee8ff';ctx.fillRect(0,-5,mech.r+14,10);ctx.fillStyle='#5ef0ff';ctx.beginPath();ctx.arc(mech.r+6,0,4,0,7);ctx.fill();
+  ctx.restore();
+  document.getElementById('hud').innerHTML='<b>HP '+Math.max(0,Math.ceil(mech.hp))+'</b> &nbsp; 击毁 <b>'+score/10+'</b> &nbsp; 残敌 <b>'+foes.length+'</b>';
+  requestAnimationFrame(loop);
+}
+function over(win){const o=document.getElementById('over');o.style.display='flex';document.getElementById('ot').textContent=win?'🤖 机甲凯旋':'💥 机甲损毁';document.getElementById('os').textContent='击毁 '+score/10;}
+restart();loop();
+</script>
+</body>
+</html>
