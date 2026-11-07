@@ -17,12 +17,23 @@
   #steer{position:fixed;inset:0;z-index:5;pointer-events:auto}
   /* 加速按钮 */
   #gas{position:fixed;right:22px;bottom:max(80px,calc(env(safe-area-inset-bottom) + 80px));width:96px;height:96px;border-radius:50%;background:radial-gradient(circle,#ffd166,#d98324);border:3px solid #fff3;z-index:7;pointer-events:auto;display:flex;align-items:center;justify-content:center;color:#5a3a00;font-size:16px;font-weight:800;box-shadow:0 4px 16px #0008}
-  /* 开始/结束 */
+  /* 加载动画 + 真实进度条 */
   #start{position:fixed;inset:0;background:#04060a;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#dfe;text-align:center;padding:0 24px}
-  #start h1{font-size:30px;color:#5ef0ff;letter-spacing:3px;margin-bottom:10px}
-  #start p{font-size:13px;color:#9ab;line-height:2}
-  #start button{margin-top:24px;padding:14px 40px;border:0;border-radius:28px;background:linear-gradient(135deg,#7b5cff,#00d4ff);color:#fff;font-size:17px}
-  #loadbar{margin-top:16px;font-size:12px;color:#5ef0ff}
+  #start h1{font-size:28px;color:#5ef0ff;letter-spacing:3px;margin-bottom:12px}
+  .cube-wrap{width:90px;height:90px;perspective:420px;margin:4px 0 20px}
+  .cube{width:100%;height:100%;position:relative;transform-style:preserve-3d;animation:spin 3.4s linear infinite}
+  .cube div{position:absolute;width:90px;height:90px;background:rgba(91,140,255,.16);border:2px solid #5b8cff;box-shadow:0 0 18px #5b8cff55 inset}
+  .cube .f1{transform:translateZ(45px)}.cube .f2{transform:rotateY(180deg) translateZ(45px)}
+  .cube .f3{transform:rotateY(90deg) translateZ(45px)}.cube .f4{transform:rotateY(-90deg) translateZ(45px)}
+  .cube .f5{transform:rotateX(90deg) translateZ(45px)}.cube .f6{transform:rotateX(-90deg) translateZ(45px)}
+  @keyframes spin{0%{transform:rotateX(-20deg) rotateY(0)}100%{transform:rotateX(-20deg) rotateY(360deg)}}
+  #pct{font-size:22px;font-weight:800;color:#5ef0ff;margin-top:6px}
+  #bar{width:min(300px,78vw);height:14px;border:1px solid #5ef0ff66;border-radius:10px;overflow:hidden;background:#0009;margin-top:10px}
+  #barfill{height:100%;width:0;background:linear-gradient(90deg,#7b5cff,#00d4ff);transition:width .2s}
+  #lmsg{font-size:12px;color:#9ab;margin-top:8px;min-height:16px}
+  #startBtn{margin-top:22px;padding:14px 40px;border:0;border-radius:28px;background:linear-gradient(135deg,#7b5cff,#00d4ff);color:#fff;font-size:17px;cursor:pointer;opacity:.4;pointer-events:none;transition:opacity .3s}
+  #startBtn.on{opacity:1;pointer-events:auto}
+
   #over{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:60;display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center}
   #over h1{font-size:34px;color:#ff6b6b;margin-bottom:8px}
   #over button{margin-top:20px;padding:12px 30px;border:0;border-radius:24px;background:linear-gradient(135deg,#7b5cff,#00d4ff);color:#fff;font-size:16px}
@@ -40,13 +51,11 @@
 
 <div id="start">
   <h1>极速赛车</h1>
-  <p>真实 3D 赛车 · 法拉利车模<br><br>
-  📱 手机操作：<br>
-  按住屏幕<b>左半边</b>向左变道 · <b>右半边</b>向右变道<br>
-  右下「加速」按钮提速冲榜<br>
-  躲避迎面车流，里程越远分越高</p>
-  <button id="startBtn">开始竞速</button>
-  <div id="loadbar">正在加载赛车模型…</div>
+  <div class="cube-wrap"><div class="cube"><div class="f1"></div><div class="f2"></div><div class="f3"></div><div class="f4"></div><div class="f5"></div><div class="f6"></div></div></div>
+  <div id="pct">0%</div>
+  <div id="bar"><div id="barfill"></div></div>
+  <div id="lmsg">正在启动引擎…</div>
+  <button id="startBtn">加载中…</button>
 </div>
 
 <div id="over">
@@ -109,12 +118,14 @@ function prep(m){
   m.traverse(o=>{if(o.isMesh){o.castShadow=true;}});
 }
 function tint(m,col){m.traverse(o=>{if(o.isMesh&&o.material){const mm=o.material.clone();mm.color=new THREE.Color(col);o.material=mm;}});}
+const _bar=document.getElementById('barfill'),_pct=document.getElementById('pct'),_msg=document.getElementById('lmsg'),_btn=document.getElementById('startBtn');
+function _set(p){p=Math.max(0,Math.min(1,p));_bar.style.width=(p*100).toFixed(0)+'%';_pct.textContent=Math.floor(p*100)+'%';}
 loader.load('./models/ferrari.glb',g=>{
   playerCar=g.scene;prep(playerCar);scene.add(playerCar);
   for(let i=0;i<7;i++){const a=g.scene.clone(true);prep(a);tint(a,AICOL[i%AICOL.length]);scene.add(a);aiCars.push({m:a,active:false,z:0,x:0});}
-  document.getElementById('loadbar').textContent='加载完成';
+  _set(1);_msg.textContent='加载完成 · 准备就绪';_btn.classList.add('on');_btn.textContent='开始竞速';
   ready=true;
-},undefined,()=>{document.getElementById('loadbar').textContent='模型加载失败';});
+},xhr=>{if(xhr.total)_set(xhr.loaded/xhr.total);else _set(0.5);},()=>{_msg.textContent='模型加载失败';});
 
 const S={x:0,z:0,speed:18,dist:0,best:0,gas:false,steer:0,alive:true,started:false};
 const distEl=document.getElementById('d'),bestEl=document.getElementById('b'),spdEl=document.getElementById('spd');
