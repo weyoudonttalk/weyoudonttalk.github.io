@@ -119,13 +119,15 @@ function prep(m){
 }
 function tint(m,col){m.traverse(o=>{if(o.isMesh&&o.material){const mm=o.material.clone();mm.color=new THREE.Color(col);o.material=mm;}});}
 const _bar=document.getElementById('barfill'),_pct=document.getElementById('pct'),_msg=document.getElementById('lmsg'),_btn=document.getElementById('startBtn');
+let _real=0;const _startT=performance.now();
 function _set(p){p=Math.max(0,Math.min(1,p));_bar.style.width=(p*100).toFixed(0)+'%';_pct.textContent=Math.floor(p*100)+'%';}
+const _iv=setInterval(()=>{const fake=Math.min(0.9,(performance.now()-_startT)/22000);_set(Math.max(fake,_real));},150);
 loader.load('./models/ferrari.glb',g=>{
   playerCar=g.scene;prep(playerCar);scene.add(playerCar);
   for(let i=0;i<7;i++){const a=g.scene.clone(true);prep(a);tint(a,AICOL[i%AICOL.length]);scene.add(a);aiCars.push({m:a,active:false,z:0,x:0});}
-  _set(1);_msg.textContent='加载完成 · 准备就绪';_btn.classList.add('on');_btn.textContent='开始竞速';
+  clearInterval(_iv);_set(1);_msg.textContent='加载完成 · 准备就绪';_btn.classList.add('on');_btn.textContent='开始竞速';
   ready=true;
-},xhr=>{if(xhr.total)_set(xhr.loaded/xhr.total);else _set(0.5);},()=>{_msg.textContent='模型加载失败';});
+},xhr=>{if(xhr&&xhr.total)_real=xhr.loaded/xhr.total;},()=>{clearInterval(_iv);_msg.textContent='模型加载失败，请刷新重试';});
 
 const S={x:0,z:0,speed:18,dist:0,best:0,gas:false,steer:0,alive:true,started:false};
 const distEl=document.getElementById('d'),bestEl=document.getElementById('b'),spdEl=document.getElementById('spd');
