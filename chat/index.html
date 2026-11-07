@@ -57,17 +57,26 @@
 <!-- 设置弹窗 -->
 <div id="modal" class="modal" style="display:none">
   <div class="modalbox">
-    <h3>🤖 机器人设置（免费）</h3>
-    <p class="mtip">机器人由 <b>硅基流动（国内直连·免费额度）</b> 驱动，不用绑卡、不花钱。去 <a href="https://cloud.siliconflow.cn/i/QiVR5l2s" target="_blank" rel="noopener">cloud.siliconflow.cn</a> 用手机号/邮箱注册 → 左侧「API密钥」新建一个 → 粘到下面即可。默认已选好国内免费模型，不用改。</p>
-    <label>服务商</label>
+    <h3>🤖 机器人设置（全部后端任选）</h3>
+    <p class="mtip">选一个 AI 后端 → 填对应 Key（本地模型不用 Key）。开源/闭源都已接好：<br>
+    • <b>Kimi</b>：手机实名送15元，<a href="https://platform.moonshot.cn" target="_blank" rel="noopener">platform.moonshot.cn</a><br>
+    • <b>硅基流动</b>：含 DeepSeek/Qwen 免费，<a href="https://cloud.siliconflow.cn" target="_blank" rel="noopener">cloud.siliconflow.cn</a><br>
+    • <b>OpenRouter/Groq</b>：国外邮箱注册免费；<b>DeepSeek官方</b>需充值¥10<br>
+    • <b>本地模型</b>：零key零付费，但需电脑+支持WebGPU的浏览器</p>
+    <label>服务商（后端）</label>
     <select id="setProvider">
-      <option value="kimi">Kimi 月之暗面（国内·手机可实名·送15元）</option>
-      <option value="siliconflow">硅基流动（需电脑实名）</option>
-      <option value="openrouter">OpenRouter（国外·备用）</option>
+      <option value="kimi">Kimi 月之暗面（国内·手机实名·送15元）</option>
+      <option value="siliconflow">硅基流动（国内·含DeepSeek/Qwen免费）</option>
+      <option value="openrouter">OpenRouter（国外·多开源模型免费）</option>
+      <option value="groq">Groq（国外·不实名·飞快）</option>
+      <option value="deepseek">DeepSeek 官方（需充值¥10）</option>
+      <option value="local">🖥️ 本地模型 WebLLM（零key·需电脑）</option>
     </select>
-    <label>API Key（免费）</label>
-    <input id="setKey" placeholder="sk-..." autocomplete="off">
-    <label>模型（默认免费模型，不用改）</label>
+    <div id="keyRow">
+      <label>API Key（选本地模型则不用填）</label>
+      <input id="setKey" placeholder="sk-..." autocomplete="off">
+    </div>
+    <label>模型（默认已选好，不用改）</label>
     <select id="setModel"></select>
     <div id="setMsg" class="setmsg"></div>
     <div class="mrow">
