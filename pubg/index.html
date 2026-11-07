@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>吃鸡战场 · MIUI STUDIO</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:#0a0e14;overflow:hidden;font-family:-apple-system,"PingFang SC",sans-serif;user-select:none}
+  #wrap{position:relative;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center}
+  canvas{background:#1a2a1a;display:block;touch-action:none}
+  #hud{position:absolute;top:10px;left:12px;color:#cfe;font-size:14px;text-shadow:0 1px 2px #000;line-height:1.6}
+  #hud b{color:#7fffa0}
+  #tip{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#9ab;font-size:12px;text-shadow:0 1px 2px #000}
+  #over{position:absolute;inset:0;background:rgba(0,0,0,.78);display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center}
+  #over h1{font-size:30px;margin-bottom:8px}
+  #over button{margin-top:16px;padding:10px 26px;border:0;border-radius:24px;background:linear-gradient(135deg,#7b5cff,#00d4ff);color:#fff;font-size:16px;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c"></canvas>
+  <div id="hud"></div>
+  <div id="tip">WASD/方向键移动 · 鼠标瞄准 · 点击或空格射击 · 活到最后就吃鸡</div>
+  <div id="over"><h1 id="ot"></h1><div id="os"></div><button onclick="restart()">再来一局</button></div>
+</div>
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+let W,H;function resize(){W=cv.width=Math.min(innerWidth,900);H=cv.height=Math.min(innerHeight,640);}
+resize();addEventListener('resize',resize);
+const keys={},mouse={x:W/2,y:H/2,down:false};
+addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key===' ')shoot();});
+addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+cv.addEventListener('mousemove',e=>{const r=cv.getBoundingClientRect();mouse.x=e.clientX-r.left;mouse.y=e.clientY-r.top;});
+cv.addEventListener('mousedown',()=>shoot());
+cv.addEventListener('touchstart',e=>{const t=e.touches[0],r=cv.getBoundingClientRect();mouse.x=t.clientX-r.left;mouse.y=t.clientY-r.top;mouse.down=true;},{passive:true});
+cv.addEventListener('touchmove',e=>{const t=e.touches[0],r=cv.getBoundingClientRect();mouse.x=t.clientX-r.left;mouse.y=t.clientY-r.top;},{passive:true});
+
+let player,bullets,enemies,score,alive,lastShot;
+function restart(){
+  player={x:W/2,y:H/2,r:14,hp:100,ang:0,speed:3};
+  bullets=[];enemies=[];score=0;alive=true;lastShot=0;
+  document.getElementById('over').style.display='none';
+  for(let i=0;i<8;i++)spawnEnemy();
+}
+function spawnEnemy(){
+  let x,y;do{x=Math.random()*W;y=Math.random()*H;}while(Math.hypot(x-player.x,y-player.y)<160);
+  enemies.push({x,y,r:13,hp:30,speed:1+Math.random()*1.2,vx:0,vy:0});
+}
+function shoot(){
+  if(!alive||performance.now()-lastShot<180)return;
+  lastShot=performance.now();
+  bullets.push({x:player.x,y:player.y,a:player.ang,sp:9,dmg:12});
+}
+function loop(){
+  if(!alive){requestAnimationFrame(loop);return;}
+  // move
+  let dx=0,dy=0;
+  if(keys['w']||keys['arrowup'])dy-=1;
+  if(keys['s']||keys['arrowdown'])dy+=1;
+  if(keys['a']||keys['arrowleft'])dx-=1;
+  if(keys['d']||keys['arrowright'])dx+=1;
+  if(dx||dy){const l=Math.hypot(dx,dy);player.x+=dx/l*player.speed;player.y+=dy/l*player.speed;}
+  player.x=Math.max(player.r,Math.min(W-player.r,player.x));
+  player.y=Math.max(player.r,Math.min(H-player.r,player.y));
+  player.ang=Math.atan2(mouse.y-player.y,mouse.x-player.x);
+
+  // bullets
+  for(const b of bullets){b.x+=Math.cos(b.a)*b.sp;b.y+=Math.sin(b.a)*b.sp;}
+  bullets=bullets.filter(b=>b.x>=-10&&b.x<=W+10&&b.y>=-10&&b.y<=H+10);
+  // enemy ai
+  for(const e of enemies){
+    const a=Math.atan2(player.y-e.y,player.x-e.x);
+    e.x+=Math.cos(a)*e.speed;e.y+=Math.sin(a)*e.speed;
+    if(Math.hypot(e.x-player.x,e.y-player.y)<e.r+player.r){
+      player.hp-=0.4;
+    }
+  }
+  // hit
+  for(const b of bullets){for(const e of enemies){if(Math.hypot(b.x-e.x,b.y-e.y)<e.r){e.hp-=b.dmg;b.dead=true;}}}
+  bullets=bullets.filter(b=>!b.dead);
+  for(const e of enemies){if(e.hp<=0){e.dead=true;score+=10;spawnEnemy();}}
+  enemies=enemies.filter(e=>!e.dead);
+
+  if(player.hp<=0){alive=false;gameOver(false);}
+  if(enemies.length===0){alive=false;gameOver(true);}
+
+  // draw
+  ctx.clearRect(0,0,W,H);
+  // ground grid
+  ctx.strokeStyle='rgba(255,255,255,.05)';ctx.lineWidth=1;
+  for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  // enemies
+  for(const e of enemies){ctx.fillStyle='#e0556b';ctx.beginPath();ctx.arc(e.x,e.y,e.r,0,7);ctx.fill();}
+  // bullets
+  ctx.fillStyle='#ffe66d';for(const b of bullets){ctx.beginPath();ctx.arc(b.x,b.y,3,0,7);ctx.fill();}
+  // player
+  ctx.save();ctx.translate(player.x,player.y);ctx.rotate(player.ang);
+  ctx.fillStyle='#7fffa0';ctx.beginPath();ctx.arc(0,0,player.r,0,7);ctx.fill();
+  ctx.fillStyle='#cfffe0';ctx.fillRect(0,-3,player.r+10,6);ctx.restore();
+  // hud
+  document.getElementById('hud').innerHTML='<b>HP '+Math.max(0,Math.ceil(player.hp))+'</b> &nbsp; 击杀 <b>'+score/10+'</b> &nbsp; 残敌 <b>'+(enemies.length)+'</b>';
+  requestAnimationFrame(loop);
+}
+function gameOver(win){
+  const o=document.getElementById('over');o.style.display='flex';
+  document.getElementById('ot').textContent=win?'🍗 大吉大利，今晚吃鸡！':'💀 你倒下了';
+  document.getElementById('os').textContent='击杀数 '+score/10;
+}
+restart();loop();
+</script>
+</body>
+</html>
