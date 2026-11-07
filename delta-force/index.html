@@ -41,12 +41,23 @@
   .slot .ic{font-size:32px}.slot .nm{font-size:13px;margin-top:6px;color:#cde}.slot .ct{font-size:12px;color:#5ef0ff;margin-top:2px}
   .slot.e{opacity:.3}
   #bagPanel .close{margin-top:24px;padding:10px 30px;border:0;border-radius:24px;background:#1a2a44;color:#9cf;font-size:15px}
-  /* 加载/开场 */
+  /* 加载动画 + 真实进度条 */
   #start{position:fixed;inset:0;background:#04060a;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#dfe;text-align:center;padding:0 24px}
-  #start h1{font-size:30px;color:#5ef0ff;letter-spacing:3px;margin-bottom:10px}
-  #start p{font-size:13px;color:#9ab;line-height:2;max-width:420px}
-  #start button{margin-top:24px;padding:14px 40px;border:0;border-radius:28px;background:linear-gradient(135deg,#7b5cff,#00d4ff);color:#fff;font-size:17px;cursor:pointer}
-  #loadbar{margin-top:18px;font-size:12px;color:#5ef0ff}
+  #start h1{font-size:28px;color:#5ef0ff;letter-spacing:3px;margin-bottom:12px}
+  .cube-wrap{width:90px;height:90px;perspective:420px;margin:4px 0 20px}
+  .cube{width:100%;height:100%;position:relative;transform-style:preserve-3d;animation:spin 3.4s linear infinite}
+  .cube div{position:absolute;width:90px;height:90px;background:rgba(91,140,255,.16);border:2px solid #5b8cff;box-shadow:0 0 18px #5b8cff55 inset}
+  .cube .f1{transform:translateZ(45px)}.cube .f2{transform:rotateY(180deg) translateZ(45px)}
+  .cube .f3{transform:rotateY(90deg) translateZ(45px)}.cube .f4{transform:rotateY(-90deg) translateZ(45px)}
+  .cube .f5{transform:rotateX(90deg) translateZ(45px)}.cube .f6{transform:rotateX(-90deg) translateZ(45px)}
+  @keyframes spin{0%{transform:rotateX(-20deg) rotateY(0)}100%{transform:rotateX(-20deg) rotateY(360deg)}}
+  #pct{font-size:22px;font-weight:800;color:#5ef0ff;margin-top:6px}
+  #bar{width:min(300px,78vw);height:14px;border:1px solid #5ef0ff66;border-radius:10px;overflow:hidden;background:#0009;margin-top:10px}
+  #barfill{height:100%;width:0;background:linear-gradient(90deg,#7b5cff,#00d4ff);transition:width .2s}
+  #lmsg{font-size:12px;color:#9ab;margin-top:8px;min-height:16px}
+  #startBtn{margin-top:22px;padding:14px 40px;border:0;border-radius:28px;background:linear-gradient(135deg,#7b5cff,#00d4ff);color:#fff;font-size:17px;cursor:pointer;opacity:.4;pointer-events:none;transition:opacity .3s}
+  #startBtn.on{opacity:1;pointer-events:auto}
+
   #dead{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:60;display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center}
   #dead h1{font-size:34px;color:#ff6b6b;margin-bottom:8px}
   #dead button{margin-top:20px;padding:12px 30px;border:0;border-radius:24px;background:linear-gradient(135deg,#7b5cff,#00d4ff);color:#fff;font-size:16px}
@@ -81,13 +92,11 @@
 
 <div id="start">
   <h1>三角洲行动</h1>
-  <p>第一人称 3D 战术射击 · 真实建模<br><br>
-  📱 手机操作：<br>
-  左下角摇杆移动 · 右下区域滑动转视角<br>
-  红色「射击」按钮开火 · 右上🎒查看背包<br>
-  靠近发光物资点击拾取 · 清剿所有敌人获胜</p>
-  <button id="startBtn">进入战场</button>
-  <div id="loadbar">正在加载 3D 模型…</div>
+  <div class="cube-wrap"><div class="cube"><div class="f1"></div><div class="f2"></div><div class="f3"></div><div class="f4"></div><div class="f5"></div><div class="f6"></div></div></div>
+  <div id="pct">0%</div>
+  <div id="bar"><div id="barfill"></div></div>
+  <div id="lmsg">正在启动引擎…</div>
+  <button id="startBtn">加载中…</button>
 </div>
 
 <div id="dead">
@@ -131,14 +140,20 @@ const groundMat=new THREE.MeshStandardMaterial({color:0x4f6138,roughness:1});
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(240,240),groundMat);
 ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
 
-// 加载器
+// 加载器 + 真实进度条
 const loader=new GLTFLoader();
 const M={};let loaded=0,total=4;
-function done(k,g){M[k]=g;loaded++;document.getElementById('loadbar').textContent=`正在加载 3D 模型 ${loaded}/${total}`;if(loaded>=total)build();}
-loader.load('./models/Soldier.glb',g=>done('soldier',g),undefined,()=>done('soldier',null));
-loader.load('./models/rifle.glb',g=>done('rifle',g),undefined,()=>done('rifle',null));
-loader.load('./models/house.glb',g=>done('house',g),undefined,()=>done('house',null));
-loader.load('./models/supply.glb',g=>done('supply',g),undefined,()=>done('supply',null));
+const _files=[['Soldier.glb','soldier'],['rifle.glb','rifle'],['house.glb','house'],['supply.glb','supply']];
+const _prog=new Array(total).fill(0);
+const _bar=document.getElementById('barfill'),_pct=document.getElementById('pct'),_msg=document.getElementById('lmsg'),_btn=document.getElementById('startBtn');
+function _updateBar(){const p=_prog.reduce((a,b)=>a+b,0)/total;_bar.style.width=(p*100).toFixed(0)+'%';_pct.textContent=Math.floor(p*100)+'%';}
+function done(i,g){M[_files[i][1]]=g;loaded++;_prog[i]=1;_updateBar();if(loaded>=total)ready();}
+_files.forEach(([f,k],i)=>{
+  loader.load('./models/'+f,g=>done(i,g),
+    xhr=>{if(xhr.total){_prog[i]=xhr.loaded/xhr.total;_updateBar();}},
+    ()=>done(i,null));
+});
+function ready(){_prog.fill(1);_updateBar();_pct.textContent='100%';_msg.textContent='加载完成 · 准备就绪';_btn.classList.add('on');_btn.textContent='进入战场';build();}
 
 const P={hp:100,am:30,amMax:30,kills:0,alive:true,reloadAt:0,lastShot:0};
 const enemies=[],loots=[],houses=[];
@@ -146,7 +161,6 @@ const bag={med:0,ammo:0,armor:0,food:0};
 const bagMeta={med:{ic:'💊',nm:'医疗包'},ammo:{ic:'🔫',nm:'弹药包'},armor:{ic:'🛡️',nm:'护甲片'},food:{ic:'🍱',nm:'口粮'}};
 
 function build(){
-  document.getElementById('loadbar').textContent='加载完成';
   // 房屋
   if(M.house)for(let i=0;i<6;i++){const h=M.house.scene.clone();const s=1.4;h.scale.set(s,s,s);h.position.set((Math.random()-0.5)*150,(0), (Math.random()-0.5)*150);h.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});scene.add(h);houses.push(h);}
   // 武器挂相机
@@ -265,9 +279,9 @@ addEventListener('resize',resize);resize();
 
 window.__loopStarted=false;
 document.getElementById('startBtn').addEventListener('click',()=>{
+  if(!started)return;
   document.getElementById('start').style.display='none';
-  if(started && !window.__loopStarted){window.__loopStarted=true;loop();}
-  else if(!started){const t=setInterval(()=>{if(started&&!window.__loopStarted){clearInterval(t);window.__loopStarted=true;loop();}},200);}
+  if(!window.__loopStarted){window.__loopStarted=true;loop();}
 });
 </script>
 </body>
