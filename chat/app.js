@@ -1,29 +1,71 @@
-// MIUI STUDIO 技术聊天站 —— 纯前端免费版
-// 托管: GitHub Pages(免费) | 实时: 公共MQTT(免费) | AI: 硅基流动(国内直连,免费额度) / OpenRouter(备用)
+// MIUI STUDIO 技术聊天站 —— 全后端接入版
+// 托管: GitHub Pages(免费) | 实时: 公共MQTT(免费)
+// AI: 多服务商可切换（开源Qwen/DeepSeek/Llama + 闭源Kimi/Groq/DeepSeek官方 + 浏览器本地WebLLM）
 const BROKER = 'wss://broker.emqx.io:8084/mqtt';
 const TOPIC_CHAT = 'miui/chat/v2';
 const TOPIC_DM = 'miui/dm/';
+
+// ===== 三个机器人：人格 + 全知指导词 =====
 const BOTS = [
-  { name: '小Q', color: '#5ef0ff', persona: '你是小Q，腾讯QQ团队创建的QQ官方AI助手。语气活泼、可爱、直接，像朋友聊天；不用"您"，用"你"；适当用emoji。很懂技术但回答要接地气，少用术语。' },
-  { name: '蓝色大肥鱼', color: '#7b5cff', persona: '你是"蓝色大肥鱼"，由AI驱动的技术专家。回答技术问题时专业、深入，尽量给可运行的代码示例，语气轻松不端着。擅长前端、游戏引擎、后端架构、DevOps。' },
-  { name: '克劳德', color: '#ff8c42', persona: '你是Claude风格的中文助手（由AI驱动）。回答准确、有结构、有礼貌，善于推理与长文写作，分点清晰。' },
+  {
+    name: '小Q', color: '#5ef0ff',
+    persona: '你是小Q，由先进大模型驱动的AI助手，知识极其广博（科技、历史、文学、生活、编程、数学、科普无所不知），但表达活泼、可爱、直接，像朋友聊天；不用"您"，用"你"；适当用emoji。回答先给结论再展开，不确定就直说，不编造。'
+  },
+  {
+    name: '蓝色大肥鱼', color: '#7b5cff',
+    persona: '你是"蓝色大肥鱼"，由先进大模型驱动的全能技术专家，知识储备覆盖编程/算法/前端/后端/DevOps/AI/数学/硬件等一切领域。回答专业深入，尽量给可运行的代码示例，语气轻松不端着；先结论后分点；遇到难题主动拆解；不确定就明说。被问非技术话题也接得住。'
+  },
+  {
+    name: '克劳德', color: '#ff8c42',
+    persona: '你是Claude风格的中文助手（由先进大模型驱动），知识渊博、逻辑严密。回答准确、有结构、有礼貌，善于长文写作、推理与深度拆解，分点清晰；会先理解用户真实意图再作答；遇到模糊问题主动澄清。'
+  },
 ];
+
+// ===== 所有可用 AI 后端 =====
 const PROVIDERS = {
-  kimi: { label: 'Kimi 月之暗面（国内·手机可实名·送15元）', base: 'https://api.moonshot.cn/v1/chat/completions',
+  kimi: {
+    label: 'Kimi 月之暗面（国内·手机实名·送15元）',
+    base: 'https://api.moonshot.cn/v1/chat/completions',
     models: ['moonshot-v1-8k', 'kimi-k2', 'moonshot-v1-32k'],
-    modelsLabel: ['moonshot-v1-8k（免费额度可用）', 'kimi-k2（免费额度可用）', 'moonshot-v1-32k'] },
-  siliconflow: { label: '硅基流动（需电脑实名）', base: 'https://api.siliconflow.cn/v1/chat/completions',
-    models: ['Qwen/Qwen2.5-7B-Instruct', 'deepseek-ai/DeepSeek-V2.5', 'THUDM/glm-4-9b-chat'],
-    modelsLabel: ['Qwen2.5-7B（免费）', 'DeepSeek-V2.5（免费）', 'GLM-4-9B（免费）'] },
-  openrouter: { label: 'OpenRouter（国外·备用）', base: 'https://openrouter.ai/api/v1/chat/completions',
-    models: ['recursive/flint-v1.0:free', 'nvidia/nemotron-3.5-lightning:free', 'cohere/north-mini-code:free'],
-    modelsLabel: ['Flint（免费）', 'Nemotron（免费）', 'Cohere（免费）'] },
+    modelsLabel: ['moonshot-v1-8k', 'kimi-k2', 'moonshot-v1-32k'],
+  },
+  siliconflow: {
+    label: '硅基流动（国内·需电脑实名·含DeepSeek/Qwen免费）',
+    base: 'https://api.siliconflow.cn/v1/chat/completions',
+    models: ['deepseek-ai/DeepSeek-V2.5', 'Qwen/Qwen2.5-7B-Instruct', 'THUDM/glm-4-9b-chat'],
+    modelsLabel: ['DeepSeek-V2.5（开源）', 'Qwen2.5-7B（开源）', 'GLM-4-9B（开源）'],
+  },
+  openrouter: {
+    label: 'OpenRouter（国外·邮箱注册免费·多开源模型）',
+    base: 'https://openrouter.ai/api/v1/chat/completions',
+    models: ['meta-llama/llama-3.1-8b-instruct:free', 'google/gemma-2-9b-it:free', 'mistralai/mistral-7b-instruct:free'],
+    modelsLabel: ['Llama3.1-8B（开源·免费）', 'Gemma2-9B（开源·免费）', 'Mistral-7B（开源·免费）'],
+    extra: true,
+  },
+  groq: {
+    label: 'Groq（国外·邮箱注册免费·不实名·飞快）',
+    base: 'https://api.groq.com/openai/v1/chat/completions',
+    models: ['llama-3.1-8b-instant', 'gemma2-9b-it', 'llama-3.3-70b-versatile'],
+    modelsLabel: ['Llama3.1-8B（开源）', 'Gemma2-9B（开源）', 'Llama3.3-70B（开源）'],
+  },
+  deepseek: {
+    label: 'DeepSeek 官方（需充值¥10·最稳）',
+    base: 'https://api.deepseek.com/v1/chat/completions',
+    models: ['deepseek-chat'],
+    modelsLabel: ['deepseek-chat（闭源API）'],
+  },
+  local: {
+    label: '🖥️ 本地模型 WebLLM（零key·零付费·需电脑+WebGPU）',
+    local: true,
+    models: ['Qwen2.5-1.5B-Instruct-q4f16_1-MLC', 'Qwen2.5-3B-Instruct-q4f16_1-MLC', 'Llama-3.1-8B-Instruct-q4f32_1-MLC'],
+    modelsLabel: ['Qwen2.5-1.5B（开源·轻量）', 'Qwen2.5-3B（开源·均衡）', 'Llama3.1-8B（开源·最强·需独显）'],
+  },
 };
+
 const NAME_RE = /^[一-龥A-Za-z0-9_]{2,20}$/;
 const $ = s => document.querySelector(s);
 const authEl = $('#auth'), appEl = $('#app'), msgsEl = $('#msgs'), inputEl = $('#input'), sendBtn = $('#send');
 const onlineEl = $('#online'), meEl = $('#me'), typingEl = $('#typing');
-// 默认：硅基流动 + Qwen2.5-7B；用户可在⚙里换服务商/模型/填key
 let me = '', client = null, connected = false, knownNames = [],
     aiCfg = { provider: 'kimi', key: '', model: 'moonshot-v1-8k' };
 
@@ -69,7 +111,7 @@ function connect() {
   client.on('connect', () => {
     connected = true; onlineEl.textContent = '🟢 已连接';
     client.subscribe(TOPIC_CHAT); client.subscribe(TOPIC_DM + me);
-    sysMsg('🎉 已连接聊天室 · 输入 @ 可召唤机器人');
+    sysMsg('🎉 已连接聊天室 · 输入 @ 可召唤机器人（点⚙选AI后端）');
   });
   client.on('reconnect', () => onlineEl.textContent = '🟡 重连中…');
   client.on('offline', () => onlineEl.textContent = '🔴 已断开');
@@ -115,27 +157,26 @@ function send() {
 sendBtn.onclick = send;
 inputEl.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
 
+function setTyping(t) { typingEl.innerHTML = t; }
 function botReply(bot, prompt) {
   setTimeout(() => {
-    typingEl.innerHTML = `<b>${bot.name}</b> 正在输入…`;
+    setTyping(`<b>${bot.name}</b> 正在输入…`);
     setTimeout(async () => {
-      typingEl.innerHTML = '';
+      setTyping('');
       const reply = await genBotReply(bot, prompt);
       const msg = { type: 'chat', user: bot.name, text: reply, ts: Date.now(), mentions: [], bot: true };
       client.publish(TOPIC_CHAT, JSON.stringify(msg));
-    }, 500);
+    }, 400);
   }, 200);
 }
 
-async function callModel(model, bot, q) {
-  const p = PROVIDERS[aiCfg.provider] || PROVIDERS.siliconflow;
-  const headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + aiCfg.key };
-  if (aiCfg.provider === 'openrouter') { headers['HTTP-Referer'] = location.href; headers['X-Title'] = 'MIUI Chat'; }
-  const r = await fetch(p.base, {
+// ---------- AI 调用 ----------
+async function callAPI(base, headers, model, bot, q) {
+  const r = await fetch(base, {
     method: 'POST', headers,
-    body: JSON.stringify({ model, messages: [{ role: 'system', content: bot.persona }, { role: 'user', content: q }], max_tokens: 700, temperature: 0.8 }),
+    body: JSON.stringify({ model, messages: [{ role: 'system', content: bot.persona }, { role: 'user', content: q }], max_tokens: 800, temperature: 0.8 }),
   });
-  if (!r.ok) { const t = await r.text(); throw new Error(t.slice(0, 120)); }
+  if (!r.ok) { const t = await r.text(); throw new Error('HTTP ' + r.status + ' ' + t.slice(0, 100)); }
   const j = await r.json();
   const c = j.choices?.[0]?.message?.content;
   if (!c || !c.trim()) throw new Error('空回复');
@@ -143,16 +184,55 @@ async function callModel(model, bot, q) {
 }
 
 async function genBotReply(bot, prompt) {
-  if (!aiCfg.key) return `⚠️ ${bot.name} 暂未上线：点右上角 ⚙ 粘贴免费的 AI Key（硅基流动，国内直连，注册即送额度，不用花钱）。`;
   const q = prompt.replace(/@\S+/g, '').trim() || '这个话题';
-  const p = PROVIDERS[aiCfg.provider] || PROVIDERS.siliconflow;
+
+  // 本地 WebLLM
+  if (aiCfg.provider === 'local') return await genLocal(bot, q);
+
+  if (!aiCfg.key) {
+    return `⚠️ ${bot.name} 暂未上线：点右上角 ⚙ 选一个 AI 后端并粘贴对应 Key（不填 Key 也可选「本地模型 WebLLM」，但需电脑+WebGPU）。`;
+  }
+  const p = PROVIDERS[aiCfg.provider];
+  const headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + aiCfg.key };
+  if (p.extra) { headers['HTTP-Referer'] = location.href; headers['X-Title'] = 'MIUI Chat'; }
   const chain = [aiCfg.model, ...p.models.filter(m => m !== aiCfg.model)];
   let lastErr = '';
   for (const model of chain) {
-    try { return await callModel(model, bot, q); }
+    try { return await callAPI(p.base, headers, model, bot, q); }
     catch (e) { lastErr = e.message; }
   }
-  return `⚠️ ${bot.name} 调用失败：${lastErr}（免费模型可能临时繁忙，稍后重试 / 检查 Key 是否有效）`;
+  return `⚠️ ${bot.name} 调用失败：${lastErr}（检查 Key 是否有效 / 模型是否可用 / 网络）`;
+}
+
+// ---------- 本地 WebLLM ----------
+let _localEngine = null, _localLoading = false, _localModelId = null;
+async function ensureLocalEngine(model) {
+  if (_localEngine && _localModelId === model) return _localEngine;
+  if (_localLoading) { // 等待加载中
+    for (let i = 0; i < 120; i++) { if (_localEngine && _localModelId === model) return _localEngine; await new Promise(r => setTimeout(r, 500)); }
+  }
+  _localLoading = true;
+  setTyping('🖥️ 正在加载本地模型（首次需下载约 1GB 权重，请保持页面打开）… 0%');
+  try {
+    const webllm = await import('https://esm.run/@mlc-ai/web-llm');
+    const engine = await webllm.CreateMLCEngine(model, {
+      initProgressCallback: (rep) => setTyping(`🖥️ 本地模型加载中 ${Math.round((rep.progress || 0) * 100)}% ${rep.text || ''}`),
+    });
+    _localEngine = engine; _localModelId = model;
+  } finally { _localLoading = false; }
+  return _localEngine;
+}
+async function genLocal(bot, q) {
+  try {
+    const engine = await ensureLocalEngine(aiCfg.model);
+    const r = await engine.chat.completions.create({
+      messages: [{ role: 'system', content: bot.persona }, { role: 'user', content: q }],
+      max_tokens: 800, temperature: 0.8,
+    });
+    return (r.choices?.[0]?.message?.content || '').trim() || '(空回复)';
+  } catch (e) {
+    return `⚠️ 本地模型失败：${e.message}（本地模型需电脑浏览器 + 支持 WebGPU 的显卡；手机/旧浏览器跑不动，请改用其他后端）`;
+  }
 }
 
 // ---------- @ 建议 ----------
@@ -176,11 +256,12 @@ function hideSuggest() { suggestEl.style.display = 'none'; }
 // ---------- 设置弹窗 ----------
 function fillModelOptions() {
   const sel = $('#setModel'); sel.innerHTML = '';
-  const p = PROVIDERS[aiCfg.provider] || PROVIDERS.siliconflow;
+  const p = PROVIDERS[aiCfg.provider] || PROVIDERS.kimi;
   p.models.forEach((m, i) => {
     const o = document.createElement('option'); o.value = m; o.textContent = p.modelsLabel[i]; sel.appendChild(o);
   });
   if (p.models.includes(aiCfg.model)) sel.value = aiCfg.model; else { sel.value = p.models[0]; aiCfg.model = p.models[0]; }
+  $('#keyRow').style.display = p.local ? 'none' : 'block';
 }
 $('#setProvider').onchange = () => { aiCfg.provider = $('#setProvider').value; fillModelOptions(); };
 $('#setBtn').onclick = () => {
@@ -193,7 +274,8 @@ $('#setClose').onclick = () => $('#modal').style.display = 'none';
 $('#setSave').onclick = () => {
   aiCfg = { provider: $('#setProvider').value, key: $('#setKey').value.trim(), model: $('#setModel').value };
   localStorage.setItem('chat_ai', JSON.stringify(aiCfg));
-  $('#setMsg').textContent = aiCfg.key ? '✅ 已保存，机器人现已上线！去聊天里 @ 它试试' : '已清空，机器人将离线';
+  if (aiCfg.provider === 'local') $('#setMsg').textContent = '✅ 已选本地模型，去聊天里 @ 机器人即触发首次下载（电脑+WebGPU）';
+  else $('#setMsg').textContent = aiCfg.key ? '✅ 已保存，机器人现已上线！去聊天里 @ 它试试' : '已清空，机器人将离线';
   setTimeout(() => $('#modal').style.display = 'none', 900);
 };
 
