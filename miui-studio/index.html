@@ -214,8 +214,44 @@ footer .soc a:hover{color:var(--t)}
 
 #toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);padding:11px 24px;border-radius:18px;font-size:13px;font-weight:600;z-index:9999;background:#111a2e;color:#fff;box-shadow:0 8px 30px rgba(0,0,0,.5);opacity:0;transition:.3s;pointer-events:none;max-width:90vw;text-align:center}
 </style>
+<style>
+/* ===== COD4 全屏开屏 ===== */
+#splash{position:fixed;inset:0;z-index:9999;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center}
+#splash iframe{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100vw;height:56.25vw;min-height:100vh;min-width:177.78vh;border:0}
+#splash .scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.5),rgba(0,0,0,.12) 40%,rgba(0,0,0,.62));z-index:2}
+#splash .cnt{position:relative;z-index:3;text-align:center;padding:20px}
+#splash h1{font-size:clamp(30px,9vw,64px);font-weight:900;letter-spacing:6px;color:#fff;text-shadow:0 2px 24px #000,0 0 40px #ff6a3d55;animation:flick 5s infinite}
+@keyframes flick{0%,97%,100%{opacity:1}98%{opacity:.6}99%{opacity:.85}}
+#splash .sub{color:#ffb98a;font-size:clamp(13px,3.4vw,17px);letter-spacing:3px;margin:6px 0 26px;text-shadow:0 1px 6px #000}
+#splash .enter{padding:14px 50px;border:1px solid #ff8a4d;border-radius:30px;font-size:19px;font-weight:800;letter-spacing:2px;color:#fff;background:rgba(255,106,61,.18);backdrop-filter:blur(4px);cursor:pointer;box-shadow:0 0 30px #ff6a3d44;transition:.2s}
+#splash .enter:active{transform:scale(.96);background:rgba(255,106,61,.4)}
+#splash .orig{position:absolute;top:12px;right:12px;z-index:3;font-size:11px;color:#ff9a6a;text-decoration:none;background:#0008;padding:4px 10px;border-radius:8px}
+#splash .credit{position:absolute;bottom:12px;left:0;right:0;z-index:3;text-align:center;color:#caa;font-size:11px;text-shadow:0 1px 4px #000}
+#splash .fallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 45%,#1a1208,#000 75%);z-index:1}
+#splash .fallback .rings{position:relative;width:min(60vw,260px);height:min(60vw,260px)}
+#splash .fallback .rings b{position:absolute;border-radius:50%;border:2px solid transparent;left:50%;top:50%;transform:translate(-50%,-50%)}
+#splash .fallback .rings b:nth-child(1){width:100%;height:100%;margin:-50% 0 0 -50%;border-top-color:#ff6a3d;border-right-color:#ff6a3d;animation:r1 1.6s linear infinite;box-shadow:0 0 24px #ff6a3d55}
+#splash .fallback .rings b:nth-child(2){width:72%;height:72%;margin:-36% 0 0 -36%;border-bottom-color:#7b5cff;border-left-color:#7b5cff;animation:r2 2.3s linear infinite}
+#splash .fallback .rings b:nth-child(3){width:46%;height:46%;margin:-23% 0 0 -23%;border-top-color:#5ef0ff;border-bottom-color:#5ef0ff;animation:r1 1.1s linear infinite}
+#splash .fallback .ft{position:absolute;bottom:18%;width:100%;text-align:center;color:#ff9a6a;font-size:clamp(14px,4vw,20px);letter-spacing:4px;text-shadow:0 0 12px #ff6a3d}
+@keyframes r1{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes r2{to{transform:translate(-50%,-50%) rotate(-360deg)}}
+</style>
 </head>
 <body>
+<div id="splash">
+  <iframe id="splashVideo" src="https://player.bilibili.com/player.html?bvid=BV11s411s7Jd&page=1&high_quality=1&danmaku=0&autoplay=0&width=100%25&height=100%25" allowfullscreen="true" scrolling="no" frameborder="0" onerror="splashVideoFail()"></iframe>
+  <div class="fallback" id="splashFallback"><div class="rings"><b></b><b></b><b></b></div><div class="ft">将军南下 · 捉虫行动中…</div></div>
+  <div class="scrim"></div>
+  <a class="orig" href="https://www.bilibili.com/video/BV11s411s7Jd/" target="_blank" rel="noopener">原片↗</a>
+  <div class="cnt">
+    <h1>使命召唤 4</h1>
+    <div class="sub">MODERN WARFARE · 将军南下 · 捉虫行动</div>
+    <button class="enter" onclick="enterSite()">▶ 进入官网</button>
+  </div>
+  <div class="credit">开屏视频：B站 UP 主《使命召唤4全过场CG剪辑》· 仅供展示</div>
+</div>
+
 
 <div id="stars"></div>
 <audio id="siteBgm" src="wdt.mp3" loop preload="auto"></audio>
@@ -758,6 +794,10 @@ function copyGroup(){
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(g).then(ok,function(){toast('🐧 QQ群号：'+g);});}
   else{toast('🐧 QQ群号：'+g);}
 }
+</script>
+<script>
+function splashVideoFail(){var v=document.getElementById('splashVideo');if(v)v.style.display='none';var f=document.getElementById('splashFallback');if(f)f.style.display='flex';}
+function enterSite(){var s=document.getElementById('splash');if(s)s.style.display='none';}
 </script>
 </body>
 </html>
