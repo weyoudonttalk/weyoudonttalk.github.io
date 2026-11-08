@@ -219,13 +219,34 @@ footer .soc a:hover{color:var(--t)}
 </style>
 
 
+<style>
+/* ===== 技术讨论室启动过载动画 ===== */
+#techBoot{position:fixed;inset:0;z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;background:#02110b;overflow:hidden;font-family:system-ui,'PingFang SC','Microsoft YaHei',sans-serif}
+#techBoot.show{display:flex;animation:tbIn .25s ease-out}
+@keyframes tbIn{from{opacity:0}to{opacity:1}}
+#techBoot .glx{position:relative;width:240px;height:240px;background:url(assets/tech-glitch.png) center/contain no-repeat;animation:glHue 3.2s linear infinite}
+#techBoot .glx::before,#techBoot .glx::after{content:"";position:absolute;inset:0;background:url(assets/tech-glitch.png) center/contain no-repeat;mix-blend-mode:screen}
+#techBoot .glx::before{filter:drop-shadow(4px 0 #ff0044);animation:glA 1.6s steps(2,end) infinite}
+#techBoot .glx::after{filter:drop-shadow(-4px 0 #00fff0);animation:glB 1.9s steps(2,end) infinite}
+@keyframes glA{0%{clip-path:inset(0 0 0 0);transform:translate(0)}10%{clip-path:inset(20% 0 55% 0);transform:translate(-6px,2px)}20%{clip-path:inset(60% 0 10% 0);transform:translate(5px,-2px)}30%{clip-path:inset(0 0 0 0);transform:translate(0)}55%{clip-path:inset(40% 0 35% 0);transform:translate(-4px,0)}65%{clip-path:inset(0 0 0 0);transform:translate(0)}100%{clip-path:inset(0 0 0 0);transform:translate(0)}}
+@keyframes glB{0%{clip-path:inset(0 0 0 0);transform:translate(0)}15%{clip-path:inset(10% 0 70% 0);transform:translate(6px,-2px)}25%{clip-path:inset(75% 0 5% 0);transform:translate(-5px,2px)}35%{clip-path:inset(0 0 0 0);transform:translate(0)}60%{clip-path:inset(30% 0 45% 0);transform:translate(4px,0)}70%{clip-path:inset(0 0 0 0);transform:translate(0)}100%{clip-path:inset(0 0 0 0);transform:translate(0)}}
+@keyframes glHue{0%{filter:drop-shadow(0 0 22px rgba(0,255,140,.55)) hue-rotate(0)}50%{filter:drop-shadow(0 0 22px rgba(0,255,140,.7)) hue-rotate(25deg)}100%{filter:drop-shadow(0 0 22px rgba(0,255,140,.55)) hue-rotate(0)}}
+#techBoot .scan{position:absolute;inset:0;background:repeating-linear-gradient(to bottom,rgba(0,255,140,.08) 0 1px,transparent 1px 3px);pointer-events:none;animation:tbScan 6s linear infinite}
+@keyframes tbScan{from{background-position-y:0}to{background-position-y:120px}}
+#techBoot .tb-t{margin-top:26px;font-weight:800;font-size:20px;letter-spacing:3px;color:#aaffd5;text-shadow:2px 0 #ff0044,-2px 0 #00fff0;animation:tbTxt .9s steps(2,end) infinite}
+@keyframes tbTxt{0%{opacity:1;transform:translate(0)}48%{opacity:1;transform:translate(0)}50%{transform:translate(-3px,1px);opacity:.7}52%{transform:translate(3px,-1px);opacity:1}100%{transform:translate(0)}}
+#techBoot .tb-s{margin-top:8px;font-size:12px;letter-spacing:2px;color:#5fae8f}
+#techBoot .tb-bar{margin-top:18px;width:220px;height:4px;background:rgba(0,255,140,.15);border-radius:3px;overflow:hidden}
+#techBoot .tb-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#00ff8c,#00fff0);animation:tbLoad 2.4s ease forwards}
+@keyframes tbLoad{to{width:100%}}
+</style>
 </head>
 <body>
 
 
 
 <div id="stars"></div>
-<audio id="siteBgm" src="wdt.mp3" loop preload="auto"></audio>
+<audio id="siteBgm" src="assets/iphone3strikes.mp3" loop preload="auto"></audio>
 <div id="cursorGlow"></div>
 
 <!-- 启动动画 -->
@@ -389,6 +410,14 @@ footer .soc a:hover{color:var(--t)}
 <a href="ai-chat.html" id="aiFab" aria-label="AI助手">🤖<span class="lbl">跟小Q聊 AI</span></a>
 
 <!-- 聊天弹窗 -->
+<!-- 技术讨论室启动过载动画 -->
+<div id="techBoot">
+  <div class="glx"></div>
+  <div class="tb-t">系统过载 · SYSTEM OVERLOAD</div>
+  <div class="tb-s">TECH ROOM BOOTING…</div>
+  <div class="tb-bar"><i></i></div>
+  <div class="scan"></div>
+</div>
 <div class="chat-mask" id="chatMask">
   <div class="chat-modal">
     <div class="chat-head">
@@ -587,12 +616,20 @@ function closeChat(){
   document.body.style.overflow='';
 }
 function openTech(){
-  var f=document.getElementById('chatFrame');
-  f.setAttribute('src',CHAT_URL+'?room=tech');
-  var t=document.querySelector('.chat-head .ch-title');
-  if(t)t.innerHTML='💻 技术讨论室 <span class="ch-sub">AI小Q守护</span>';
-  document.getElementById('chatMask').classList.add('open');
   document.body.style.overflow='hidden';
+  var boot=document.getElementById('techBoot');
+  boot.classList.add('show');
+  var bar=boot.querySelector('.tb-bar i');
+  if(bar){bar.style.animation='none';void bar.offsetWidth;bar.style.animation='';}
+  clearTimeout(window._techBootT);
+  window._techBootT=setTimeout(function(){
+    boot.classList.remove('show');
+    var f=document.getElementById('chatFrame');
+    f.setAttribute('src',CHAT_URL+'?room=tech');
+    var t=document.querySelector('.chat-head .ch-title');
+    if(t)t.innerHTML='💻 技术讨论室 <span class="ch-sub">AI小Q守护</span>';
+    document.getElementById('chatMask').classList.add('open');
+  },2600);
 }
 document.getElementById('chatMask').addEventListener('click',function(e){if(e.target===this)closeChat();});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeChat();});
