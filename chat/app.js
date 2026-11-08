@@ -87,12 +87,6 @@ $('#go').onclick = () => {
   if (!u) { $('#aerr').textContent = '请填写用户名'; return; }
   if (!NAME_RE.test(u)) { $('#aerr').textContent = '用户名 2-20 位，仅限中英文/数字/下划线'; return; }
   if (BOTS.some(b => b.name === u)) { $('#aerr').textContent = '该名字是系统机器人，不能注册'; return; }
-  // 欢迎回来：本浏览器已登录的用户，一键进入免输密码（不会串号到其他浏览器）
-  if (quickEnter && u === savedMe) {
-    me = u; localStorage.setItem('chat_me', u);
-    const c = JSON.parse(localStorage.getItem('chat_ai') || 'null'); if (c) aiCfg = c;
-    enter(); return;
-  }
   if (!p) { $('#aerr').textContent = '请填写密码'; return; }
   if (mode === 'reg') {
     if (loadUser(u)) { $('#aerr').textContent = '用户名已存在'; return; }
@@ -115,12 +109,23 @@ function enter() {
   meEl.textContent = '🙋 ' + me; connect();
 }
 function showWelcomeBack(name) {
-  quickEnter = true; mode = 'login';
+  mode = 'login';
   document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
   const lt = document.querySelector('.tab[data-tab="login"]'); if (lt) lt.classList.add('on');
   $('#go').textContent = '进入聊天室';
   const w = document.getElementById('welcome');
-  if (w) { w.style.display = 'block'; w.innerHTML = '👋 欢迎回来 <b>' + escapeHtml(name) + '</b> · <a href="#" id="switchAcc">换个账号</a>'; }
+  if (w) {
+    w.style.display = 'block';
+    w.innerHTML = '👋 欢迎回来 <b>' + escapeHtml(name) + '</b><br>' +
+      '<button type="button" id="quickEnterBtn" class="wb-btn">⚡ 一键进入（本设备已记住）</button> · ' +
+      '<a href="#" id="switchAcc">用别的号登录</a>';
+    const qb = document.getElementById('quickEnterBtn');
+    if (qb) qb.onclick = (e) => { e.preventDefault();
+      me = name; localStorage.setItem('chat_me', name);
+      const c = JSON.parse(localStorage.getItem('chat_ai') || 'null'); if (c) aiCfg = c;
+      enter();
+    };
+  }
   const sw = document.getElementById('switchAcc');
   if (sw) sw.onclick = (e) => { e.preventDefault(); localStorage.removeItem('chat_me'); location.reload(); };
 }

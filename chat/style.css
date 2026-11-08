@@ -71,3 +71,7 @@ header .right{display:flex;align-items:center;gap:8px;font-size:13px;color:#9fb0
 .welcome b{color:#5ef0ff}
 .welcome a{color:#ffd34d;text-decoration:none;border-bottom:1px dashed rgba(255,211,77,.6);margin-left:4px}
 .welcome a:hover{color:#fff}
+
+/* 欢迎回来「一键进入」按钮 */
+.welcome .wb-btn{margin-top:10px;padding:9px 18px;border:0;border-radius:20px;background:linear-gradient(135deg,#7b5cff,#00d4ff);color:#fff;font-weight:700;font-size:14px;cursor:pointer}
+.welcome .wb-btn:hover{filter:brightness(1.08)}

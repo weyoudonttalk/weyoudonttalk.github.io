@@ -247,6 +247,7 @@ footer .soc a:hover{color:var(--t)}
 
 <div id="stars"></div>
 <div id="cursorGlow"></div>
+<audio id="siteBgm" src="assets/bgm-3strikes.mp3" loop preload="auto" playsinline></audio>
 
 <!-- 启动动画 -->
 <div id="boot">
@@ -633,53 +634,18 @@ function openTech(){
 document.getElementById('chatMask').addEventListener('click',function(e){if(e.target===this)closeChat();});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeChat();});
 
-/* ===== 背景音乐：Web Audio 整曲预载 + 内存循环（无流式卡顿） ===== */
+/* ===== 背景音乐：原生播放器 + 首次交互起播 ===== */
 (function(){
-  var CTX=null, buf=null, src=null, gain=null, playing=false, loading=null;
-  var URL='assets/bgm-3strikes.mp3';
-  function ensureCtx(){
-    if(!CTX){ try{ CTX=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } }
-    if(CTX.state==='suspended'){ CTX.resume(); }
-    return CTX;
-  }
-  function load(){
-    if(buf) return Promise.resolve();
-    if(loading) return loading;
-    loading = fetch(URL).then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.arrayBuffer(); })
-      .then(function(ab){ return new Promise(function(res,rej){
-        ensureCtx(); if(!CTX){ rej(new Error('no ctx')); return; }
-        CTX.decodeAudioData(ab, function(b){ buf=b; res(); }, rej);
-      }); });
-    return loading;
-  }
-  function stop(){
-    if(src){ try{ src.stop(); }catch(e){} try{ src.disconnect(); }catch(e){} src=null; }
-    playing=false;
-  }
-  function start(){
-    ensureCtx();
-    if(!CTX) return Promise.reject(new Error('no ctx'));
-    if(!buf){ return load().then(start); }
-    if(src){ try{ src.stop(); }catch(e){} try{ src.disconnect(); }catch(e){} src=null; }
-    src=CTX.createBufferSource(); src.buffer=buf; src.loop=true;
-    gain=CTX.createGain(); gain.gain.value=0.85;
-    src.connect(gain).connect(CTX.destination);
-    src.start(0);
-    playing=true;
-    return Promise.resolve();
-  }
-  window.toggleBgm=function(force){
-    ensureCtx();
-    if(typeof force==='boolean'){ if(force) start(); else stop(); return; }
-    if(playing) stop(); else start();
-  };
-  // 首次用户交互后起播（满足浏览器自动播放策略）
-  function autoTry(){ start().catch(function(){}); document.removeEventListener('click',autoTry); document.removeEventListener('touchstart',autoTry); }
-  document.addEventListener('click',autoTry,{once:true});
-  document.addEventListener('touchstart',autoTry,{once:true});
-  // 兼容开发者面板里对 window._siteBgm.el 的调用
-  var shim={ get paused(){ return !playing; }, play:function(){ window.toggleBgm(true); }, pause:function(){ window.toggleBgm(false); } };
-  window._siteBgm={ el: shim };
+  var bgm=document.getElementById('siteBgm');
+  if(!bgm)return;
+  bgm.volume=0.85;
+  function tryPlay(){ var p=bgm.play(); if(p&&p.catch){ p.catch(function(){}); } }
+  function once(){ tryPlay(); document.removeEventListener('click',once); document.removeEventListener('touchstart',once); document.removeEventListener('keydown',once); }
+  document.addEventListener('click',once,{once:true});
+  document.addEventListener('touchstart',once,{once:true});
+  document.addEventListener('keydown',once,{once:true});
+  // 供开发者面板 / 其它逻辑调用
+  window._siteBgm={ el: bgm };
 })();
 
 /* ===== 互动彩蛋 + 开发者模式 ===== */
