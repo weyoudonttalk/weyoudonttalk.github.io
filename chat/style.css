@@ -65,3 +65,9 @@ header .right{display:flex;align-items:center;gap:8px;font-size:13px;color:#9fb0
 .mrow button{flex:1;padding:11px;border:0;border-radius:10px;font-size:14px;font-weight:700}
 #setSave{background:linear-gradient(135deg,#7b5cff,#00d4ff);color:#fff}
 #setClose{background:#1a2540;color:#9fb0c8;border:1px solid #2a3a5a}
+
+/* 欢迎回来提示条 */
+.welcome{display:none;margin:0 0 14px;padding:10px 14px;border:1px solid rgba(94,240,255,.35);background:rgba(94,240,255,.08);border-radius:12px;font-size:13.5px;color:#cfe9ff;text-align:center}
+.welcome b{color:#5ef0ff}
+.welcome a{color:#ffd34d;text-decoration:none;border-bottom:1px dashed rgba(255,211,77,.6);margin-left:4px}
+.welcome a:hover{color:#fff}

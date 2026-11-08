@@ -1,7 +1,8 @@
 // MIUI STUDIO 技术聊天站 —— 全后端接入版
 // 托管: GitHub Pages(免费) | 实时: 公共MQTT(免费)
 // AI: 多服务商可切换（开源Qwen/DeepSeek/Llama + 闭源Kimi/Groq/DeepSeek官方 + 浏览器本地WebLLM）
-const BROKER = 'wss://broker.emqx.io:8084/mqtt';
+const BROKERS = ['wss://broker.emqx.io:8084/mqtt','wss://test.mosquitto.org:8081/mqtt','wss://broker.hivemq.com:8884/mqtt'];
+let brokerIdx = 0, everConnected = false;
 const TOPIC_CHAT = 'miui/chat/v2';
 const TOPIC_DM = 'miui/dm/';
 
@@ -68,21 +69,31 @@ const authEl = $('#auth'), appEl = $('#app'), msgsEl = $('#msgs'), inputEl = $('
 const onlineEl = $('#online'), meEl = $('#me'), typingEl = $('#typing');
 let me = '', client = null, connected = false, knownNames = [],
     aiCfg = { provider: 'kimi', key: '', model: 'moonshot-v1-8k' };
+let savedMe = null, quickEnter = false;
 
 // ---------- 账号 ----------
 let mode = 'login';
 document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
   document.querySelectorAll('.tab').forEach(x => x.classList.remove('on')); t.classList.add('on');
   mode = t.dataset.tab; $('#go').textContent = mode === 'login' ? '进入聊天室' : '注册并进入'; $('#aerr').textContent = '';
+  quickEnter = false; const w = document.getElementById('welcome'); if (w) w.style.display = 'none';
+  if (mode === 'reg') $('#au').value = '';
 });
 function sh(pw) { return Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b => b.toString(16).padStart(2, '0')).join('') + ':' + btoa(unescape(encodeURIComponent(pw))); }
 function check(pw, stored) { return sh(pw) === stored; }
 function loadUser(n) { try { return JSON.parse(localStorage.getItem('chat_user_' + n) || 'null'); } catch { return null; } }
 $('#go').onclick = () => {
   const u = $('#au').value.trim(), p = $('#ap').value; $('#aerr').textContent = '';
-  if (!u || !p) { $('#aerr').textContent = '请填写用户名和密码'; return; }
+  if (!u) { $('#aerr').textContent = '请填写用户名'; return; }
   if (!NAME_RE.test(u)) { $('#aerr').textContent = '用户名 2-20 位，仅限中英文/数字/下划线'; return; }
   if (BOTS.some(b => b.name === u)) { $('#aerr').textContent = '该名字是系统机器人，不能注册'; return; }
+  // 欢迎回来：本浏览器已登录的用户，一键进入免输密码（不会串号到其他浏览器）
+  if (quickEnter && u === savedMe) {
+    me = u; localStorage.setItem('chat_me', u);
+    const c = JSON.parse(localStorage.getItem('chat_ai') || 'null'); if (c) aiCfg = c;
+    enter(); return;
+  }
+  if (!p) { $('#aerr').textContent = '请填写密码'; return; }
   if (mode === 'reg') {
     if (loadUser(u)) { $('#aerr').textContent = '用户名已存在'; return; }
     if (p.length < 6) { $('#aerr').textContent = '密码至少 6 位'; return; }
@@ -96,30 +107,51 @@ $('#go').onclick = () => {
   const c = JSON.parse(localStorage.getItem('chat_ai') || 'null'); if (c) aiCfg = c;
   enter();
 };
-if (localStorage.getItem('chat_me')) { me = localStorage.getItem('chat_me'); $('#au').value = me; const c = JSON.parse(localStorage.getItem('chat_ai') || 'null'); if (c) aiCfg = c; }
+savedMe = localStorage.getItem('chat_me');
+if (savedMe) { $('#au').value = savedMe; showWelcomeBack(savedMe); }
 
 function enter() {
   authEl.style.display = 'none'; appEl.style.display = 'flex';
   meEl.textContent = '🙋 ' + me; connect();
 }
+function showWelcomeBack(name) {
+  quickEnter = true; mode = 'login';
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+  const lt = document.querySelector('.tab[data-tab="login"]'); if (lt) lt.classList.add('on');
+  $('#go').textContent = '进入聊天室';
+  const w = document.getElementById('welcome');
+  if (w) { w.style.display = 'block'; w.innerHTML = '👋 欢迎回来 <b>' + escapeHtml(name) + '</b> · <a href="#" id="switchAcc">换个账号</a>'; }
+  const sw = document.getElementById('switchAcc');
+  if (sw) sw.onclick = (e) => { e.preventDefault(); localStorage.removeItem('chat_me'); location.reload(); };
+}
 $('#logout').onclick = () => { if (client) try { client.end(true); } catch (e) {} localStorage.removeItem('chat_me'); location.reload(); };
 
-// ---------- MQTT ----------
+// ---------- MQTT（多服务器容灾，自动切换） ----------
 function connect() {
-  onlineEl.textContent = '🟡 连接中…';
-  client = mqtt.connect(BROKER, { clientId: 'miui_' + Math.random().toString(16).slice(2), clean: true, reconnectPeriod: 3000 });
+  if (brokerIdx >= BROKERS.length) brokerIdx = 0;
+  onlineEl.textContent = '🟡 连接中… (' + (brokerIdx + 1) + '/' + BROKERS.length + ')';
+  let settled = false;
+  try {
+    client = mqtt.connect(BROKERS[brokerIdx], { clientId: 'miui_' + Math.random().toString(16).slice(2), clean: true, reconnectPeriod: 3000 });
+  } catch (e) { nextBroker(); return; }
   client.on('connect', () => {
-    connected = true; onlineEl.textContent = '🟢 已连接';
+    connected = true; everConnected = true; onlineEl.textContent = '🟢 已连接';
     client.subscribe(TOPIC_CHAT); client.subscribe(TOPIC_DM + me);
     sysMsg('🎉 已连接聊天室 · 输入 @ 可召唤机器人（点⚙选AI后端）');
   });
-  client.on('reconnect', () => onlineEl.textContent = '🟡 重连中…');
+  client.on('reconnect', () => { if (!connected) onlineEl.textContent = '🟡 重连中…'; });
   client.on('offline', () => onlineEl.textContent = '🔴 已断开');
+  client.on('error', () => { if (!settled && !everConnected) { settled = true; try { client.end(true); } catch (_) {} nextBroker(); } });
   client.on('message', (topic, payload) => {
     let m; try { m = JSON.parse(payload.toString()); } catch { return; }
     if (topic === TOPIC_CHAT) addMsg(m);
     else if (topic === TOPIC_DM + me) showToast(`💬 ${m.from} 在聊天里 @ 了你`);
   });
+}
+function nextBroker() {
+  brokerIdx++;
+  if (brokerIdx >= BROKERS.length) { onlineEl.textContent = '🔴 所有消息服务器都连不上'; return; }
+  setTimeout(connect, 800);
 }
 function escapeHtml(s) { return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function renderText(text, mentions) {
@@ -285,4 +317,3 @@ function showToast(text) { const t = $('#toast'); t.textContent = text; t.classL
 let audioCtx = null;
 function beep() { try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'sine'; o.frequency.value = 880; g.gain.value = 0.06; o.start(); setTimeout(() => o.stop(), 140); } catch (e) {} }
 
-if (me) enter();
