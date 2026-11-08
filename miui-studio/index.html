@@ -834,5 +834,10 @@ function saveVid(blob){openDB().then(function(db){db.transaction('vid','readwrit
 function getVid(){return openDB().then(function(db){return new Promise(function(res){var tx=db.transaction('vid','readonly').objectStore('vid').get('splash');tx.onsuccess=function(){res(tx.result||null);};tx.onerror=function(){res(null);};});}).catch(function(){return null;});}
 document.addEventListener('DOMContentLoaded',function(){getVid().then(function(b){if(b){applyVideo(URL.createObjectURL(b),true);document.querySelector('#splash .clrvid').style.display='inline-block';}});});
 </script>
+
+<!-- 右下角剪辑区入口 -->
+<a href="clip.html" style="position:fixed;right:16px;bottom:16px;z-index:9998;display:flex;align-items:center;gap:6px;text-decoration:none;background:linear-gradient(135deg,#ff5ea8,#7b5cff);color:#fff;padding:11px 16px;border-radius:24px;font-size:14px;font-weight:700;box-shadow:0 8px 26px #7b5cff55;animation:fabpulse 2.4s ease-in-out infinite">✂ 剪辑区</a>
+<style>@keyframes fabpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}</style>
+
 </body>
 </html>
