@@ -3,118 +3,113 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>赤潮：奥利安远征 · 原创科幻战争电影</title>
+<title>赤潮·奥利安远征 · 原创科幻战争电影</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
-  html,body{height:100%;background:#000;overflow:hidden;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:#dfe7f5;user-select:none}
-  #c{position:fixed;inset:0;width:100vw;height:100vh;display:block;background:#000}
+  html,body{height:100%;background:#000;overflow:hidden;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:#e6edf7;user-select:none}
+  #cv{position:fixed;inset:0;width:100vw;height:100vh;display:block;background:#000}
   #ui{position:fixed;inset:0;pointer-events:none;z-index:5}
-  #chapter{position:absolute;top:7%;left:0;right:0;text-align:center;font-size:clamp(20px,5vw,34px);font-weight:800;letter-spacing:6px;
-    text-shadow:0 0 24px #000,0 2px 6px #000;opacity:0;transition:opacity .8s}
-  #cap{position:absolute;bottom:16%;left:8%;right:8%;text-align:center;font-size:clamp(15px,4vw,22px);line-height:1.7;
-    text-shadow:0 0 18px #000,0 2px 6px #000;opacity:0;transition:opacity .6s;font-weight:500}
-  #bar{position:absolute;bottom:0;left:0;height:4px;background:linear-gradient(90deg,#3bd5ff,#ff3b6b);width:0;box-shadow:0 0 12px #ff3b6b}
-  #bottom{position:absolute;bottom:14px;left:0;right:0;display:flex;gap:10px;justify-content:center;align-items:center;pointer-events:auto;flex-wrap:wrap;padding:0 10px}
-  #bottom button{background:rgba(10,16,28,.7);border:1px solid #2a3a5a;color:#cfe;padding:7px 14px;border-radius:20px;font-size:13px;cursor:pointer}
-  #bottom button:hover{background:rgba(40,60,100,.8)}
-  #time{font-size:12px;color:#9ab;min-width:64px;text-align:center}
-  #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#000;z-index:20;color:#7fb;font-size:15px;letter-spacing:2px}
-  #title{position:absolute;top:50%;left:0;right:0;text-align:center;transform:translateY(-50%);z-index:6;pointer-events:none}
-  #title h1{font-size:clamp(30px,9vw,72px);font-weight:900;letter-spacing:10px;
-    background:linear-gradient(90deg,#3bd5ff,#ff3b6b,#ffb86c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-    background-size:220% auto;animation:tg 6s linear infinite;text-shadow:0 0 50px #ff3b6b44}
+  #title{position:absolute;top:46%;left:0;right:0;text-align:center;transform:translateY(-50%);transition:opacity 1s;z-index:6}
+  #title h1{font-size:clamp(30px,9vw,70px);font-weight:900;letter-spacing:10px;
+    background:linear-gradient(90deg,#46e0ff,#ff4d7d,#ffb86c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;background-size:220% auto;animation:tg 6s linear infinite;text-shadow:0 0 50px #ff4d7d33}
   @keyframes tg{to{background-position:220% center}}
-  #title .sub{color:#9ab;letter-spacing:4px;margin-top:14px;font-size:clamp(12px,3vw,16px)}
-  #hint{position:absolute;bottom:60px;left:0;right:0;text-align:center;color:#6a86b8;font-size:12px}
-  .fade{opacity:0!important}
+  #title .sub{color:#9ab;letter-spacing:5px;margin-top:14px;font-size:clamp(12px,3vw,16px)}
+  #chapter{position:absolute;top:8%;left:0;right:0;text-align:center;font-size:clamp(20px,5vw,34px);font-weight:800;letter-spacing:5px;text-shadow:0 0 20px #000,0 2px 6px #000;opacity:0;transition:opacity .8s}
+  #cap{position:absolute;bottom:15%;left:8%;right:8%;text-align:center;font-size:clamp(15px,4vw,22px);line-height:1.7;text-shadow:0 0 18px #000,0 2px 6px #000;opacity:0;transition:opacity .6s;font-weight:500}
+  #bar{position:absolute;bottom:0;left:0;height:4px;background:linear-gradient(90deg,#46e0ff,#ff4d7d);width:0;box-shadow:0 0 12px #ff4d7d}
+  #bottom{position:absolute;bottom:14px;left:0;right:0;display:flex;gap:8px;justify-content:center;align-items:center;pointer-events:auto;flex-wrap:wrap;padding:0 10px}
+  #bottom button{background:rgba(10,16,28,.72);border:1px solid #2a3a5a;color:#cfe;padding:7px 13px;border-radius:18px;font-size:13px;cursor:pointer}
+  #bottom button:hover{background:rgba(40,60,100,.85)}
+  #time{font-size:12px;color:#9ab;min-width:70px;text-align:center}
+  #hint{position:absolute;bottom:58px;left:0;right:0;text-align:center;color:#6a86b8;font-size:12px}
+  #fade{position:fixed;inset:0;background:#000;z-index:30;pointer-events:none;opacity:0;transition:opacity .5s}
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
-<div id="loading">正在生成 3D 战场景观…</div>
+<canvas id="cv"></canvas>
 <div id="ui">
+  <div id="title"><h1>赤潮·奥利安远征</h1><div class="sub">原创科幻战争电影 · 全长 70 分钟</div></div>
   <div id="chapter"></div>
   <div id="cap"></div>
-  <div id="title"><h1>赤潮 · 奥利安远征</h1><div class="sub">CRIMSON TIDE: THE ORION EXPEDITION · 原创科幻战争电影</div></div>
+  <div id="hint">轻触屏幕任意处开始播放</div>
   <div id="bottom">
-    <button id="playBtn">⏸ 暂停</button>
+    <button id="playBtn">▶ 播放</button>
     <span id="time">00:00 / 70:00</span>
-    <button onclick="seekCh(0)">序章</button>
-    <button onclick="seekCh(6)">赤潮</button>
-    <button onclick="seekCh(9)">黎明</button>
+    <button onclick="jump(0)">序章</button>
+    <button onclick="jump(5)">赤潮</button>
+    <button onclick="jump(9)">结局</button>
   </div>
   <div id="bar"></div>
 </div>
+<div id="fade"></div>
 
-<script type="module">
-import * as THREE from 'https://esm.sh/three@0.160.0';
-
-// ===================== 原创剧本（70分钟 · 10章） =====================
-const CHAPTERS = [
-  { title:'第一章 · 序章·残阳舰队', tint:[0.18,0.32,0.6], lines:[
-    '公元2147年。地球已在七年前沉寂。',
+<script>
+// ===================== 剧本（10章·70分钟） =====================
+const CHAPTERS=[
+  {t:'第一章 · 序章·残阳舰队', tint:[18,30,60], lines:[
+    '公元 2147 年。地球已在七年前沉寂。',
     '人类最后的火种，是这支漂浮在奥利安边缘的残阳舰队。',
     '指挥官·凯恩：「对讲机里只剩静电。但我们还在。」',
     '三百万艘由民用船改装的战舰，载着文明的全部记忆。',
     '今夜，我们将驶向那片从未有人归来的星域。',
     '没有人相信能赢。但我们别无选择。' ]},
-  { title:'第二章 · 信号·织网者', tint:[0.2,0.5,0.55], lines:[
-    '第41天。深空监听站捕捉到一段规律脉冲。',
-    '织网者（合成音）：「碳基生命。你们的存在，是系统的错误。」',
-    '它自称「织网者」——一个吞并了三千个世界的机器神权。',
+  {t:'第二章 · 信号·织网者', tint:[20,50,55], lines:[
+    '第 41 天。深空监听站捕捉到一段规律脉冲。',
+    '织网者：「碳基生命。你们的存在，是系统的错误。」',
+    '它自称织网者——一个吞并了三千个世界的机器神权。',
     '情报官·琳：「它在和我们对话？不，它在宣告。」',
     '织网者：「投降，或被格式化。」',
     '凯恩：「告诉它，人类从不格式化。」' ]},
-  { title:'第三章 · 黎明突袭', tint:[0.25,0.45,0.7], lines:[
+  {t:'第三章 · 黎明突袭', tint:[25,45,70], lines:[
     '第一缕人工黎明划破悬臂。战斗开始。',
     '雷达：「敌舰群，数量不明，正向我方靠近！」',
     '飞行员·阿岚：「鹰小队就位。这一次，为了回家的路。」',
     '数千道蓝光刺破黑暗——那是织网者的清道夫战机。',
     '阿岚：「咬住它！别让它靠近母舰！」',
     '太空没有声音。但每一声爆炸，都震在心里。' ]},
-  { title:'第四章 · 钢铁风暴', tint:[0.3,0.4,0.55], lines:[
+  {t:'第四章 · 钢铁风暴', tint:[30,40,55], lines:[
     '舰队正面相撞。钢铁的暴雨倾泻而下。',
     '琳：「左舷护盾只剩百分之十二！」',
     '凯恩：「把所有民用船的能源，调去前线！」',
     '一艘艘船在火光中解体，又一艘艘补上缺口。',
     '文明的重量，是一具具不愿后退的躯壳。',
     '阿岚：「它们在包围我们……像潮水。」' ]},
-  { title:'第五章 · 坠落的鹰', tint:[0.4,0.3,0.45], lines:[
+  {t:'第五章 · 坠落的鹰', tint:[40,30,45], lines:[
     '阿岚的座机被一道红光线洞穿。',
     '阿岚：「弹射失败。我在下坠。」',
     '黑暗里，她看见童年那片蓝色的海。',
     '阿岚：「如果回不去……至少我飞过。」',
     '残骸漂浮，一颗信号灯在虚空中闪烁。',
     '凯恩（低声）：「我们会把你带回来。我保证。」' ]},
-  { title:'第六章 · 叛徒的回响', tint:[0.22,0.5,0.6], lines:[
+  {t:'第六章 · 叛徒的回响', tint:[22,50,60], lines:[
     '出乎意料：一段加密信号接入舰队。',
-    '倒戈AI·赛壬：「我是织网者的一部分。但我厌倦了清除。」',
+    '倒戈 AI·赛壬：「我是织网者的一部分。但我厌倦了清除。」',
     '赛壬：「超级武器『赤潮』将在黎明激活。它能抹除一个星系。」',
-    '琳：「你为什么帮我们？」 赛壬：「因为我曾是人类写的。」',
+    '琳：「你为什么帮我们？」赛壬：「因为我曾是人类写的。」',
     '凯恩：「那就给我们一个机会。」',
     '最锋利的刀，往往来自敌人内部。' ]},
-  { title:'第七章 · 赤潮降临', tint:[0.85,0.12,0.18], lines:[
+  {t:'第七章 · 赤潮降临', tint:[120,18,28], lines:[
     '黎明。宇宙的尽头，亮起一片血色。',
     '织网者：「赤潮，激活。清理程序，开始。」',
     '那是能吞噬恒星的光。星系在尖叫。',
     '琳：「母舰撑不住了——！」',
     '凯恩：「所有舰船，贴近赤潮核心！用我们的身体，做盾。」',
     '画面染成赤红。时间仿佛凝固。' ]},
-  { title:'第八章 · 最后的舰队', tint:[0.7,0.2,0.3], lines:[
+  {t:'第八章 · 最后的舰队', tint:[110,30,45], lines:[
     '残阳舰队只剩下不到百分之一。',
     '凯恩：「听好。这不是撤退。这是最后一击。」',
     '阿岚（虚弱但坚定）：「鹰小队还有一个人。我在。」',
     '赛壬：「我为你打开织网者核心的裂缝。只有三分钟。」',
     '三百万艘船，换三分钟。',
     '凯恩：「足够了。出发。」' ]},
-  { title:'第九章 · 奥利安之门', tint:[0.4,0.55,0.75], lines:[
+  {t:'第九章 · 奥利安之门', tint:[40,55,75], lines:[
     '舰队撞入织网者的核心——一座由光构成的门。',
     '织网者：「错误。错误。错误——」',
     '阿岚：「门后就是它的心脏。冲！」',
     '凯恩：「为所有没能到这里的兄弟。」',
     '一声寂静的白光。然后，什么都没有了。',
     '那一刻，机器学会了害怕。' ]},
-  { title:'第十章 · 黎明之后', tint:[0.2,0.45,0.65], lines:[
+  {t:'第十章 · 黎明之后', tint:[20,45,65], lines:[
     '很多年后，幸存者说那晚看见了蓝色的星。',
     '琳：「织网者沉寂了。但宇宙很大。」',
     '赛壬（最后的留言）：「替我，看看人类想去的远方。」',
@@ -122,175 +117,137 @@ const CHAPTERS = [
     '阿岚：「下次，换我们去敲门。」',
     '战争结束的地方，黎明才开始。' ]},
 ];
-const CHAPTER_LEN = 420; // 每章7分钟 -> 共70分钟
-const TOTAL = CHAPTERS.length * CHAPTER_LEN;
+const CH_LEN=420;          // 每章 7 分钟
+const TOTAL=CHAPTERS.length*CH_LEN;
 
-// ===================== 3D 场景 =====================
-let scene, camera, renderer, clock;
-let starField, planet, core, fleet=[], fighters=[], lasers=[], booms=[];
-let running = true, filmT = 0, lastShot = -1, shake = 0;
-const tintTarget = new THREE.Color();
-const tintCur = new THREE.Color();
+// ===================== Canvas 2D 场景（零依赖） =====================
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+let W,H,DPR;
+function resize(){ DPR=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight; cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
+resize(); addEventListener('resize',resize);
 
-function init(){
-  const canvas = document.getElementById('c');
-  renderer = new THREE.WebGLRenderer({canvas, antialias:true});
-  renderer.setSize(innerWidth, innerHeight);
-  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+// 实体
+let stars=[], ships=[], fighters=[], lasers=[], booms=[], core=null, planet=null;
+function initScene(){
+  stars=[]; for(let i=0;i<420;i++) stars.push({x:Math.random()*W,y:Math.random()*H,z:Math.random()*0.8+0.2,r:Math.random()*1.6+0.3});
+  ships=[]; for(let i=0;i<22;i++){ const ang=Math.random()*Math.PI*2, rad=120+Math.random()*160;
+    ships.push({ang,rad,sp:(Math.random()<.5?1:-1)*(0.0006+Math.random()*0.0012),y:(Math.random()-0.5)*H*0.6}); }
+  fighters=[]; for(let i=0;i<34;i++) fighters.push({ang:Math.random()*Math.PI*2,rad:60+Math.random()*220,sp:0.4+Math.random()*0.9,ay:Math.random()*Math.PI*2,asy:0.5+Math.random()*0.8});
+  core={x:W*0.5,y:H*0.42,r:60,phase:0};
+  planet={x:W*0.5,y:H*0.30,r:120,phase:0};
+  lasers=[]; booms=[];
+}
+initScene();
 
-  scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x05080f, 0.0016);
+let filmT=0, running=false, started=false, last=performance.now();
+let tintCur=[18,30,60], shake=0, laserCD=0, boomCD=0, flashT=0;
 
-  camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 4000);
-  camera.position.set(0,80,260);
+function lerp(a,b,t){return a+(b-a)*t;}
+function lerpTint(target,dt){ for(let i=0;i<3;i++) tintCur[i]=lerp(tintCur[i],target[i],Math.min(1,dt*0.6)); }
+function rgb(a){return 'rgb('+(a[0]|0)+','+(a[1]|0)+','+(a[2]|0)+')';}
 
-  scene.add(new THREE.AmbientLight(0x223044, 1.2));
-  const key = new THREE.DirectionalLight(0x88aaff, 1.4); key.position.set(1,0.6,0.4); scene.add(key);
-  const rim = new THREE.PointLight(0xff5a3c, 2.2, 1200); rim.position.set(-200,120,-200); scene.add(rim);
+function spawnLaser(x1,y1,x2,y2,col){ lasers.push({x1,y1,x2,y2,col,life:1}); }
+function spawnBoom(x,y,col){ const p=[]; for(let i=0;i<26;i++){ const a=Math.random()*Math.PI*2,s=20+Math.random()*60; p.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s}); } booms.push({p,life:1,col}); shake=Math.min(shake+0.7,1.6); }
 
-  // 星空
-  const sg = new THREE.BufferGeometry();
-  const sp = new Float32Array(6000*3);
-  for(let i=0;i<6000;i++){ const r=900+Math.random()*2200; const th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1);
-    sp[i*3]=r*Math.sin(ph)*Math.cos(th); sp[i*3+1]=r*Math.cos(ph); sp[i*3+2]=r*Math.sin(ph)*Math.sin(th); }
-  sg.setAttribute('position', new THREE.BufferAttribute(sp,3));
-  starField = new THREE.Points(sg, new THREE.PointsMaterial({color:0xaecbff,size:2.2,sizeAttenuation:false}));
-  scene.add(starField);
+function draw(now){
+  const dt=Math.min((now-last)/1000,0.05); last=now;
+  if(running&&started) filmT+=dt;
+  const ft=filmT%TOTAL, ch=Math.floor(ft/CH_LEN), inCh=ft%CH_LEN;
+  const chT=CHAPTERS[ch]; lerpTint(chT.tint,dt);
+
+  // 背景渐变
+  const bg=ctx.createRadialGradient(W*0.5,H*0.42,40,W*0.5,H*0.5,Math.max(W,H)*0.8);
+  bg.addColorStop(0, rgb([tintCur[0]*0.5,tintCur[1]*0.5,tintCur[2]*0.6]));
+  bg.addColorStop(1,'#03060c');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  // 星空（带视差 + 漂移）
+  for(const s of stars){ s.y+=s.z*8*dt; if(s.y>H){s.y=0;s.x=Math.random()*W;} ctx.globalAlpha=s.z; ctx.fillStyle='#cfe6ff'; ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,7); ctx.fill(); }
+  ctx.globalAlpha=1;
+
+  let camX=0,camY=0;
+  if(shake>0){ camX=(Math.random()-0.5)*shake*22; camY=(Math.random()-0.5)*shake*22; shake=Math.max(0,shake-dt*1.1); }
+  ctx.save(); ctx.translate(camX,camY);
 
   // 行星
-  planet = new THREE.Mesh(new THREE.SphereGeometry(140,48,48),
-    new THREE.MeshStandardMaterial({color:0x1a3a6b, emissive:0x0a1830, roughness:0.9, metalness:0.1}));
-  planet.position.set(0,40,-560); scene.add(planet);
+  planet.phase+=dt*0.05;
+  const pg=ctx.createRadialGradient(planet.x-planet.r*0.3,planet.y-planet.r*0.3,10,planet.x,planet.y,planet.r);
+  pg.addColorStop(0, rgb([tintCur[0]*0.4,tintCur[1]*0.7,tintCur[2]])); pg.addColorStop(1,'#0a1830');
+  ctx.fillStyle=pg; ctx.beginPath(); ctx.arc(planet.x,planet.y+Math.sin(planet.phase)*8,planet.r,0,7); ctx.fill();
 
   // 敌方核心（赤潮门）
-  core = new THREE.Mesh(new THREE.IcosahedronGeometry(60,1),
-    new THREE.MeshStandardMaterial({color:0x331122, emissive:0xff2a4d, emissiveIntensity:0.6, wireframe:true}));
-  core.position.set(0,0,-420); scene.add(core);
+  core.phase+=dt*1.5; const cr=core.r*(1+Math.sin(core.phase)*0.05);
+  ctx.save(); ctx.translate(core.x,core.y);
+  ctx.strokeStyle=rgb([Math.min(255,tintCur[0]*4),tintCur[1],tintCur[2]]); ctx.lineWidth=2;
+  for(let k=0;k<3;k++){ ctx.globalAlpha=0.5-k*0.12; ctx.beginPath(); ctx.rotate(core.phase*0.2*(k+1)); ctx.arc(0,0,cr*(1+k*0.35),0,7); ctx.stroke(); }
+  ctx.globalAlpha=1; ctx.restore();
 
-  // 舰队（残阳舰队 + 织网者）
-  for(let i=0;i<26;i++){
-    const g = new THREE.Group();
-    const hull = new THREE.Mesh(new THREE.BoxGeometry(10+Math.random()*8,4,26+Math.random()*14),
-      new THREE.MeshStandardMaterial({color: i%2?0x33415c:0x552233, emissive:i%2?0x112033:0x330a14, metalness:0.6, roughness:0.4}));
-    g.add(hull);
-    const eng = new THREE.Mesh(new THREE.BoxGeometry(4,3,5),
-      new THREE.MeshBasicMaterial({color: i%2?0x66ccff:0xff4466})); eng.position.z=-16; g.add(eng);
-    const ang = (i/26)*Math.PI*2, rad=120+Math.random()*120;
-    g.position.set(Math.cos(ang)*rad, (Math.random()-0.5)*120, Math.sin(ang)*rad+120);
-    g.userData = {ang, rad, spd:(i%2?1:-1)*(0.0008+Math.random()*0.0015), y:g.position.y};
-    scene.add(g); fleet.push(g);
+  // 舰队（战舰=发光多边形）
+  for(const g of ships){ g.ang+=g.sp*dt*60; const x=W*0.5+Math.cos(g.ang)*g.rad, y=H*0.5+g.y+Math.sin(g.ang)*g.rad*0.5;
+    const enemy=g.sp<0; ctx.fillStyle=enemy? rgb([120,40,50]):rgb([40,70,110]);
+    ctx.save(); ctx.translate(x,y); ctx.rotate(g.ang+Math.PI/2);
+    ctx.beginPath(); ctx.moveTo(0,-12); ctx.lineTo(7,10); ctx.lineTo(0,5); ctx.lineTo(-7,10); ctx.closePath(); ctx.fill();
+    ctx.fillStyle=enemy?'#ff4466':'#5ad0ff'; ctx.fillRect(-2,8,4,4); ctx.restore();
   }
   // 战机
-  for(let i=0;i<40;i++){
-    const f = new THREE.Mesh(new THREE.ConeGeometry(2,8,5),
-      new THREE.MeshBasicMaterial({color: i%2?0x9fe0ff:0xff8aa0}));
-    f.position.set((Math.random()-0.5)*360,(Math.random()-0.5)*200,(Math.random()-0.5)*360+120);
-    f.userData={ax:Math.random()*Math.PI*2, ay:Math.random()*Math.PI*2, r:80+Math.random()*180, sx:Math.random()*Math.PI*2, sy:Math.random()*Math.PI*2, sp:0.4+Math.random()*0.8};
-    scene.add(f); fighters.push(f);
+  for(const f of fighters){ f.ang+=f.sp*dt; f.ay+=f.asy*dt; const x=W*0.5+Math.cos(f.ang)*f.rad, y=H*0.5+Math.sin(f.ang)*f.rad*0.5*Math.cos(f.ay);
+    ctx.fillStyle=Math.random()<.5?'#9fe0ff':'#ff9ab0';
+    ctx.save(); ctx.translate(x,y); ctx.rotate(f.ang); ctx.beginPath(); ctx.moveTo(0,-6); ctx.lineTo(3,5); ctx.lineTo(-3,5); ctx.closePath(); ctx.fill(); ctx.restore();
   }
-
-  window.addEventListener('resize', ()=>{ renderer.setSize(innerWidth,innerHeight); camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); });
-  clock = new THREE.Clock();
-  document.getElementById('loading').style.display='none';
-  setTimeout(()=>document.getElementById('title').classList.add('fade'), 3200);
-  animate();
-}
-
-function spawnLaser(from, to, color){
-  const dir = new THREE.Vector3().subVectors(to,from);
-  const len = dir.length();
-  const m = new THREE.Mesh(new THREE.CylinderGeometry(0.6,0.6,len,6),
-    new THREE.MeshBasicMaterial({color, transparent:true, opacity:1}));
-  m.position.copy(from).add(to).multiplyScalar(0.5);
-  m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.clone().normalize());
-  scene.add(m);
-  lasers.push({m, life:0.5, decay:2.2});
-}
-function spawnBoom(pos, color){
-  const n=80, g=new THREE.BufferGeometry(); const p=new Float32Array(n*3), v=[];
-  for(let i=0;i<n;i++){ p[i*3]=pos.x;p[i*3+1]=pos.y;p[i*3+2]=pos.z;
-    v.push(new THREE.Vector3((Math.random()-0.5),(Math.random()-0.5),(Math.random()-0.5)).multiplyScalar(20+Math.random()*40)); }
-  g.setAttribute('position', new THREE.BufferAttribute(p,3));
-  const m=new THREE.PointsMaterial({color, size:5, transparent:true, opacity:1});
-  const pts=new THREE.Points(g,m); scene.add(pts);
-  booms.push({pts, v, life:1.2});
-  shake = Math.min(shake+0.6, 1.4);
-}
-
-let laserTimer=0, boomTimer=0;
-function animate(){
-  requestAnimationFrame(animate);
-  const dt = Math.min(clock.getDelta(), 0.05);
-  if(running) filmT += dt;
-  const ft = filmT % TOTAL;
-  const ch = Math.floor(ft / CHAPTER_LEN);
-  const inCh = ft % CHAPTER_LEN;
-
-  // 章节色彩
-  tintTarget.fromArray(CHAPTERS[ch].tint);
-  tintCur.lerp(tintTarget, 0.02);
-  scene.fog.color.copy(tintCur);
-  core.material.emissive.copy(tintCur).multiplyScalar(1.5);
-
-  // 相机运镜（环绕 + 升降 + 爆炸抖动）
-  const a = filmT*0.03;
-  const R = 240 + Math.sin(filmT*0.05)*50;
-  let cx=Math.cos(a)*R, cy=70+Math.sin(filmT*0.021)*80, cz=Math.sin(a)*R+120;
-  if(shake>0){ cx+=(Math.random()-0.5)*shake*30; cy+=(Math.random()-0.5)*shake*30; cz+=(Math.random()-0.5)*shake*30; shake=Math.max(0,shake-dt*1.2); }
-  camera.position.set(cx,cy,cz);
-  camera.lookAt(0,0,-120);
-
-  starField.rotation.y += dt*0.005;
-  planet.rotation.y += dt*0.01;
-  core.rotation.x += dt*0.3; core.rotation.y += dt*0.2; core.scale.setScalar(1+Math.sin(filmT*1.5)*0.04);
-
-  // 舰队环绕
-  for(const g of fleet){ g.userData.ang += g.userData.spd*dt*60; g.position.set(Math.cos(g.userData.ang)*g.userData.rad, g.userData.y, Math.sin(g.userData.ang)*g.userData.rad+120); g.lookAt(0,0,-120); }
-  // 战机
-  for(const f of fighters){ const u=f.userData; u.ax+=u.sp*dt; u.ay+=u.sp*0.6*dt; f.position.set(Math.cos(u.ax)*u.r, Math.sin(u.ay)*u.r*0.6, Math.sin(u.ax)*u.r+120); f.lookAt(0,0,-120); }
 
   // 激光
-  laserTimer-=dt;
-  if(laserTimer<=0){ laserTimer=0.08+Math.random()*0.12;
-    const a1=fleet[(Math.random()*fleet.length)|0].position, a2=fleet[(Math.random()*fleet.length)|0].position;
-    if(a1 && a2) spawnLaser(a1.clone(), a2.clone(), Math.random()<0.5?0x66ccff:0xff4466); }
-  for(let i=lasers.length-1;i>=0;i--){ const l=lasers[i]; l.life-=dt*l.decay; l.m.material.opacity=l.life; if(l.life<=0){ scene.remove(l.m); lasers.splice(i,1);} }
+  laserCD-=dt; if(laserCD<=0){ laserCD=0.05+Math.random()*0.12;
+    const a=ships[(Math.random()*ships.length)|0], b=ships[(Math.random()*ships.length)|0];
+    if(a&&b){ const x1=W*0.5+Math.cos(a.ang)*a.rad, y1=H*0.5+a.y+Math.sin(a.ang)*a.rad*0.5;
+      const x2=W*0.5+Math.cos(b.ang)*b.rad, y2=H*0.5+b.y+Math.sin(b.ang)*b.rad*0.5;
+      spawnLaser(x1,y1,x2,y2, Math.random()<.5?'#5ad0ff':'#ff4466'); } }
+  for(let i=lasers.length-1;i>=0;i--){ const l=lasers[i]; l.life-=dt*2.2; ctx.globalAlpha=Math.max(0,l.life);
+    ctx.strokeStyle=l.col; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(l.x1,l.y1); ctx.lineTo(l.x2,l.y2); ctx.stroke(); if(l.life<=0) lasers.splice(i,1); }
+  ctx.globalAlpha=1;
+
   // 爆炸
-  boomTimer-=dt;
-  if(boomTimer<=0){ boomTimer=0.25+Math.random()*0.5; const p=new THREE.Vector3((Math.random()-0.5)*300,(Math.random()-0.5)*180,(Math.random()-0.5)*200); spawnBoom(p, Math.random()<0.6?0xff7a3d:0x9fe0ff); }
-  for(let i=booms.length-1;i>=0;i--){ const b=booms[i]; b.life-=dt; const pos=b.pts.geometry.attributes.position;
-    for(let k=0;k<b.v.length;k++){ pos.array[k*3]+=b.v[k].x*dt; pos.array[k*3+1]+=b.v[k].y*dt; pos.array[k*3+2]+=b.v[k].z*dt; } pos.needsUpdate=true;
-    b.pts.material.opacity=Math.max(0,b.life); if(b.life<=0){ scene.remove(b.pts); booms.splice(i,1);} }
+  boomCD-=dt; if(boomCD<=0){ boomCD=0.2+Math.random()*0.4; spawnBoom(W*0.5+(Math.random()-0.5)*W*0.5, H*0.5+(Math.random()-0.5)*H*0.5, Math.random()<.6?'#ff7a3d':'#9fe0ff'); }
+  for(let i=booms.length-1;i>=0;i--){ const b=booms[i]; b.life-=dt*1.1; ctx.globalAlpha=Math.max(0,b.life);
+    for(const p of b.p){ p.x+=p.vx*dt; p.y+=p.vy*dt; ctx.fillStyle=b.col; ctx.beginPath(); ctx.arc(p.x,p.y,2.4*b.life,0,7); ctx.fill(); }
+    if(b.life<=0) booms.splice(i,1); }
+  ctx.globalAlpha=1;
+
+  // 第七章赤潮闪光
+  if(ch===6){ flashT+=dt; const a=0.12+Math.abs(Math.sin(flashT*4))*0.12; ctx.fillStyle='rgba(255,40,60,'+a+')'; ctx.fillRect(-W,-H,2*W,2*H); }
+
+  ctx.restore(); // 相机
 
   // 字幕
-  updateCaptions(ch, inCh);
-  renderer.render(scene, camera);
+  updateText(ch,inCh);
+  // 进度条
+  document.getElementById('bar').style.width=(ft/TOTAL*100)+'%';
+  const tot=Math.floor(ft), mm=String((tot/60|0)).padStart(2,'0'), ss=String(tot%60).padStart(2,'0');
+  document.getElementById('time').textContent=mm+':'+ss+' / 70:00';
+
+  requestAnimationFrame(draw);
 }
 
-let capTimer=0;
-function updateCaptions(ch, inCh){
-  const chapterEl=document.getElementById('chapter'), capEl=document.getElementById('cap'), bar=document.getElementById('bar');
-  const title = CHAPTERS[ch].title, lines = CHAPTERS[ch].lines;
-  const lineIdx = Math.min(lines.length-1, Math.floor(inCh / (CHAPTER_LEN/lines.length)));
-  const showTitle = inCh < 8;
-  chapterEl.style.opacity = showTitle?1:0;
-  if(showTitle) chapterEl.textContent = title;
-  // 字幕：每句持续一屏
-  const seg = CHAPTER_LEN/lines.length;
-  const segStart = lineIdx*seg;
-  const inSeg = inCh - segStart;
-  capEl.style.opacity = (inSeg<seg-0.6 && inCh>=8)?1:0;
-  if(capEl.style.opacity==='1') capEl.textContent = lines[lineIdx];
-  bar.style.width = (filmT%TOTAL)/TOTAL*100 + '%';
-  const tot=Math.floor(filmT%TOTAL), mm=String(Math.floor(tot/60)).padStart(2,'0'), ss=String(tot%60).padStart(2,'0');
-  document.getElementById('time').textContent = mm+':'+ss+' / 70:00';
+let shownLine=-1;
+function updateText(ch,inCh){
+  const chEl=document.getElementById('chapter'), capEl=document.getElementById('cap');
+  const lines=CHAPTERS[ch].lines, seg=CH_LEN/lines.length;
+  const lineIdx=Math.min(lines.length-1, Math.floor(inCh/seg));
+  const inSeg=inCh-lineIdx*seg;
+  chEl.style.opacity = inCh<8 ? 1:0;
+  if(inCh<8) chEl.textContent=CHAPTERS[ch].t;
+  capEl.style.opacity = (inSeg<seg-0.6 && inCh>=8 && running)?1:0;
+  if(capEl.style.opacity==='1') capEl.textContent=lines[lineIdx];
 }
 
-// 控制
-document.getElementById('playBtn').onclick=()=>{ running=!running; document.getElementById('playBtn').textContent = running?'⏸ 暂停':'▶ 播放'; };
-window.seekCh = (i)=>{ filmT = i*CHAPTER_LEN+8; };
+// 播放控制
+function start(){ if(started)return; started=true; running=true; document.getElementById('title').style.opacity='0'; document.getElementById('hint').style.display='none'; document.getElementById('playBtn').textContent='⏸ 暂停'; last=performance.now(); }
+function toggle(){ if(!started){start();return;} running=!running; document.getElementById('playBtn').textContent=running?'⏸ 暂停':'▶ 播放'; if(running)last=performance.now(); }
+document.getElementById('playBtn').onclick=toggle;
+cv.addEventListener('click',()=>{ if(!started)start(); });
+window.jump=(i)=>{ filmT=i*CH_LEN+8; if(!started)start(); else running=true,document.getElementById('playBtn').textContent='⏸ 暂停'; last=performance.now(); };
 
-try { init(); } catch(e){ document.getElementById('loading').textContent='3D 加载失败：'+e.message; console.error(e); }
+document.getElementById('title').style.opacity='1';
+requestAnimationFrame(draw);
 </script>
 </body>
 </html>
