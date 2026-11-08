@@ -218,59 +218,10 @@ footer .soc a:hover{color:var(--t)}
 #toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);padding:11px 24px;border-radius:18px;font-size:13px;font-weight:600;z-index:9999;background:#111a2e;color:#fff;box-shadow:0 8px 30px rgba(0,0,0,.5);opacity:0;transition:.3s;pointer-events:none;max-width:90vw;text-align:center}
 </style>
 
-<style>
-<style>
-/* ===== 现代战争4 电影感混剪开屏（原创·零缓冲） ===== */
-#splash{position:fixed;inset:0;z-index:9999;background:#000;overflow:hidden;cursor:pointer}
-#splash video.vlocal{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;background:#000}
-#splash .vbtn{position:absolute;z-index:6;font-size:12px;color:#ff9a6a;background:#0009;padding:5px 12px;border-radius:8px;cursor:pointer;border:0}
-#splash .usevid{top:14px;left:14px}
-#splash .clrvid{top:14px;right:14px}
-#splash .unmute{bottom:9%;left:50%;transform:translateX(-50%);display:none}
-#splash .scenes{position:absolute;inset:0;z-index:2}
-#splash .scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transform:scale(1.1);transition:opacity .3s,transform .9s;pointer-events:none;text-align:center;padding:20px}
-#splash .scene.on{opacity:1;transform:scale(1)}
-#splash .glitch{font-size:clamp(46px,15vw,130px);font-weight:900;letter-spacing:6px;color:#fff;position:relative;text-shadow:0 0 30px #ff3b3b66}
-#splash .glitch::before,#splash .glitch::after{content:attr(data-t);position:absolute;left:0;top:0;width:100%;overflow:hidden}
-#splash .glitch::before{color:#ff3b3b;clip-path:inset(0 0 55% 0);animation:gl1 .45s infinite linear alternate}
-#splash .glitch::after{color:#3bd5ff;clip-path:inset(55% 0 0 0);animation:gl2 .45s infinite linear alternate}
-@keyframes gl1{0%{transform:translate(-4px,0)}100%{transform:translate(3px,-2px)}}
-@keyframes gl2{0%{transform:translate(4px,0)}100%{transform:translate(-3px,2px)}}
-#splash .yr{color:#ff5a3c;letter-spacing:20px;font-size:clamp(16px,5vw,34px);font-weight:800;margin-top:10px;text-shadow:0 0 22px #ff3b3b88}
-#splash .scene .big{font-size:clamp(30px,9vw,76px);font-weight:900;letter-spacing:6px;color:#fff;text-shadow:0 0 34px #ff3b3b55,0 4px 16px #000}
-#splash .scene .sm{margin-top:12px;color:#ffd166;letter-spacing:4px;font-size:clamp(13px,3.4vw,18px)}
-#splash .map{margin:20px auto 0;width:60vw;max-width:480px;height:32vh;max-height:260px;background:linear-gradient(160deg,#5b1d1d,#2a0a0a);clip-path:polygon(48% 0,61% 9%,55% 21%,69% 31%,62% 49%,73% 63%,58% 80%,50% 100%,43% 79%,57% 61%,46% 47%,55% 33%,43% 22%,46% 10%);filter:drop-shadow(0 0 30px #ff3b3b66);animation:mapp 3s ease-in-out infinite}
-@keyframes mapp{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:.85;transform:scale(1.07)}}
-#splash .soldier{margin:6px auto 14px;width:min(42vw,220px);height:min(46vh,360px);background:linear-gradient(180deg,#10131c,#1a1208);clip-path:polygon(38% 0,62% 0,66% 14%,58% 22%,62% 40%,72% 70%,60% 100%,40% 100%,48% 70%,38% 40%,42% 22%,34% 14%);filter:drop-shadow(0 0 24px #000);animation:rise 1s ease forwards}
-@keyframes rise{from{transform:translateY(46px);opacity:.15}to{transform:translateY(0);opacity:1}}
-#splash .scene.final .big{animation:smash 1s cubic-bezier(.2,1.4,.3,1) forwards}
-@keyframes smash{0%{opacity:0;transform:scale(2.3)}60%{opacity:1;transform:scale(.94)}100%{opacity:1;transform:scale(1)}}
-#splash .hint{position:absolute;bottom:7%;left:0;right:0;text-align:center;color:#9ab;font-size:12px;z-index:4;opacity:0;animation:fu 1s ease 1.5s forwards}
-#splash .hint b{color:#ff9a6a}
-#splash .credit{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#655;font-size:10px;z-index:4}
-#splash .bar{position:absolute;bottom:0;left:0;height:3px;background:linear-gradient(90deg,#ff3b3b,#ffb86c);width:0;z-index:5;transition:width .25s linear}
-#splash.hasvideo .scenes,#splash.hasvideo .bar,#splash.hasvideo .hint{display:none}
-@keyframes fu{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-</style>
+
 </head>
 <body>
-<div id="splash" onclick="enterSite()">
-  <button class="vbtn usevid" onclick="pickVideo(event)">🎬 使用我的视频</button>
-  <button class="vbtn clrvid" onclick="clearVideo(event)" style="display:none">✕ 换视频</button>
-  <button class="vbtn unmute" id="unmuteBtn" onclick="unmuteVideo(event)">🔊 开启声音</button>
-  <input id="vidInput" type="file" accept="video/*" style="display:none" onchange="onVideoPicked(event)">
 
-  <div class="scenes">
-    <div class="scene s1"><div class="glitch" data-t="2035">2035</div><div class="yr">朝鲜半岛</div></div>
-    <div class="scene s2"><div class="big">全面战争爆发</div><div class="map"></div></div>
-    <div class="scene s3"><div class="soldier"></div><div class="big">普莱斯</div><div class="sm">私人战争 · PRIVATE WAR</div></div>
-    <div class="scene final s4"><div class="big">现代战争 4</div><div class="sm">MODERN WARFARE 4 · 朝鲜半岛全面战争</div></div>
-  </div>
-
-  <div class="hint">轻触任意处 <b>立即进入官网</b></div>
-  <div class="credit">致敬《使命召唤：现代战争4》(2026) · 原创混剪开屏</div>
-  <div class="bar" id="splashBar"></div>
-</div>
 
 
 <div id="stars"></div>
@@ -296,6 +247,7 @@ footer .soc a:hover{color:var(--t)}
     <a href="rp.html">角色扮演</a>
     <a href="deepq.html">深度小Q</a>
     <a href="code.html">💻 代码专区</a>
+    <a href="#" onclick="openTech();return false">💻 技术讨论室</a>
     <a href="video-gen.html">🎬 视频生成</a>
     <a href="deepq-pro.html">🚀 旗舰版</a>
     <a href="ai-video.html">🎬 AI视频专区</a>
@@ -317,6 +269,7 @@ footer .soc a:hover{color:var(--t)}
   <a href="#" onclick="closeMenu();openChat();return false">💬 聊天室</a>
   <a href="ai-chat.html" onclick="closeMenu()">🤖 AI助手</a>
   <a href="chat.html" onclick="closeMenu()">💬 聊天专区</a>
+  <a href="#" onclick="closeMenu();openTech();return false">💻 技术讨论室</a>
   <a href="ai-video.html" onclick="closeMenu()">🎬 AI视频专区</a>
   <a href="ai-movie.html" onclick="closeMenu()">🎥 电影专区</a>
   <a href="ai-game.html" onclick="closeMenu()">🎮 AI游戏专区</a>
@@ -388,7 +341,7 @@ footer .soc a:hover{color:var(--t)}
     <a href="rp.html" style="display:block;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;transition:.25s;text-decoration:none;color:inherit"><div style="font-size:32px;margin-bottom:10px">🎭</div><h3 style="font-size:18px;margin-bottom:7px">角色扮演专区</h3><p style="color:var(--t2);font-size:13.5px">填角色卡，AI 按你的人设即场开演</p></a>
     <a href="deepq.html" style="display:block;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;transition:.25s;text-decoration:none;color:inherit"><div style="font-size:32px;margin-bottom:10px">🧠</div><h3 style="font-size:18px;margin-bottom:7px">深度小Q</h3><p style="color:var(--t2);font-size:13.5px">自己调的 AI：深度思考+语气匹配+联网+知识库</p></a>
     <a href="deepq-pro.html" style="display:block;background:linear-gradient(135deg,rgba(123,92,255,.18),rgba(0,212,255,.12));border:1px solid var(--line2);border-radius:16px;padding:24px;transition:.25s;text-decoration:none;color:inherit"><div style="font-size:32px;margin-bottom:10px">🚀</div><h3 style="font-size:18px;margin-bottom:7px">旗舰版（顶级模型）</h3><p style="color:var(--t2);font-size:13.5px">GPT-4o/Claude 3.7/Gemini 2.5 Pro 优先 + 流式输出</p></a>
-  </div>    <a href="code.html" style="display:block;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;transition:.25s;text-decoration:none;color:inherit"><div style="font-size:32px;margin-bottom:10px">💻</div><h3 style="font-size:18px;margin-bottom:7px">代码专区</h3><p style="color:var(--t2);font-size:13.5px">免Key AI 写代码，高亮+复制+在线运行</p></a>
+  </div>    <a href="code.html" style="display:block;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;transition:.25s;text-decoration:none;color:inherit"><div style="font-size:32px;margin-bottom:10px">💻</div><h3 style="font-size:18px;margin-bottom:7px">代码专区</h3><p style="color:var(--t2);font-size:13.5px">免Key AI 写代码，高亮+复制+在线运行</p></a><a href="#" onclick="openTech();return false" style="display:block;background:linear-gradient(135deg,rgba(0,212,255,.16),rgba(123,92,255,.12));border:1px solid var(--line2);border-radius:16px;padding:24px;transition:.25s;text-decoration:none;color:inherit"><div style="font-size:32px;margin-bottom:10px">💻</div><h3 style="font-size:18px;margin-bottom:7px">技术讨论室</h3><p style="color:var(--t2);font-size:13.5px">开发者扎堆聊技术，AI小Q在线答疑</p></a>
     <a href="video-gen.html" style="display:block;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;transition:.25s;text-decoration:none;color:inherit"><div style="font-size:32px;margin-bottom:10px">🎬</div><h3 style="font-size:18px;margin-bottom:7px">视频生成</h3><p style="color:var(--t2);font-size:13.5px">免Key AI 画面/分镜 + 免费视频工具直达</p></a>
   </div>
 </section>
@@ -633,6 +586,14 @@ function closeChat(){
   document.getElementById('chatMask').classList.remove('open');
   document.body.style.overflow='';
 }
+function openTech(){
+  var f=document.getElementById('chatFrame');
+  f.setAttribute('src',CHAT_URL+'?room=tech');
+  var t=document.querySelector('.chat-head .ch-title');
+  if(t)t.innerHTML='💻 技术讨论室 <span class="ch-sub">AI小Q守护</span>';
+  document.getElementById('chatMask').classList.add('open');
+  document.body.style.overflow='hidden';
+}
 document.getElementById('chatMask').addEventListener('click',function(e){if(e.target===this)closeChat();});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeChat();});
 
@@ -744,12 +705,20 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeChat();
     }
   },{passive:true});
   document.addEventListener('touchend',function(){pinch=null;});
-  // 加载页面后：任意点击/触摸 5 次 → 开发者模式（pointerdown 兼容手机）
-  var tapCnt=0,tapT=null;
+  // 加载页面后：同一位置连续点 10 次 → 开发者模式（对准一个点连点；滑动/换点不计数）
+  var DEV_TAP_NEED=10, TAP_R=40, tapCnt=0, tapT=null, tapX=null, tapY=null;
   document.addEventListener('pointerdown',function(e){
-    if(e.target&&e.target.closest&&e.target.closest('#devPanel,#chatMask,input,textarea'))return;
-    tapCnt++;clearTimeout(tapT);tapT=setTimeout(function(){tapCnt=0;},2000);
-    if(tapCnt>=5){tapCnt=0;openDev();}
+    // 忽略交互元素，避免点按钮/链接/卡片时误触发
+    if(e.target&&e.target.closest&&e.target.closest('#devPanel,#chatMask,input,textarea,a,button'))return;
+    // 换点（与上次落点偏差过大）则重新计数，保证"对准一个点"
+    if(tapX!==null&&(Math.abs(e.clientX-tapX)>TAP_R||Math.abs(e.clientY-tapY)>TAP_R))tapCnt=0;
+    tapX=e.clientX;tapY=e.clientY;
+    tapCnt++;clearTimeout(tapT);tapT=setTimeout(function(){tapCnt=0;tapX=null;tapY=null;},2000);
+    if(tapCnt>=DEV_TAP_NEED){tapCnt=0;tapX=null;tapY=null;openDev();}
+  });
+  // 手指/指针滑动超过容差 → 判定为滑动而非点击，立即作废连点
+  document.addEventListener('pointermove',function(e){
+    if(tapX!==null&&(Math.abs(e.clientX-tapX)>TAP_R||Math.abs(e.clientY-tapY)>TAP_R)){tapCnt=0;tapX=null;tapY=null;clearTimeout(tapT);}
   });
   // 开发者模式面板
   function openDev(){
@@ -816,24 +785,7 @@ function copyGroup(){
 }
 </script>
 
-<script>
-var _splashSeq=null,_splashAuto=null;
-function enterSite(){var s=document.getElementById('splash');if(s){s.style.opacity='0';s.style.transition='opacity .5s';setTimeout(function(){s.style.display='none';},500);}clearTimeout(_splashAuto);clearInterval(_splashSeq);}
-var _scenes=['s1','s2','s3','s4'],_si=0;
-function showScene(i){var sc=document.querySelectorAll('#splash .scene');for(var k=0;k<sc.length;k++)sc[k].classList.remove('on');var el=document.querySelector('#splash .'+_scenes[i]);if(el)el.classList.add('on');var bar=document.getElementById('splashBar');if(bar)bar.style.width=((i+1)/_scenes.length*100)+'%';}
-function startMontage(){showScene(0);_splashSeq=setInterval(function(){_si++;if(_si>=_scenes.length){clearInterval(_splashSeq);}else{showScene(_si);}},950);}
-startMontage();
-_splashAuto=setTimeout(enterSite,950*_scenes.length+2600);
-function pickVideo(e){e.stopPropagation();document.getElementById('vidInput').click();}
-function onVideoPicked(e){var f=e.target.files&&e.target.files[0];if(!f)return;var url=URL.createObjectURL(f);applyVideo(url,false);saveVid(f);document.querySelector('#splash .clrvid').style.display='inline-block';}
-function applyVideo(url,fromCache){var sp=document.getElementById('splash');sp.classList.add('hasvideo');var v=document.createElement('video');v.className='vlocal';v.src=url;v.autoplay=true;v.loop=true;v.muted=!!fromCache;v.setAttribute('playsinline','');sp.insertBefore(v,sp.firstChild);v.play().catch(function(){});var ub=document.getElementById('unmuteBtn');if(fromCache){ub.style.display='inline-block';}else{ub.style.display='none';}document.querySelector('#splash .usevid').style.display='none';clearInterval(_splashSeq);clearTimeout(_splashAuto);if(fromCache){_splashAuto=setTimeout(enterSite,15000);}}
-function unmuteVideo(e){e.stopPropagation();var v=document.querySelector('#splash video.vlocal');if(v){v.muted=false;v.play();}document.getElementById('unmuteBtn').style.display='none';}
-function clearVideo(e){e.stopPropagation();try{indexedDB.deleteDatabase('miuiSplash');}catch(_){}location.reload();}
-function openDB(){return new Promise(function(res,rej){var r=indexedDB.open('miuiSplash',1);r.onupgradeneeded=function(){r.result.createObjectStore('vid');};r.onsuccess=function(){res(r.result);};r.onerror=function(){rej(r.error);};});}
-function saveVid(blob){openDB().then(function(db){db.transaction('vid','readwrite').objectStore('vid').put(blob,'splash');}).catch(function(){});}
-function getVid(){return openDB().then(function(db){return new Promise(function(res){var tx=db.transaction('vid','readonly').objectStore('vid').get('splash');tx.onsuccess=function(){res(tx.result||null);};tx.onerror=function(){res(null);};});}).catch(function(){return null;});}
-document.addEventListener('DOMContentLoaded',function(){getVid().then(function(b){if(b){applyVideo(URL.createObjectURL(b),true);document.querySelector('#splash .clrvid').style.display='inline-block';}});});
-</script>
+
 
 <!-- 右下角剪辑区入口 -->
 <a href="clip.html" style="position:fixed;right:16px;bottom:16px;z-index:9998;display:flex;align-items:center;gap:6px;text-decoration:none;background:linear-gradient(135deg,#ff5ea8,#7b5cff);color:#fff;padding:11px 16px;border-radius:24px;font-size:14px;font-weight:700;box-shadow:0 8px 26px #7b5cff55;animation:fabpulse 2.4s ease-in-out infinite">✂ 剪辑区</a>
