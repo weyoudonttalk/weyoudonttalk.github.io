@@ -116,6 +116,7 @@
   <span class="sp"></span>
   <button onclick="openGallery()">🎞 画廊</button>
   <button onclick="openAnalyze()">🔍 AI 解析</button>
+  <button onclick="openAIModal()">🔥 AI 智能混剪</button>
   <button id="recBtn" onclick="toggleRec()">🎥 录制导出</button>
   <a href="index.html" style="text-decoration:none"><button>← 回官网</button></a>
 </header>
@@ -201,6 +202,30 @@
   <div onclick="document.getElementById('file2').click()" style="border:1.5px dashed #2a3a5a;border-radius:10px;padding:18px;text-align:center;color:#7a8aa8;cursor:pointer">点击选择视频，AI 解析它的节奏与切点</div>
   <input id="file2" type="file" accept="video/*" style="display:none" onchange="analyzeFile(event)">
   <div id="analyzeOut" style="margin-top:14px"></div>
+</div></div>
+
+<!-- AI 智能混剪 -->
+<div class="modal" id="aiModal"><div class="mbox">
+  <button class="close" onclick="closeModal('aiModal')">×</button>
+  <h2>🔥 AI 智能混剪 <span style="color:#7a8aa8;font-weight:400;font-size:12px">（真·多模态大模型解析）</span></h2>
+  <p style="color:#7a8aa8;font-size:12px;margin-bottom:10px">上传视频 → 云端大模型看懂内容、找出最燃片段与高光时刻 → 自动按时间码切镜 + 配乐生成混剪。需自备一个 Cloudflare Worker 地址（见底部说明）。</p>
+  <div style="font-size:12px;color:#9ab;margin-bottom:4px">Worker 地址（留空用默认，可改）：</div>
+  <input id="aiWorker" style="width:100%;background:#070d18;border:1px solid #243352;border-radius:8px;color:#cfe;padding:8px;font-size:12px" placeholder="https://xxx.workers.dev/analyze">
+  <div id="aiDrop" onclick="document.getElementById('aiFile').click()" style="border:1.5px dashed #2a3a5a;border-radius:10px;padding:16px;text-align:center;color:#7a8aa8;cursor:pointer;margin-top:10px">点击选择视频（建议 &lt;100MB，AI 会看完整内容）</div>
+  <input id="aiFile" type="file" accept="video/*" style="display:none" onchange="aiPick(event)">
+  <div class="row" style="margin-top:10px">
+    <button onclick="aiRun()" style="background:linear-gradient(135deg,#ff5ea8,#7b5cff);border:0;color:#fff;padding:9px;border-radius:9px;cursor:pointer;font-weight:700">🚀 让 AI 分析并生成混剪</button>
+    <button onclick="aiUseMusic()" style="background:#13203a;border:1px solid #294066;color:#cfe;padding:9px;border-radius:9px;cursor:pointer">🎵 用我的音乐</button>
+  </div>
+  <div id="aiStatus" class="status"></div>
+  <div id="aiReport" style="margin-top:12px"></div>
+  <details style="margin-top:14px;color:#7a8aa8;font-size:11px;line-height:1.7">
+    <summary>没有 Worker？点开看 2 分钟自建（免费·手机可操作）</summary>
+    1) 打开 <b>workers.cloudflare.com</b> 注册免费号<br>
+    2) 新建 Worker，把聊天里给的 <b>worker-ai.js</b> 全文粘贴进去<br>
+    3) Settings → Variables → 加 GEMINI_KEY（去 <b>ai.google.dev</b> 免费申请）<br>
+    4) Deploy，把地址粘到上方输入框即可
+  </details>
 </div></div>
 
 <script>
@@ -465,6 +490,88 @@ document.getElementById('density').oninput=e=>document.getElementById('densityTx
 document.getElementById('drop').addEventListener('drop',e=>{e.preventDefault();if(e.dataTransfer&&e.dataTransfer.files)importFiles({target:{files:e.dataTransfer.files}});});
 
 function setStatus(id,t){document.getElementById(id).textContent=t;}
+// ===================== AI 智能混剪 =====================
+let aiWorker=localStorage.getItem('aiWorker')||'';
+let aiVideoUrl=null, aiVideoName='', aiSegs=null, aiBpm=128, aiTitle='', aiMood='';
+let aiMusicUrl=null;
+function openAIModal(){ document.getElementById('aiWorker').value=aiWorker; document.getElementById('aiModal').classList.add('on'); }
+function aiPick(e){ const f=e.target.files&&e.target.files[0]; if(!f)return; aiVideoUrl=URL.createObjectURL(f); aiVideoName=f.name.slice(0,22); setStatus('aiStatus','已选：'+aiVideoName+' · 点「让 AI 分析并生成混剪」'); }
+function aiUseMusic(){ document.getElementById('music').click(); setTimeout(()=>{ if(musicUrl){aiMusicUrl=musicUrl; setStatus('aiStatus','🎵 已关联你的音乐，将作为混剪配乐');} },300); }
+async function aiRun(){
+  aiWorker=document.getElementById('aiWorker').value.trim(); localStorage.setItem('aiWorker',aiWorker);
+  if(!aiWorker){ setStatus('aiStatus','⚠ 请先填 Worker 地址（见弹窗底部说明）'); return; }
+  if(!aiVideoUrl){ setStatus('aiStatus','⚠ 请先选择视频'); return; }
+  setStatus('aiStatus','🤖 云端大模型正在观看视频、分析高燃点…（可能需要 20~60 秒）');
+  document.getElementById('aiReport').innerHTML='<div class="report"><p><span class="k">⏳ AI 解析中…</span></p></div>';
+  try{
+    const blob=await (await fetch(aiVideoUrl)).blob();
+    const r=await fetch(aiWorker, {method:'POST', headers:{'Content-Type':blob.type||'video/mp4'}, body:blob});
+    const j=await r.json();
+    if(j.error) throw new Error(j.error);
+    aiSegs=j.segments||[]; aiBpm=j.overallBpm||128; aiTitle=j.title||'AI 混剪'; aiMood=j.mood||'';
+    if(!aiSegs.length) throw new Error('AI 未返回片段');
+    renderAIReport(j);
+    setStatus('aiStatus','✅ AI 已找出 '+aiSegs.length+' 个高燃片段 · 正在生成混剪…');
+    buildAIMix();
+  }catch(err){ setStatus('aiStatus','⚠ AI 失败：'+err.message); document.getElementById('aiReport').innerHTML='<div class="report"><p style="color:#f88">'+err.message+'</p></div>'; }
+}
+function renderAIReport(j){
+  const segs=j.segments.map((s,i)=>`<div style="margin:4px 0">#${i+1} <b>${s.start}s–${s.end}s</b> · ${s.type} · ${s.bpm||''}BPM<div style="color:#9ab;font-size:11px">${s.reason||''}</div></div>`).join('');
+  document.getElementById('aiReport').innerHTML=`<div class="report">
+    <p><span class="k">📋 AI 混剪导演报告</span></p>
+    <p>标题：<b>${j.title||''}</b> · 风格：<b>${j.mood||''}</b> · 建议 BPM：<b>${j.overallBpm||''}</b></p>
+    <p>🔥 高燃片段：</p>${segs}
+    <button style="margin-top:10px;background:linear-gradient(135deg,#ff5ea8,#7b5cff);border:0;color:#fff;padding:9px 16px;border-radius:9px;cursor:pointer;font-weight:700" onclick="buildAIMix()">▶ 用此方案生成混剪</button>
+  </div>`;
+}
+let aiVid=null, aiPlaying=false, aiStartT=0, aiLastSeg=-1;
+function buildAIMix(){
+  closeModal('aiModal');
+  stopPlayback();
+  // 准备舞台
+  [...stage.querySelectorAll('.shot')].forEach(n=>n.remove());
+  ph.style.display='none';
+  const t=TEMPLATES[curTmpl];
+  stage.className='fx-'+(curTmpl==='glitch'?'flash':'dissolve');
+  stage.classList.toggle('ken',document.getElementById('useKen').checked);
+  stage.classList.toggle('rgb',curTmpl==='glitch'&&document.getElementById('useGrade').checked);
+  const gradeCls=['grade-warm','grade-glitch','grade-mono','grade-game','grade-travel'];
+  gradeCls.forEach(c=>stage.classList.remove(c));
+  stage.style.filter=document.getElementById('useGrade').checked?GRADES[t.grade]:'';
+  document.getElementById('grain').style.display=document.getElementById('useGrain').checked?'block':'none';
+  document.getElementById('vig').style.display=document.getElementById('useGrain').checked?'block':'none';
+  document.getElementById('letterbox').style.opacity=(document.getElementById('useLetter').checked&&t.letter)?'1':'0';
+  // 单个视频元素
+  stage.querySelectorAll('video.aiVid').forEach(v=>v.remove());
+  aiVid=document.createElement('video'); aiVid.className='aiVid'; aiVid.src=aiVideoUrl; aiVid.muted=!aiMusicUrl; aiVid.loop=false; aiVid.playsInline=true; aiVid.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover';
+  stage.insertBefore(aiVid, stage.firstChild);
+  clipDur=aiSegs[aiSegs.length-1].end;
+  setStatus('editStatus','▶ AI 混剪播放中（镜头踩在 AI 标出的高燃片段）');
+  aiPlaying=true; aiStartT=performance.now(); aiLastSeg=-1;
+  if(aiMusicUrl && !window._musicEl){ const AC2=new (window.AudioContext||window.webkitAudioContext)(); const a=document.createElement('audio'); a.src=aiMusicUrl; a.loop=true; const n=AC2.createMediaElementSource(a); n.connect(AC2.destination); a.play().catch(()=>{}); window._musicEl=a; }
+  else if(window._musicEl){ window._musicEl.currentTime=0; }
+  aiLoop();
+}
+function aiLoop(){
+  if(!aiPlaying) return;
+  requestAnimationFrame(aiLoop);
+  const now=(performance.now()-aiStartT)/1000;
+  if(now>=clipDur){ aiStartT=performance.now(); aiLastSeg=-1; if(window._musicEl)window._musicEl.currentTime=0; }
+  const ct=(performance.now()-aiStartT)/1000;
+  let idx=0; for(let i=0;i<aiSegs.length;i++){ if(ct>=aiSegs[i].start && ct<aiSegs[i].end) {idx=i;break;} if(ct>=aiSegs[i].end) idx=i; }
+  const seg=aiSegs[idx];
+  if(idx!==aiLastSeg){ aiLastSeg=idx; aiVid.currentTime=Math.max(0,seg.start+0.01); aiVid.play().catch(()=>{});
+    const prog=(ct-seg.start)/(seg.end-seg.start);
+    // 字幕：燃点理由
+    if(seg.reason){ capLine.textContent=seg.type+' · '+seg.reason; capEl.classList.add('on'); } else capEl.classList.remove('on');
+    // 开场标题大字
+    if(idx===0 && ct<1.8){ bigSpan.textContent=aiTitle; bigEl.classList.add('on'); } else if(idx!==0) bigEl.classList.remove('on');
+  }
+  // 闪白
+  if(curTmpl==='glitch'){ const prog=(ct-seg.start)/(seg.end-seg.start); if(prog>0.82){ const fl=document.getElementById('flash'); if(!fl.classList.contains('on')){fl.classList.add('on');setTimeout(()=>fl.classList.remove('on'),400);} } }
+}
+window.addEventListener('beforeunload',()=>{ if(aiVid)aiVid.pause(); });
+
 (async()=>{ media=await allMedia(); media.forEach(m=>selected.add(m.id)); renderMats(); if(media.length)setStatus('matStatus',`已恢复 ${media.length} 个素材`); loadProject(); })();
 </script>
 </body>
