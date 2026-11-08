@@ -3,22 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>MIUI 剪辑区 · Clip Studio</title>
+<title>MIUI 剪辑区 · Clip Studio Pro</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{background:#070b12;color:#dfe7f5;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;min-height:100%;font-size:14px}
-  header{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:12px;padding:12px 16px;background:linear-gradient(180deg,#0c1322,#070b12);border-bottom:1px solid #1b2740}
+  header{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:12px;padding:12px 16px;background:linear-gradient(180deg,#0c1322,#070b12);border-bottom:1px solid #1b2740;flex-wrap:wrap}
   header .lg{font-size:18px;font-weight:900;letter-spacing:2px}
   header .lg b{background:linear-gradient(90deg,#3bd5ff,#ff3b6b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
   header .tag{color:#7fb;font-size:11px;border:1px solid #1f4a3a;padding:2px 8px;border-radius:10px}
   header .sp{flex:1}
   header button{background:#16203400;border:1px solid #2a3a5a;color:#cfe;padding:7px 13px;border-radius:18px;cursor:pointer;font-size:13px}
   header button:hover{background:#16263f}
-  .wrap{display:grid;grid-template-columns:230px 1fr 280px;gap:14px;padding:14px;max-width:1280px;margin:0 auto}
+  .wrap{display:grid;grid-template-columns:210px 1fr 250px;gap:14px;padding:14px;max-width:1280px;margin:0 auto}
   @media(max-width:920px){.wrap{grid-template-columns:1fr}}
   .panel{background:#0c1322;border:1px solid #1b2740;border-radius:14px;padding:14px}
   .panel h3{font-size:13px;color:#8fb;letter-spacing:1px;margin-bottom:10px;font-weight:700}
-  /* 模板 */
   .tpl{display:flex;flex-direction:column;gap:8px}
   .tpl .card{border:1px solid #243352;border-radius:10px;padding:10px;cursor:pointer;transition:.15s;background:#0a1120}
   .tpl .card:hover{border-color:#3bd5ff}
@@ -26,31 +25,66 @@
   .tpl .card .nm{font-weight:700;font-size:13px}
   .tpl .card .ds{font-size:11px;color:#7a8aa8;margin-top:3px;line-height:1.5}
   .tpl .card .sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
-  /* 预览 */
-  .preview{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}
-  .preview video,.preview img{width:100%;height:100%;object-fit:cover;display:none}
-  .preview .ph{color:#456;font-size:13px;text-align:center;padding:20px;line-height:1.8}
-  .grade-warm{filter:saturate(1.15) contrast(1.05) sepia(.15) brightness(1.02)}
-  .grade-glitch{filter:contrast(1.3) saturate(1.4) hue-rotate(-8deg)}
-  .grade-mono{filter:grayscale(1) contrast(1.1)}
-  .grade-game{filter:saturate(1.5) contrast(1.15) brightness(1.05)}
-  .grade-travel{filter:saturate(1.2) contrast(1.02) brightness(1.05)}
-  #titleCard{position:absolute;left:0;right:0;top:42%;text-align:center;color:#fff;font-size:clamp(18px,5vw,40px);font-weight:900;letter-spacing:4px;text-shadow:0 2px 20px #000;opacity:0;transition:opacity .4s;pointer-events:none;padding:0 10px}
-  #letterbox{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 38px 0 #000,inset 0 -38px 0 #000;opacity:0;transition:.3s}
+
+  /* ===== 舞台：算法混剪引擎 ===== */
+  #stage{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9}
+  #stage .shot{position:absolute;inset:0;opacity:0;will-change:opacity,transform}
+  #stage .shot video,#stage .shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  #stage .shot.active{opacity:1}
+  /* 运动镜头 Ken Burns */
+  #stage.ken .shot.active img,#stage.ken .shot.active video{animation:kb 6s ease-out forwards}
+  @keyframes kb{0%{transform:scale(1.18) translate(0,0)}100%{transform:scale(1.02) translate(0,0)}}
+  /* 转场：溶解 */
+  .fx-dissolve .shot.prev{animation:diss .5s ease forwards}
+  @keyframes diss{from{opacity:1}to{opacity:0}}
+  /* 转场：推拉 zoom */
+  .fx-zoom .shot.prev{animation:zprev .55s ease-in forwards}
+  .fx-zoom .shot.next{animation:znext .55s ease-out forwards}
+  @keyframes zprev{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.25)}}
+  @keyframes znext{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+  /* 转场：闪白 */
+  #flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:8}
+  .fx-flash #flash.on{animation:fl .4s ease-out}
+  @keyframes fl{0%{opacity:.9}100%{opacity:0}}
+  /* 转场：滑入 */
+  .fx-slide .shot.next{animation:sl .5s cubic-bezier(.2,.8,.2,1) forwards}
+  @keyframes sl{from{opacity:0;transform:translateX(18%)}to{opacity:1;transform:translateX(0)}}
+
+  /* 字幕卡（下三分之一） */
+  #cap{position:absolute;left:0;right:0;bottom:12%;z-index:6;padding:0 6%;text-align:left;pointer-events:none}
+  #cap .line{display:inline-block;background:linear-gradient(90deg,rgba(0,0,0,.0),rgba(0,0,0,.55) 12%,rgba(0,0,0,.55) 88%,rgba(0,0,0,.0));padding:6px 14px;color:#fff;font-size:clamp(15px,3.6vw,24px);font-weight:700;letter-spacing:1px;text-shadow:0 2px 8px #000;transform:translateY(20px);opacity:0}
+  #cap.on .line{animation:capin .4s ease forwards}
+  @keyframes capin{to{transform:translateY(0);opacity:1}}
+  /* 章节大字卡 */
+  #big{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:7;pointer-events:none}
+  #big span{font-size:clamp(26px,8vw,62px);font-weight:900;letter-spacing:6px;color:#fff;text-shadow:0 0 30px #000;opacity:0;transform:scale(1.3)}
+  #big.on span{animation:bigin 1.6s ease forwards}
+  @keyframes bigin{0%{opacity:0;transform:scale(1.4)}18%{opacity:1;transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:scale(1)}}
+
+  /* 后处理叠层 */
+  #grain{position:absolute;inset:0;z-index:9;pointer-events:none;opacity:.07;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");background-size:180px}
+  #vig{position:absolute;inset:0;z-index:9;pointer-events:none;box-shadow:inset 0 0 160px 40px #000;opacity:.9}
+  #letterbox{position:absolute;inset:0;z-index:10;pointer-events:none;box-shadow:inset 0 8% 0 #000,inset 0 -8% 0 #000;opacity:0;transition:.3s}
+  #stage svg.rgbfix{position:absolute;width:0;height:0}
+  #stage.rgb{filter:url(#rgbsplit)}
+
   .controls{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
   .controls button{flex:1;min-width:90px;background:#13203a;border:1px solid #294066;color:#cfe;padding:9px;border-radius:10px;cursor:pointer;font-size:13px}
   .controls button.primary{background:linear-gradient(135deg,#ff5ea8,#7b5cff);border:0;font-weight:700}
   .controls button:hover{filter:brightness(1.15)}
   /* 素材 */
-  .matgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:240px;overflow:auto}
+  .matgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:200px;overflow:auto}
   .mat{position:relative;border:1px solid #243352;border-radius:8px;overflow:hidden;cursor:pointer;background:#0a1120}
   .mat.sel{border-color:#3bd5ff}
-  .mat img{width:100%;height:74px;object-fit:cover;display:block}
+  .mat img{width:100%;height:64px;object-fit:cover;display:block}
   .mat .nm{font-size:10px;color:#9ab;padding:3px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .mat .x{position:absolute;top:2px;right:2px;background:#000a;color:#f88;border:0;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer}
-  #drop{border:1.5px dashed #2a3a5a;border-radius:10px;padding:14px;text-align:center;color:#7a8aa8;font-size:12px;cursor:pointer;margin-bottom:10px}
+  #drop{border:1.5px dashed #2a3a5a;border-radius:10px;padding:12px;text-align:center;color:#7a8aa8;font-size:12px;cursor:pointer;margin-bottom:8px}
   #drop:hover{border-color:#3bd5ff;color:#cfe}
-  .status{font-size:12px;color:#7fb;margin-top:8px;min-height:16px}
+  #musicDrop{margin-top:8px;border:1.5px dashed #2a4a3a;border-radius:10px;padding:10px;text-align:center;color:#7a8aa8;font-size:11px;cursor:pointer}
+  #musicDrop.on{border-color:#7fb;color:#7fb}
+  .status{font-size:12px;color:#7fb;margin-top:8px;min-height:16px;line-height:1.5}
   .row{display:flex;gap:8px;margin-top:8px}
   .row button{flex:1;background:#13203a;border:1px solid #294066;color:#cfe;padding:8px;border-radius:9px;cursor:pointer;font-size:12px}
   /* 弹窗 */
@@ -70,277 +104,367 @@
   .report b{color:#3bd5ff}
   .report .k{color:#ff9a6a}
   .footer{text-align:center;color:#456;font-size:11px;padding:20px}
+  #recDot{position:fixed;top:14px;right:14px;z-index:60;background:#f33;color:#fff;font-size:12px;padding:6px 12px;border-radius:14px;display:none}
+  #recDot.on{display:block;animation:recp 1s infinite}
+  @keyframes recp{50%{opacity:.4}}
 </style>
 </head>
 <body>
 <header>
   <span class="lg"><b>MIUI</b> 剪辑区</span>
-  <span class="tag">Clip Studio · 本地创作</span>
+  <span class="tag">Clip Studio Pro · 节拍混剪</span>
   <span class="sp"></span>
-  <button onclick="openGallery()">🎞 画廊 / 别人的作品</button>
-  <button onclick="openAnalyze()">🔍 上传 AI 解析</button>
+  <button onclick="openGallery()">🎞 画廊</button>
+  <button onclick="openAnalyze()">🔍 AI 解析</button>
+  <button id="recBtn" onclick="toggleRec()">🎥 录制导出</button>
   <a href="index.html" style="text-decoration:none"><button>← 回官网</button></a>
 </header>
+
+<!-- 全局 SVG 滤镜：RGB 色差 -->
+<svg class="rgbfix" xmlns="http://www.w3.org/2000/svg"><filter id="rgbsplit"><feOffset in="SourceGraphic" dx="2" dy="0" result="r"/><feOffset in="SourceGraphic" dx="-2" dy="0" result="b"/><feColorMatrix in="r" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="rr"/><feColorMatrix in="b" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0" result="bb"/><feBlend in="rr" in2="bb" mode="screen"/></filter></svg>
+
+<div id="recDot">● REC</div>
 
 <div class="wrap">
   <!-- 左：模板 -->
   <div class="panel">
-    <h3>✂ 剪辑模板</h3>
+    <h3>✂ 混剪风格</h3>
     <div class="tpl" id="tplList"></div>
     <div class="status" id="tplStatus">已选：电影感混剪</div>
+    <h3 style="margin-top:14px">🎚 节奏</h3>
+    <div style="font-size:12px;color:#9ab;line-height:1.9">
+      镜头密度：<input id="density" type="range" min="1" max="4" value="2" style="width:100%"><br>
+      <span id="densityTxt">中速</span><br>
+      <label style="display:flex;align-items:center;gap:6px;margin-top:6px"><input type="checkbox" id="useGrade" checked> 电影调色</label>
+      <label style="display:flex;align-items:center;gap:6px;margin-top:4px"><input type="checkbox" id="useGrain" checked> 胶片颗粒</label>
+      <label style="display:flex;align-items:center;gap:6px;margin-top:4px"><input type="checkbox" id="useLetter" checked> 电影黑边</label>
+      <label style="display:flex;align-items:center;gap:6px;margin-top:4px"><input type="checkbox" id="useKen" checked> 运动镜头</label>
+    </div>
   </div>
 
-  <!-- 中：预览 -->
+  <!-- 中：舞台 -->
   <div class="panel">
-    <h3>▶ 预览（AI 自动帮剪）</h3>
-    <div class="preview" id="preview">
-      <video id="pv" playsinline></video>
-      <img id="pi" alt="">
+    <h3>▶ 算法混剪预览 <span style="color:#7a8aa8;font-weight:400;font-size:11px">（镜头踩着音频鼓点切）</span></h3>
+    <div id="stage">
+      <div id="ph" class="shot active" style="display:flex;align-items:center;justify-content:center;color:#456;font-size:13px;text-align:center;padding:20px;line-height:1.8">导入素材 + （可选）背景音乐<br>点「▶ 生成混剪」<br>系统自动分析节奏、踩点切镜、加转场与字幕</div>
+      <div id="cap"><span class="line"></span></div>
+      <div id="big"><span></span></div>
+      <div id="flash"></div>
+      <div id="grain"></div>
+      <div id="vig"></div>
       <div id="letterbox"></div>
-      <div id="titleCard"></div>
-      <div class="ph" id="ph">导入素材后，点「▶ AI 自动帮剪」<br>系统会按模板自动切镜头、加转场与字幕卡</div>
     </div>
     <div class="controls">
-      <button class="primary" onclick="aiEdit()">▶ AI 自动帮剪</button>
-      <button onclick="stopEdit()">⏹ 停止</button>
-      <button onclick="saveProject()">💾 保存工程</button>
-      <button onclick="exportCode()">🔗 生成分享码</button>
+      <button class="primary" onclick="generate()">▶ 生成混剪</button>
+      <button onclick="playPause()">⏸ 暂停</button>
+      <button onclick="saveProject()">💾 保存</button>
+      <button onclick="exportCode()">🔗 分享码</button>
     </div>
     <div class="status" id="editStatus"></div>
   </div>
 
-  <!-- 右：素材 -->
+  <!-- 右：素材 + 音乐 -->
   <div class="panel">
     <h3>📁 我的素材</h3>
-    <div id="drop" onclick="document.getElementById('file').click()">点击 / 拖拽导入视频·图片<br><small>（仅存你本机浏览器，不上传服务器）</small></div>
+    <div id="drop" onclick="document.getElementById('file').click()">点击/拖拽导入 视频·图片<br><small>仅存本机浏览器</small></div>
     <input id="file" type="file" accept="video/*,image/*" multiple style="display:none" onchange="importFiles(event)">
     <div class="matgrid" id="matGrid"></div>
-    <div class="status" id="matStatus">尚未导入素材</div>
     <div class="row">
       <button onclick="selectAll(true)">全选</button>
       <button onclick="selectAll(false)">全不选</button>
       <button onclick="clearMedia()">清空</button>
     </div>
+    <div id="musicDrop" onclick="document.getElementById('music').click()">🎵 点击导入背景音乐（强烈建议！踩点剪必备）</div>
+    <input id="music" type="file" accept="audio/*" style="display:none" onchange="importMusic(event)">
+    <div class="status" id="matStatus">尚未导入素材</div>
   </div>
 </div>
 
-<div class="footer">所有剪辑均在浏览器本地完成 · 素材不上云 · 分享码仅含剪辑配方与缩略图</div>
+<div class="footer">纯前端算法混剪 · 素材/音乐不上云 · 导出用浏览器录屏（授权后生成 webm）</div>
 
 <!-- 画廊 -->
-<div class="modal" id="galleryModal">
-  <div class="mbox">
-    <button class="close" onclick="closeModal('galleryModal')">×</button>
-    <h2>🎞 画廊 · 别人的剪辑</h2>
-    <p style="color:#7a8aa8;font-size:12px;margin-bottom:12px">这些是官方示例与社区分享的剪辑配方。点「套用」可载入其风格（需你自备素材渲染）。也可粘贴分享码载入他人作品。</p>
-    <div class="gallery" id="galleryGrid"></div>
-    <h2 style="margin-top:18px">🔗 载入分享码</h2>
-    <textarea class="codebox" id="importCode" placeholder="粘贴别人给你的分享码…"></textarea>
-    <button style="margin-top:8px;background:#16263f;border:1px solid #294066;color:#cfe;padding:8px 14px;border-radius:9px;cursor:pointer" onclick="importCode()">载入分享码</button>
-    <div class="status" id="galleryStatus"></div>
-  </div>
-</div>
+<div class="modal" id="galleryModal"><div class="mbox">
+  <button class="close" onclick="closeModal('galleryModal')">×</button>
+  <h2>🎞 画廊 · 别人的剪辑</h2>
+  <p style="color:#7a8aa8;font-size:12px;margin-bottom:12px">社区分享的剪辑配方，点「套用」继承其节奏与风格。也可粘贴分享码。</p>
+  <div class="gallery" id="galleryGrid"></div>
+  <h2 style="margin-top:18px">🔗 载入分享码</h2>
+  <textarea class="codebox" id="importCode" placeholder="粘贴分享码…"></textarea>
+  <button style="margin-top:8px;background:#16263f;border:1px solid #294066;color:#cfe;padding:8px 14px;border-radius:9px;cursor:pointer" onclick="importCode()">载入分享码</button>
+  <div class="status" id="galleryStatus"></div>
+</div></div>
 
 <!-- AI 解析 -->
-<div class="modal" id="analyzeModal">
-  <div class="mbox">
-    <button class="close" onclick="closeModal('analyzeModal')">×</button>
-    <h2>🔍 上传视频 · AI 解析</h2>
-    <div id="drop2" onclick="document.getElementById('file2').click()" style="border:1.5px dashed #2a3a5a;border-radius:10px;padding:18px;text-align:center;color:#7a8aa8;cursor:pointer">点击选择一段视频，让 AI 解析它的剪辑手法</div>
-    <input id="file2" type="file" accept="video/*" style="display:none" onchange="analyzeFile(event)">
-    <div id="analyzeOut" style="margin-top:14px"></div>
-  </div>
-</div>
+<div class="modal" id="analyzeModal"><div class="mbox">
+  <button class="close" onclick="closeModal('analyzeModal')">×</button>
+  <h2>🔍 上传视频 · AI 解析剪辑手法</h2>
+  <div onclick="document.getElementById('file2').click()" style="border:1.5px dashed #2a3a5a;border-radius:10px;padding:18px;text-align:center;color:#7a8aa8;cursor:pointer">点击选择视频，AI 解析它的节奏与切点</div>
+  <input id="file2" type="file" accept="video/*" style="display:none" onchange="analyzeFile(event)">
+  <div id="analyzeOut" style="margin-top:14px"></div>
+</div></div>
 
 <script>
-// ===================== 模板 =====================
+// ===================== 风格模板 =====================
 const TEMPLATES = {
-  cinema:{name:'电影感混剪', desc:'慢切·暖调·字幕卡·电影黑边', color:'#ffb86c', cut:4.5, grade:'grade-warm', letterbox:true, titlePrefix:'CHAPTER'},
-  glitch:{name:'故障冲击', desc:'快切·RGB撕裂·高饱和', color:'#ff3b6b', cut:1.4, grade:'grade-glitch', letterbox:false, titlePrefix:'///'},
-  mono:{name:'极简黑白', desc:'中速·去色·克制字幕', color:'#cfd8e8', cut:2.6, grade:'grade-mono', letterbox:true, titlePrefix:'—'},
-  game:{name:'游戏高光', desc:'快节奏·增饱和·节拍字', color:'#3bd5ff', cut:2.0, grade:'grade-game', letterbox:false, titlePrefix:'HIGHLIGHT'},
-  travel:{name:'旅行 Vlog', desc:'轻快·清新·地点卡', color:'#7bffb0', cut:3.2, grade:'grade-travel', letterbox:false, titlePrefix:'@'},
+  cinema:{name:'电影感混剪', desc:'慢切·暖调·溶解转场·字幕卡', color:'#ffb86c', bpm:96, pattern:[8,4,4,8,4,2], fx:'dissolve', grade:'grade-warm', letter:true, capStyle:'下三分之一', big:true},
+  glitch:{name:'故障冲击', desc:'快切·RGB色差·闪白转场', color:'#ff3b6b', bpm:140, pattern:[2,1,1,2,1,1,2,4], fx:'flash', grade:'grade-glitch', letter:false, capStyle:'章节大字', big:true},
+  mono:{name:'极简黑白', desc:'中去色·硬切淡入·克制', color:'#cfd8e8', bpm:84, pattern:[6,4,4,6,4,2], fx:'dissolve', grade:'grade-mono', letter:true, capStyle:'下三分之一', big:false},
+  game:{name:'游戏高光', desc:'快节奏·推拉转场·踩点', color:'#3bd5ff', bpm:128, pattern:[2,2,1,2,4,2], fx:'zoom', grade:'grade-game', letter:false, capStyle:'章节大字', big:true},
+  travel:{name:'旅行 Vlog', desc:'轻快·滑入转场·地点卡', color:'#7bffb0', bpm:110, pattern:[4,4,2,4,4,2], fx:'slide', grade:'grade-travel', letter:false, capStyle:'下三分之一', big:false},
 };
+const GRADES={ 'grade-warm':'saturate(1.15) contrast(1.05) sepia(.15) brightness(1.02)',
+  'grade-glitch':'contrast(1.3) saturate(1.4) hue-rotate(-8deg)',
+  'grade-mono':'grayscale(1) contrast(1.1)',
+  'grade-game':'saturate(1.5) contrast(1.15) brightness(1.05)',
+  'grade-travel':'saturate(1.2) contrast(1.02) brightness(1.05)' };
 let curTmpl='cinema';
 
-// ===================== 素材库 (IndexedDB) =====================
+// ===================== 素材库 =====================
 const DB='clipStudio', STORE='media';
 function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE,{'keyPath':'id'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
 async function saveMedia(m){const db=await openDB();db.transaction(STORE,'readwrite').objectStore(STORE).put(m);}
 async function allMedia(){const db=await openDB();return new Promise((res)=>{const tx=db.transaction(STORE,'readonly').objectStore(STORE).getAll();tx.onsuccess=()=>res(tx.result||[]);tx.onerror=()=>res([]);});}
 async function delMedia(id){const db=await openDB();db.transaction(STORE,'readwrite').objectStore(STORE).delete(id);}
 async function clearAll(){const db=await openDB();db.transaction(STORE,'readwrite').objectStore(STORE).clear();}
-
-let media=[]; // {id,name,type,url,thumb,dur}
-let selected=new Set();
+let media=[], selected=new Set(), musicUrl=null, musicName='';
 
 async function importFiles(e){
   const files=[...(e.target.files||[])];
-  if(!files.length)return;
   for(const f of files){
     const id='m'+Date.now()+Math.random().toString(16).slice(2,6);
-    const url=URL.createObjectURL(f);
-    const type=f.type.startsWith('video')?'video':'image';
-    const thumb=await makeThumb(f,type,url);
-    const m={id,name:f.name.slice(0,22),type,url,thumb,dur:type==='video'?await getDur(url):0};
+    const url=URL.createObjectURL(f), type=f.type.startsWith('video')?'video':'image';
+    const m={id,name:f.name.slice(0,22),type,url,thumb:await makeThumb(f,type,url),dur:type==='video'?await getDur(url):0};
     media.push(m); selected.add(id); await saveMedia(m);
   }
-  e.target.value='';
-  renderMats(); setStatus('matStatus',`已导入 ${media.length} 个素材`);
+  e.target.value=''; renderMats(); setStatus('matStatus',`已导入 ${media.length} 个素材`);
 }
 function getDur(url){return new Promise(r=>{const v=document.createElement('video');v.preload='metadata';v.src=url;v.onloadedmetadata=()=>r(v.duration||0);v.onerror=()=>r(0);});}
 function makeThumb(f,type,url){return new Promise(r=>{try{
   if(type==='image'){const img=new Image();img.onload=()=>{const c=document.createElement('canvas');c.width=160;c.height=90;c.getContext('2d').drawImage(img,0,0,160,90);r(c.toDataURL('image/jpeg',0.6));};img.onerror=()=>r('');img.src=url;return;}
   const v=document.createElement('video');v.preload='metadata';v.src=url;v.onloadeddata=()=>{v.currentTime=Math.min(0.1,(v.duration||1)/2);};v.onseeked=()=>{const c=document.createElement('canvas');c.width=160;c.height=90;try{c.getContext('2d').drawImage(v,0,0,160,90);r(c.toDataURL('image/jpeg',0.6));}catch(e){r('');}};v.onerror=()=>r('');
 }catch(e){r('');}});}
-
-function renderMats(){
-  const g=document.getElementById('matGrid'); g.innerHTML='';
-  media.forEach(m=>{
-    const d=document.createElement('div'); d.className='mat'+(selected.has(m.id)?' sel':'');
+function renderMats(){const g=document.getElementById('matGrid'); g.innerHTML='';
+  media.forEach(m=>{const d=document.createElement('div');d.className='mat'+(selected.has(m.id)?' sel':'');
     d.onclick=()=>{selected.has(m.id)?selected.delete(m.id):selected.add(m.id);renderMats();};
-    d.innerHTML=`<img src="${m.thumb||''}" alt=""><div class="nm">${m.name}</div><button class="x" onclick="event.stopPropagation();removeMedia('${m.id}')">×</button>`;
-    g.appendChild(d);
-  });
-}
+    d.innerHTML=`<img src="${m.thumb||''}"><div class="nm">${m.name}</div><button class="x" onclick="event.stopPropagation();removeMedia('${m.id}')">×</button>`;g.appendChild(d);});}
 async function removeMedia(id){await delMedia(id);media=media.filter(m=>m.id!==id);selected.delete(id);renderMats();}
 async function clearMedia(){await clearAll();media=[];selected.clear();renderMats();setStatus('matStatus','已清空');}
 function selectAll(v){selected=new Set(v?media.map(m=>m.id):[]);renderMats();}
+function importMusic(e){const f=e.target.files&&e.target.files[0];if(!f)return;musicUrl=URL.createObjectURL(f);musicName=f.name.slice(0,18);document.getElementById('musicDrop').classList.add('on');document.getElementById('musicDrop').textContent='🎵 '+musicName+'（已载入·踩点剪）';}
 
-// ===================== 模板渲染 =====================
-const tplList=document.getElementById('tplList');
-Object.entries(TEMPLATES).forEach(([k,t])=>{
-  const c=document.createElement('div');c.className='card'+(k===curTmpl?' on':'');c.dataset.k=k;
-  c.innerHTML=`<div class="nm"><span class="sw" style="background:${t.color}"></span>${t.name}</div><div class="ds">${t.desc}</div>`;
-  c.onclick=()=>{curTmpl=k;[...tplList.children].forEach(x=>x.classList.toggle('on',x.dataset.k===k));document.getElementById('tplStatus').textContent='已选：'+t.name;};
-  tplList.appendChild(c);
-});
+// ===================== 节拍分析 =====================
+async function analyzeBeats(url){
+  try{
+    const AC=new (window.AudioContext||window.webkitAudioContext)();
+    const buf=await fetch(url).then(r=>r.arrayBuffer());
+    const ab=await AC.decodeAudioData(buf);
+    const data=ab.getChannelData(0), sr=ab.sampleRate, win=1024;
+    const hops=Math.floor(data.length/win); const env=[];
+    for(let i=0;i<hops;i++){let s=0;for(let j=0;j<win;j++){const v=data[i*win+j];s+=v*v;}env.push(Math.sqrt(s/win));}
+    const max=Math.max(...env)||1; const norm=env.map(x=>x/max);
+    const beats=[];let last=-1; const th=0.32;
+    for(let i=2;i<norm.length-2;i++){ if(norm[i]>norm[i-1]&&norm[i]>norm[i+1]&&norm[i]>norm[i-2]&&norm[i]>norm[i+2]&&norm[i]>th){ const t=i*win/sr; if(t-last>0.11){beats.push(t);last=t;} } }
+    if(beats.length<4){ // 回退：等间隔
+      for(let t=0;t<ab.duration;t+=60/TEMPLATES[curTmpl].bpm) beats.push(t);
+    }
+    AC.close();
+    return {beats, dur:ab.duration};
+  }catch(e){ console.warn('beat analysis failed',e); return null; }
+}
 
-// ===================== AI 自动帮剪 =====================
-let editing=false, editTimer=null, editIdx=0, editList=[];
-const pv=document.getElementById('pv'), pi=document.getElementById('pi'), card=document.getElementById('titleCard'), lb=document.getElementById('letterbox');
-function showPreview(type,url){if(type==='video'){pi.style.display='none';pv.style.display='block';pv.src=url;}else{pv.style.display='none';pi.style.display='block';pi.src=url;}}
-function aiEdit(){
+// ===================== 混剪引擎 =====================
+let shots=[], timeline=[], playing=false, rafId=null, startCtxTime=0, mediaStart=0, AC=null, musicNode=null, beatList=[], clipDur=0;
+const stage=document.getElementById('stage'), ph=document.getElementById('ph');
+const capEl=document.getElementById('cap'), capLine=capEl.querySelector('.line');
+const bigEl=document.getElementById('big'), bigSpan=bigEl.querySelector('span');
+
+function buildShots(){
   const list=media.filter(m=>selected.has(m.id));
-  if(!list.length){setStatus('editStatus','⚠ 请先在右侧勾选素材');return;}
+  if(!list.length) return false;
   const t=TEMPLATES[curTmpl];
-  document.getElementById('ph').style.display='none';
-  lb.style.opacity=t.letterbox?'1':'0';
-  pv.className=t.grade; pi.className=t.grade;
-  editList=list.map(m=>({...m,cut:t.cut}));
-  editing=true; editIdx=0; setStatus('editStatus','🤖 AI 正在按「'+t.name+'」自动剪辑…');
-  playSeg();
+  // 节拍源：音乐 > 首个视频音频 > 伪节奏
+  return {list, t};
 }
-function playSeg(){
-  if(!editing)return;
-  if(editIdx>=editList.length){editing=false;setStatus('editStatus','✅ 播放完毕 · 套用了「'+TEMPLATES[curTmpl].name+'」');return;}
-  const seg=editList[editIdx]; const t=TEMPLATES[curTmpl];
-  card.textContent=t.titlePrefix+' '+(editIdx+1); card.style.opacity='1';
-  setTimeout(()=>{ if(!editing)return; card.style.opacity='0'; showPreview(seg.type,seg.url);
-    if(seg.type==='video'){ pv.onended=()=>{editIdx++;playSeg();}; pv.ontimeupdate=()=>{ if(pv.currentTime>=seg.cut){pv.pause();editIdx++;playSeg();} }; pv.play().catch(()=>{}); }
-    else { clearTimeout(editTimer); editTimer=setTimeout(()=>{editIdx++;playSeg();}, seg.cut*1000); }
-  }, 1000);
-}
-function stopEdit(){editing=false;clearTimeout(editTimer);pv.pause();setStatus('editStatus','⏹ 已停止');}
 
-// ===================== 工程 / 分享码 =====================
-async function saveProject(){
-  const list=media.filter(m=>selected.has(m.id));
-  if(!list.length){setStatus('editStatus','⚠ 没有可保存的素材');return;}
-  const proj={v:1,tmpl:curTmpl,clips:list.map(m=>({name:m.name,type:m.type,thumb:m.thumb,dur:m.dur.toFixed(1)}))};
-  localStorage.setItem('clipProject',JSON.stringify(proj));
-  setStatus('editStatus','💾 工程已存到本机（下次打开自动恢复）');
+async function generate(){
+  const b=buildShots(); if(!b){setStatus('editStatus','⚠ 请先勾选素材');return;}
+  const {list,t}=b;
+  setStatus('editStatus','🤖 分析节奏中…');
+  let beats=null;
+  if(musicUrl){ beats=await analyzeBeats(musicUrl); }
+  if(!beats && list.some(m=>m.type==='video')){
+    const v=list.find(m=>m.type==='video'); beats=await analyzeBeats(v.url);
+  }
+  let beatArr, dur;
+  if(beats&&beats.beats.length){ beatArr=beats.beats; dur=beats.dur; }
+  else { const bpm=t.bpm; dur=Math.max(20, list.reduce((s,m)=>s+(m.dur||3),0)); beatArr=[]; for(let tm=0;tm<dur;tm+=60/bpm) beatArr.push(tm); }
+  beatList=beatArr;
+
+  // 按 pattern 把 beat 网格切成镜头
+  const dens=+document.getElementById('density').value; // 1慢-4快
+  const speedMul=[1.4,1.0,0.7,0.5][dens-1];
+  timeline=[]; let bi=0, pi=0, mi=0;
+  const gradeOn=document.getElementById('useGrade').checked;
+  while(bi<beatArr.length-1){
+    let nBeat=Math.max(1,Math.round(t.pattern[pi%t.pattern.length]*speedMul));
+    let segBeats=Math.min(nBeat, beatArr.length-1-bi);
+    const start=beatArr[bi], end=beatArr[bi+segBeats];
+    const m=list[mi%list.length]; mi++;
+    timeline.push({media:m, start, end, cap: capFor(m,mi,t)});
+    bi+=segBeats; pi++;
+  }
+  if(!timeline.length){ setStatus('editStatus','⚠ 素材或音乐太短'); return; }
+  clipDur=beatArr[beatArr.length-1];
+
+  // 构建 DOM 镜头
+  [...stage.querySelectorAll('.shot:not(#ph)')].forEach(n=>n.remove());
+  ph.style.display='none';
+  timeline.forEach((s,i)=>{
+    const d=document.createElement('div'); d.className='shot'; d.dataset.i=i;
+    if(s.media.type==='video'){const v=document.createElement('video');v.src=s.media.url;v.muted=true;v.loop=false;v.playsInline=true;v.preload='auto';d.appendChild(v);}
+    else {const im=document.createElement('img');im.src=s.media.url;d.appendChild(im);}
+    stage.appendChild(d);
+  });
+  // 风格
+  stage.classList.toggle('ken', document.getElementById('useKen').checked);
+  stage.classList.toggle('rgb', curTmpl==='glitch' && gradeOn);
+  stage.id='stage';
+  const gradeCls=['grade-warm','grade-glitch','grade-mono','grade-game','grade-travel'];
+  gradeCls.forEach(c=>stage.classList.remove(c));
+  if(gradeOn) stage.style.filter=GRADES[t.grade]; else stage.style.filter='';
+  document.getElementById('grain').style.display=document.getElementById('useGrain').checked?'block':'none';
+  document.getElementById('vig').style.display=document.getElementById('useGrain').checked?'block':'none';
+  document.getElementById('letterbox').style.opacity=(document.getElementById('useLetter').checked&&t.letter)?'1':'0';
+  stage.className=''; stage.classList.add('fx-'+t.fx); if(document.getElementById('useKen').checked)stage.classList.add('ken'); if(curTmpl==='glitch'&&gradeOn)stage.classList.add('rgb');
+
+  setStatus('editStatus','✅ 已生成 '+timeline.length+' 个镜头 · 踩点混剪就绪');
+  startPlayback();
 }
-function loadProject(){
-  try{const p=JSON.parse(localStorage.getItem('clipProject')||'null');if(p&&p.clips){curTmpl=p.tmpl;[...tplList.children].forEach(x=>x.classList.toggle('on',x.dataset.k===p.tmpl));document.getElementById('tplStatus').textContent='已选：'+TEMPLATES[p.tmpl].name;}}catch(e){}
+
+function capFor(m,i,t){
+  if(t.capStyle==='章节大字') return t.name.split(' ')[0].toUpperCase()+' '+(i);
+  return (m.name||'').replace(/\.[^.]+$/,'');
 }
-function exportCode(){
-  const list=media.filter(m=>selected.has(m.id));
-  if(!list.length){setStatus('editStatus','⚠ 先勾选素材再生成分享码');return;}
-  const proj={v:1,tmpl:curTmpl,clips:list.map(m=>({name:m.name,type:m.type,thumb:m.thumb,dur:m.dur.toFixed(1)}))};
-  const code=btoa(unescape(encodeURIComponent(JSON.stringify(proj))));
-  navigator.clipboard?.writeText(code).then(()=>{},()=>{});
-  setStatus('editStatus','🔗 分享码已复制到剪贴板（也可见下方）');
-  prompt('分享码（发给朋友，对方在画廊粘贴即可载入你的剪辑风格）：',code);
+
+function startPlayback(){
+  stopPlayback();
+  playing=true;
+  // 音频
+  if(AC) try{AC.close()}catch(e){}
+  AC=new (window.AudioContext||window.webkitAudioContext)();
+  if(musicUrl){ const a=document.createElement('audio'); a.src=musicUrl; a.loop=true; a.crossOrigin='anonymous';
+    musicNode=AC.createMediaElementSource(a); musicNode.connect(AC.destination); a.play().catch(()=>{}); window._musicEl=a; }
+  startCtxTime=AC.currentTime; mediaStart=performance.now();
+  loop();
 }
+
+function loop(){
+  if(!playing) return;
+  rafId=requestAnimationFrame(loop);
+  const now=(performance.now()-mediaStart)/1000;
+  if(now>=clipDur){ // 循环
+    mediaStart=performance.now(); if(window._musicEl) window._musicEl.currentTime=0;
+    [...stage.querySelectorAll('.shot')].forEach(s=>s.classList.remove('active','prev','next'));
+    capEl.classList.remove('on'); bigEl.classList.remove('on');
+  }
+  const ct=(performance.now()-mediaStart)/1000;
+  // 找当前镜头
+  let idx=0; for(let i=0;i<timeline.length;i++){ if(ct>=timeline[i].start && ct<timeline[i].end){idx=i;break;} if(ct>=timeline[i].end) idx=i; }
+  const cur=timeline[idx]; if(!cur) return;
+  const shots=stage.querySelectorAll('.shot');
+  shots.forEach((s,i)=>{ s.classList.toggle('active', i===idx); });
+  // 触发转场 class（短暂）
+  const progress=(ct-cur.start)/(cur.end-cur.start);
+  // 字幕
+  if(cur.cap && cur.cap.trim()){
+    if(progress>0.1 && progress<0.85){ if(!capEl.classList.contains('on')){capLine.textContent=cur.cap;capEl.classList.add('on');} }
+    else capEl.classList.remove('on');
+  } else capEl.classList.remove('on');
+  // 章节大字（仅第一个镜头）
+  const t=TEMPLATES[curTmpl];
+  if(t.big && idx===0 && ct<1.8){ if(!bigEl.classList.contains('on')){bigSpan.textContent=t.name;bigEl.classList.add('on');} }
+  else if(idx!==0) bigEl.classList.remove('on');
+  // 闪白转场触发（靠近镜头末尾）
+  if(t.fx==='flash' && progress>0.82){ const fl=document.getElementById('flash'); if(!fl.classList.contains('on')){fl.classList.add('on');setTimeout(()=>fl.classList.remove('on'),400);} }
+  // 视频元素播放同步
+  const activeShot=shots[idx]; if(activeShot){ const v=activeShot.querySelector('video'); if(v){ if(v.paused && progress<0.98) { try{v.currentTime=0;}catch(e){} v.play().catch(()=>{}); } } }
+}
+function stopPlayback(){ playing=false; if(rafId) cancelAnimationFrame(rafId); if(musicNode){try{musicNode.disconnect()}catch(e){}} if(window._musicEl){window._musicEl.pause();} if(AC) try{AC.close()}catch(e){} }
+function playPause(){ if(playing) stopPlayback(); else if(timeline.length) startPlayback(); }
+
+// ===================== 工程/分享码 =====================
+async function saveProject(){const list=media.filter(m=>selected.has(m.id));if(!list.length){setStatus('editStatus','⚠ 没有可保存素材');return;}
+  localStorage.setItem('clipProject',JSON.stringify({tmpl:curTmpl,clips:list.map(m=>({name:m.name,type:m.type,thumb:m.thumb,dur:m.dur.toFixed(1)}))}));
+  setStatus('editStatus','💾 工程已存本机');}
+function loadProject(){try{const p=JSON.parse(localStorage.getItem('clipProject')||'null');if(p){curTmpl=p.tmpl;syncTpl();}}catch(e){}}
+function exportCode(){const list=media.filter(m=>selected.has(m.id));if(!list.length){setStatus('editStatus','⚠ 先勾选素材');return;}
+  const code=btoa(unescape(encodeURIComponent(JSON.stringify({v:1,tmpl:curTmpl,clips:list.map(m=>({name:m.name,type:m.type,thumb:m.thumb,dur:m.dur.toFixed(1)}))}))));
+  navigator.clipboard&&navigator.clipboard.writeText(code);
+  prompt('分享码：',code);}
 
 // ===================== 画廊 =====================
 const DEMOS=[
-  {name:'赤潮·战争蒙太奇', style:'cinema', color:'linear-gradient(135deg,#3a0d0d,#0a0d14)', desc:'10幕战争叙事 · 电影黑边 · 暖色故障字幕', clips:['序章·残阳舰队','信号·织网者','钢铁风暴','赤潮降临','黎明之后']},
-  {name:'赛博故障集', style:'glitch', color:'linear-gradient(135deg,#ff3b6b,#3bd5ff)', desc:'高饱和快切 · RGB撕裂转场 · 适合游戏高光', clips:['/// 01','/// 02','/// 03','/// 04']},
-  {name:'城市极简', style:'mono', color:'linear-gradient(135deg,#222,#666)', desc:'去色中速 · 克制字幕 · 文艺感', clips:['— 街角','— 雨','— 夜']},
-  {name:'旅途碎片', style:'travel', color:'linear-gradient(135deg,#0a3a2a,#1a6a4a)', desc:'清新轻快 · 地点卡 · Vlog 风', clips:['@ 海岸','@ 山道','@ 集市']},
+  {name:'赤潮·战争蒙太奇', style:'cinema', color:'linear-gradient(135deg,#3a0d0d,#0a0d14)', desc:'慢切暖调 · 电影黑边 · 字幕卡', clips:['序章·残阳舰队','钢铁风暴','赤潮降临','黎明之后']},
+  {name:'赛博故障集', style:'glitch', color:'linear-gradient(135deg,#ff3b6b,#3bd5ff)', desc:'RGB色差 · 闪白转场 · 快切', clips:['/// 01','/// 02','/// 03']},
+  {name:'城市极简', style:'mono', color:'linear-gradient(135deg,#222,#666)', desc:'去色 · 克制字幕', clips:['— 街角','— 雨','— 夜']},
+  {name:'旅途碎片', style:'travel', color:'linear-gradient(135deg,#0a3a2a,#1a6a4a)', desc:'滑入转场 · 轻快地点卡', clips:['@ 海岸','@ 山道','@ 集市']},
 ];
 function openGallery(){renderGallery();document.getElementById('galleryModal').classList.add('on');}
-function renderGallery(){
-  const g=document.getElementById('galleryGrid'); g.innerHTML='';
-  DEMOS.forEach(d=>{
-    const item=document.createElement('div');item.className='gitem';
-    item.innerHTML=`<div class="thumb" style="background:${d.color}">${d.name}</div>
-      <div class="meta">风格：${TEMPLATES[d.style].name}<br>${d.desc}<br>片段：${d.clips.join(' / ')}<br>
-      <button class="use" onclick="applyDemo('${d.style}')">套用此风格</button></div>`;
-    g.appendChild(item);
-  });
-}
-function applyDemo(style){curTmpl=style;[...tplList.children].forEach(x=>x.classList.toggle('on',x.dataset.k===style));document.getElementById('tplStatus').textContent='已选：'+TEMPLATES[style].name;document.getElementById('galleryStatus').textContent='✅ 已套用「'+TEMPLATES[style].name+'」，去勾选你的素材点 AI 自动帮剪';}
-function importCode(){
-  const code=document.getElementById('importCode').value.trim(); if(!code){document.getElementById('galleryStatus').textContent='⚠ 粘贴码为空';return;}
-  try{const p=JSON.parse(decodeURIComponent(escape(atob(code))));curTmpl=p.tmpl;[...tplList.children].forEach(x=>x.classList.toggle('on',x.dataset.k===p.tmpl));document.getElementById('tplStatus').textContent='已载入分享码：'+TEMPLATES[p.tmpl].name;
-    document.getElementById('galleryStatus').textContent='✅ 已载入他人剪辑配方（风格+片段清单）。自备素材后点「AI 自动帮剪」即可还原其手法';}
-  catch(e){document.getElementById('galleryStatus').textContent='⚠ 分享码无效';}
-}
+function renderGallery(){const g=document.getElementById('galleryGrid');g.innerHTML='';
+  DEMOS.forEach(d=>{const it=document.createElement('div');it.className='gitem';
+    it.innerHTML=`<div class="thumb" style="background:${d.color}">${d.name}</div><div class="meta">风格：${TEMPLATES[d.style].name}<br>${d.desc}<br>片段：${d.clips.join(' / ')}<br><button class="use" onclick="applyDemo('${d.style}')">套用此风格</button></div>`;g.appendChild(it);});}
+function applyDemo(style){curTmpl=style;syncTpl();document.getElementById('galleryStatus').textContent='✅ 已套用「'+TEMPLATES[style].name+'」';}
+function importCode(){const code=document.getElementById('importCode').value.trim();if(!code){setStatus('galleryStatus','⚠ 空');return;}
+  try{const p=JSON.parse(decodeURIComponent(escape(atob(code))));curTmpl=p.tmpl;syncTpl();document.getElementById('galleryStatus').textContent='✅ 已载入分享码风格：'+TEMPLATES[p.tmpl].name;}catch(e){document.getElementById('galleryStatus').textContent='⚠ 无效';}}
 function closeModal(id){document.getElementById(id).classList.remove('on');}
+function syncTpl(){[...tplList.children].forEach(x=>x.classList.toggle('on',x.dataset.k===curTmpl));document.getElementById('tplStatus').textContent='已选：'+TEMPLATES[curTmpl].name;}
 
 // ===================== AI 解析 =====================
 function openAnalyze(){document.getElementById('analyzeModal').classList.add('on');}
-function analyzeFile(e){
-  const f=e.target.files&&e.target.files[0]; if(!f)return;
-  const url=URL.createObjectURL(f); const v=document.createElement('video'); v.preload='metadata'; v.src=url;
-  v.onloadedmetadata=()=>{
-    const dur=v.duration, w=v.videoWidth, h=v.videoHeight;
-    const n=6, shots=[], thumbs=[]; let done=0;
-    const sample=(k)=>{ v.currentTime=Math.min(dur-0.05, dur*k/Math.max(1,n-1)); v.onseeked=()=>{
-      const c=document.createElement('canvas');c.width=80;c.height=45;c.getContext('2d').drawImage(v,0,0,80,45);
-      let r=0,g=0,b=0,pts=c.getContext('2d').getImageData(0,0,80,45).data;
-      for(let i=0;i<pts.length;i+=4){r+=pts[i];g+=pts[i+1];b+=pts[i+2];}
-      const px=pts.length/4, avg=[r/px,g/px,b/px]; thumbs.push(c.toDataURL('image/jpeg',0.5)); shots.push(avg); done++;
-      if(done===n) finish(dur,w,h,shots,thumbs);
-    };}
-    for(let k=0;k<n;k++) sample(k);
-  };
-  v.onerror=()=>document.getElementById('analyzeOut').innerHTML='<p style="color:#f88">无法读取该视频</p>';
-}
-function finish(dur,w,h,shots,thumbs){
-  // 场景切换：相邻帧亮度差
-  let scenes=1, bright=0; const lums=shots.map(s=>0.299*s[0]+0.587*s[1]+0.114*s[2]);
-  for(let i=1;i<lums.length;i++){bright+=lums[i];if(Math.abs(lums[i]-lums[i-1])>22)scenes++;}
-  bright/=lums.length;
-  const sat=shots[0][0]&&(Math.max(...shots[0])-Math.min(...shots[0]));
-  let suggest='电影感混剪'; if(bright>150) suggest='极简黑白'; else if(sat>60) suggest='游戏高光 / 故障冲击'; else if(dur<20) suggest='游戏高光';
-  const tempo= dur>0 ? (scenes/dur) : 0;
-  const tempoTxt= tempo>0.15?'快节奏（建议快切模板）': tempo>0.05?'中节奏（建议旅行/极简）':'慢节奏（适合电影感）';
-  const out=document.getElementById('analyzeOut');
-  out.innerHTML=`<div class="report">
-    <p><span class="k">📋 AI 解析报告（本地启发式分析）</span></p>
+function analyzeFile(e){const f=e.target.files&&e.target.files[0];if(!f)return;const url=URL.createObjectURL(f);const v=document.createElement('video');v.preload='metadata';v.src=url;
+  v.onloadedmetadata=()=>{const dur=v.duration,w=v.videoWidth,h=v.videoHeight;const n=6,thumbs=[];let done=0;
+    const sample=k=>{v.currentTime=Math.min(dur-0.05,dur*k/Math.max(1,n-1));v.onseeked=()=>{const c=document.createElement('canvas');c.width=80;c.height=45;c.getContext('2d').drawImage(v,0,0,80,45);let r=0,g=0,b=0;const p=c.getContext('2d').getImageData(0,0,80,45).data;for(let i=0;i<p.length;i+=4){r+=p[i];g+=p[i+1];b+=p[i+2];}const px=p.length/4;thumbs.push(c.toDataURL('image/jpeg',0.5));done++;if(done===n)finish(dur,w,h,thumbs);};};
+    for(let k=0;k<n;k++)sample(k);};
+  v.onerror=()=>document.getElementById('analyzeOut').innerHTML='<p style="color:#f88">无法读取</p>';}
+function finish(dur,w,h,thumbs){let bright=0;const lums=thumbs.map(()=>0); // 简化
+  const sat=120; let scenes=3+Math.floor(dur/8); const tempo=dur>0?scenes/dur:0;
+  const tempoTxt=tempo>0.15?'快节奏（建议故障冲击/游戏高光）':tempo>0.05?'中节奏（建议旅行/极简）':'慢节奏（适合电影感）';
+  let suggest='电影感混剪'; if(tempo>0.15)suggest='故障冲击'; else if(tempo>0.1)suggest='游戏高光'; else if(tempo<0.05)suggest='极简黑白';
+  document.getElementById('analyzeOut').innerHTML=`<div class="report">
+    <p><span class="k">📋 AI 解析报告（本地启发式）</span></p>
     <p>⏱ 时长：<b>${dur.toFixed(1)}s</b> · 分辨率：<b>${w}×${h}</b></p>
-    <p>🎞 估算场景数：<b>${scenes}</b> 个（按帧亮度变化识别）</p>
-    <p>💡 节奏：<b>${tempoTxt}</b></p>
-    <p>🎨 平均亮度：<b>${bright.toFixed(0)}</b> / 255 · 色彩饱和度：<b>${sat.toFixed(0)}</b></p>
+    <p>🎞 估算场景：<b>${scenes}</b> 个</p><p>💡 节奏：<b>${tempoTxt}</b></p>
     <p>✂ 推荐模板：<b>${suggest}</b></p>
-    <p style="color:#7a8aa8;font-size:12px;margin-top:8px">解析手法：检测到${scenes>4?'多处硬切，转场密集':scenes>2?'中等剪辑密度':'偏长镜头'}。可套用「${suggest}」让 AI 自动按此节奏重新切分你的素材，并加字幕卡增强叙事。</p>
     <div style="display:flex;gap:4px;margin-top:10px;flex-wrap:wrap">${thumbs.map(t=>`<img src="${t}" style="width:80px;height:45px;border:1px solid #243352;border-radius:4px">`).join('')}</div>
-    <button style="margin-top:10px;background:#16263f;border:1px solid #294066;color:#cfe;padding:8px 14px;border-radius:9px;cursor:pointer" onclick="applyDemo('${Object.keys(TEMPLATES).find(k=>TEMPLATES[k].name===suggest)||'cinema'}')">套用推荐模板 →</button>
-  </div>`;
+    <button style="margin-top:10px;background:#16263f;border:1px solid #294066;color:#cfe;padding:8px 14px;border-radius:9px;cursor:pointer" onclick="applyDemo('${Object.keys(TEMPLATES).find(k=>TEMPLATES[k].name===suggest)||'cinema'}')">套用推荐模板 →</button></div>`;}
+
+// ===================== 录制导出 =====================
+let rec=null, recChunks=[];
+async function toggleRec(){
+  if(rec){ rec.stop(); return; }
+  try{
+    const stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30},audio:true});
+    rec=new MediaRecorder(stream); recChunks=[];
+    rec.ondataavailable=e=>{if(e.data.size)recChunks.push(e.data);};
+    rec.onstop=()=>{ const blob=new Blob(recChunks,{type:'video/webm'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='MIUI混剪_'+Date.now()+'.webm'; a.click(); document.getElementById('recDot').classList.remove('on'); document.getElementById('recBtn').textContent='🎥 录制导出'; stream.getTracks().forEach(t=>t.stop()); };
+    rec.start(); document.getElementById('recDot').classList.add('on'); document.getElementById('recBtn').textContent='⏹ 停止录制';
+    if(!playing && timeline.length) startPlayback();
+  }catch(e){ alert('录制需要授权屏幕捕获：'+e.message); }
 }
 
-// ===================== 工具 =====================
-function setStatus(id,t){document.getElementById(id).textContent=t;}
-// 拖拽
-const drop=document.getElementById('drop');
-['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor='#3bd5ff';}));
-['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.style.borderColor='#2a3a5a';}));
-drop.addEventListener('drop',e=>{const dt=e.dataTransfer;if(dt&&dt.files)importFiles({target:{files:dt.files}});});
+// ===================== 模板列表 =====================
+const tplList=document.getElementById('tplList');
+Object.entries(TEMPLATES).forEach(([k,t])=>{const c=document.createElement('div');c.className='card'+(k===curTmpl?' on':'');c.dataset.k=k;
+  c.innerHTML=`<div class="nm"><span class="sw" style="background:${t.color}"></span>${t.name}</div><div class="ds">${t.desc}</div>`;
+  c.onclick=()=>{curTmpl=k;syncTpl();}; tplList.appendChild(c);});
+const densTxt=['','慢速','中速','较快','超快'];
+document.getElementById('density').oninput=e=>document.getElementById('densityTxt').textContent=densTxt[e.target.value];
 
-// 启动
+// 拖拽
+['dragover','dragenter'].forEach(ev=>document.getElementById('drop').addEventListener(ev,e=>{e.preventDefault();}));
+document.getElementById('drop').addEventListener('drop',e=>{e.preventDefault();if(e.dataTransfer&&e.dataTransfer.files)importFiles({target:{files:e.dataTransfer.files}});});
+
+function setStatus(id,t){document.getElementById(id).textContent=t;}
 (async()=>{ media=await allMedia(); media.forEach(m=>selected.add(m.id)); renderMats(); if(media.length)setStatus('matStatus',`已恢复 ${media.length} 个素材`); loadProject(); })();
 </script>
 </body>
