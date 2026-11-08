@@ -208,9 +208,36 @@
 <div class="modal" id="aiModal"><div class="mbox">
   <button class="close" onclick="closeModal('aiModal')">×</button>
   <h2>🔥 AI 智能混剪 <span style="color:#7a8aa8;font-weight:400;font-size:12px">（真·多模态大模型解析）</span></h2>
-  <p style="color:#7a8aa8;font-size:12px;margin-bottom:10px">上传视频 → 云端大模型看懂内容、找出最燃片段与高光时刻 → 自动按时间码切镜 + 配乐生成混剪。需自备一个 Cloudflare Worker 地址（见底部说明）。</p>
-  <div style="font-size:12px;color:#9ab;margin-bottom:4px">Worker 地址（留空用默认，可改）：</div>
-  <input id="aiWorker" style="width:100%;background:#070d18;border:1px solid #243352;border-radius:8px;color:#cfe;padding:8px;font-size:12px" placeholder="https://xxx.workers.dev/analyze">
+  <p style="color:#7a8aa8;font-size:12px;margin-bottom:10px">上传视频 → 大模型看懂内容、找出最燃片段 → 自动按时间码切镜 + 配乐生成混剪。已接入国内平台，不强制 Cloudflare。</p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+    <label style="font-size:12px;color:#cfe"><input type="radio" name="aiProv" value="gemini" checked> Gemini</label>
+    <label style="font-size:12px;color:#cfe"><input type="radio" name="aiProv" value="zhipu"> 智谱 GLM</label>
+    <label style="font-size:12px;color:#cfe"><input type="radio" name="aiProv" value="doubao"> 豆包</label>
+    <label style="font-size:12px;color:#cfe"><input type="radio" name="aiProv" value="coze"> 扣子 Coze</label>
+  </div>
+  <div id="prov-gemini">
+    <div style="font-size:12px;color:#9ab;margin-bottom:4px">Gemini Worker 地址（留空用默认）：</div>
+    <input id="aiWorker" style="width:100%;background:#070d18;border:1px solid #243352;border-radius:8px;color:#cfe;padding:8px;font-size:12px" placeholder="https://xxx.workers.dev/analyze">
+  </div>
+  <div id="prov-zhipu" style="display:none">
+    <div style="font-size:12px;color:#9ab;margin-bottom:4px">智谱 API Key（open.bigmodel.cn 免费申请）：</div>
+    <input id="zhipuKey" style="width:100%;background:#070d18;border:1px solid #243352;border-radius:8px;color:#cfe;padding:8px;font-size:12px" placeholder="Bearer 后面的那串">
+  </div>
+  <div id="prov-doubao" style="display:none">
+    <div style="font-size:12px;color:#9ab;margin-bottom:4px">豆包 API Key（火山方舟 console.volcengine.com 申请）：</div>
+    <input id="doubaoKey" style="width:100%;background:#070d18;border:1px solid #243352;border-radius:8px;color:#cfe;padding:8px;font-size:12px" placeholder="ARK_API_KEY">
+    <div style="font-size:12px;color:#9ab;margin:6px 0 4px">模型/接入点名：</div>
+    <input id="doubaoModel" style="width:100%;background:#070d18;border:1px solid #243352;border-radius:8px;color:#cfe;padding:8px;font-size:12px" placeholder="如 doubao-visual-pro-xxxx">
+  </div>
+  <div id="prov-coze" style="display:none">
+    <p style="color:#9ab;font-size:12px;line-height:1.7">在 <b>coze.cn</b> 建 bot，系统提示词用下方这段；发布后点「Web SDK / 嵌入网页」，把那段<b>嵌入代码</b>粘到这里加载，直接在站内和 bot 对话分析视频。</p>
+    <details style="color:#7a8aa8;font-size:11px"><summary>点开复制「混剪导演」系统提示词</summary><div style="margin-top:6px;color:#9ab;line-height:1.6">你是顶级影视混剪导演。用户会发来视频或截图，请找出最燃片段，返回严格 JSON：{"segments":[{"start":0,"end":5,"type":"战斗","reason":"爆炸冲击","bpm":140}],"overallBpm":132,"title":"燃爆全场","mood":"史诗热血"}。不要任何额外文字。</div></details>
+    <textarea id="cozeEmbed" class="codebox" style="height:70px;margin-top:6px" placeholder="在此粘贴 Coze 的嵌入代码（<iframe ...> 或 <script ...>）"></textarea>
+    <button onclick="copyCozePrompt()" style="margin-top:6px;background:#16263f;border:1px solid #294066;color:#cfe;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px">复制提示词</button>
+    <button onclick="loadCoze()" style="margin-top:6px;background:#16263f;border:1px solid #294066;color:#cfe;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px">加载扣子 bot</button>
+    <div id="cozeBox" style="margin-top:8px"></div>
+  </div>
+  <script>document.querySelectorAll('input[name=aiProv]').forEach(function(r){r.onchange=function(){['gemini','zhipu','doubao','coze'].forEach(function(p){var el=document.getElementById('prov-'+p);if(el)el.style.display=p===r.value?'block':'none';});};});</script>
   <div id="aiDrop" onclick="document.getElementById('aiFile').click()" style="border:1.5px dashed #2a3a5a;border-radius:10px;padding:16px;text-align:center;color:#7a8aa8;cursor:pointer;margin-top:10px">点击选择视频（建议 &lt;100MB，AI 会看完整内容）</div>
   <input id="aiFile" type="file" accept="video/*" style="display:none" onchange="aiPick(event)">
   <div class="row" style="margin-top:10px">
@@ -220,11 +247,11 @@
   <div id="aiStatus" class="status"></div>
   <div id="aiReport" style="margin-top:12px"></div>
   <details style="margin-top:14px;color:#7a8aa8;font-size:11px;line-height:1.7">
-    <summary>没有 Worker？点开看 2 分钟自建（免费·手机可操作）</summary>
-    1) 打开 <b>workers.cloudflare.com</b> 注册免费号<br>
-    2) 新建 Worker，把聊天里给的 <b>worker-ai.js</b> 全文粘贴进去<br>
-    3) Settings → Variables → 加 GEMINI_KEY（去 <b>ai.google.dev</b> 免费申请）<br>
-    4) Deploy，把地址粘到上方输入框即可
+    <summary>各平台怎么拿 Key（全中文·手机可做）</summary>
+    • <b>智谱 GLM</b>：open.bigmodel.cn → 注册 → 右上角「API Keys」新建并复制。免费额度够用，模型选 glm-4v-plus（能看视频/图片）。<br>
+    • <b>豆包</b>：console.volcengine.com（火山方舟）→ 开通视觉模型 → 拿 ARK_API_KEY + 接入点 ID。<br>
+    • <b>扣子 Coze</b>：coze.cn → 新建 bot → 系统提示词用上方「混剪导演」文案 → 发布 → 嵌入网页，把代码粘进「扣子」页加载，直接在站内对话。<br>
+    • 若浏览器提示「跨域 / CORS 被拦截」，会自动切到<b>手动模式</b>：复制提示词发到对应平台，把返回的 JSON 粘回来即可，不依赖任何部署。
   </details>
 </div></div>
 
@@ -497,22 +524,91 @@ let aiMusicUrl=null;
 function openAIModal(){ document.getElementById('aiWorker').value=aiWorker; document.getElementById('aiModal').classList.add('on'); }
 function aiPick(e){ const f=e.target.files&&e.target.files[0]; if(!f)return; aiVideoUrl=URL.createObjectURL(f); aiVideoName=f.name.slice(0,22); setStatus('aiStatus','已选：'+aiVideoName+' · 点「让 AI 分析并生成混剪」'); }
 function aiUseMusic(){ document.getElementById('music').click(); setTimeout(()=>{ if(musicUrl){aiMusicUrl=musicUrl; setStatus('aiStatus','🎵 已关联你的音乐，将作为混剪配乐');} },300); }
-async function aiRun(){
+async function aiRunGemini(){
   aiWorker=document.getElementById('aiWorker').value.trim(); localStorage.setItem('aiWorker',aiWorker);
-  if(!aiWorker){ setStatus('aiStatus','⚠ 请先填 Worker 地址（见弹窗底部说明）'); return; }
-  if(!aiVideoUrl){ setStatus('aiStatus','⚠ 请先选择视频'); return; }
-  setStatus('aiStatus','🤖 云端大模型正在观看视频、分析高燃点…（可能需要 20~60 秒）');
+  if(!aiWorker){ setStatus('aiStatus','⚠ 请先填 Gemini Worker 地址（见弹窗底部说明）'); return; }
+  setStatus('aiStatus','🤖 Gemini 正在观看视频、分析高燃点…（可能需要 20~60 秒）');
   document.getElementById('aiReport').innerHTML='<div class="report"><p><span class="k">⏳ AI 解析中…</span></p></div>';
   try{
     const blob=await (await fetch(aiVideoUrl)).blob();
     const r=await fetch(aiWorker, {method:'POST', headers:{'Content-Type':blob.type||'video/mp4'}, body:blob});
     const j=await r.json();
     if(j.error) throw new Error(j.error);
-    aiSegs=j.segments||[]; aiBpm=j.overallBpm||128; aiTitle=j.title||'AI 混剪'; aiMood=j.mood||'';
-    if(!aiSegs.length) throw new Error('AI 未返回片段');
-    renderAIReport(j);
-    setStatus('aiStatus','✅ AI 已找出 '+aiSegs.length+' 个高燃片段 · 正在生成混剪…');
-    buildAIMix();
+    applyAIResult(j);
+  }catch(err){ setStatus('aiStatus','⚠ AI 失败：'+err.message); document.getElementById('aiReport').innerHTML='<div class="report"><p style="color:#f88">'+err.message+'</p></div>'; }
+}
+
+function extractFrames(videoUrl,n){
+  return new Promise((res,rej)=>{
+    const v=document.createElement('video'); v.preload='metadata'; v.src=videoUrl; v.muted=true;
+    v.onloadedmetadata=()=>{ const dur=v.duration||30; const frames=[]; let done=0;
+      const sample=k=>{ v.currentTime=Math.min(dur-0.05, dur*k/(n-1)); v.onseeked=()=>{
+        const c=document.createElement('canvas'); c.width=320;c.height=180; c.getContext('2d').drawImage(v,0,0,320,180);
+        frames.push({t:(k/(n-1)*dur).toFixed(1), b64:c.toDataURL('image/jpeg',0.7).split(',')[1]}); done++;
+        if(done===n) res({dur,frames}); }; };
+      for(let k=0;k<n;k++) sample(k);
+    };
+    v.onerror=()=>rej(new Error('视频读取失败'));
+  });
+}
+function ANALYSIS_PROMPT(dur,n){ return '你是一名顶级影视混剪导演。下面有 '+n+' 张从一段 '+dur.toFixed(0)+' 秒视频里等间隔抽取的画面帧，按顺序代表视频从开头到结尾的内容。请找出最“高燃/最炸/最精彩”的 3~6 个片段。对每个片段给出：start(开始秒数,根据帧序估算)、end(结束秒数)、type(从[战斗,反转,高潮,视觉奇观,情绪爆发,名场面]选)、reason(一句话为什么燃)、bpm(该段建议配乐BPM)。再给整体：overallBpm、title(8字内中文标题)、mood(风格关键词)。只返回严格 JSON，不要任何额外文字：{"segments":[{"start":0,"end":5,"type":"战斗","reason":"爆炸冲击","bpm":140}],"overallBpm":132,"title":"燃爆全场","mood":"史诗热血"}'; }
+
+async function callVision(apiUrl,apiKey,model,frames,dur){
+  const content=[{type:'text',text:ANALYSIS_PROMPT(dur,frames.length)}];
+  frames.forEach(f=>content.push({type:'image_url',image_url:{url:'data:image/jpeg;base64,'+f.b64}}));
+  const r=await fetch(apiUrl,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+    body:JSON.stringify({model, messages:[{role:'user',content}], temperature:0.3, response_format:{type:'json_object'}})});
+  if(!r.ok) throw new Error('API '+r.status+': '+(await r.text()).slice(0,200));
+  const j=await r.json(); let txt=j.choices?.[0]?.message?.content||'';
+  txt=txt.replace(/```json/g,'').replace(/```/g,'').trim();
+  return JSON.parse(txt);
+}
+
+function manualFallback(dur,frames){
+  setStatus('aiStatus','⚠ 浏览器直连被跨域(CORS)拦截。已切手动模式：复制下方提示词发到所选平台，把返回的 JSON 粘回来。');
+  const prompt=ANALYSIS_PROMPT(dur,frames.length);
+  document.getElementById('aiReport').innerHTML='<div class="report"><p><span class="k">⚠ 直连被跨域拦截，手动模式</span></p>'+
+    '<p>① 点“复制提示词”，发到智谱/豆包/扣子对话框，让它分析你的视频</p>'+
+    '<button onclick="copyText(\`'+prompt.replace(/`/g,'\`')+'\`)" style="background:#16263f;border:1px solid #294066;color:#cfe;padding:7px 12px;border-radius:8px;cursor:pointer;font-size:12px">复制提示词</button>'+
+    '<p style="margin-top:8px">② 把平台返回的 JSON 粘到这里 → 点“用此结果生成混剪”：</p>'+
+    '<textarea id="manualJson" class="codebox" style="height:120px"></textarea>'+
+    '<button onclick="applyManual()" style="margin-top:8px;background:linear-gradient(135deg,#ff5ea8,#7b5cff);border:0;color:#fff;padding:8px 14px;border-radius:9px;cursor:pointer;font-weight:700">用此结果生成混剪</button></div>';
+}
+function copyText(t){ if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>{},()=>{}); }
+function applyManual(){ try{ const j=JSON.parse(document.getElementById('manualJson').value); applyAIResult(j);}catch(e){ alert('JSON 解析失败：'+e.message); } }
+function applyAIResult(j){
+  aiSegs=j.segments||[]; aiBpm=j.overallBpm||128; aiTitle=j.title||'AI 混剪'; aiMood=j.mood||'';
+  if(!aiSegs.length) throw new Error('AI 未返回片段');
+  renderAIReport(j);
+  setStatus('aiStatus','✅ AI 已找出 '+aiSegs.length+' 个高燃片段 · 正在生成混剪…');
+  buildAIMix();
+}
+function copyCozePrompt(){ copyText('你是顶级影视混剪导演。用户会发来视频或截图，请找出最燃片段，返回严格 JSON：{"segments":[{"start":0,"end":5,"type":"战斗","reason":"爆炸冲击","bpm":140}],"overallBpm":132,"title":"燃爆全场","mood":"史诗热血"}。不要任何额外文字。'); }
+function loadCoze(){
+  const code=document.getElementById('cozeEmbed').value.trim(); if(!code){alert('请先粘贴 Coze 嵌入代码');return;}
+  const box=document.getElementById('cozeBox'); box.innerHTML='';
+  if(code.indexOf('<iframe')>=0){ box.innerHTML=code; }
+  else { const m=code.match(/src="([^"]+)"/); const s=document.createElement('script'); if(m&&m[1]){s.src=m[1];box.appendChild(s);} else box.innerHTML=code; }
+}
+
+async function aiRun(){
+  const prov=document.querySelector('input[name=aiProv]:checked').value;
+  localStorage.setItem('aiProvider',prov);
+  if(prov==='coze'){ setStatus('aiStatus','✅ 已切到扣子：在下方加载的 bot 对话框里直接发视频分析即可'); document.getElementById('prov-coze').scrollIntoView(); return; }
+  if(!aiVideoUrl){ setStatus('aiStatus','⚠ 请先选择视频'); return; }
+  if(prov==='gemini'){ return aiRunGemini(); }
+  let apiUrl,key,model;
+  if(prov==='zhipu'){ apiUrl='https://open.bigmodel.cn/api/paas/v4/chat/completions'; key=document.getElementById('zhipuKey').value.trim(); model='glm-4v-plus'; }
+  else { apiUrl=document.getElementById('doubaoUrl')?document.getElementById('doubaoUrl').value.trim():''; apiUrl=apiUrl||'https://ark.cn-beijing.volces.com/api/v3/chat/completions'; key=document.getElementById('doubaoKey').value.trim(); model=document.getElementById('doubaoModel').value.trim()||'doubao-visual-pro'; }
+  if(!key){ setStatus('aiStatus','⚠ 请填写 '+(prov==='zhipu'?'智谱 API Key':'豆包 API Key')); return; }
+  setStatus('aiStatus','🤖 正在抽取关键帧并调用大模型分析（20~60秒）…');
+  document.getElementById('aiReport').innerHTML='<div class="report"><p><span class="k">⏳ AI 解析中…</span></p></div>';
+  try{
+    const {dur,frames}=await extractFrames(aiVideoUrl,10);
+    let j;
+    try{ j=await callVision(apiUrl,key,model,frames,dur); }
+    catch(e){ if(/Failed to fetch|NetworkError|CORS/i.test(e.message)){ return manualFallback(dur,frames); } throw e; }
+    applyAIResult(j);
   }catch(err){ setStatus('aiStatus','⚠ AI 失败：'+err.message); document.getElementById('aiReport').innerHTML='<div class="report"><p style="color:#f88">'+err.message+'</p></div>'; }
 }
 function renderAIReport(j){
