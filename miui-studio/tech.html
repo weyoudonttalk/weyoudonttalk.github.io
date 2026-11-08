@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>💻 技术讨论室 · MIUI工作室</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{font-family:system-ui,'PingFang SC','Microsoft YaHei',sans-serif;background:#02110b;color:#eaf0ff;overflow:hidden}
+  a{color:#5ef0ff;text-decoration:none}
+
+  /* ===== 顶部条 ===== */
+  .top{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:space-between;
+       padding:12px 18px;background:linear-gradient(180deg,rgba(2,17,11,.92),rgba(2,17,11,0));font-size:14px}
+  .top .t-l{font-weight:800;letter-spacing:1px;color:#aaffd5;text-shadow:2px 0 #ff0044,-2px 0 #00fff0}
+  .top .t-r a{opacity:.85;font-size:13px}
+
+  /* ===== 过载动画层 ===== */
+  #boot{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;
+        background:#02110b;overflow:hidden}
+  #boot.hide{opacity:0;pointer-events:none;transition:opacity .4s ease}
+  /* 用 CSS 变量 --img 控制当前显示的图，JS 在两图间切换 */
+  .glx{position:relative;width:min(62vw,300px);height:min(62vw,300px);
+       background:var(--img) center/contain no-repeat;
+       animation:glHue 3.2s linear infinite}
+  .glx::before,.glx::after{content:"";position:absolute;inset:0;
+       background:var(--img) center/contain no-repeat;mix-blend-mode:screen}
+  .glx::before{filter:drop-shadow(5px 0 #ff0044);animation:glA 1.6s steps(2,end) infinite}
+  .glx::after{filter:drop-shadow(-5px 0 #00fff0);animation:glB 1.9s steps(2,end) infinite}
+  @keyframes glA{0%{clip-path:inset(0 0 0 0);transform:translate(0)}10%{clip-path:inset(20% 0 55% 0);transform:translate(-7px,2px)}
+    20%{clip-path:inset(60% 0 10% 0);transform:translate(6px,-2px)}30%{clip-path:inset(0 0 0 0);transform:translate(0)}
+    55%{clip-path:inset(40% 0 35% 0);transform:translate(-5px,0)}65%{clip-path:inset(0 0 0 0);transform:translate(0)}100%{clip-path:inset(0 0 0 0);transform:translate(0)}}
+  @keyframes glB{0%{clip-path:inset(0 0 0 0);transform:translate(0)}15%{clip-path:inset(10% 0 70% 0);transform:translate(7px,-2px)}
+    25%{clip-path:inset(75% 0 5% 0);transform:translate(-6px,2px)}35%{clip-path:inset(0 0 0 0);transform:translate(0)}
+    60%{clip-path:inset(30% 0 45% 0);transform:translate(5px,0)}70%{clip-path:inset(0 0 0 0);transform:translate(0)}100%{clip-path:inset(0 0 0 0);transform:translate(0)}}
+  @keyframes glHue{0%{filter:drop-shadow(0 0 26px rgba(0,255,140,.55)) hue-rotate(0)}
+    50%{filter:drop-shadow(0 0 26px rgba(0,255,140,.7)) hue-rotate(30deg)}100%{filter:drop-shadow(0 0 26px rgba(0,255,140,.55)) hue-rotate(0)}}
+  .scan{position:absolute;inset:0;background:repeating-linear-gradient(to bottom,rgba(0,255,140,.08) 0 1px,transparent 1px 3px);pointer-events:none;animation:tbScan 6s linear infinite}
+  @keyframes tbScan{from{background-position-y:0}to{background-position-y:120px}}
+  .tb-t{margin-top:30px;font-weight:800;font-size:21px;letter-spacing:4px;color:#aaffd5;text-shadow:2px 0 #ff0044,-2px 0 #00fff0;animation:tbTxt .9s steps(2,end) infinite}
+  @keyframes tbTxt{0%{opacity:1;transform:translate(0)}48%{opacity:1;transform:translate(0)}50%{transform:translate(-3px,1px);opacity:.7}52%{transform:translate(3px,-1px);opacity:1}100%{transform:translate(0)}}
+  .tb-s{margin-top:10px;font-size:12px;letter-spacing:3px;color:#5fae8f}
+  .tb-bar{margin-top:22px;width:240px;height:4px;background:rgba(0,255,140,.15);border-radius:3px;overflow:hidden}
+  .tb-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#00ff8c,#00fff0);animation:tbLoad 2.6s ease forwards}
+  @keyframes tbLoad{to{width:100%}}
+
+  /* ===== 聊天室容器 ===== */
+  #room{position:fixed;inset:0;display:none}
+  #room.show{display:block}
+  #room iframe{width:100%;height:100%;border:0;background:#0a0e1a}
+</style>
+</head>
+<body>
+  <div class="top">
+    <div class="t-l">💻 技术讨论室</div>
+    <div class="t-r"><a href="https://weyoudonttalk.github.io/miui-studio/">← 返回官网</a></div>
+  </div>
+
+  <!-- 过载动画 -->
+  <div id="boot">
+    <div class="glx" id="glx"></div>
+    <div class="tb-t">系统过载 · SYSTEM OVERLOAD</div>
+    <div class="tb-s" id="tbSub">TECH ROOM BOOTING…</div>
+    <div class="tb-bar"><i></i></div>
+    <div class="scan"></div>
+  </div>
+
+  <!-- 聊天室 -->
+  <div id="room">
+    <iframe id="roomFrame" src="about:blank" allow="autoplay; microphone"></iframe>
+  </div>
+
+<script>
+  // 两张图来回切换（你给的图2绿三角 + 图1琳琅天上士兵）
+  var IMGS = ['assets/tech-glitch.png','assets/tech-soldier.png'];
+  var glx = document.getElementById('glx');
+  var sub = document.getElementById('tbSub');
+  // 初始图
+  glx.style.setProperty('--img', "url('"+IMGS[0]+"')");
+  var cur = 0;
+  // 每 0.65s 切一次图，制造"过载换帧"效果
+  var sw = setInterval(function(){
+    cur = (cur + 1) % IMGS.length;
+    glx.style.setProperty('--img', "url('"+IMGS[cur]+"')");
+    sub.textContent = cur === 0 ? 'TECH ROOM BOOTING…' : 'LOADING ASSET…';
+  }, 650);
+
+  // 2.6s 后结束动画，进入聊天室
+  setTimeout(function(){
+    clearInterval(sw);
+    document.getElementById('boot').classList.add('hide');
+    var room = document.getElementById('room');
+    document.getElementById('roomFrame').src = 'https://weyoudonttalk.github.io/chat/?room=tech';
+    room.classList.add('show');
+    setTimeout(function(){ var b=document.getElementById('boot'); if(b) b.remove(); }, 500);
+  }, 2600);
+</script>
+</body>
+</html>
