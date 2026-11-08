@@ -214,6 +214,7 @@
     <label style="font-size:12px;color:#cfe"><input type="radio" name="aiProv" value="zhipu"> 智谱 GLM</label>
     <label style="font-size:12px;color:#cfe"><input type="radio" name="aiProv" value="doubao"> 豆包</label>
     <label style="font-size:12px;color:#cfe"><input type="radio" name="aiProv" value="coze"> 扣子 Coze</label>
+    <label style="font-size:12px;color:#ffd166"><input type="radio" name="aiProv" value="xiaoq"> 🤖 小Q(本对话)</label>
   </div>
   <div id="prov-gemini">
     <div style="font-size:12px;color:#9ab;margin-bottom:4px">Gemini Worker 地址（留空用默认）：</div>
@@ -237,7 +238,7 @@
     <button onclick="loadCoze()" style="margin-top:6px;background:#16263f;border:1px solid #294066;color:#cfe;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px">加载扣子 bot</button>
     <div id="cozeBox" style="margin-top:8px"></div>
   </div>
-  <script>document.querySelectorAll('input[name=aiProv]').forEach(function(r){r.onchange=function(){['gemini','zhipu','doubao','coze'].forEach(function(p){var el=document.getElementById('prov-'+p);if(el)el.style.display=p===r.value?'block':'none';});};});</script>
+  <script>document.querySelectorAll('input[name=aiProv]').forEach(function(r){r.onchange=function(){['gemini','zhipu','doubao','coze','xiaoq'].forEach(function(p){var el=document.getElementById('prov-'+p);if(el)el.style.display=p===r.value?'block':'none';});};});</script>
   <div id="aiDrop" onclick="document.getElementById('aiFile').click()" style="border:1.5px dashed #2a3a5a;border-radius:10px;padding:16px;text-align:center;color:#7a8aa8;cursor:pointer;margin-top:10px">点击选择视频（建议 &lt;100MB，AI 会看完整内容）</div>
   <input id="aiFile" type="file" accept="video/*" style="display:none" onchange="aiPick(event)">
   <div class="row" style="margin-top:10px">
@@ -575,7 +576,8 @@ function manualFallback(dur,frames){
     '<button onclick="applyManual()" style="margin-top:8px;background:linear-gradient(135deg,#ff5ea8,#7b5cff);border:0;color:#fff;padding:8px 14px;border-radius:9px;cursor:pointer;font-weight:700">用此结果生成混剪</button></div>';
 }
 function copyText(t){ if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>{},()=>{}); }
-function applyManual(){ try{ const j=JSON.parse(document.getElementById('manualJson').value); applyAIResult(j);}catch(e){ alert('JSON 解析失败：'+e.message); } }
+function applyPaste(t){ try{ const j=JSON.parse(t); applyAIResult(j);}catch(e){ alert('JSON 解析失败：'+e.message); } }
+function applyManual(){ applyPaste(document.getElementById('manualJson').value); }
 function applyAIResult(j){
   aiSegs=j.segments||[]; aiBpm=j.overallBpm||128; aiTitle=j.title||'AI 混剪'; aiMood=j.mood||'';
   if(!aiSegs.length) throw new Error('AI 未返回片段');
@@ -595,6 +597,7 @@ async function aiRun(){
   const prov=document.querySelector('input[name=aiProv]:checked').value;
   localStorage.setItem('aiProvider',prov);
   if(prov==='coze'){ setStatus('aiStatus','✅ 已切到扣子：在下方加载的 bot 对话框里直接发视频分析即可'); document.getElementById('prov-coze').scrollIntoView(); return; }
+  if(prov==='xiaoq'){ setStatus('aiStatus','🤖 小Q模式：请回到与本AI的对话，直接发送你的视频/截图，把小Q返回的 JSON 粘到下方框即可'); document.getElementById('prov-xiaoq').scrollIntoView(); return; }
   if(!aiVideoUrl){ setStatus('aiStatus','⚠ 请先选择视频'); return; }
   if(prov==='gemini'){ return aiRunGemini(); }
   let apiUrl,key,model;
