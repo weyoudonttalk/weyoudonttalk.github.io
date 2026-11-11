@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>MIUI STUDIO OS · 网页模拟系统</title>
+<title>MIUI STUDIO OS · 开源系统中心</title>
 <style>
-  :root{ --anim:.28s; --accent:#ff6900; }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{height:100%;overflow:hidden;font-family:system-ui,'PingFang SC','Microsoft YaHei',sans-serif}
   body{background:#000;color:#fff;user-select:none}
@@ -30,70 +29,20 @@
   #lock .hint{position:absolute;bottom:90px;display:flex;flex-direction:column;align-items:center;gap:8px;color:#7a83a8;font-size:12px;animation:pb 1.8s ease-in-out infinite}
   #lock .hint .arr{font-size:26px}
   @keyframes pb{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(-10px);opacity:1}}
-  /* ===== 桌面 ===== */
-  #desk{position:fixed;inset:0;z-index:100;display:none;flex-direction:column;background:radial-gradient(circle at 30% 18%,#1a1f3a,#05060d);background-size:cover;background-position:center}
-  #desk.show{display:flex}
-  .sb{height:32px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:13px;font-weight:600;backdrop-filter:blur(12px);background:rgba(0,0,0,.22);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}
-  .sb .r{display:flex;gap:12px;align-items:center}
-  .grid{flex:1;display:grid;grid-template-columns:repeat(auto-fill,76px);gap:22px 16px;align-content:start;padding:26px;overflow-y:auto}
-  .app{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;width:76px}
-  .app .ic{width:58px;height:58px;border-radius:17px;display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 8px 18px rgba(0,0,0,.4);transition:transform .12s}
-  .app:active .ic{transform:scale(.88)}
-  .app .nm{font-size:11px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7);text-align:center;max-width:76px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .dock{height:88px;display:flex;align-items:center;justify-content:center;gap:20px;background:rgba(255,255,255,.08);backdrop-filter:blur(22px);border-top:1px solid rgba(255,255,255,.12)}
-  .dock .app .ic{width:52px;height:52px}
-  /* ===== 窗口 ===== */
-  .win{position:fixed;z-index:500;width:min(94vw,440px);height:min(82vh,580px);background:rgba(20,22,34,.97);border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;overflow:hidden;backdrop-filter:blur(10px);animation:winIn var(--anim) ease}
-  @keyframes winIn{from{opacity:0;transform:scale(.92) translateY(14px)}to{opacity:1;transform:none}}
-  .win .bar{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:rgba(255,255,255,.06);cursor:move;font-size:14px;font-weight:600;flex-shrink:0}
-  .win .bar .x{width:26px;height:26px;border-radius:50%;background:#ff453a;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;color:#fff}
-  .win .body{flex:1;overflow-y:auto;padding:16px}
-  /* 通用 */
-  .btn{display:inline-block;padding:10px 18px;border-radius:22px;background:linear-gradient(135deg,#ff6900,#ff2d55);color:#fff;font-size:13px;font-weight:600;border:0;cursor:pointer}
-  .btn.ghost{background:rgba(255,255,255,.1)}
-  .btn[disabled]{opacity:.5;cursor:default}
-  .card{background:rgba(255,255,255,.05);border-radius:14px;padding:14px;margin-bottom:12px}
-  .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
-  .prog{height:6px;background:rgba(255,255,255,.12);border-radius:4px;overflow:hidden;margin-top:8px}
-  .prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff6900,#ff2d55);transition:width .2s}
-  .switch{width:44px;height:26px;border-radius:14px;background:rgba(255,255,255,.2);position:relative;cursor:pointer;transition:.2s;flex-shrink:0}
-  .switch.on{background:var(--accent)}
-  .switch::after{content:"";position:absolute;width:22px;height:22px;border-radius:50%;background:#fff;top:2px;left:2px;transition:.2s}
-  .switch.on::after{left:20px}
-  .list .item{display:flex;align-items:center;justify-content:space-between;padding:13px 4px;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer}
-  .list .item:last-child{border-bottom:0}
-  .list .item .l{display:flex;align-items:center;gap:12px}
-  .list .item .ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(255,255,255,.08)}
-  .list .item .sub{font-size:11px;color:#9aa3c0}
-  .chev{color:#666;font-size:18px}
-  iframe.f{width:100%;height:100%;border:0;background:#000}
-  .storeapp{display:flex;gap:12px;align-items:center;padding:12px;background:rgba(255,255,255,.05);border-radius:14px;margin-bottom:10px}
-  .storeapp .si{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
-  .storeapp .info{flex:1;min-width:0}
-  .storeapp .info b{font-size:14px}
-  .storeapp .info p{font-size:11px;color:#9aa3c0;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .storeapp .sz{font-size:11px;color:#777;margin-top:2px}
-  .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);z-index:99999;background:rgba(0,0,0,.88);color:#fff;padding:11px 20px;border-radius:22px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;max-width:84vw;text-align:center}
+  /* ===== OS 中心 ===== */
+  #hub{position:fixed;inset:0;z-index:100;display:none;flex-direction:column;background:#05060d}
+  #hub.show{display:flex}
+  .hubbar{flex-shrink:0;background:rgba(10,12,22,.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.08);padding:8px 12px}
+  .ht{font-size:13px;font-weight:700;letter-spacing:1px;background:linear-gradient(120deg,#ff6900,#ff2d55);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .ht small{color:#7a83a8;-webkit-text-fill-color:#7a83a8;font-weight:400;font-size:10px;margin-left:6px}
+  .tabs{display:flex;gap:6px;margin-top:8px;overflow-x:auto}
+  .tabs button{flex-shrink:0;padding:7px 14px;border-radius:18px;background:rgba(255,255,255,.08);border:0;color:#cfd6f0;font-size:12px;cursor:pointer;white-space:nowrap}
+  .tabs button.on{background:linear-gradient(135deg,#ff6900,#ff2d55);color:#fff;font-weight:700}
+  .src{margin-top:6px;font-size:10px;color:#6b7390}
+  .src a{color:#7b5cff;text-decoration:none;margin-right:10px}
+  #osframe{width:100%;flex:1;border:0;background:#0a0c16}
+  .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:99999;background:rgba(0,0,0,.88);color:#fff;padding:10px 18px;border-radius:20px;font-size:12px;opacity:0;transition:opacity .3s;pointer-events:none;max-width:84vw;text-align:center}
   .toast.show{opacity:1}
-  .term{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:#7CFFB2;background:#05070d;height:100%;padding:10px;overflow-y:auto;white-space:pre-wrap}
-  .term input{background:transparent;border:0;color:#7CFFB2;font-family:inherit;font-size:12px;outline:none;width:70%}
-  /* ===== 启动器 ===== */
-  #launcher{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.93);display:none;flex-direction:column;padding:22px}
-  #launcher.show{display:flex}
-  #launcher .search{width:100%;padding:13px 18px;border-radius:26px;background:rgba(255,255,255,.1);border:0;color:#fff;font-size:14px;margin-bottom:18px;outline:none}
-  #launcher .lgrid{display:grid;grid-template-columns:repeat(auto-fill,76px);gap:22px 16px;overflow-y:auto}
-  /* ===== 平板适配 ===== */
-  @media (min-width:821px){
-    .grid{grid-template-columns:repeat(auto-fill,96px);gap:30px 22px;padding:40px}
-    .app{width:96px}
-    .app .ic{width:74px;height:74px;font-size:38px}
-    .app .nm{font-size:13px;max-width:96px}
-    .dock{gap:26px;height:104px}
-    .dock .app .ic{width:64px;height:64px}
-    .win{width:min(86vw,620px);height:min(84vh,720px)}
-    .sb{height:38px;font-size:15px;padding:0 26px}
-    .sb .r{gap:16px}
-  }
 </style>
 </head>
 <body>
@@ -104,7 +53,7 @@
   <div class="blogo">
     <div class="mi">MIUI STUDIO</div>
     <div class="nm">HYPER OS</div>
-    <div class="sub">WEB SIMULATOR</div>
+    <div class="sub">OPEN-SOURCE HUB</div>
   </div>
   <div class="bbar"><i></i></div>
   <div class="btip" id="btip">正在启动内核…</div>
@@ -117,290 +66,78 @@
   <div class="hint"><div class="arr">⌃</div><div>上滑解锁</div></div>
 </div>
 
-<!-- 桌面 -->
-<div id="desk">
-  <div class="sb" id="sb">
-    <div id="sbTime">09:41</div>
-    <div class="r"><span id="sbNet">5G</span><span id="sbBat">🔋 88%</span></div>
+<!-- OS 中心 -->
+<div id="hub">
+  <div class="hubbar">
+    <div class="ht">MIUI STUDIO OS <small>开源系统中心 · 集成社区真实网页 OS</small></div>
+    <div class="tabs" id="tabs">
+      <button data-u="https://runnova.github.io/NovaOS/" data-s="https://github.com/runnova/NovaOS" class="on">NovaOS</button>
+      <button data-u="https://dustinbrett.com/" data-s="https://github.com/DustinBrett/daedalOS">daedalOS</button>
+      <button data-u="https://iosandroidweb.vercel.app" data-s="https://github.com/chukjosh/IOS-and-Android-on-the-Web">iOS·Android</button>
+      <button data-u="https://puter.com" data-s="https://github.com/HeyPuter/puter">Puter</button>
+      <button data-u="https://haris16-code.github.io/BJH-OS/" data-s="https://github.com/Haris16-code/BJH-OS">BJH OS</button>
+    </div>
+    <div class="src" id="srclink"><a href="https://github.com/runnova/NovaOS" target="_blank">⭐ 当前系统源码</a><a href="https://weyoudonttalk.github.io/miui-studio/" target="_blank">← 返回官网</a></div>
   </div>
-  <div class="grid" id="grid"></div>
-  <div class="dock" id="dock"></div>
-</div>
-
-<!-- 启动器 -->
-<div id="launcher">
-  <input class="search" id="lsearch" placeholder="搜索应用…">
-  <div class="lgrid" id="lgrid"></div>
+  <iframe id="osframe" src="https://runnova.github.io/NovaOS/" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation allow-modals"></iframe>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-/* ============ 工具 ============ */
-const $=(s,r=document)=>r.querySelector(s);
-const $$=(s,r=document)=>[...r.querySelectorAll(s)];
-function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400);}
-function fmt(n){if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';return (n/1048576).toFixed(2)+' MB';}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2600);}
 
-/* ============ 开机动画：粒子汇聚 LOGO ============ */
+/* ===== 开机动画 ===== */
 (function(){
-  const cv=$('#bcv'),ctx=cv.getContext('2d');
-  function rs(){cv.width=innerWidth;cv.height=innerHeight;} rs(); addEventListener('resize',rs);
-  const N=120, ps=[];
+  const cv=document.getElementById('bcv'),ctx=cv.getContext('2d');
+  function rs(){cv.width=innerWidth;cv.height=innerHeight;}rs();addEventListener('resize',rs);
+  const N=120,ps=[];
   for(let i=0;i<N;i++)ps.push({x:Math.random()*cv.width,y:Math.random()*cv.height,a:Math.random()*6.28,sp:.2+Math.random()*.6,r:Math.random()*2+1});
-  const tips=['正在启动内核…','加载驱动…','初始化桌面…','校准触控…','准备就绪']; let ti=0;
-  const tt=setInterval(()=>{$('#btip').textContent=tips[ti=(ti+1)%tips.length];},800);
-  let raf, t0=performance.now();
+  const tips=['正在启动内核…','加载驱动…','初始化桌面…','校准触控…','准备就绪'];let ti=0;
+  const tt=setInterval(()=>{document.getElementById('btip').textContent=tips[ti=(ti+1)%tips.length];},800);
+  let raf,t0=performance.now();
   function loop(){
-    const el=(performance.now()-t0)/1000;
-    ctx.clearRect(0,0,cv.width,cv.height);
-    const cx=cv.width/2, cy=cv.height/2-40;
-    const pull=Math.min(1, el/2.6);
-    for(const p of ps){
-      const tx=cx+Math.cos(p.a)*180*(1-pull), ty=cy+Math.sin(p.a)*180*(1-pull);
-      p.x+=(tx-p.x)*.06; p.y+=(ty-p.y)*.06;
-      p.a+=p.sp*.02;
-      const glow=el>2.4?1:el/2.4;
-      ctx.beginPath(); ctx.fillStyle='rgba(255,'+Math.floor(105*glow+80)+','+Math.floor(60*glow+100)+','+(.5+.5*glow)+')';
-      ctx.arc(p.x,p.y,p.r,0,7); ctx.fill();
-    }
-    if(el>1.2){ ctx.strokeStyle='rgba(255,105,0,'+(el>2.4?0: .4*(1-(el-1.2)/1.2))+')'; ctx.lineWidth=2;
-      ctx.beginPath(); ctx.arc(cx,cy,90*(1-pull*.3),0,7); ctx.stroke(); }
-    if(el>2.2){ const sx=(el-2.2)/2*cv.width; ctx.fillStyle='rgba(255,255,255,.06)'; ctx.fillRect(sx,0,60,cv.height); }
+    const el=(performance.now()-t0)/1000;ctx.clearRect(0,0,cv.width,cv.height);
+    const cx=cv.width/2,cy=cv.height/2-40,pull=Math.min(1,el/2.6);
+    for(const p of ps){const tx=cx+Math.cos(p.a)*180*(1-pull),ty=cy+Math.sin(p.a)*180*(1-pull);
+      p.x+=(tx-p.x)*.06;p.y+=(ty-p.y)*.06;p.a+=p.sp*.02;
+      const g=el>2.4?1:el/2.4;
+      ctx.beginPath();ctx.fillStyle='rgba(255,'+Math.floor(105*g+80)+','+Math.floor(60*g+100)+','+(.5+.5*g)+')';ctx.arc(p.x,p.y,p.r,0,7);ctx.fill();}
+    if(el>1.2){ctx.strokeStyle='rgba(255,105,0,'+(el>2.4?0:.4*(1-(el-1.2)/1.2))+')';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,90*(1-pull*.3),0,7);ctx.stroke();}
+    if(el>2.2){const sx=(el-2.2)/2*cv.width;ctx.fillStyle='rgba(255,255,255,.06)';ctx.fillRect(sx,0,60,cv.height);}
     raf=requestAnimationFrame(loop);
   }
   loop();
-  setTimeout(()=>{ cancelAnimationFrame(raf); clearInterval(tt); $('#boot').classList.add('gone');
-    setTimeout(()=>{$('#boot').style.display='none'; $('#lock').classList.add('show');},700); },4300);
+  setTimeout(()=>{cancelAnimationFrame(raf);clearInterval(tt);document.getElementById('boot').classList.add('gone');
+    setTimeout(()=>{document.getElementById('boot').style.display='none';document.getElementById('lock').classList.add('show');},700);},4300);
 })();
 
-/* ============ 锁屏：上滑解锁 ============ */
-function updLock(){const d=new Date();const hh=String(d.getHours()).padStart(2,'0'),mm=String(d.getMinutes()).padStart(2,'0');
-  $('#lockTime').textContent=hh+':'+mm;
+/* ===== 上滑解锁 ===== */
+function updLock(){const d=new Date(),hh=String(d.getHours()).padStart(2,'0'),mm=String(d.getMinutes()).padStart(2,'0');
+  document.getElementById('lockTime').textContent=hh+':'+mm;
   const wd=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][d.getDay()];
-  $('#lockDate').textContent=wd+' '+(d.getMonth()+1)+'月'+d.getDate()+'日';}
-updLock(); setInterval(updLock,10000);
+  document.getElementById('lockDate').textContent=wd+' '+(d.getMonth()+1)+'月'+d.getDate()+'日';}
+updLock();setInterval(updLock,10000);
 (function(){
-  const lock=$('#lock'); let sy=null,move=false;
+  const lock=document.getElementById('lock');let sy=null,move=false;
   function start(y){sy=y;move=true;}
-  function end(dy){ if(move&&dy<-70){ lock.classList.remove('show'); $('#desk').classList.add('show'); renderDesktop(); } move=false; sy=null; }
+  function end(dy){if(move&&dy<-70){lock.classList.remove('show');document.getElementById('hub').classList.add('show');}move=false;sy=null;}
   lock.addEventListener('touchstart',e=>start(e.touches[0].clientY),{passive:true});
-  lock.addEventListener('touchmove',e=>{ if(sy!==null){ const dy=e.touches[0].clientY-sy; if(dy<-70){lock.style.transform='translateY('+Math.max(dy, -120)+'px)';lock.style.opacity=String(1+dy/300);} } },{passive:true});
-  lock.addEventListener('touchend',e=>{ const dy=sy!==null? (e.changedTouches[0].clientY-sy):0; lock.style.transform='';lock.style.opacity=''; end(dy); });
+  lock.addEventListener('touchmove',e=>{if(sy!==null){const dy=e.touches[0].clientY-sy;if(dy<-70){lock.style.transform='translateY('+Math.max(dy,-120)+'px)';lock.style.opacity=String(1+dy/300);}}},{passive:true});
+  lock.addEventListener('touchend',e=>{const dy=sy!==null?(e.changedTouches[0].clientY-sy):0;lock.style.transform='';lock.style.opacity='';end(dy);});
   lock.addEventListener('mousedown',e=>start(e.clientY));
-  addEventListener('mousemove',e=>{ if(sy!==null){const dy=e.clientY-sy; if(dy<-70)lock.style.transform='translateY('+Math.max(dy,-120)+'px)';}});
-  addEventListener('mouseup',e=>{ const dy=sy!==null?(e.clientY-sy):0; lock.style.transform=''; end(dy); });
+  addEventListener('mousemove',e=>{if(sy!==null){const dy=e.clientY-sy;if(dy<-70)lock.style.transform='translateY('+Math.max(dy,-120)+'px)';}});
+  addEventListener('mouseup',e=>{const dy=sy!==null?(e.clientY-sy):0;lock.style.transform='';end(dy);});
 })();
 
-/* ============ 应用商店真实 APK ============ */
-const STORE=[
-  {id:'vlc',name:'VLC 播放器',ic:'🎬',c:'#ff8800',size:49*1048576,url:'https://f-droid.org/repo/org.videolan.vlc_13070008.apk',desc:'开源视频播放器 · 全格式',real:true},
-  {id:'metrolist',name:'Metrolist 音乐',ic:'🎵',c:'#ff2d55',size:18*1048576,url:'https://github.com/MetrolistGroup/Metrolist/releases/latest/download/Metrolist.apk',desc:'YouTube Music 开源客户端',real:true},
-  {id:'vivid',name:'Vivid 直播',ic:'📡',c:'#7b5cff',size:22*1048576,url:'https://github.com/thoser666/Vivid/releases/latest/download/app-standard-release.apk',desc:'开源 IRL 直播推流',real:true},
-  {id:'bili',name:'哔哩哔哩',ic:'📺',c:'#fb7299',size:120*1048576,url:'https://app.bilibili.com/',desc:'官方安卓客户端',real:false},
-  {id:'douyin',name:'抖音',ic:'🎵',c:'#222',size:90*1048576,url:'https://www.douyin.com/',desc:'官方安卓客户端',real:false},
-  {id:'kuaishou',name:'快手',ic:'🟠',c:'#ff6600',size:85*1048576,url:'https://www.kuaishou.com/',desc:'官方安卓客户端',real:false},
-  {id:'delta',name:'三角洲行动',ic:'🔫',c:'#2e7d32',size:3000*1048576,url:'https://www.bluestacks.com/',desc:'战术射击（需安卓模拟器）',real:false},
-];
-
-/* ============ 桌面 App ============ */
-const APPS=[
-  {id:'bili',name:'哔哩哔哩',ic:'📺',c:'#fb7299',dock:true,open:openBili},
-  {id:'douyin',name:'抖音',ic:'🎵',c:'#222',dock:false,open:openDouyin},
-  {id:'kuaishou',name:'快手轻量版',ic:'🟠',c:'#ff6600',dock:false,open:openKuaishou},
-  {id:'store',name:'应用商店',ic:'🛒',c:'#ff6900',dock:true,open:openStore},
-  {id:'files',name:'文件管理',ic:'📁',c:'#ffc107',open:openFiles},
-  {id:'music',name:'音乐',ic:'🎧',c:'#7b5cff',open:openMusic},
-  {id:'browser',name:'浏览器',ic:'🌐',c:'#1976d2',dock:true,open:openBrowser},
-  {id:'settings',name:'设置',ic:'⚙️',c:'#9e9e9e',dock:true,open:openSettings},
-  {id:'terminal',name:'终端',ic:'💻',c:'#00c853',open:openTerminal},
-  {id:'about',name:'关于本机',ic:'ℹ️',c:'#607d8b',open:openAbout},
-];
-
-/* ============ 存储 ============ */
-const DBP={db:null,open(){return new Promise((res,rej)=>{const r=indexedDB.open('miui_os',1);r.onupgradeneeded=e=>{e.target.result.createObjectStore('files',{keyPath:'id'});};r.onsuccess=e=>{this.db=e.target.result;res();};r.onerror=e=>rej(e);});},
-  used(){return new Promise(res=>{const t=this.db.transaction('files','readonly').objectStore('files').getAll();t.onsuccess=()=>{let s=0;t.result.forEach(f=>s+=f.size||0);res(s);};t.onerror=()=>res(0);});},
-  add(f){return new Promise((res,rej)=>{const t=this.db.transaction('files','readwrite').objectStore('files').put(f);t.onsuccess=()=>res();t.onerror=()=>rej();});},
-  all(){return new Promise(res=>{const t=this.db.transaction('files','readonly').objectStore('files').getAll();t.onsuccess=()=>res(t.result||[]);t.onerror=()=>res([]);});},
-  del(id){return new Promise(res=>{const t=this.db.transaction('files','readwrite').objectStore('files').delete(id);t.onsuccess=()=>res();t.onerror=()=>res();});}};
-const TOTAL=64*1048576;
-(async()=>{try{await DBP.open();}catch(e){console.warn('IDB',e);}})();
-
-/* ============ 设置状态 ============ */
-let SET=JSON.parse(localStorage.getItem('miui_set')||'{}');
-let DEVON=localStorage.getItem('miui_devon')==='1';
-function saveSet(){localStorage.setItem('miui_set',JSON.stringify(SET));}
-function applyAnim(){document.documentElement.style.setProperty('--anim',(SET.winScale??.28)+'s');}
-applyAnim();
-
-/* ============ 桌面渲染 ============ */
-function renderDesktop(){
-  const grid=$('#grid'),dock=$('#dock'); grid.innerHTML='';dock.innerHTML='';
-  APPS.forEach(a=>{const el=appEl(a); a.dock?dock.appendChild(el):grid.appendChild(el);});
-  DBP.all().then(fs=>{fs.filter(f=>f.fromStore).forEach(f=>{const m=STORE.find(s=>s.id===f.id);if(!m)return;
-    grid.appendChild(appEl({id:'i_'+f.id,name:m.name,ic:m.ic,c:m.c,open:()=>launchInstalled(m)}));});});
-  updateStatus();
-}
-function appEl(a){const d=document.createElement('div');d.className='app';
-  d.innerHTML=`<div class="ic" style="background:${a.c}">${a.ic}</div><div class="nm">${a.name}</div>`;
-  d.onclick=()=>a.open&&a.open();return d;}
-function updateStatus(){const d=new Date();$('#sbTime').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
-
-/* ============ 窗口 ============ */
-let z=500;
-function openWin(title,icon,html){
-  const w=document.createElement('div');w.className='win';
-  w.style.left=((innerWidth-w.offsetWidth)/2+(Math.random()*40-20))+'px';
-  w.style.top=((innerHeight-w.offsetHeight)/2+(Math.random()*40-20))+'px';
-  w.style.zIndex=++z;
-  w.innerHTML=`<div class="bar"><span>${icon} ${title}</span><div class="x">✕</div></div><div class="body"></div>`;
-  w.querySelector('.body').innerHTML=html;
-  w.querySelector('.x').onclick=()=>w.remove();
-  const bar=w.querySelector('.bar');let dx,dy,drag=false;
-  bar.addEventListener('mousedown',e=>{drag=true;dx=e.clientX-w.offsetLeft;dy=e.clientY-w.offsetTop;w.style.zIndex=++z;});
-  bar.addEventListener('touchstart',e=>{const t=e.touches[0];drag=true;dx=t.clientX-w.offsetLeft;dy=t.clientY-w.offsetTop;w.style.zIndex=++z;},{passive:true});
-  addEventListener('mousemove',e=>{if(drag){w.style.left=(e.clientX-dx)+'px';w.style.top=(e.clientY-dy)+'px';}});
-  addEventListener('touchmove',e=>{if(drag){const t=e.touches[0];w.style.left=(t.clientX-dx)+'px';w.style.top=(t.clientY-dy)+'px';}},{passive:true});
-  addEventListener('mouseup',()=>drag=false);addEventListener('touchend',()=>drag=false);
-  document.body.appendChild(w);return w;
-}
-
-/* ============ 视频：在线看 ============ */
-function openBili(){const w=openWin('哔哩哔哩','📺',`<div style="display:flex;gap:6px;margin-bottom:8px"><input id="bvid" placeholder="输入 BV 号，如 BV1GJ411x7h7" style="flex:1;padding:9px;border-radius:9px;border:0;background:rgba(255,255,255,.1);color:#fff;outline:none"><button class="btn" id="bgo">播放</button></div><iframe id="bp" class="f" style="height:calc(100% - 54px)" sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>`);
-  function play(){const v=$('#bvid',w).value.trim();if(!v)return;$('#bp',w).src='https://player.bilibili.com/player.html?bvid='+encodeURIComponent(v)+'&autoplay=1&high_quality=1&danmaku=1';}
-  $('#bgo',w).onclick=play;$('#bvid',w).addEventListener('keydown',e=>{if(e.key==='Enter')play();});}
-function openDouyin(){const w=openWin('抖音','🎵',`<iframe class="f" src="https://www.douyin.com/" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe><p style="position:absolute;bottom:8px;left:10px;color:#aaa;font-size:11px">若无法内嵌，<a href="https://www.douyin.com/" target="_blank" style="color:#ff2d55">点此新标签打开抖音</a></p>`);}
-function openKuaishou(){const w=openWin('快手轻量版','🟠',`<iframe class="f" src="https://www.kuaishou.com/light" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe><p style="position:absolute;bottom:8px;left:10px;color:#aaa;font-size:11px">若无法内嵌，<a href="https://www.kuaishou.com/light" target="_blank" style="color:#ff6900">点此新标签打开快手</a></p>`);}
-
-/* ============ 应用商店：真下载 ============ */
-function openStore(){
-  const body=STORE.map(a=>`<div class="storeapp">
-    <div class="si" style="background:${a.c}">${a.ic}</div>
-    <div class="info"><b>${a.name}</b><p>${a.desc}</p><div class="sz">${fmt(a.size)} ${a.real?'· 可下载APK':''}</div></div>
-    <button class="btn" data-id="${a.id}">${a.real?'下载':'获取'}</button>
-  </div>`).join('');
-  const w=openWin('应用商店','🛒',`<div id="sl">${body}</div><p style="color:#888;font-size:11px;margin-top:6px">提示：标注「可下载APK」的会真实下载安装包到你的设备；大厂官方App点获取会跳转官网下载页。</p>`);
-  w.querySelectorAll('[data-id]').forEach(b=>{
-    b.onclick=async()=>{const a=STORE.find(x=>x.id===b.dataset.id);
-      if(a.real){ b.textContent='下载中…';b.disabled=true;
-        const prog=document.createElement('div');prog.className='prog';prog.innerHTML='<i></i>';b.parentElement.appendChild(prog);
-        const bar=prog.querySelector('i');
-        for(let p=0;p<=100;p+=10){bar.style.width=p+'%';await new Promise(r=>setTimeout(r,30));}
-        const aEl=document.createElement('a');aEl.href=a.url;aEl.download=a.name+'.apk';aEl.click();
-        await DBP.add({id:a.id,name:a.name,size:a.size,fromStore:true,installedAt:Date.now()});
-        b.textContent='已安装';b.classList.add('ghost');
-        toast('已下载：'+a.name+'（真实APK，占设备存储）');renderDesktop();
-      }else{
-        window.open(a.url,'_blank');
-        toast('已打开：'+a.name+' 官方页面');
-      }
-    };
-  });
-}
-function launchInstalled(m){ if(m.id==='bili')return openBili(); if(m.id==='douyin')return openDouyin(); if(m.id==='kuaishou')return openKuaishou(); if(m.id==='music')return openMusic(); if(m.id==='browser')return openBrowser();
-  window.open(m.url,'_blank'); toast('打开：'+m.name); }
-
-/* ============ 文件管理 ============ */
-async function openFiles(){
-  const used=await DBP.used();const files=await DBP.all();
-  const list=files.map(f=>`<div class="row card"><span>📄 ${f.name}</span><span style="color:#9aa3c0">${fmt(f.size)} <button class="btn ghost" data-del="${f.id}" style="padding:4px 8px;font-size:11px">删</button></span></div>`).join('')||'<p style="color:#888">暂无文件</p>';
-  const w=openWin('文件管理','📁',`<div class="card"><div class="row"><b>存储</b><span style="color:#9aa3c0">${fmt(used)} / ${fmt(TOTAL)}</span></div><div class="prog"><i style="width:${(used/TOTAL*100).toFixed(1)}%"></i></div></div>${list}`);
-  w.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{await DBP.del(b.dataset.del);toast('已删除');openFiles();renderDesktop();});
-}
-
-/* ============ 音乐 ============ */
-function openMusic(){const w=openWin('音乐','🎧',`<div class="card" style="text-align:center"><div style="font-size:48px">🎧</div><p style="margin:8px 0;font-weight:600">iPhone 进行曲 · 3 Strikes</p><button class="btn" id="pb">▶ 播放</button> <button class="btn ghost" id="dl">⬇ 下载</button></div>`);
-  const au=document.createElement('audio');au.src='assets/bgm-3strikes.mp3';au.loop=true;
-  $('#pb',w).onclick=()=>{if(au.paused){au.play();$('#pb',w).textContent='⏸ 暂停';}else{au.pause();$('#pb',w).textContent='▶ 播放';}};
-  $('#dl',w).onclick=()=>{const a=document.createElement('a');a.href='assets/bgm-3strikes.mp3';a.download='iPhone进行曲-3Strikes.mp3';a.click();toast('已开始下载，占本机存储');};
-}
-
-/* ============ 浏览器 ============ */
-function openBrowser(){const w=openWin('浏览器','🌐',`<div style="display:flex;gap:6px;margin-bottom:8px"><input id="url" value="https://www.baidu.com" style="flex:1;padding:9px;border-radius:9px;border:0;background:rgba(255,255,255,.1);color:#fff;outline:none"><button class="btn" id="go">前往</button></div><iframe id="web" class="f" style="height:calc(100% - 54px)" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>`);
-  function nav(){let u=$('#url',w).value.trim();if(!/^https?:\/\//.test(u))u='https://'+u;$('#web',w).src=u;}
-  $('#go',w).onclick=nav;$('#url',w).addEventListener('keydown',e=>{if(e.key==='Enter')nav();});}
-
-/* ============ 设置：仿小米 ============ */
-function sw(on,fn){const d=document.createElement('div');d.className='switch'+(on?' on':'');d.onclick=()=>{d.classList.toggle('on');fn(d.classList.contains('on'));};return d;}
-function openSettings(){
-  const w=openWin('设置','⚙️',`<div id="setHome"></div>`);
-  const home=$('#setHome',w);
-  function item(ic,name,sub,right,onClick){const it=document.createElement('div');it.className='item';
-    it.innerHTML=`<div class="l"><div class="ic">${ic}</div><div><div>${name}</div>${sub?`<div class="sub">${sub}</div>`:''}</div></div><div>${right||'<span class="chev">›</span>'}</div>`;
-    if(onClick)it.onclick=onClick;return it;}
-  function renderHome(){
-    home.innerHTML='';
-    const grp1=document.createElement('div');grp1.className='card';
-    grp1.appendChild(item('📱','我的设备','MIUI STUDIO OS · V1.0',null,()=>renderDevice()));
-    home.appendChild(grp1);
-    const grp2=document.createElement('div');grp2.className='card';
-    grp2.appendChild(item('📶','WLAN',SET.wlan?'已连接':'关闭',sw(SET.wlan,x=>{SET.wlan=x;saveSet();renderHome();})));
-    grp2.appendChild(item('🔵','蓝牙',SET.bt?'开启':'关闭',sw(SET.bt,x=>{SET.bt=x;saveSet();renderHome();})));
-    grp2.appendChild(item('✈️','飞行模式',SET.air?'开启':'关闭',sw(SET.air,x=>{SET.air=x;saveSet();renderHome();})));
-    grp2.appendChild(item('🌗','深色模式',SET.dark?'开启':'关闭',sw(SET.dark,x=>{SET.dark=x;saveSet();document.body.style.filter=x?'invert(.92) hue-rotate(180deg)':'';renderHome();})));
-    home.appendChild(grp2);
-    const grp3=document.createElement('div');grp3.className='card';
-    grp3.appendChild(item('🔔','声音与触感','铃声/音量',null,()=>toast('演示项')));
-    grp3.appendChild(item('🔒','锁屏与密码','上滑解锁',null,()=>toast('已启用上滑解锁')));
-    grp3.appendChild(item('🧩','应用设置','已安装应用',null,()=>toast('演示项')));
-    grp3.appendChild(item('🛡️','隐私保护','权限管理',null,()=>toast('演示项')));
-    home.appendChild(grp3);
-    const grp4=document.createElement('div');grp4.className='card';
-    grp4.appendChild(item('⚙️','更多设置','系统与开发者',null,()=>renderMore()));
-    home.appendChild(grp4);
-  }
-  function renderDevice(){
-    home.innerHTML='<div class="card"><div class="row"><b>型号</b><span>Web Phone 2026</span></div><div class="row"><b>MIUI 版本</b><span>MIUI STUDIO OS V1.0</span></div><div class="row"><b>Android 版本</b><span>Web 14</span></div><div class="row"><b>存储</b><span>64 MB(模拟)</span></div></div><div class="card" id="allParams" style="cursor:pointer"><b>全部参数 ›</b></div>';
-    $('#allParams',w).onclick=()=>{let n=(parseInt($('#allParams',w).dataset.n||0))+1;
-      if(n>=7){DEVON=true;localStorage.setItem('miui_devon','1');toast('🎉 开发者模式已开启！');renderHome();}
-      else{$('#allParams',w).dataset.n=n;$('#allParams',w).innerHTML='<b>全部参数 ›</b><div class="sub">连点 '+(7-n)+' 次开启开发者模式</div>';}};
-  }
-  function renderMore(){
-    home.innerHTML='';
-    const back=()=>{const b=document.createElement('div');b.className='item';b.innerHTML='<div class="l"><div class="ic">‹</div><div>返回</div></div>';b.onclick=renderHome;return b;};
-    home.appendChild(back());
-    const grp=document.createElement('div');grp.className='card';
-    grp.appendChild(item('🔧','开发者选项',DEVON?'已开启':'未开启',null,()=>{if(DEVON)renderDev();else toast('连点「全部参数」里的 MIUI 版本 7 次开启');}));
-    home.appendChild(grp);
-  }
-  function renderDev(){
-    home.innerHTML='';const back=()=>{const b=document.createElement('div');b.className='item';b.innerHTML='<div class="l"><div class="ic">‹</div><div>返回</div></div>';b.onclick=renderMore;return b;};
-    home.appendChild(back());
-    const grp=document.createElement('div');grp.className='card';
-    grp.appendChild(item('🔌','USB 调试',SET.usb?'开启':'关闭',sw(SET.usb,x=>{SET.usb=x;saveSet();})));
-    const scales=[['关闭',0],['0.5x',.14],['1x',.28],['1.5x',.42]];
-    let cur=scales.find(s=>(s[1]===SET.winScale))||scales[2];
-    grp.appendChild(item('🎞️','窗口动画缩放',cur[0],null,()=>{let i=(scales.indexOf(cur)+1)%scales.length;SET.winScale=scales[i][1];cur=scales[i];saveSet();applyAnim();renderDev();toast('窗口动画：'+cur[0]);}));
-    grp.appendChild(item('🌈','过渡动画缩放',cur[0],null,()=>toast('演示项（与窗口动画同步）')));
-    grp.appendChild(item('🎨','强制 GPU 渲染',SET.gpu?'开启':'关闭',sw(SET.gpu,x=>{SET.gpu=x;saveSet();})));
-    grp.appendChild(item('🧹','不保留活动',SET.nokeep?'开启':'关闭',sw(SET.nokeep,x=>{SET.nokeep=x;saveSet();})));
-    grp.appendChild(item('📍','指针位置',SET.pointer?'开启':'关闭',sw(SET.pointer,x=>{SET.pointer=x;saveSet();toast(x?'已开启指针显示(演示)':'已关闭');})));
-    home.appendChild(grp);
-    const grp2=document.createElement('div');grp2.className='card';
-    grp2.appendChild(item('🧨','恢复出厂设置','清除所有数据',null,async()=>{if(DBP.db){DBP.db.transaction('files','readwrite').objectStore('files').clear();toast('已重置');renderDesktop();}}));
-    home.appendChild(grp2);
-  }
-  renderHome();
-}
-
-/* ============ 终端 ============ */
-function openTerminal(){const w=openWin('终端','💻',`<div class="term" id="term"><div>MIUI-OS web shell. 输入 help 查看命令。</div><div id="out"></div><div><span>guest@hyperos:~$</span> <input id="cin" autofocus></div></div>`);
-  const out=$('#out',w),cin=$('#cin',w);
-  const cmds={help:'可用: help, ls, neofetch, clear, date, echo <text>, dev',ls:'Desktop  Downloads  Music  Videos  System',neofetch:'MIUI STUDIO OS V1.0 (web)\nKernel: web-kernel 1.0\nShell: wsh\nUptime: '+Math.floor(performance.now()/1000)+'s',date:new Date().toString(),echo:(a)=>a,dev:DEVON?'开发者模式：已开启':'开发者模式：未开启（连点设置→我的设备→全部参数→MIUI版本 7次）'};
-  cin.addEventListener('keydown',e=>{if(e.key!=='Enter')return;const v=cin.value;cin.value='';out.innerHTML+=`<div>guest@hyperos:~$ ${v}</div>`;
-    const [c,...args]=v.split(' ');if(c==='clear'){out.innerHTML='';return;}
-    if(cmds[c]){out.innerHTML+='<div>'+(typeof cmds[c]==='function'?cmds[c](args.join(' ')):cmds[c])+'</div>';}
-    else if(c)out.innerHTML+='<div style="color:#ff6b6b">command not found: '+c+'</div>';
-    out.parentElement.scrollTop=out.parentElement.scrollHeight;});}
-
-/* ============ 关于 ============ */
-function openAbout(){openWin('关于本机','ℹ️',`<div class="card" style="text-align:center"><div style="font-size:54px">📱</div><h3 style="margin:8px 0">MIUI STUDIO OS</h3><p style="color:#9aa3c0;font-size:12px">网页模拟系统 V1.1</p></div><div class="card">型号：Web Phone 2026<br>系统：HyperOS (web simulator)<br>存储：模拟 64MB + 真实浏览器存储<br>内核：web-kernel 1.0<br>分辨率：自适应手机/平板</div><p style="color:#888;font-size:11px">本页面为演示性网页操作系统，所有安装/下载均为网页内行为，不修改真实设备系统。</p>`);}
-
-/* ============ 启动器 ============ */
-function openLauncher(){const l=$('#launcher');l.classList.add('show');renderLauncher('');$('#lsearch').oninput=e=>renderLauncher(e.target.value);}
-function renderLauncher(q){const grid=$('#lgrid');grid.innerHTML='';APPS.filter(a=>!q||a.name.includes(q)).forEach(a=>{const el=appEl(a);el.onclick=()=>{l.classList.remove('show');a.open&&a.open();};grid.appendChild(el);});}
-$('#desk').addEventListener('dblclick',openLauncher);
-$('#sb').addEventListener('click',openLauncher);
+/* ===== 切换 OS ===== */
+const tabs=document.getElementById('tabs'),frame=document.getElementById('osframe'),srclink=document.getElementById('srclink');
+tabs.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+  tabs.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  frame.src=b.dataset.u;
+  srclink.innerHTML='<a href="'+b.dataset.s+'" target="_blank">⭐ 当前系统源码</a><a href="https://weyoudonttalk.github.io/miui-studio/" target="_blank">← 返回官网</a>';
+  toast('正在加载：'+b.textContent);
+});
 </script>
 </body>
 </html>
