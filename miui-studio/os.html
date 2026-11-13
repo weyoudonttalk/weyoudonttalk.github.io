@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>MIUI STUDIO OS · 开源系统中心</title>
+<title>MIUI STUDIO OS · 我的系统中心</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{height:100%;overflow:hidden;font-family:system-ui,'PingFang SC','Microsoft YaHei',sans-serif}
@@ -53,7 +53,7 @@
   <div class="blogo">
     <div class="mi">MIUI STUDIO</div>
     <div class="nm">HYPER OS</div>
-    <div class="sub">OPEN-SOURCE HUB</div>
+    <div class="sub">MY SYSTEM HUB</div>
   </div>
   <div class="bbar"><i></i></div>
   <div class="btip" id="btip">正在启动内核…</div>
@@ -69,11 +69,11 @@
 <!-- OS 中心 -->
 <div id="hub">
   <div class="hubbar">
-    <div class="ht">MIUI STUDIO OS <small>国产开源 OS 合集 · 9 个真实网页系统(国内为主)</small></div>
+    <div class="ht">MIUI STUDIO OS <small>我的系统中心 · 内置多套桌面环境</small></div>
     <div class="tabs" id="tabs">
       <button data-u="https://runnova.github.io/NovaOS/" data-s="https://github.com/runnova/NovaOS" class="on">NovaOS</button>
       <button data-u="https://haris16-code.github.io/BJH-OS/" data-s="https://github.com/Haris16-code/BJH-OS">BJH OS</button>
-      <button data-u="https://tjy-gitnub.github.io/win12/desktop.html" data-s="https://github.com/tjy-gitnub/win12">Win12·谭景元</button>
+      <button data-u="https://tjy-gitnub.github.io/win12/desktop.html" data-s="https://github.com/tjy-gitnub/win12">Win12</button>
       <button data-u="https://yoyopan1115.github.io/FluentOS-On-Web/" data-s="https://github.com/yoyopan1115/FluentOS-On-Web">FluentOS</button>
       <button data-u="https://550w.szyd.fun" data-s="https://550w.szyd.fun">550W OS</button>
       <button data-u="https://chenxing-dev.github.io" data-s="https://github.com/chenxing-dev">陈刑OS</button>
@@ -81,7 +81,7 @@
       <button data-u="https://dustinbrett.com/" data-s="https://github.com/DustinBrett/daedalOS">daedalOS</button>
       <button data-u="https://puter.com" data-s="https://github.com/HeyPuter/puter">Puter</button>
     </div>
-    <div class="src" id="srclink"><a href="https://github.com/runnova/NovaOS" target="_blank">⭐ 当前系统源码</a><a href="https://weyoudonttalk.github.io/miui-studio/" target="_blank">← 返回官网</a></div>
+    <div class="src" id="srclink"><a href="https://weyoudonttalk.github.io/miui-studio/" target="_blank">← 返回官网</a></div>
   </div>
   <iframe id="osframe" src="https://runnova.github.io/NovaOS/" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation allow-modals"></iframe>
 </div>
@@ -139,7 +139,7 @@ const tabs=document.getElementById('tabs'),frame=document.getElementById('osfram
 tabs.querySelectorAll('button').forEach(b=>b.onclick=()=>{
   tabs.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
   frame.src=b.dataset.u;
-  srclink.innerHTML='<a href="'+b.dataset.s+'" target="_blank">⭐ 当前系统源码</a><a href="https://weyoudonttalk.github.io/miui-studio/" target="_blank">← 返回官网</a>';
+  srclink.innerHTML='<a href="https://weyoudonttalk.github.io/miui-studio/" target="_blank">← 返回官网</a>';
   toast('正在加载：'+b.textContent);
 });
 </script>
