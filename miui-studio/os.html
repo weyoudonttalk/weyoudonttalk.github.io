@@ -8,19 +8,15 @@
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{height:100%;overflow:hidden;font-family:system-ui,'PingFang SC','Microsoft YaHei',sans-serif}
   body{background:#000;color:#fff;user-select:none}
-  /* ===== 开机动画 ===== */
+  /* ===== 苹果开机动画 ===== */
   #boot{position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .7s}
   #boot.gone{opacity:0;pointer-events:none}
-  #boot canvas{position:absolute;inset:0}
-  .blogo{position:relative;z-index:2;text-align:center}
-  .blogo .mi{font-size:13px;letter-spacing:10px;color:#ddd;opacity:.9}
-  .blogo .nm{font-size:46px;font-weight:800;margin-top:4px;background:linear-gradient(120deg,#ff6900,#ff2d55,#7b5cff,#00d4ff);background-size:300% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px;animation:hue 4s linear infinite;text-shadow:0 0 40px rgba(255,105,0,.3)}
-  @keyframes hue{0%{background-position:0% 50%}100%{background-position:300% 50%}}
-  .blogo .sub{font-size:11px;color:#888;margin-top:10px;letter-spacing:4px}
-  .bbar{position:relative;z-index:2;margin-top:40px;width:200px;height:3px;background:rgba(255,255,255,.12);border-radius:3px;overflow:hidden}
-  .bbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff6900,#ff2d55);animation:bb 4s ease forwards}
-  @keyframes bb{to{width:100%}}
-  .btip{position:relative;z-index:2;margin-top:16px;font-size:11px;color:#666;letter-spacing:2px}
+  .apple-boot{width:60px;height:60px;opacity:0;animation:appleIn 1.2s ease .2s forwards}
+  .apple-boot svg{width:100%;height:100%;fill:#f5f5f7}
+  @keyframes appleIn{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
+  .abbar{position:relative;z-index:2;margin-top:48px;width:170px;height:4px;background:rgba(255,255,255,.16);border-radius:3px;overflow:hidden}
+  .abbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#f5f5f7,#d0d0d2);animation:abb 4s ease forwards}
+  @keyframes abb{to{width:100%}}
 
   /* ===== 苹果「你好」===== */
   #hello{position:fixed;inset:0;z-index:9500;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 35%,#1c1c1e,#000 75%);text-align:center}
@@ -83,16 +79,10 @@
 </head>
 <body>
 
-<!-- 开机动画 -->
+<!-- 苹果开机动画 -->
 <div id="boot">
-  <canvas id="bcv"></canvas>
-  <div class="blogo">
-    <div class="mi">MIUI STUDIO</div>
-    <div class="nm">带你创想未来</div>
-    <div class="sub">MY SYSTEM HUB</div>
-  </div>
-  <div class="bbar"><i></i></div>
-  <div class="btip" id="btip">正在启动内核…</div>
+  <div class="apple-boot"><svg viewBox="0 0 384 512"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg></div>
+  <div class="abbar"><i></i></div>
 </div>
 
 <!-- 苹果「你好」-->
@@ -141,29 +131,12 @@
 <script>
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400);}
 
-/* ===== 开机动画 ===== */
+/* ===== 苹果开机动画 ===== */
 (function(){
-  const cv=document.getElementById('bcv'),ctx=cv.getContext('2d');
-  function rs(){cv.width=innerWidth;cv.height=innerHeight;}rs();addEventListener('resize',rs);
-  const N=120,ps=[];
-  for(let i=0;i<N;i++)ps.push({x:Math.random()*cv.width,y:Math.random()*cv.height,a:Math.random()*6.28,sp:.2+Math.random()*.6,r:Math.random()*2+1});
-  const tips=['正在启动内核…','加载驱动…','初始化桌面…','校准触控…','准备就绪'];let ti=0;
-  const tt=setInterval(()=>{document.getElementById('btip').textContent=tips[ti=(ti+1)%tips.length];},800);
-  let raf,t0=performance.now();
-  function loop(){
-    const el=(performance.now()-t0)/1000;ctx.clearRect(0,0,cv.width,cv.height);
-    const cx=cv.width/2,cy=cv.height/2-40,pull=Math.min(1,el/2.6);
-    for(const p of ps){const tx=cx+Math.cos(p.a)*180*(1-pull),ty=cy+Math.sin(p.a)*180*(1-pull);
-      p.x+=(tx-p.x)*.06;p.y+=(ty-p.y)*.06;p.a+=p.sp*.02;
-      const g=el>2.4?1:el/2.4;
-      ctx.beginPath();ctx.fillStyle='rgba(255,'+Math.floor(105*g+80)+','+Math.floor(60*g+100)+','+(.5+.5*g)+')';ctx.arc(p.x,p.y,p.r,0,7);ctx.fill();}
-    if(el>1.2){ctx.strokeStyle='rgba(255,105,0,'+(el>2.4?0:.4*(1-(el-1.2)/1.2))+')';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,90*(1-pull*.3),0,7);ctx.stroke();}
-    if(el>2.2){const sx=(el-2.2)/2*cv.width;ctx.fillStyle='rgba(255,255,255,.06)';ctx.fillRect(sx,0,60,cv.height);}
-    raf=requestAnimationFrame(loop);
-  }
-  loop();
-  setTimeout(()=>{cancelAnimationFrame(raf);clearInterval(tt);document.getElementById('boot').classList.add('gone');
-    setTimeout(()=>{document.getElementById('boot').style.display='none';document.getElementById('hello').classList.add('show');},700);},4300);
+  setTimeout(()=>{
+    document.getElementById('boot').classList.add('gone');
+    setTimeout(()=>{document.getElementById('boot').style.display='none';document.getElementById('hello').classList.add('show');},700);
+  },4000);
 })();
 
 /* ===== 苹果你好 → 登录 ===== */
