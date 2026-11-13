@@ -144,7 +144,10 @@
         <label><input type="radio" name="bt" value="image"> 图片 URL</label>
         <label><input type="radio" name="bt" value="video"> 视频 URL</label>
       </div>
-      <input id="bootSrc" placeholder="图片/视频地址（选图片或视频时填）" style="width:100%;padding:10px;border-radius:9px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;outline:none;margin-bottom:12px">
+      <input id="bootSrc" placeholder="图片/视频地址（也可点下面从本机选文件）" style="width:100%;padding:10px;border-radius:9px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;outline:none;margin-bottom:8px">
+      <input type="file" id="bootFile" accept="image/*,video/*" style="display:none">
+      <button class="mini ghost" id="bootPick" style="margin-bottom:8px">📁 从本机选择文件（图片/视频）</button>
+      <div id="bootFileInfo" style="font-size:11px;color:#9aa3c0;margin-bottom:8px"></div>
       <input id="adminTok" placeholder="GitHub Token（仅本次使用，不保存）" style="width:100%;padding:10px;border-radius:9px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;outline:none;margin-bottom:12px">
       <div style="display:flex;gap:8px">
         <button class="mini dl" id="bootSave">保存并全局应用</button>
@@ -280,21 +283,50 @@ document.getElementById('adminGo').onclick=()=>{
   if(v==='67'||v==='六七'){document.getElementById('adminLogin').style.display='none';document.getElementById('adminPanel').style.display='block';}
   else{toast('密码错误');}
 };
+function fileToDataURL(f){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(f);});}
+function fileToBase64(f){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result.split(',')[1]);fr.onerror=rej;fr.readAsDataURL(f);});}
+async function uploadAsset(f,path,tk){
+  const api='https://api.github.com/repos/weyoudonttalk/weyoudonttalk.github.io/contents/'+path;
+  const b64=await fileToBase64(f);const body={message:'upload boot asset',content:b64};
+  try{const cur=await fetch(api,{headers:{Authorization:'token '+tk}}).then(r=>r.json());if(cur.sha)body.sha=cur.sha;}catch(e){}
+  const r=await fetch(api,{method:'PUT',headers:{'Authorization':'token '+tk,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(r.ok){const d=await r.json();return d.content.download_url;}return null;
+}
+async function saveCfg(cfg,tk){
+  if(!tk){toast('请填写 GitHub Token');return false;}
+  const api='https://api.github.com/repos/weyoudonttalk/weyoudonttalk.github.io/contents/miui-studio/boot-config.json';
+  const cur=await fetch(api,{headers:{Authorization:'token '+tk}}).then(r=>r.json());
+  const content=btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
+  await fetch(api,{method:'PUT',headers:{'Authorization':'token '+tk,'Content-Type':'application/json'},body:JSON.stringify({message:'update boot animation',content,sha:cur.sha})});
+  return true;
+}
+document.getElementById('bootPick').onclick=()=>document.getElementById('bootFile').click();
+document.getElementById('bootFile').onchange=e=>{const f=e.target.files[0];if(!f)return;
+  document.getElementById('bootFileInfo').textContent='已选：'+f.name+' ('+(f.size/1048576).toFixed(2)+'MB)';
+  if(f.type.startsWith('video'))document.querySelector('input[name=bt][value=video]').checked=true;
+  else if(f.type.startsWith('image'))document.querySelector('input[name=bt][value=image]').checked=true;};
 document.getElementById('bootSave').onclick=async()=>{
   const type=document.querySelector('input[name=bt]:checked').value;
-  const src=document.getElementById('bootSrc').value.trim();
-  if((type==='image'||type==='video')&&!src){toast('请填写URL');return;}
-  const cfg={boot:{type,src:src||''}};
-  try{
-    const tk=document.getElementById('adminTok').value.trim();
-    if(!tk){toast('请填写 GitHub Token');return;}
-    const api='https://api.github.com/repos/weyoudonttalk/weyoudonttalk.github.io/contents/miui-studio/boot-config.json';
-    const cur=await fetch(api,{headers:{Authorization:'token '+tk}}).then(r=>r.json());
-    const content=btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
-    await fetch(api,{method:'PUT',headers:{'Authorization':'token '+tk,'Content-Type':'application/json'},body:JSON.stringify({message:'update boot animation',content,sha:cur.sha})});
-    toast('已全局应用！其他设备下次打开生效');
-    document.getElementById('adminModal').style.display='none';
-  }catch(e){toast('保存失败：'+e.message);}
+  const url=document.getElementById('bootSrc').value.trim();
+  const file=document.getElementById('bootFile').files[0];
+  const tk=document.getElementById('adminTok').value.trim();
+  if(type==='default'){ if(await saveCfg({boot:{type:'default',src:''}},tk)){toast('已恢复默认，全局生效');document.getElementById('adminModal').style.display='none';} return; }
+  if(!url&&!file){toast('请填写URL或从本机选择文件');return;}
+  if(file){
+    if(file.type.startsWith('image')&&file.size<3*1048576){
+      const d=await fileToDataURL(file);
+      if(await saveCfg({boot:{type:'image',src:d}},tk)){toast('已应用本地图片，全局生效');document.getElementById('adminModal').style.display='none';}
+    }else{
+      if(!tk){toast('上传文件需填 GitHub Token');return;}
+      toast('正在上传文件到仓库…（稍候）');
+      const ext=(file.name.split('.').pop()||'bin');
+      const up=await uploadAsset(file,'miui-studio/assets/bootfile.'+ext,tk);
+      if(up&&await saveCfg({boot:{type:file.type.startsWith('video')?'video':'image',src:up}},tk)){toast('已上传并全局应用');document.getElementById('adminModal').style.display='none';}
+      else toast('上传失败');
+    }
+  }else{
+    if(await saveCfg({boot:{type,src:url}},tk)){toast('已全局应用！其他设备下次打开生效');document.getElementById('adminModal').style.display='none';}
+  }
 };
 </script>
 </body>
