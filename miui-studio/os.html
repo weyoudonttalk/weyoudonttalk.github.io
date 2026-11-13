@@ -22,7 +22,7 @@
   @keyframes bb{to{width:100%}}
   .btip{position:relative;z-index:2;margin-top:16px;font-size:11px;color:#666;letter-spacing:2px}
 
-  /* ===== 苹果「你好」欢迎屏 ===== */
+  /* ===== 苹果「你好」===== */
   #hello{position:fixed;inset:0;z-index:9500;display:none;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 35%,#1c1c1e,#000 75%);text-align:center}
   #hello.show{display:flex;animation:fade .8s ease}
   #hello .apple{width:64px;height:64px;margin-bottom:30px;opacity:.92}
@@ -32,13 +32,9 @@
   #hello .go{margin-top:46px;padding:11px 30px;border-radius:24px;background:rgba(255,255,255,.1);color:#fff;font-size:15px;cursor:pointer;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.18);transition:.15s}
   #hello .go:active{transform:scale(.95);background:rgba(255,255,255,.2)}
 
-  /* ===== 苹果登录（一比一 macOS） ===== */
+  /* ===== 苹果登录 ===== */
   #login{position:fixed;inset:0;z-index:9400;display:none;flex-direction:column;
-    background:
-      radial-gradient(circle at 22% 18%, rgba(120,150,255,.55), transparent 45%),
-      radial-gradient(circle at 80% 75%, rgba(255,120,200,.45), transparent 45%),
-      linear-gradient(160deg,#1b2a5e,#0a1330 55%,#1a0f2e);
-    overflow:hidden}
+    background:radial-gradient(circle at 22% 18%, rgba(120,150,255,.55), transparent 45%),radial-gradient(circle at 80% 75%, rgba(255,120,200,.45), transparent 45%),linear-gradient(160deg,#1b2a5e,#0a1330 55%,#1a0f2e);overflow:hidden}
   #login.show{display:flex;animation:fade .7s ease}
   @keyframes fade{from{opacity:0}to{opacity:1}}
   #login .topbar{height:30px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:14px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5)}
@@ -52,24 +48,35 @@
   #login .pw::placeholder{color:rgba(255,255,255,.6)}
   #login .loginbtn{width:42px;height:42px;border-radius:50%;background:#007aff;border:0;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;box-shadow:0 4px 14px rgba(0,122,255,.5)}
   #login .loginbtn:active{transform:scale(.92)}
-  #login .hint{font-size:12px;color:rgba(255,255,255,.7);margin-top:4px}
+  #login .hint{font-size:12px;color:rgba(255,255,255,.7)}
   #login .spin{position:absolute;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:2}
   #login .spin.show{display:flex}
   #login .spin i{width:34px;height:34px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:rot .8s linear infinite}
   @keyframes rot{to{transform:rotate(360deg)}}
 
-  /* ===== OS 中心 ===== */
+  /* ===== 软件中心 ===== */
   #hub{position:fixed;inset:0;z-index:100;display:none;flex-direction:column;background:#05060d}
   #hub.show{display:flex}
-  .hubbar{flex-shrink:0;background:rgba(10,12,22,.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.08);padding:8px 12px}
+  .hubbar{flex-shrink:0;background:rgba(10,12,22,.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.08);padding:8px 12px}
+  .htop{display:flex;align-items:center;justify-content:space-between}
   .ht{font-size:13px;font-weight:700;letter-spacing:1px;background:linear-gradient(120deg,#ff6900,#ff2d55);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
   .ht small{color:#7a83a8;-webkit-text-fill-color:#7a83a8;font-weight:400;font-size:10px;margin-left:6px}
-  .tabs{display:flex;gap:6px;margin-top:8px;overflow-x:auto}
-  .tabs button{flex-shrink:0;padding:7px 14px;border-radius:18px;background:rgba(255,255,255,.08);border:0;color:#cfd6f0;font-size:12px;cursor:pointer;white-space:nowrap}
-  .tabs button.on{background:linear-gradient(135deg,#ff6900,#ff2d55);color:#fff;font-weight:700}
-  .src{margin-top:6px;font-size:10px;color:#6b7390}
-  .src a{color:#7b5cff;text-decoration:none;margin-right:10px}
-  #osframe{width:100%;flex:1;border:0;background:#0a0c16}
+  .back{font-size:12px;color:#7b5cff;cursor:pointer;display:none}
+  .zones{display:flex;gap:6px;margin-top:8px;overflow-x:auto}
+  .zones button{flex-shrink:0;padding:7px 14px;border-radius:18px;background:rgba(255,255,255,.08);border:0;color:#cfd6f0;font-size:12px;cursor:pointer;white-space:nowrap}
+  .zones button.on{background:linear-gradient(135deg,#ff6900,#ff2d55);color:#fff;font-weight:700}
+  #zoneContent{flex:1;overflow-y:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;align-content:start}
+  .card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+  .card .ch{display:flex;align-items:center;gap:10px}
+  .card .ci{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(255,255,255,.08);flex-shrink:0}
+  .card .cn{font-size:14px;font-weight:600}
+  .card .cd{font-size:11px;color:#9aa3c0;line-height:1.5}
+  .card .acts{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap}
+  .mini{padding:7px 13px;border-radius:18px;font-size:12px;font-weight:600;border:0;cursor:pointer;color:#fff}
+  .mini.open{background:linear-gradient(135deg,#007aff,#5b9bd5)}
+  .mini.dl{background:linear-gradient(135deg,#2e7d32,#43a047)}
+  .mini.ghost{background:rgba(255,255,255,.1)}
+  #osframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#0a0c16;display:none;z-index:3}
   .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:99999;background:rgba(0,0,0,.88);color:#fff;padding:10px 18px;border-radius:20px;font-size:12px;opacity:0;transition:opacity .3s;pointer-events:none;max-width:84vw;text-align:center}
   .toast.show{opacity:1}
 </style>
@@ -88,7 +95,7 @@
   <div class="btip" id="btip">正在启动内核…</div>
 </div>
 
-<!-- 苹果「你好」欢迎屏 -->
+<!-- 苹果「你好」-->
 <div id="hello">
   <div class="apple"><svg viewBox="0 0 384 512"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg></div>
   <div class="hi">你好</div>
@@ -96,12 +103,9 @@
   <div class="go" id="helloGo">继续</div>
 </div>
 
-<!-- 苹果登录（一比一 macOS） -->
+<!-- 苹果登录 -->
 <div id="login">
-  <div class="topbar">
-    <span style="font-weight:600">MIUI</span>
-    <div class="right"><span>📶</span><span>🔋</span><span id="lclk">9:41</span></div>
-  </div>
+  <div class="topbar"><span style="font-weight:600">MIUI</span><div class="right"><span>📶</span><span>🔋</span><span id="lclk">9:41</span></div></div>
   <div class="panel">
     <div class="logo"><svg viewBox="0 0 384 512"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg></div>
     <div class="ava">M</div>
@@ -113,31 +117,23 @@
   <div class="spin" id="spin"><i></i></div>
 </div>
 
-<!-- OS 中心 -->
+<!-- 软件中心 -->
 <div id="hub">
   <div class="hubbar">
-    <div class="ht">MIUI STUDIO OS <small>我的系统中心 · 内置多套桌面环境</small></div>
-    <div class="tabs" id="tabs">
-      <button data-u="https://runnova.github.io/NovaOS/" class="on">NovaOS</button>
-      <button data-u="https://haris16-code.github.io/BJH-OS/">BJH OS</button>
-      <button data-u="https://tjy-gitnub.github.io/win12/desktop.html">Win12</button>
-      <button data-u="https://yoyopan1115.github.io/FluentOS-On-Web/">FluentOS</button>
-      <button data-u="https://550w.szyd.fun">550W OS</button>
-      <button data-u="https://chenxing-dev.github.io">陈刑OS</button>
-      <button data-u="https://iosandroidweb.vercel.app">iOS·安卓</button>
-      <button data-u="https://dustinbrett.com/">daedalOS</button>
-      <button data-u="https://puter.com">Puter</button>
-      <button data-u="https://www.android-x86.org/">安卓模拟器·x86</button>
-      <button data-u="https://blissos.org/">Bliss OS</button>
-      <button data-u="https://waydro.id/">Waydroid</button>
-      <button data-u="https://mengobs.github.io/Webintosh">🍎 Webintosh</button>
-      <button data-u="https://mhmdmhd6.github.io/Mac-OS-Desktop/">🍎 Mac 桌面</button>
-      <button data-u="https://senzo13.github.io/macos-sequoia-web/">🍎 Sequoia</button>
-      <button data-u="https://mengobs.github.io/Webintosh-Desktop">🍎 Webintosh 桌面</button>
+    <div class="htop">
+      <div class="ht">MIUI STUDIO OS <small>软件中心 · 分区自由下载</small></div>
+      <div class="back" id="backBtn">← 返回专区</div>
     </div>
-    <div class="src" id="srclink"><a href="https://weyoudonttalk.github.io/miui-studio/" target="_blank">← 返回官网</a></div>
+    <div class="zones" id="zones">
+      <button data-z="all" class="on">全部</button>
+      <button data-z="android">🤖 安卓专区</button>
+      <button data-z="apple">🍎 苹果专区</button>
+      <button data-z="desktop">🖥️ 桌面专区</button>
+      <button data-z="store">📦 软件库</button>
+    </div>
   </div>
-  <iframe id="osframe" src="https://runnova.github.io/NovaOS/" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation allow-modals"></iframe>
+  <div id="zoneContent"></div>
+  <iframe id="osframe" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation allow-modals"></iframe>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -145,7 +141,7 @@
 <script>
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400);}
 
-/* ===== 开机动画：粒子汇聚 ===== */
+/* ===== 开机动画 ===== */
 (function(){
   const cv=document.getElementById('bcv'),ctx=cv.getContext('2d');
   function rs(){cv.width=innerWidth;cv.height=innerHeight;}rs();addEventListener('resize',rs);
@@ -170,35 +166,89 @@ function toast(m){const t=document.getElementById('toast');t.textContent=m;t.cla
     setTimeout(()=>{document.getElementById('boot').style.display='none';document.getElementById('hello').classList.add('show');},700);},4300);
 })();
 
-/* ===== 苹果「你好」→ 登录 ===== */
-document.getElementById('helloGo').onclick=()=>{
-  document.getElementById('hello').classList.remove('show');
-  document.getElementById('login').classList.add('show');
-  setTimeout(()=>document.getElementById('pw').focus(),400);
-};
+/* ===== 苹果你好 → 登录 ===== */
+document.getElementById('helloGo').onclick=()=>{document.getElementById('hello').classList.remove('show');document.getElementById('login').classList.add('show');setTimeout(()=>document.getElementById('pw').focus(),400);};
 
 /* ===== 苹果登录 ===== */
-function doLogin(){
-  const sp=document.getElementById('spin');sp.classList.add('show');
-  setTimeout(()=>{
-    sp.classList.remove('show');
-    document.getElementById('login').classList.remove('show');
-    document.getElementById('hub').classList.add('show');
-  },700);
-}
+function doLogin(){const sp=document.getElementById('spin');sp.classList.add('show');
+  setTimeout(()=>{sp.classList.remove('show');document.getElementById('login').classList.remove('show');document.getElementById('hub').classList.add('show');showZone('all');},700);}
 document.getElementById('loginBtn').onclick=doLogin;
 document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 function lclk(){const d=new Date();document.getElementById('lclk').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 lclk();setInterval(lclk,10000);
 
-/* ===== 切换 OS ===== */
-const tabs=document.getElementById('tabs'),frame=document.getElementById('osframe'),srclink=document.getElementById('srclink');
-tabs.querySelectorAll('button').forEach(b=>b.onclick=()=>{
-  tabs.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
-  frame.src=b.dataset.u;
-  srclink.innerHTML='<a href="https://weyoudonttalk.github.io/miui-studio/" target="_blank">← 返回官网</a>';
-  toast('正在加载：'+b.textContent.replace('🍎 ',''));
-});
+/* ===== 软件中心数据 ===== */
+const ZONES={
+  all:[
+    {ic:'🤖',n:'安卓专区',d:'安卓系统镜像 + 真APK下载',z:'android'},
+    {ic:'🍎',n:'苹果专区',d:'4 套开源 macOS 网页系统',z:'apple'},
+    {ic:'🖥️',n:'桌面专区',d:'Win12/Puter/daedalOS 等',z:'desktop'},
+    {ic:'📦',n:'软件库',d:'可自由装软件的开源商店',z:'store'},
+    {ic:'🌐',n:'NovaOS',d:'纯前端桌面·应用商店',u:'https://runnova.github.io/NovaOS/'},
+    {ic:'🛒',n:'BJH OS',d:'网页OS·应用商店',u:'https://haris16-code.github.io/BJH-OS/'},
+    {ic:'⊞',n:'Win12',d:'Windows 12 网页版',u:'https://tjy-gitnub.github.io/win12/desktop.html'},
+    {ic:'🎨',n:'FluentOS',d:'Fluent 风桌面',u:'https://yoyopan1115.github.io/FluentOS-On-Web/'},
+    {ic:'💻',n:'550W OS',d:'SZY 工作室',u:'https://550w.szyd.fun'},
+    {ic:'⚙️',n:'陈刑OS',d:'Vue3 桌面',u:'https://chenxing-dev.github.io'},
+    {ic:'📱',n:'iOS·安卓',d:'手机双系统界面',u:'https://iosandroidweb.vercel.app'},
+    {ic:'🖧',n:'daedalOS',d:'完整桌面环境',u:'https://dustinbrett.com/'},
+    {ic:'🚀',n:'Puter',d:'最强互联网OS·应用商店',u:'https://puter.com'},
+  ],
+  android:[
+    {ic:'🤖',n:'Android-x86',d:'把安卓装进电脑/虚拟机（开源镜像）',u:'https://www.android-x86.org/'},
+    {ic:'🌈',n:'Bliss OS',d:'桌面风安卓系统（基于 Android-x86）',u:'https://blissos.org/'},
+    {ic:'🪟',n:'Waydroid',d:'Linux 上跑安卓容器，最接近原生',u:'https://waydro.id/'},
+    {ic:'🎵',n:'Metrolist APK',d:'YouTube Music 开源客户端·真APK下载',dl:'https://github.com/MetrolistGroup/Metrolist/releases/latest/download/Metrolist.apk'},
+    {ic:'📡',n:'Vivid APK',d:'开源 IRL 直播推流·真APK下载',dl:'https://github.com/thoser666/Vivid/releases/latest/download/app-standard-release.apk'},
+  ],
+  apple:[
+    {ic:'🍎',n:'Webintosh',d:'macOS Sequoia 网页版（含登录流程）',u:'https://mengobs.github.io/Webintosh'},
+    {ic:'🍎',n:'Mac 桌面',d:'经典 macOS 网页桌面',u:'https://mhmdmhd6.github.io/Mac-OS-Desktop/'},
+    {ic:'🍎',n:'Sequoia',d:'纯前端 Sequoia·16内置App',u:'https://senzo13.github.io/macos-sequoia-web/'},
+    {ic:'🍎',n:'Webintosh 桌面',d:'Webintosh 桌面版',u:'https://mengobs.github.io/Webintosh-Desktop'},
+  ],
+  desktop:[
+    {ic:'⊞',n:'Win12',d:'Windows 12 网页版',u:'https://tjy-gitnub.github.io/win12/desktop.html'},
+    {ic:'🚀',n:'Puter',d:'互联网OS·真实文件/应用',u:'https://puter.com'},
+    {ic:'🖧',n:'daedalOS',d:'模拟器+应用桌面',u:'https://dustinbrett.com/'},
+    {ic:'🌐',n:'NovaOS',d:'纯前端·PWA应用商店',u:'https://runnova.github.io/NovaOS/'},
+    {ic:'🎨',n:'FluentOS',d:'Fluent 风桌面',u:'https://yoyopan1115.github.io/FluentOS-On-Web/'},
+  ],
+  store:[
+    {ic:'🚀',n:'Puter 应用商店',d:'网页内真装软件+文件管理',u:'https://puter.com'},
+    {ic:'🌐',n:'NovaOS 商店',d:'PWA 应用一键装',u:'https://runnova.github.io/NovaOS/'},
+    {ic:'🛒',n:'BJH OS 商店',d:'网页OS应用商店',u:'https://haris16-code.github.io/BJH-OS/'},
+    {ic:'🤖',n:'F-Droid',d:'开源 APK 商店（外部）',u:'https://f-droid.org/'},
+  ],
+};
+
+const zoneContent=document.getElementById('zoneContent');
+const osframe=document.getElementById('osframe');
+const backBtn=document.getElementById('backBtn');
+
+function openSys(u){osframe.src=u;osframe.style.display='block';backBtn.style.display='block';zoneContent.style.display='none';}
+function backZone(){osframe.style.display='none';osframe.src='about:blank';backBtn.style.display='none';zoneContent.style.display='grid';}
+
+function showZone(z){
+  zoneContent.style.display='grid';osframe.style.display='none';backBtn.style.display='none';
+  const list=ZONES[z]||[];
+  zoneContent.innerHTML='';
+  list.forEach(it=>{
+    const c=document.createElement('div');c.className='card';
+    let acts='';
+    if(it.u)acts+='<button class="mini open" data-u="'+it.u+'">打开</button>';
+    if(it.z)acts+='<button class="mini ghost" data-z="'+it.z+'">进入专区 ›</button>';
+    if(it.dl)acts+='<button class="mini dl" data-dl="'+it.dl+'">⬇ 下载</button>';
+    c.innerHTML='<div class="ch"><div class="ci">'+it.ic+'</div><div><div class="cn">'+it.n+'</div></div></div><div class="cd">'+(it.d||'')+'</div><div class="acts">'+acts+'</div>';
+    zoneContent.appendChild(c);
+  });
+  zoneContent.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>openSys(b.dataset.u));
+  zoneContent.querySelectorAll('[data-z]').forEach(b=>b.onclick=()=>{document.querySelectorAll('#zones button').forEach(x=>x.classList.remove('on'));document.querySelector('#zones button[data-z="'+b.dataset.z+'"]').classList.add('on');showZone(b.dataset.z);});
+  zoneContent.querySelectorAll('[data-dl]').forEach(b=>b.onclick=()=>{const a=document.createElement('a');a.href=b.dataset.dl;a.download='';a.click();toast('已开始下载：'+b.closest('.card').querySelector('.cn').textContent);});
+}
+
+document.querySelectorAll('#zones button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#zones button').forEach(x=>x.classList.remove('on'));b.classList.add('on');showZone(b.dataset.z);});
+backBtn.onclick=backZone;
 </script>
 </body>
 </html>
