@@ -114,6 +114,7 @@
       <div style="display:flex;gap:12px;align-items:center">
         <div class="back" id="backBtn">← 返回专区</div>
         <div class="logout" id="logoutBtn">注销</div>
+      <div class="logout" id="adminBtn" style="color:#5b9bd5">⚙ 管理</div>
       </div>
     </div>
     <div class="zones" id="zones">
@@ -129,21 +130,62 @@
 </div>
 
 <div class="toast" id="toast"></div>
+<div id="adminModal" style="display:none;position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);align-items:center;justify-content:center">
+  <div style="width:min(90vw,380px);background:#1c1f2e;border-radius:16px;padding:20px;color:#fff">
+    <h3 style="margin-bottom:14px">开机动画管理</h3>
+    <div id="adminLogin">
+      <p style="font-size:13px;color:#9aa3c0;margin-bottom:10px">请输入管理员密码</p>
+      <input id="adminPw" type="password" placeholder="密码" style="width:100%;padding:10px;border-radius:9px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;outline:none;margin-bottom:10px">
+      <button class="mini open" id="adminGo">进入</button>
+    </div>
+    <div id="adminPanel" style="display:none">
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;font-size:13px">
+        <label><input type="radio" name="bt" value="default" checked> 默认（苹果原版）</label>
+        <label><input type="radio" name="bt" value="image"> 图片 URL</label>
+        <label><input type="radio" name="bt" value="video"> 视频 URL</label>
+      </div>
+      <input id="bootSrc" placeholder="图片/视频地址（选图片或视频时填）" style="width:100%;padding:10px;border-radius:9px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;outline:none;margin-bottom:12px">
+      <input id="adminTok" placeholder="GitHub Token（仅本次使用，不保存）" style="width:100%;padding:10px;border-radius:9px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;outline:none;margin-bottom:12px">
+      <div style="display:flex;gap:8px">
+        <button class="mini dl" id="bootSave">保存并全局应用</button>
+        <button class="mini ghost" id="bootClose">关闭</button>
+      </div>
+      <p style="font-size:11px;color:#777;margin-top:10px">保存后所有设备下次打开都会看到该开机动画。</p>
+    </div>
+  </div>
+</div>
 
 <script>
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400);}
 
-/* ===== 苹果开机动画（带登录记忆） ===== */
-(function(){
-  const logged=localStorage.getItem('miui_logged')==='1';
+/* ===== 开机动画（读全局配置） ===== */
+function scheduleBootHide(delay){
   setTimeout(()=>{
-    document.getElementById('boot').classList.add('gone');
-    setTimeout(()=>{
-      document.getElementById('boot').style.display='none';
-      if(logged){document.getElementById('hub').classList.add('show');showZone('all');}
-      else{document.getElementById('hello').classList.add('show');}
-    },700);
-  },4000);
+    const b=document.getElementById('boot');b.classList.add('gone');
+    setTimeout(()=>{b.style.display='none';afterBoot();},700);
+  },delay);
+}
+function afterBoot(){
+  const logged=localStorage.getItem('miui_logged')==='1';
+  if(logged){document.getElementById('hub').classList.add('show');showZone('all');}
+  else{document.getElementById('hello').classList.add('show');}
+}
+function applyBoot(boot){
+  const b=document.getElementById('boot');
+  if(boot&&boot.type==='image'&&boot.src){
+    b.innerHTML='<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#000"><img src="'+boot.src+'" style="max-width:70vmin;max-height:70vmin;object-fit:contain"></div>';
+    scheduleBootHide(4000);
+  }else if(boot&&boot.type==='video'&&boot.src){
+    b.innerHTML='<video src="'+boot.src+'" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover"></video>';
+    const v=b.querySelector('video');let done=false;const fin=()=>{if(!done){done=true;scheduleBootHide(0);}};
+    if(v){v.onended=fin;setTimeout(fin,8000);}else scheduleBootHide(4000);
+  }else{
+    scheduleBootHide(4000);
+  }
+}
+(function(){
+  fetch('https://raw.githubusercontent.com/weyoudonttalk/weyoudonttalk.github.io/main/miui-studio/boot-config.json?t='+Date.now())
+    .then(r=>r.json()).then(cfg=>applyBoot(cfg&&cfg.boot)).catch(()=>applyBoot({type:'default'}));
 })();
 
 /* ===== 苹果你好 → 登录 ===== */
@@ -230,6 +272,30 @@ function showZone(z){
 document.querySelectorAll('#zones button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#zones button').forEach(x=>x.classList.remove('on'));b.classList.add('on');showZone(b.dataset.z);});
 backBtn.onclick=backZone;
 document.getElementById('logoutBtn').onclick=()=>{localStorage.removeItem('miui_logged');document.getElementById('hub').classList.remove('show');document.getElementById('login').classList.add('show');document.getElementById('pw').value='';setTimeout(()=>document.getElementById('pw').focus(),300);};
+/* ===== 管理员 ===== */
+document.getElementById('adminBtn').onclick=()=>{document.getElementById('adminModal').style.display='flex';document.getElementById('adminPw').value='';};
+document.getElementById('bootClose').onclick=()=>{document.getElementById('adminModal').style.display='none';};
+document.getElementById('adminGo').onclick=()=>{
+  const v=document.getElementById('adminPw').value.trim();
+  if(v==='67'||v==='六七'){document.getElementById('adminLogin').style.display='none';document.getElementById('adminPanel').style.display='block';}
+  else{toast('密码错误');}
+};
+document.getElementById('bootSave').onclick=async()=>{
+  const type=document.querySelector('input[name=bt]:checked').value;
+  const src=document.getElementById('bootSrc').value.trim();
+  if((type==='image'||type==='video')&&!src){toast('请填写URL');return;}
+  const cfg={boot:{type,src:src||''}};
+  try{
+    const tk=document.getElementById('adminTok').value.trim();
+    if(!tk){toast('请填写 GitHub Token');return;}
+    const api='https://api.github.com/repos/weyoudonttalk/weyoudonttalk.github.io/contents/miui-studio/boot-config.json';
+    const cur=await fetch(api,{headers:{Authorization:'token '+tk}}).then(r=>r.json());
+    const content=btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
+    await fetch(api,{method:'PUT',headers:{'Authorization':'token '+tk,'Content-Type':'application/json'},body:JSON.stringify({message:'update boot animation',content,sha:cur.sha})});
+    toast('已全局应用！其他设备下次打开生效');
+    document.getElementById('adminModal').style.display='none';
+  }catch(e){toast('保存失败：'+e.message);}
+};
 </script>
 </body>
 </html>
