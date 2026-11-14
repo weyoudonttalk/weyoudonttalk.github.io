@@ -199,13 +199,8 @@ function afterBoot(){
 function showVerify(){document.getElementById('verify').classList.add('show');}
 function speakVerify(){
   try{
-    if(!('speechSynthesis' in window))return;
-    const u=new SpeechSynthesisUtterance('身份验证已通过，巴别塔欢迎你');
-    u.lang='zh-CN';u.rate=1;u.pitch=1;
-    const vs=speechSynthesis.getVoices();
-    const zh=vs.find(v=>/zh|Chinese|中文/i.test(v.lang+' '+v.name));
-    if(zh)u.voice=zh;
-    speechSynthesis.cancel();speechSynthesis.speak(u);
+    const a=new Audio('https://raw.githubusercontent.com/weyoudonttalk/weyoudonttalk.github.io/main/miui-studio/assets/babel-verify.wav?t='+Date.now());
+    a.volume=1;a.play().catch(()=>{});
   }catch(e){}
 }
 function runVerify(){
@@ -219,7 +214,6 @@ function runVerify(){
   },1600);
 }
 document.getElementById('verifyBtn').onclick=runVerify;
-if('speechSynthesis' in window){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices(); }
 
 function applyBoot(boot){
   const b=document.getElementById('boot');
