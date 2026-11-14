@@ -197,12 +197,11 @@ function afterBoot(){
   else{document.getElementById('hello').classList.add('show');}
 }
 function showVerify(){document.getElementById('verify').classList.add('show');}
-function speakVerify(){
-  try{
-    const a=new Audio('https://raw.githubusercontent.com/weyoudonttalk/weyoudonttalk.github.io/main/miui-studio/assets/babel-verify.wav?t='+Date.now());
-    a.volume=1;a.play().catch(()=>{});
-  }catch(e){}
-}
+let _vAudio=null;
+function vAudio(){if(!_vAudio){_vAudio=new Audio('https://raw.githubusercontent.com/weyoudonttalk/weyoudonttalk.github.io/main/miui-studio/assets/babel-verify.wav?t='+Date.now());_vAudio.preload='auto';_vAudio.volume=1;}return _vAudio;}
+function unlockAudio(){try{const a=vAudio();const p=a.play();if(p&&p.then){p.then(()=>{a.pause();a.currentTime=0;}).catch(()=>{});}}catch(e){}}
+function fallbackTTS(){try{if(!('speechSynthesis' in window))return;const u=new SpeechSynthesisUtterance('身份验证已通过，巴别塔期待与你同行');u.lang='zh-CN';u.rate=1;u.pitch=1;const vs=speechSynthesis.getVoices();const zh=vs.find(v=>/zh|Chinese|中文/i.test(v.lang+' '+v.name));if(zh)u.voice=zh;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}}
+function speakVerify(){try{const a=vAudio();a.currentTime=0;const p=a.play();if(p&&p.catch){p.catch(()=>{fallbackTTS();});}}catch(e){fallbackTTS();}}
 function runVerify(){
   const btn=document.getElementById('verifyBtn');
   if(btn.disabled)return; btn.disabled=true;
@@ -213,7 +212,7 @@ function runVerify(){
     setTimeout(()=>{document.getElementById('verify').classList.remove('show');afterBoot();},1700);
   },1600);
 }
-document.getElementById('verifyBtn').onclick=runVerify;
+document.getElementById('verifyBtn').onclick=()=>{unlockAudio();runVerify();};
 
 function applyBoot(boot){
   const b=document.getElementById('boot');
