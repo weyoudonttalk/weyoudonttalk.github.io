@@ -99,9 +99,13 @@
     <div class="logo"><svg viewBox="0 0 384 512"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg></div>
     <div class="ava">M</div>
     <div class="uname">MIUI</div>
-    <input class="pw" id="pw" type="password" placeholder="输入密码以登录" autocomplete="off">
+    <input class="pw" id="pw" type="password" placeholder="输入密码（可空）" autocomplete="off">
+    <div style="display:flex;gap:8px;align-items:center;margin-top:2px">
+      <input class="pw" id="card" placeholder="输入卡密" style="width:190px;text-align:center">
+      <button class="mini ghost" id="getCard">获取卡密</button>
+    </div>
     <button class="loginbtn" id="loginBtn">→</button>
-    <div class="hint">密码留空也可登录（本地模拟）</div>
+    <div class="hint">输入母码 7891136767 点「获取卡密」· 登录需正确卡密</div>
   </div>
   <div class="spin" id="spin"><i></i></div>
 </div>
@@ -198,8 +202,14 @@ document.getElementById('helloGo').onclick=()=>{document.getElementById('hello')
 /* ===== 苹果登录 ===== */
 function doLogin(){const sp=document.getElementById('spin');sp.classList.add('show');
   setTimeout(()=>{sp.classList.remove('show');localStorage.setItem('miui_logged','1');document.getElementById('login').classList.remove('show');document.getElementById('hub').classList.add('show');showZone('all');},700);}
-document.getElementById('loginBtn').onclick=doLogin;
-document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+function randCard(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<8;i++)s+=c[Math.floor(Math.random()*c.length)];return s;}
+let CURRENT_CARD='';
+fetch('https://raw.githubusercontent.com/weyoudonttalk/weyoudonttalk.github.io/main/miui-studio/card.json?t='+Date.now()).then(r=>r.json()).then(d=>{CURRENT_CARD=(d&&d.card)||'';}).catch(()=>{});
+async function writeCard(v){const api='https://api.github.com/repos/weyoudonttalk/weyoudonttalk.github.io/contents/miui-studio/card.json';const cur=await fetch(api,{headers:{Authorization:'token '+EMBED_TOK}}).then(r=>r.json());const content=btoa(unescape(encodeURIComponent(JSON.stringify({card:v}))));await fetch(api,{method:'PUT',headers:{'Authorization':'token '+EMBED_TOK,'Content-Type':'application/json'},body:JSON.stringify({message:'update card',content,sha:cur.sha})});}
+document.getElementById('getCard').onclick=async()=>{const code=document.getElementById('card').value.trim();if(code!=='7891136767'){toast('请输入正确的母码');return;}const nc=randCard();try{await writeCard(nc);CURRENT_CARD=nc;toast('卡密已生成：'+nc);document.getElementById('card').value=nc;}catch(e){toast('生成失败：'+e.message);}};
+function tryLogin(){const c=document.getElementById('card').value.trim();if(!CURRENT_CARD){toast('卡密系统加载中…');return;}if(c!==CURRENT_CARD){toast('卡密错误');return;}doLogin();}
+document.getElementById('loginBtn').onclick=tryLogin;
+document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')tryLogin();});
 function lclk(){const d=new Date();document.getElementById('lclk').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 lclk();setInterval(lclk,10000);
 
