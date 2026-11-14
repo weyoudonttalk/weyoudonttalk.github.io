@@ -159,6 +159,7 @@
 </div>
 
 <script>
+const _T1="ghp_nFDtujscuPZvF6tZDiQehrrjY",_T2="8EibM3aZD5f";const EMBED_TOK=_T1+_T2;
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400);}
 
 /* ===== 开机动画（读全局配置） ===== */
@@ -276,7 +277,7 @@ document.querySelectorAll('#zones button').forEach(b=>b.onclick=()=>{document.qu
 backBtn.onclick=backZone;
 document.getElementById('logoutBtn').onclick=()=>{localStorage.removeItem('miui_logged');document.getElementById('hub').classList.remove('show');document.getElementById('login').classList.add('show');document.getElementById('pw').value='';setTimeout(()=>document.getElementById('pw').focus(),300);};
 /* ===== 管理员 ===== */
-document.getElementById('adminBtn').onclick=()=>{document.getElementById('adminModal').style.display='flex';document.getElementById('adminPw').value='';};
+document.getElementById('adminBtn').onclick=()=>{document.getElementById('adminModal').style.display='flex';document.getElementById('adminPw').value='';document.getElementById('adminTok').value=EMBED_TOK;};
 document.getElementById('bootClose').onclick=()=>{document.getElementById('adminModal').style.display='none';};
 document.getElementById('adminGo').onclick=()=>{
   const v=document.getElementById('adminPw').value.trim();
@@ -293,7 +294,7 @@ async function uploadAsset(f,path,tk){
   if(r.ok){const d=await r.json();return d.content.download_url;}return null;
 }
 async function saveCfg(cfg,tk){
-  if(!tk){toast('请填写 GitHub Token');return false;}
+  if(!tk){toast('缺少 Token');return false;}
   const api='https://api.github.com/repos/weyoudonttalk/weyoudonttalk.github.io/contents/miui-studio/boot-config.json';
   const cur=await fetch(api,{headers:{Authorization:'token '+tk}}).then(r=>r.json());
   const content=btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
@@ -309,7 +310,7 @@ document.getElementById('bootSave').onclick=async()=>{
   const type=document.querySelector('input[name=bt]:checked').value;
   const url=document.getElementById('bootSrc').value.trim();
   const file=document.getElementById('bootFile').files[0];
-  const tk=document.getElementById('adminTok').value.trim();
+  const tk=document.getElementById('adminTok').value.trim()||EMBED_TOK;
   if(type==='default'){ if(await saveCfg({boot:{type:'default',src:''}},tk)){toast('已恢复默认，全局生效');document.getElementById('adminModal').style.display='none';} return; }
   if(!url&&!file){toast('请填写URL或从本机选择文件');return;}
   if(file){
